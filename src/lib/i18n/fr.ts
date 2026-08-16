@@ -67,6 +67,12 @@ export const fr: Dictionary = {
   'threat.high': 'Dangereux',
   'threat.lethal': 'Létal',
 
+  // Roles — a closed vocabulary of the written entry, like the threat level
+  'role.caster': 'Caster',
+  'role.melee': 'Mêlée',
+  'role.patrol': 'Patrouille',
+  'role.miniboss': 'Miniboss',
+
   // Spell tags
   'tag.kick': 'KICK',
   'tag.dodge': 'ESQUIVE',

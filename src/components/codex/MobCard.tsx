@@ -3,7 +3,7 @@
 
 import type { Enemy } from '../../lib/types'
 import { getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
-import { getMobContent, type SpellNote } from '../../lib/content'
+import { getMobContent, isRole, type SpellNote } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
@@ -101,7 +101,11 @@ export default function MobCard({
             {enemy.count > 0 ? plural('common.forces', enemy.count) : t('common.noForce')} ·{' '}
             {plural('common.units', enemy.clones.length)}
             {enemy.creatureType ? ` · ${enemy.creatureType}` : ''}
-            {content?.role ? ` · ${content.role}` : ''}
+            {/* A role outside the known vocabulary is shown as written: a hand-typed entry
+                must never surface a raw translation key. */}
+            {content?.role
+              ? ` · ${isRole(content.role) ? t(`role.${content.role}`) : content.role}`
+              : ''}
           </div>
         </div>
       </header>

@@ -117,6 +117,23 @@ from the base, which preserves the "a mob with no entry still renders" invariant
 `.fr.md` are the reference pair, and serve as the fixture for
 [content.test.ts](../../../src/lib/content.test.ts).
 
+### A closed frontmatter vocabulary gets keys; free text does not
+
+`threat` and `role` are both written by hand in the frontmatter, and both come from a fixed
+list the scaffold template prints. They are **not** game terms, so they are translated —
+`threat.*` and `role.*` keys, resolved at render time. `trap`, `note` and the prose are free
+text and live in the `.fr.md` instead.
+
+The trap to avoid: rendering a frontmatter value straight into the page. `role` stays typed
+as free text, because the file is hand-written and a typo must render as itself rather than
+as a raw `role.healer` on screen. `isRole()` is the guard that decides:
+
+```tsx
+{isRole(content.role) ? t(`role.${content.role}`) : content.role}
+```
+
+Add a value to `ROLES` and `tsc` will demand the matching key in both dictionaries.
+
 ### The locale travels as a parameter
 
 `getMobContent`, `getDungeonContent`, `contentProgress`, `getIndicators` and `kickList` all

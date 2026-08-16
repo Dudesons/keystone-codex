@@ -2,7 +2,7 @@
 // ABOUTME: Covers a written entry, an untouched stub, the bilingual pair, and the fallback.
 
 import { describe, expect, it } from 'vitest'
-import { contentProgress, getDungeonContent, getMobContent } from './content'
+import { ROLES, contentProgress, getDungeonContent, getMobContent, isRole } from './content'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
@@ -12,6 +12,21 @@ const SLUG = 'altar-of-fangs'
 const WRITTEN = 270306 // Ritual Chieftain
 const STUB = 259445 // Rav'i
 const NO_ENTRY = 999_999
+
+describe('isRole', () => {
+  it('recognises the vocabulary the scaffold template offers', () => {
+    for (const role of ROLES) expect(isRole(role), role).toBe(true)
+  })
+
+  it('rejects anything else, so an unexpected value can pass through untranslated', () => {
+    // `role` is free text in the frontmatter: a typo or a word we never planned must not
+    // become a missing translation key on screen.
+    expect(isRole('healer')).toBe(false)
+    expect(isRole('Melee')).toBe(false)
+    expect(isRole('')).toBe(false)
+    expect(isRole(undefined)).toBe(false)
+  })
+})
 
 describe('Written mob entry', () => {
   const entry = getMobContent(SLUG, WRITTEN)

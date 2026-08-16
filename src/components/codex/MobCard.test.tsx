@@ -68,6 +68,16 @@ describe('Header', () => {
     expect(header.textContent).toContain('TANK')
   })
 
+  it('translates the role, a closed vocabulary like the threat level', () => {
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(container.textContent).toContain('Melee')
+
+    cleanup()
+    expect(renderFr(<MobCard slug={SLUG} enemy={chieftain} />).container.textContent).toContain(
+      'Mêlée',
+    )
+  })
+
   it('announces forces and unit count', () => {
     const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(container.textContent).toContain(`${chieftain.count} forces`)

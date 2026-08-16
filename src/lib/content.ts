@@ -25,6 +25,21 @@ import { marked } from 'marked'
 import { DEFAULT_LOCALE, isLocale, type Locale } from './i18n/locales'
 
 export type Threat = 'low' | 'medium' | 'high' | 'lethal'
+
+/**
+ * The roles the scaffold template offers, and the only ones the UI knows how to translate.
+ *
+ * `role` stays free text in `MobContent`: the frontmatter is hand-written, and a typo or a
+ * word we never planned must render as itself rather than as a missing translation key.
+ * `isRole` is the guard that decides which of the two happens.
+ */
+export const ROLES = ['caster', 'melee', 'patrol', 'miniboss'] as const
+
+export type Role = (typeof ROLES)[number]
+
+export function isRole(value: unknown): value is Role {
+  return typeof value === 'string' && (ROLES as readonly string[]).includes(value)
+}
 export type SpellTag = 'kick' | 'dodge' | 'dispel' | 'tank' | 'soak' | 'ignore' | 'todo'
 
 export interface SpellNote {

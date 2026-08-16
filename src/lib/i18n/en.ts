@@ -66,6 +66,12 @@ export const en = {
   'threat.high': 'Dangerous',
   'threat.lethal': 'Lethal',
 
+  // Roles — a closed vocabulary of the written entry, like the threat level
+  'role.caster': 'Caster',
+  'role.melee': 'Melee',
+  'role.patrol': 'Patrol',
+  'role.miniboss': 'Miniboss',
+
   // Spell tags
   'tag.kick': 'KICK',
   'tag.dodge': 'DODGE',
