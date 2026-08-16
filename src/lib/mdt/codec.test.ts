@@ -5,6 +5,7 @@ import pako from 'pako'
 import { decodeCbor, encodeCbor, isLuaArray, luaToJs, type LuaTable, type LuaValue } from './cbor'
 import { decodeMdtString, deserializeAce, encodeMdtString } from './string'
 import { luaToRoute, routeToLua } from './route'
+import { MdtUserError } from './errors'
 
 const hex = (s: string) => new Uint8Array(s.match(/../g)!.map((b) => parseInt(b, 16)))
 const toHex = (b: Uint8Array) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
@@ -197,7 +198,25 @@ describe('Route MDT', () => {
 
   it('refuse un donjon hors du pool de la saison', () => {
     const other = lua(['value', lua(['currentDungeonIdx', 999])])
-    expect(() => luaToRoute(other)).toThrow(/pool de la saison 2/)
+    // On assert sur le code, pas sur la phrase : la phrase est traduite dans l'UI, le code
+    // est le contrat entre le codec et le panneau de route.
+    expect(() => luaToRoute(other)).toThrow(MdtUserError)
+    try {
+      luaToRoute(other)
+      expect.unreachable('luaToRoute aurait dû lever')
+    } catch (err) {
+      expect((err as MdtUserError).code).toBe('notInPool')
+      expect((err as MdtUserError).params).toEqual({ mdtIndex: 999 })
+    }
+  })
+
+  it('refuse un preset sans champ `value`', () => {
+    try {
+      luaToRoute(lua(['text', 'sans value']))
+      expect.unreachable('luaToRoute aurait dû lever')
+    } catch (err) {
+      expect((err as MdtUserError).code).toBe('noValue')
+    }
   })
 
   it('fait un aller-retour preset -> route -> preset sans perte', () => {
@@ -234,8 +253,15 @@ describe('String MDT complète', () => {
   })
 
   it('rejette clairement une string qui n’est pas du MDT', () => {
-    expect(() => decodeMdtString('coucou')).toThrow(/Format non reconnu/)
-    expect(() => decodeMdtString('')).toThrow(/vide/)
+    const codes = ['coucou', ''].map((input) => {
+      try {
+        decodeMdtString(input)
+        return 'aucune erreur'
+      } catch (err) {
+        return err instanceof MdtUserError ? err.code : `erreur non traduisible: ${err}`
+      }
+    })
+    expect(codes).toEqual(['unknownFormat', 'emptyString'])
   })
 })
 

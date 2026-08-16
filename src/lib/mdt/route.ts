@@ -1,17 +1,18 @@
 /**
- * Modèle de route, et passerelle avec les presets MDT.
+ * The route model, and the bridge to MDT presets.
  *
- * Un preset MDT porte bien plus que des pulls : dessins, notes, offsets de faille,
- * assignations. On ne sait pas éditer tout ça, donc on conserve la table Lua d'origine et on
- * ne réécrit que `value.pulls` — ré-exporter une route importée la rend au jeu sans perdre
- * ce qu'on n'a pas touché.
+ * An MDT preset carries far more than pulls: drawings, notes, rift offsets, assignments. We
+ * cannot edit any of that, so we keep the original Lua table and only rewrite `value.pulls`
+ * — re-exporting an imported route hands it back to the game without losing what we never
+ * touched.
  */
 
 import type { CloneRef } from '../types'
 import { cloneKey, dungeonList, type DungeonLookup } from '../data'
 import type { LuaTable, LuaValue } from './cbor'
+import { MdtUserError } from './errors'
 
-/** Palette par défaut de MDT (colorPaletteIdx 4), reprise pour que les pulls se ressemblent. */
+/** MDT's default palette (colorPaletteIdx 4), reused so pulls look the same as in game. */
 export const PULL_COLORS = [
   'ff3eff', '3eb0ff', 'ffdd3e', '3eff88', 'ff803e',
   'c43eff', '3effe0', 'ff3e6b', '9dff3e', '3e6bff',
@@ -25,13 +26,13 @@ export interface Pull {
 
 export interface Route {
   name: string
-  /** Slug du donjon, résolu depuis `currentDungeonIdx`. */
+  /** Dungeon slug, resolved from `currentDungeonIdx`. */
   slug: string
   mdtIndex: number
   pulls: Pull[]
   difficulty?: number
   uid?: string
-  /** Table d'origine, préservée pour ne rien perdre au ré-export. */
+  /** The original table, kept so nothing is lost on re-export. */
   source?: LuaTable
 }
 
@@ -43,7 +44,7 @@ export function nextColor(index: number): string {
   return PULL_COLORS[index % PULL_COLORS.length]
 }
 
-/** `#ff3eff` <-> `ff3eff` : MDT stocke sans dièse, le SVG en a besoin. */
+/** `#ff3eff` <-> `ff3eff`: MDT stores it without the hash, SVG needs one. */
 export const toCssColor = (c: string) => (c.startsWith('#') ? c : `#${c.replace(/^#/, '')}`)
 
 // ---------------------------------------------------------------------------
@@ -52,21 +53,17 @@ export const toCssColor = (c: string) => (c.startsWith('#') ? c : `#${c.replace(
 
 export function luaToRoute(table: LuaTable): Route {
   const value = asTable(table.get('value'))
-  if (!value) throw new Error("Preset MDT invalide : champ 'value' absent")
+  if (!value) throw new MdtUserError('noValue')
 
   const mdtIndex = Number(value.get('currentDungeonIdx'))
   const slug = slugForMdtIndex(mdtIndex)
-  if (!slug) {
-    throw new Error(
-      `Ce donjon (index MDT ${mdtIndex}) n'est pas dans le pool de la saison 2 — route non importable ici.`,
-    )
-  }
+  if (!slug) throw new MdtUserError('notInPool', { mdtIndex })
 
   const rawPulls = asTable(value.get('pulls'))
   const pulls: Pull[] = []
 
   if (rawPulls) {
-    // Les pulls sont indexés 1..n ; on parcourt dans l'ordre numérique.
+    // Pulls are indexed 1..n; we walk them in numeric order.
     const indices = [...rawPulls.keys()].filter((k): k is number => typeof k === 'number').sort((a, b) => a - b)
     for (const i of indices) {
       const pull = asTable(rawPulls.get(i))
@@ -74,7 +71,7 @@ export function luaToRoute(table: LuaTable): Route {
 
       const clones: CloneRef[] = []
       for (const [key, entry] of pull) {
-        // Une clé entière est un index de mob ; "color" et consorts sont des métadonnées.
+        // An integer key is a mob index; "color" and friends are metadata.
         if (typeof key !== 'number') continue
         const cloneTable = asTable(entry)
         if (!cloneTable) continue
@@ -96,7 +93,7 @@ export function luaToRoute(table: LuaTable): Route {
   const difficulty = table.get('difficulty')
 
   return {
-    name: typeof name === 'string' ? name : 'Route importée',
+    name: typeof name === 'string' ? name : 'Imported route',
     slug,
     mdtIndex,
     pulls,
@@ -114,7 +111,7 @@ function pullsToLua(pulls: Pull[]): LuaTable {
   const out: LuaTable = new Map()
   pulls.forEach((pull, i) => {
     const entry: LuaTable = new Map()
-    // Regroupe les clones par mob, comme le fait MDT.
+    // Group the clones by mob, the way MDT does.
     const byEnemy = new Map<number, number[]>()
     for (const ref of pull.clones) {
       const list = byEnemy.get(ref.enemyIdx)
@@ -136,8 +133,8 @@ function pullsToLua(pulls: Pull[]): LuaTable {
 }
 
 /**
- * Reconstruit une table de preset prête à sérialiser. Si la route vient d'un import, on part
- * de la table d'origine pour préserver dessins, notes et offsets.
+ * Rebuilds a preset table ready to serialise. If the route came from an import, we start
+ * from the original table to preserve drawings, notes and offsets.
  */
 export function routeToLua(route: Route): LuaTable {
   const table: LuaTable = route.source ? new Map(route.source) : new Map()
@@ -166,14 +163,21 @@ export function routeToLua(route: Route): LuaTable {
 }
 
 // ---------------------------------------------------------------------------
-// Utilitaires d'édition
+// Editing helpers
 // ---------------------------------------------------------------------------
 
-export function emptyRoute(slug: string, mdtIndex: number, name = 'Nouvelle route'): Route {
+/**
+ * Deliberately not translated: this name is data, not chrome. It is serialised into the MDT
+ * string, persisted to localStorage and replicated to Y.js peers, so localising it would make
+ * two teammates see different names for the same route.
+ */
+export const DEFAULT_ROUTE_NAME = 'New route'
+
+export function emptyRoute(slug: string, mdtIndex: number, name = DEFAULT_ROUTE_NAME): Route {
   return { name, slug, mdtIndex, pulls: [{ color: nextColor(0), clones: [] }] }
 }
 
-/** Clés de clones déjà affectées, avec le pull correspondant. */
+/** Clone keys already assigned, with the pull they belong to. */
 export function pullIndexByClone(route: Route): Map<string, number> {
   const map = new Map<string, number>()
   route.pulls.forEach((pull, i) => {
@@ -183,7 +187,7 @@ export function pullIndexByClone(route: Route): Map<string, number> {
 }
 
 export interface RouteStats {
-  /** Forces cumulées, pull par pull. */
+  /** Cumulative forces, pull by pull. */
   cumulative: number[]
   total: number
   required: number

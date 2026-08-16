@@ -2,14 +2,17 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
+import { LocaleProvider } from './lib/i18n/context'
 import './index.css'
 
-// HashRouter plutôt que BrowserRouter : le build est servi en statique (GitHub Pages,
-// double-clic sur dist/index.html), sans serveur capable de rerouter les chemins profonds.
+// HashRouter rather than BrowserRouter: the build is served statically (GitHub Pages, or a
+// double-click on dist/index.html), with no server able to reroute deep paths.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <LocaleProvider>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </LocaleProvider>
   </StrictMode>,
 )

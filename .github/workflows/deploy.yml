@@ -1,22 +1,22 @@
-name: Déploiement
+name: Deploy
 
-# Déclenchement manuel uniquement, par les mainteneurs du dépôt.
-# L'interface Actions permet de choisir la branche ou le tag à publier.
+# Manual trigger only, by the repository maintainers.
+# The Actions UI is where the branch or tag to publish gets picked.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Nom du tag à poser (vide = vAAAA.MM.JJ-<numéro de run>)"
+        description: 'Tag name to create (empty = vYYYY.MM.DD-<run number>)'
         required: false
         default: ''
       create_tag:
-        description: 'Poser un tag sur le commit publié'
+        description: 'Tag the published commit'
         type: boolean
         required: false
         default: true
 
 permissions:
-  contents: write # nécessaire pour poser le tag
+  contents: write # required to push the tag
   pages: write
   id-token: write
 
@@ -26,14 +26,14 @@ concurrency:
 
 jobs:
   build:
-    name: Vérification, build et tag
+    name: Check, build and tag
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.name }}
     steps:
       - uses: actions/checkout@v4
         with:
-          # Historique complet : nécessaire pour savoir si le tag existe déjà.
+          # Full history: required to tell whether the tag already exists.
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -43,20 +43,20 @@ jobs:
 
       - run: npm ci
 
-      # Le déploiement étant manuel, il ne peut pas hériter de la garantie de la CI :
-      # on revérifie ici, pour qu'aucune publication ne parte sur un build cassé.
-      - name: Vérification des types
+      # Being manual, the deployment cannot inherit CI's guarantee: it re-checks here,
+      # so that nothing ever ships on a broken build.
+      - name: Typecheck
         run: npm run typecheck
 
       - name: Tests
         run: npm test
 
-      # Aucun script d'extraction n'est lancé : ils ont besoin d'une installation de WoW.
-      # Les données et les assets sont versionnés, le build se suffit à lui-même.
+      # No extraction script runs here: they need a WoW installation. The data and assets
+      # are versioned, so the build stands on its own.
       - name: Build
         run: npm run build
 
-      - name: Poser un tag sur ce qui part en ligne
+      - name: Tag what goes online
         id: tag
         if: inputs.create_tag
         run: |
@@ -66,12 +66,12 @@ jobs:
           fi
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           if git rev-parse "$NAME" >/dev/null 2>&1; then
-            echo "Le tag $NAME existe déjà, on ne le recrée pas."
+            echo "Tag $NAME already exists, leaving it alone."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$NAME" -m "Déploiement $NAME"
+          git tag -a "$NAME" -m "Deploy $NAME"
           git push origin "$NAME"
 
       - uses: actions/upload-pages-artifact@v3
@@ -79,7 +79,7 @@ jobs:
           path: dist
 
   deploy:
-    name: Publication GitHub Pages
+    name: Publish to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -89,11 +89,11 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Récapitulatif
+      - name: Summary
         run: |
-          echo "### Déploiement effectué" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Deployment complete" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Ref : \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Commit : \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Tag : \`${{ needs.build.outputs.tag || 'aucun' }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- URL : ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ref: \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: \`${{ needs.build.outputs.tag || 'none' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

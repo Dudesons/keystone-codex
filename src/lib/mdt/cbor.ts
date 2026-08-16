@@ -1,14 +1,14 @@
 /**
- * CBOR (RFC 8949), sous-ensemble suffisant pour les exports de MDT.
+ * CBOR (RFC 8949), the subset that MDT exports need.
  *
- * MDT sérialise ses routes avec `C_EncodingUtil.SerializeCBOR` (Transmission.lua:19). On
- * réimplémente le format plutôt que de prendre une librairie parce que la fidélité octet à
- * octet compte : une string ré-encodée doit rester importable en jeu, ce qui impose de
- * contrôler exactement comment les tables Lua deviennent des tableaux ou des maps.
+ * MDT serialises its routes with `C_EncodingUtil.SerializeCBOR` (Transmission.lua:19). We
+ * reimplement the format rather than reaching for a library because byte-for-byte fidelity
+ * is what matters: a re-encoded string has to stay importable in game, which means
+ * controlling exactly how Lua tables become arrays or maps.
  *
- * Représentation : une table Lua est une `Map` dont les clés entières restent 1-based,
- * exactement comme en Lua. Un tableau CBOR se décode donc en Map {1:…, 2:…}, et se ré-encode
- * en tableau si et seulement si ses clés sont 1..n contiguës — la règle inverse exacte.
+ * Representation: a Lua table is a `Map` whose integer keys stay 1-based, exactly as in Lua.
+ * A CBOR array therefore decodes to Map {1:…, 2:…}, and re-encodes to an array if and only
+ * if its keys are a contiguous 1..n — the exact inverse rule.
  */
 
 export type LuaValue = number | string | boolean | null | Uint8Array | LuaTable
@@ -26,7 +26,7 @@ const MAJOR = {
 } as const
 
 // ---------------------------------------------------------------------------
-// Décodage
+// Decoding
 // ---------------------------------------------------------------------------
 
 class Reader {
@@ -38,11 +38,11 @@ class Reader {
   }
 
   private u8() {
-    if (this.pos >= this.bytes.length) throw new Error('CBOR: fin de données inattendue')
+    if (this.pos >= this.bytes.length) throw new Error('CBOR: unexpected end of data')
     return this.bytes[this.pos++]
   }
 
-  /** Lit l'argument associé à un en-tête. `null` = longueur indéfinie. */
+  /** Reads the argument attached to a header. `null` = indefinite length. */
   private argument(info: number): number | null {
     if (info < 24) return info
     switch (info) {
@@ -61,7 +61,7 @@ class Reader {
       case 27: {
         const v = this.view.getBigUint64(this.pos)
         this.pos += 8
-        if (v > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('CBOR: entier hors plage sûre')
+        if (v > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('CBOR: integer outside the safe range')
         return Number(v)
       }
       case 31:
@@ -74,16 +74,16 @@ class Reader {
   private bytesOf(len: number | null, major: number): Uint8Array {
     if (len !== null) {
       const out = this.bytes.subarray(this.pos, this.pos + len)
-      if (out.length !== len) throw new Error('CBOR: chaîne tronquée')
+      if (out.length !== len) throw new Error('CBOR: truncated string')
       this.pos += len
       return out
     }
-    // Longueur indéfinie : concaténation de fragments jusqu'au marqueur de fin.
+    // Indefinite length: fragments concatenated until the break marker.
     const chunks: Uint8Array[] = []
     for (;;) {
       const head = this.u8()
       if (head === 0xff) break
-      if (head >> 5 !== major) throw new Error('CBOR: fragment de type incohérent')
+      if (head >> 5 !== major) throw new Error('CBOR: inconsistent fragment type')
       const chunk = this.bytesOf(this.argument(head & 0x1f), major)
       chunks.push(chunk)
     }
@@ -107,9 +107,9 @@ class Reader {
         return this.argument(info)!
       case MAJOR.NEGINT:
         return -1 - this.argument(info)!
-      // Lua ne connaît que des chaînes d'octets : le sérialiseur du jeu émet donc du
-      // major 2, jamais du major 3. On accepte les deux et on rend une chaîne dans les
-      // deux cas, sinon une clé de table se retrouverait typée Uint8Array.
+      // Lua only has byte strings, so the game's serialiser emits major 2, never major 3.
+      // We accept both and return a string either way, otherwise a table key would end up
+      // typed as a Uint8Array.
       case MAJOR.BYTES:
         return new TextDecoder().decode(this.bytesOf(this.argument(info), MAJOR.BYTES))
       case MAJOR.TEXT:
@@ -122,7 +122,7 @@ class Reader {
           while (this.bytes[this.pos] !== 0xff) table.set(i++, this.value())
           this.pos++
         } else {
-          // Un tableau CBOR redevient une table Lua indexée à partir de 1.
+          // A CBOR array becomes a Lua table indexed from 1 again.
           for (let i = 0; i < len; i++) table.set(i + 1, this.value())
         }
         return table
@@ -133,7 +133,7 @@ class Reader {
         const entry = () => {
           const k = this.value()
           if (typeof k !== 'number' && typeof k !== 'string') {
-            throw new Error('CBOR: clé de table non scalaire')
+            throw new Error('CBOR: non-scalar table key')
           }
           table.set(k, this.value())
         }
@@ -147,7 +147,7 @@ class Reader {
       }
       case MAJOR.TAG:
         this.argument(info)
-        return this.value() // Les tags sont transparents pour ce qu'on manipule.
+        return this.value() // Tags are transparent for what we handle.
       case MAJOR.SIMPLE:
         switch (info) {
           case 20:
@@ -173,10 +173,10 @@ class Reader {
             return v
           }
           default:
-            throw new Error(`CBOR: valeur simple non gérée (${info})`)
+            throw new Error(`CBOR: unhandled simple value (${info})`)
         }
       default:
-        throw new Error(`CBOR: type majeur inconnu (${major})`)
+        throw new Error(`CBOR: unknown major type (${major})`)
     }
   }
 }
@@ -196,7 +196,7 @@ export function decodeCbor(bytes: Uint8Array): LuaValue {
 }
 
 // ---------------------------------------------------------------------------
-// Encodage
+// Encoding
 // ---------------------------------------------------------------------------
 
 class Writer {
@@ -236,11 +236,11 @@ class Writer {
 }
 
 /**
- * Une table Lua se sérialise en tableau CBOR si ses clés sont exactement 1..n.
+ * A Lua table serialises to a CBOR array if and only if its keys are exactly 1..n.
  *
- * Une table vide est ambiguë — `{}` peut légitimement devenir un tableau vide ou une map
- * vide. Le jeu émet un tableau vide (`0x80`), vérifié sur un export réel : c'est la seule
- * divergence qui séparait notre ré-encodage du sien.
+ * An empty table is ambiguous — `{}` could legitimately become an empty array or an empty
+ * map. The game emits an empty array (`0x80`), verified against a real export: it was the
+ * one divergence that separated our re-encoding from theirs.
  */
 export function isLuaArray(table: LuaTable): boolean {
   if (table.size === 0) return true
@@ -261,8 +261,8 @@ function encodeValue(w: Writer, value: LuaValue) {
     return
   }
   if (typeof value === 'number') {
-    // Lua ne distingue pas entier et flottant, mais CBOR si : les valeurs intégrales
-    // partent en entier, ce que fait aussi le sérialiseur du jeu.
+    // Lua does not distinguish integer from float, but CBOR does: integral values go out
+    // as integers, which is what the game's serialiser does too.
     if (Number.isInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER) {
       if (value >= 0) w.header(MAJOR.UINT, value)
       else w.header(MAJOR.NEGINT, -1 - value)
@@ -272,8 +272,8 @@ function encodeValue(w: Writer, value: LuaValue) {
     return
   }
   if (typeof value === 'string') {
-    // Major 2 et non major 3 : c'est ce que produit `C_EncodingUtil.SerializeCBOR`, vérifié
-    // sur un export réel du jeu. Émettre du texte casserait l'égalité octet à octet.
+    // Major 2 and not major 3: that is what `C_EncodingUtil.SerializeCBOR` produces,
+    // verified against a real export. Emitting text would break byte-for-byte equality.
     const bytes = new TextEncoder().encode(value)
     w.header(MAJOR.BYTES, bytes.length)
     w.raw(bytes)
@@ -297,7 +297,7 @@ function encodeValue(w: Writer, value: LuaValue) {
     }
     return
   }
-  throw new Error(`CBOR: valeur non sérialisable (${typeof value})`)
+  throw new Error(`CBOR: value cannot be serialised (${typeof value})`)
 }
 
 export function encodeCbor(value: LuaValue): Uint8Array {
@@ -310,7 +310,7 @@ export function encodeCbor(value: LuaValue): Uint8Array {
 // Confort : passage LuaTable <-> objets JS ordinaires
 // ---------------------------------------------------------------------------
 
-/** LuaTable -> objet/tableau JS lisible. Les tables 1..n deviennent des tableaux 0-based. */
+/** LuaTable -> readable JS object/array. Tables keyed 1..n become 0-based arrays. */
 export function luaToJs(value: LuaValue): unknown {
   if (!(value instanceof Map)) return value
   if (isLuaArray(value)) return [...value.values()].map(luaToJs)

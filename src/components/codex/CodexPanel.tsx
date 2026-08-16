@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { getDungeonContent } from '../../lib/content'
+import { useI18n } from '../../lib/i18n/context'
 import MobCard from './MobCard'
 
 export interface PullRef {
@@ -13,9 +14,9 @@ interface Props {
   lookup: DungeonLookup
   selectedPack: number | null
   selectedMob: number | null
-  /** Mob vers lequel faire défiler le panneau, après un clic sur la carte. */
+  /** Mob to scroll the panel to, after a click on the map. */
   focusNpc: number | null
-  /** Pull auquel appartient chaque mob dans la route courante. */
+  /** Which pull each mob belongs to in the current route. */
   pullByNpc: ReadonlyMap<number, PullRef>
   onSelectMob: (npcId: number | null) => void
   onHoverMob: (npcId: number | null) => void
@@ -33,11 +34,12 @@ export default function CodexPanel({
   onHoverMob,
   onClearSelection,
 }: Props) {
+  const { t, plural, locale } = useI18n()
   const rootRef = useRef<HTMLDivElement>(null)
-  const dungeonContent = getDungeonContent(slug)
+  const dungeonContent = getDungeonContent(slug, locale)
 
-  // Le panneau suit la carte : cliquer une unité amène sa fiche sous les yeux, plutôt que
-  // d'obliger à la chercher dans une liste de quarante mobs.
+  // The panel follows the map: clicking a unit brings its card into view, rather than
+  // forcing you to hunt for it in a list of forty mobs.
   useEffect(() => {
     if (focusNpc == null) return
     const card = rootRef.current?.querySelector(`[data-npc="${focusNpc}"]`)
@@ -71,7 +73,7 @@ export default function CodexPanel({
       return (
         <div ref={rootRef} className="space-y-3">
           <button className="text-xs text-ink-400 hover:text-gold-400" onClick={() => onSelectMob(null)}>
-            ← Retour
+            {t('common.back')}
           </button>
           <MobCard slug={slug} enemy={enemy} onHover={onHoverMob} {...cardProps(enemy.id)} />
         </div>
@@ -85,18 +87,19 @@ export default function CodexPanel({
       <div ref={rootRef} className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-ink-100">Pack {selectedPack}</h2>
+            <h2 className="font-semibold text-ink-100">{t('codex.pack', { n: selectedPack })}</h2>
             <p className="text-xs text-ink-400">
-              {pack?.count ?? 0} forces · {pack?.members.length ?? 0} unités
+              {plural('common.forces', pack?.count ?? 0)} ·{' '}
+              {plural('common.units', pack?.members.length ?? 0)}
             </p>
           </div>
           <button className="text-xs text-ink-400 hover:text-gold-400" onClick={onClearSelection}>
-            Fermer
+            {t('common.close')}
           </button>
         </div>
         {packMobs.map(({ enemy, n }) => (
           <div key={enemy.id}>
-            {n > 1 && <div className="mb-1 text-[11px] text-ink-600">×{n} dans ce pack</div>}
+            {n > 1 && <div className="mb-1 text-[11px] text-ink-600">{t('codex.inThisPack', { n })}</div>}
             <MobCard
               slug={slug}
               enemy={enemy}
@@ -127,7 +130,7 @@ export default function CodexPanel({
 
       {bosses.length > 0 && (
         <section>
-          <h2 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">BOSS</h2>
+          <h2 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">{t('codex.bosses')}</h2>
           <div className="space-y-2">
             {bosses.map((enemy) => (
               <MobCard
@@ -146,7 +149,7 @@ export default function CodexPanel({
 
       <section>
         <h2 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">
-          TRASH · {uniqueTrash.length} mobs
+          {t('codex.trash', { n: uniqueTrash.length })}
         </h2>
         <div className="space-y-2">
           {uniqueTrash.map((enemy) => (

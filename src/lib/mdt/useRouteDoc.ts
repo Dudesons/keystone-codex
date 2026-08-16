@@ -1,11 +1,11 @@
 /**
- * État de la route, porté par un document Y.js.
+ * Route state, held by a Y.js document.
  *
- * Le Y.Doc est la source de vérité **en permanence**, même hors session collaborative : il n'y
- * a donc qu'un seul chemin de code, et brancher le réseau ne consiste qu'à attacher un
- * provider. Les mutations passent par des opérations d'intention (« ajoute ce pack au pull 3 »)
- * plutôt que par un remplacement global, ce qui permet à deux personnes d'éditer des pulls
- * différents sans s'écraser.
+ * The Y.Doc is the source of truth **at all times**, even outside a collaborative session:
+ * there is therefore only one code path, and plugging in the network is nothing more than
+ * attaching a provider. Mutations go through intent operations ("add this pack to pull 3")
+ * rather than a wholesale replacement, which lets two people edit different pulls without
+ * overwriting each other.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -14,10 +14,11 @@ import { WebrtcProvider } from 'y-webrtc'
 import type { CloneRef } from '../types'
 import { cloneKey } from '../data'
 import { decodeMdtString, encodeMdtString } from './string'
-import { luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
+import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
 
 const SIGNALING = [import.meta.env.VITE_SIGNALING_URL || 'wss://y-webrtc-eu.fly.dev']
+
 
 const storageKey = (slug: string) => `midnight-codex:route:${slug}`
 
@@ -30,7 +31,7 @@ interface PullShape {
 
 type PullMap = Y.Map<string | Y.Array<string>>
 
-/** Le preset importé est conservé sous forme de string, seul format sérialisable dans le doc. */
+/** The imported preset is kept as a string, the only form serialisable inside the doc. */
 const sourceCache = new Map<string, LuaTable | undefined>()
 
 function decodeSource(raw: string | undefined): LuaTable | undefined {
@@ -73,7 +74,7 @@ function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route 
   })
 
   return {
-    name: (root.get('name') as string) || 'Nouvelle route',
+    name: (root.get('name') as string) || DEFAULT_ROUTE_NAME,
     slug,
     mdtIndex,
     pulls: pulls.length ? pulls : [{ color: nextColor(0), clones: [] }],
@@ -81,7 +82,7 @@ function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route 
   }
 }
 
-/** Remplit un document vide à partir d'une route existante. */
+/** Fills an empty document from an existing route. */
 function seed(doc: Y.Doc, route: Route, sourceString?: string) {
   const root = doc.getMap('route')
   doc.transact(() => {
@@ -99,7 +100,7 @@ export interface RouteActions {
   removePull(index: number): void
   movePull(index: number, delta: number): void
   setPullColor(index: number, color: string): void
-  /** Ajoute les clones au pull, ou les retire s'ils y sont déjà tous. */
+  /** Adds the clones to the pull, or removes them if they are all already in it. */
   toggleClones(pullIndex: number, refs: CloneRef[]): void
   importRoute(mdtString: string): Route
   reset(): void
@@ -108,16 +109,16 @@ export interface RouteActions {
 export interface CollabState {
   status: CollabStatus
   room: string | null
-  /** Nombre de participants, soi inclus. */
+  /** Number of participants, yourself included. */
   peers: number
   identity: string
 }
 
 /**
- * À monter sous une clé de donjon (`<DungeonView key={slug}>`) : les index de mobs n'ont pas
- * le même sens d'un donjon à l'autre, donc changer de donjon doit repartir d'un document neuf.
- * On ne détruit jamais le Y.Doc — sans provider attaché ce n'est que de la mémoire, et le
- * détruire au démontage se retournerait contre le double montage de StrictMode.
+ * To be mounted under a dungeon key (`<DungeonView key={slug}>`): mob indices do not mean
+ * the same thing from one dungeon to the next, so changing dungeon must start from a fresh
+ * document. The Y.Doc is never destroyed — with no provider attached it is only memory, and
+ * destroying it on unmount would backfire against StrictMode's double mount.
  */
 export function useRouteDoc(slug: string, mdtIndex: number) {
   const [doc] = useState(() => {
@@ -134,7 +135,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   })
 
   const [route, setRoute] = useState<Route>(() => ({
-    name: 'Nouvelle route',
+    name: DEFAULT_ROUTE_NAME,
     slug,
     mdtIndex,
     pulls: [{ color: nextColor(0), clones: [] }],
@@ -156,7 +157,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     [],
   )
 
-  // Le doc pilote l'état React, jamais l'inverse.
+  // The doc drives React state, never the other way round.
   useEffect(() => {
     const root = doc.getMap('route')
     const sync = () => setRoute(readRoute(root, slug, mdtIndex))
@@ -166,15 +167,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     return () => root.unobserveDeep(observer)
   }, [doc, slug, mdtIndex])
 
-  // Sauvegarde locale, en string MDT : ce format porte déjà tout, y compris ce qu'on ne
-  // sait pas éditer et qu'on restitue au ré-export.
+  // Local save, as an MDT string: that format already carries everything, including what
+  // we cannot edit and hand back on re-export.
   useEffect(() => {
     const handler = () => {
       try {
         const current = readRoute(doc.getMap('route'), slug, mdtIndex)
         localStorage.setItem(storageKey(slug), encodeMdtString(routeToLua(current)))
       } catch {
-        // Quota dépassé ou navigation privée : ne doit jamais interrompre l'édition.
+        // Quota exceeded or private browsing: must never interrupt editing.
       }
     }
     doc.on('update', handler)
@@ -216,7 +217,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const moved = pulls.get(index)
           const clones = (moved.get('clones') as Y.Array<string>).toArray()
           const color = moved.get('color') as string
-          // Y.Array n'a pas de déplacement : on retire puis on réinsère une copie.
+          // Y.Array has no move operation: remove, then reinsert a copy.
           pulls.delete(index, 1)
           pulls.insert(target, [makePull(color, clones)])
         }),
@@ -234,7 +235,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const targetClones = target.get('clones') as Y.Array<string>
           const alreadyThere = keys.every((k) => targetClones.toArray().includes(k))
 
-          // Un clone n'appartient qu'à un seul pull : on le retire partout d'abord.
+          // A clone belongs to exactly one pull: remove it everywhere first.
           pulls.forEach((pull) => {
             const arr = pull.get('clones') as Y.Array<string>
             for (let i = arr.length - 1; i >= 0; i--) {
@@ -262,7 +263,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       reset: () =>
         doc.transact(() => {
           const root = doc.getMap('route')
-          root.set('name', 'Nouvelle route')
+          root.set('name', DEFAULT_ROUTE_NAME)
           root.delete('source')
           const pulls = new Y.Array<PullMap>()
           root.set('pulls', pulls)
@@ -276,8 +277,8 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     (room: string, mode: 'host' | 'guest') => {
       providerRef.current?.destroy()
 
-      // En rejoignant, on vide d'abord le document local : sinon les pulls des deux côtés
-      // fusionneraient et se cumuleraient. L'hôte, lui, apporte sa route au salon.
+      // On joining, the local document is emptied first: otherwise the pulls from both
+      // sides would merge and pile up. The host, by contrast, brings its route to the room.
       if (mode === 'guest') actions.reset()
 
       const provider = new WebrtcProvider(`midnight-codex:${slug}:${room}`, doc, {
@@ -310,7 +311,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   return { route, actions, collab, joinRoom, leaveRoom }
 }
 
-/** Nom stable et lisible, mémorisé entre les sessions. */
+/** A stable, readable name, remembered across sessions. */
 function identityName(): string {
   const key = 'midnight-codex:identity'
   const existing = localStorage.getItem(key)
@@ -320,7 +321,7 @@ function identityName(): string {
   return name
 }
 
-/** Code de salon court, facile à dicter sur Discord. */
+/** A short room code, easy to read out on Discord. */
 export function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('')

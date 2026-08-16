@@ -30,6 +30,22 @@ export const SEASON_DUNGEONS = [
   'RubyLifePools',
 ]
 
+/**
+ * Langues pour lesquelles on récupère les libellés de sorts, et leur code de locale sur
+ * nether.wowhead.com.
+ *
+ * Ces codes ont été **vérifiés par sonde**, pas lus dans une documentation : `0` rend
+ * l'anglais, `2` le français. Sonde avant d'en ajouter un, ne le devine pas.
+ *
+ * Le **premier** élément est la langue de base : c'est son passage qui détermine le sens de
+ * chaque ligne de tooltip pour toutes les autres (voir `parseTooltip` dans fetch-assets.mjs).
+ * Il doit correspondre à `DEFAULT_LOCALE` dans `src/lib/i18n/locales.ts`.
+ */
+export const SPELL_LOCALES = [
+  { lang: 'en', wowhead: 0 },
+  { lang: 'fr', wowhead: 2 },
+]
+
 export const GENERATED_DIR = path.join(ROOT, 'src', 'data', 'generated')
 export const PUBLIC_DIR = path.join(ROOT, 'public')
 export const CONTENT_DIR = path.join(ROOT, 'content')

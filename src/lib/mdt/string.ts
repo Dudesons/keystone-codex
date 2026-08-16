@@ -1,17 +1,18 @@
 /**
- * Encodage et décodage des strings de partage de MDT.
+ * Encoding and decoding MDT share strings.
  *
- * Deux formats coexistent (Transmission.lua) :
+ * Two formats coexist (Transmission.lua):
  *
- *   - Actuel  : `!~MDT2~` + Base64 standard + Deflate + CBOR.
- *   - Legacy  : `!` + encodage 6 bits de LibDeflate + Deflate + AceSerializer.
+ *   - Current : `!~MDT2~` + standard Base64 + Deflate + CBOR.
+ *   - Legacy  : `!` + LibDeflate 6-bit encoding + Deflate + AceSerializer.
  *
- * On écrit toujours en MDT2 (ce que le jeu produit aujourd'hui), mais on sait lire les
- * deux : beaucoup de routes publiées sur Wago sont encore au format legacy.
+ * We always write MDT2 (what the game produces today), but we can read both: plenty of
+ * routes published on Wago are still in the legacy format.
  */
 
 import pako from 'pako'
 import { decodeCbor, encodeCbor, type LuaTable, type LuaValue } from './cbor'
+import { MdtUserError } from './errors'
 
 const MDT2_PREFIX = '!~MDT2~'
 
@@ -20,12 +21,12 @@ export type MdtFormat = 'mdt2' | 'legacy'
 export interface DecodedMdt {
   format: MdtFormat
   table: LuaTable
-  /** Variante de deflate observée, à réutiliser pour ré-encoder à l'identique. */
+  /** The deflate variant observed, to reuse so the re-encoding is identical. */
   deflate: 'zlib' | 'raw'
 }
 
 // ---------------------------------------------------------------------------
-// Base64 / octets
+// Base64 / bytes
 // ---------------------------------------------------------------------------
 
 function base64ToBytes(b64: string): Uint8Array {
@@ -46,9 +47,9 @@ function bytesToBase64(bytes: Uint8Array): string {
 }
 
 /**
- * `Enum.CompressionMethod.Deflate` produit du deflate **brut**, sans en-tête zlib — vérifié
- * sur un export réel du jeu. On tente quand même le zlib en repli, au cas où une version
- * antérieure de MDT aurait produit autre chose.
+ * `Enum.CompressionMethod.Deflate` produces **raw** deflate, with no zlib header — verified
+ * against a real export from the game. We still try zlib as a fallback, in case an earlier
+ * version of MDT produced something else.
  */
 function inflateAuto(bytes: Uint8Array): { data: Uint8Array; deflate: 'zlib' | 'raw' } {
   try {
@@ -59,7 +60,7 @@ function inflateAuto(bytes: Uint8Array): { data: Uint8Array; deflate: 'zlib' | '
 }
 
 // ---------------------------------------------------------------------------
-// Encodage 6 bits de LibDeflate (format legacy)
+// LibDeflate 6-bit encoding (legacy format)
 // ---------------------------------------------------------------------------
 
 const SIX_BIT_ALPHABET =
@@ -71,7 +72,7 @@ const SIX_BIT_LOOKUP = (() => {
   return map
 })()
 
-/** Inverse de `LibDeflate:EncodeForPrint` : 4 caractères 6 bits -> 3 octets. */
+/** Inverse of `LibDeflate:EncodeForPrint`: 4 six-bit characters -> 3 bytes. */
 export function decodeForPrint(input: string): Uint8Array {
   const s = input.trim()
   const out: number[] = []
@@ -79,21 +80,21 @@ export function decodeForPrint(input: string): Uint8Array {
 
   while (i + 4 <= s.length) {
     const c = [0, 1, 2, 3].map((k) => SIX_BIT_LOOKUP.get(s[i + k]))
-    if (c.some((v) => v === undefined)) throw new Error('String legacy : caractère hors alphabet')
+    if (c.some((v) => v === undefined)) throw new Error('Legacy string: character outside the alphabet')
     const [x1, x2, x3, x4] = c as number[]
     const cache = x1 + x2 * 64 + x3 * 4096 + x4 * 262144
     out.push(cache % 256, Math.floor(cache / 256) % 256, Math.floor(cache / 65536) % 256)
     i += 4
   }
 
-  // Les caractères restants encodent 1 ou 2 octets de queue.
+  // The remaining characters encode 1 or 2 trailing bytes.
   const rest = s.length - i
   if (rest > 0) {
     let cache = 0
     let mult = 1
     for (let k = 0; k < rest; k++) {
       const v = SIX_BIT_LOOKUP.get(s[i + k])
-      if (v === undefined) throw new Error('String legacy : caractère hors alphabet')
+      if (v === undefined) throw new Error('Legacy string: character outside the alphabet')
       cache += v * mult
       mult *= 64
     }
@@ -107,10 +108,10 @@ export function decodeForPrint(input: string): Uint8Array {
 }
 
 // ---------------------------------------------------------------------------
-// AceSerializer (format legacy)
+// AceSerializer (legacy format)
 // ---------------------------------------------------------------------------
 
-/** Inverse de `SerializeStringHelper` : `~` est le caractère d'échappement. */
+/** Inverse of `SerializeStringHelper`: `~` is the escape character. */
 function unescapeAce(s: string): string {
   let out = ''
   for (let i = 0; i < s.length; i++) {
@@ -129,17 +130,17 @@ function unescapeAce(s: string): string {
 }
 
 /**
- * Désérialise le format AceSerializer rev 1.
- * Codes : ^S string, ^N nombre, ^F/^f flottant, ^T/^t table, ^B/^b booléens, ^Z nil, ^^ fin.
+ * Deserialises the AceSerializer rev 1 format.
+ * Codes: ^S string, ^N number, ^F/^f float, ^T/^t table, ^B/^b booleans, ^Z nil, ^^ end.
  */
 export function deserializeAce(input: string): LuaValue {
-  if (!input.startsWith('^1')) throw new Error('AceSerializer : en-tête ^1 absent')
+  if (!input.startsWith('^1')) throw new Error('AceSerializer: missing ^1 header')
   const parts = input.split('^')
-  let pos = 1 // parts[0] est vide, parts[1] vaut "1"
+  let pos = 1 // parts[0] is empty, parts[1] is "1"
 
   const readValue = (): LuaValue => {
     const token = parts[++pos]
-    if (token === undefined) throw new Error('AceSerializer : données tronquées')
+    if (token === undefined) throw new Error('AceSerializer: truncated data')
     const code = token[0]
     const payload = token.slice(1)
 
@@ -148,14 +149,14 @@ export function deserializeAce(input: string): LuaValue {
         return unescapeAce(payload)
       case 'N': {
         const n = Number(payload)
-        if (Number.isNaN(n)) throw new Error(`AceSerializer : nombre invalide "${payload}"`)
+        if (Number.isNaN(n)) throw new Error(`AceSerializer: invalid number "${payload}"`)
         return n
       }
       case 'F': {
-        // ^F<mantisse>^f<exposant> : la mantisse a été multipliée par 2^53.
+        // ^F<mantissa>^f<exponent>: the mantissa was multiplied by 2^53.
         const mantissa = Number(payload)
         const next = parts[++pos]
-        if (next?.[0] !== 'f') throw new Error('AceSerializer : ^f attendu après ^F')
+        if (next?.[0] !== 'f') throw new Error('AceSerializer: expected ^f after ^F')
         return mantissa * 2 ** Number(next.slice(1))
       }
       case 'B':
@@ -168,20 +169,20 @@ export function deserializeAce(input: string): LuaValue {
         const table: LuaTable = new Map()
         for (;;) {
           const peek = parts[pos + 1]
-          if (peek === undefined) throw new Error('AceSerializer : table non terminée')
+          if (peek === undefined) throw new Error('AceSerializer: unterminated table')
           if (peek[0] === 't') {
             pos++
             return table
           }
           const key = readValue()
           if (typeof key !== 'number' && typeof key !== 'string') {
-            throw new Error('AceSerializer : clé de table non scalaire')
+            throw new Error('AceSerializer: non-scalar table key')
           }
           table.set(key, readValue())
         }
       }
       default:
-        throw new Error(`AceSerializer : code inconnu "^${token.slice(0, 4)}"`)
+        throw new Error(`AceSerializer: unknown code "^${token.slice(0, 4)}"`)
     }
   }
 
@@ -189,31 +190,27 @@ export function deserializeAce(input: string): LuaValue {
 }
 
 // ---------------------------------------------------------------------------
-// API publique
+// Public API
 // ---------------------------------------------------------------------------
 
 export function decodeMdtString(input: string): DecodedMdt {
   const s = input.trim()
-  if (!s) throw new Error('String vide')
+  if (!s) throw new MdtUserError('emptyString')
 
   if (s.startsWith(MDT2_PREFIX)) {
     const bytes = base64ToBytes(s.slice(MDT2_PREFIX.length))
     const { data, deflate } = inflateAuto(bytes)
     const table = decodeCbor(data)
-    if (!(table instanceof Map)) throw new Error('MDT2 : la racine décodée n\'est pas une table')
+    if (!(table instanceof Map)) throw new Error('MDT2: the decoded root is not a table')
     return { format: 'mdt2', table, deflate }
   }
 
-  // Legacy : le "!" initial signale LibDeflate plutôt que l'ancien LibCompress.
-  if (!s.startsWith('!')) {
-    throw new Error(
-      "Format non reconnu. Colle une string exportée par MDT (elle commence par « !~MDT2~ » ou « ! »).",
-    )
-  }
+  // Legacy: the leading "!" signals LibDeflate rather than the older LibCompress.
+  if (!s.startsWith('!')) throw new MdtUserError('unknownFormat')
   const bytes = decodeForPrint(s.slice(1))
   const { data, deflate } = inflateAuto(bytes)
   const table = deserializeAce(new TextDecoder('latin1').decode(data))
-  if (!(table instanceof Map)) throw new Error('Legacy : la racine décodée n\'est pas une table')
+  if (!(table instanceof Map)) throw new Error('Legacy: the decoded root is not a table')
   return { format: 'legacy', table, deflate }
 }
 

@@ -1,46 +1,46 @@
 ---
 npcId: 268491
 name: "Twisted Hexxer"   # auto
-count: 0   # auto — forces par unité
+count: 0   # auto — forces per unit
 
-# À REMPLIR : low | medium | high | lethal
+# TO FILL IN: low | medium | high | lethal
 threat:
-# À REMPLIR : caster | melee | patrol | miniboss
+# TO FILL IN: caster | melee | patrol | miniboss
 role:
 
 spells:
   - id: 1300684
     name: "Hex Muck"   # auto
     # Instant · Unlimited range
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
   - id: 1302153
     name: "Latent Hex"   # auto
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
   - id: 1302158
     name: "Flame Shock"   # auto
     # 60 yd range4 sec cast
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
   - id: 1311964
     name: "Latent Hex"   # auto
     # Instant · Unlimited range
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
   - id: 1311979
     name: "Latent Hex"   # auto
     # Instant · Unlimited range
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
 
-# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.
+# The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->
+<!-- Free prose: positioning, focus order, cooldowns. -->

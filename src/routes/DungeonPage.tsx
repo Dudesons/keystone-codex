@@ -8,32 +8,36 @@ import { getDungeonContent } from '../lib/content'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { convexHull, expandPolygon, toPixels } from '../lib/geometry'
+import { useI18n } from '../lib/i18n/context'
+import LocaleSwitcher from '../components/LocaleSwitcher'
 import type { CloneRef } from '../lib/types'
 
 type Mode = 'codex' | 'route'
 
 export default function DungeonPage() {
   const { slug = '', npcId } = useParams()
+  const { t } = useI18n()
   const lookup = getLookup(slug)
 
   if (!lookup) {
     return (
       <div className="p-8">
-        <p className="text-ink-300">Donjon inconnu.</p>
+        <p className="text-ink-300">{t('dungeon.unknown')}</p>
         <Link to="/" className="text-gold-400 hover:underline">
-          Retour à l'accueil
+          {t('dungeon.backHome')}
         </Link>
       </div>
     )
   }
 
-  // La clé force un remontage complet au changement de donjon : le document de route et les
-  // sélections repartent de zéro, sans état résiduel d'un donjon sur l'autre.
+  // The key forces a full remount when the dungeon changes: the route document and the
+  // selections start from scratch, with no state left over from one dungeon to the next.
   return <DungeonView key={slug} slug={slug} npcId={npcId} />
 }
 
 function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const navigate = useNavigate()
+  const { t, plural, locale } = useI18n()
   const lookup = getLookup(slug)!
 
   const [mode, setMode] = useState<Mode>('codex')
@@ -59,7 +63,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     return map
   }, [mode, route])
 
-  /** Enveloppe autour des clones de chaque pull — la lecture d'itinéraire de MDT. */
+  /** Outline around each pull's clones — how MDT reads as an itinerary. */
   const pullShapes = useMemo<PullShape[]>(() => {
     if (mode !== 'route') return []
     return route.pulls.flatMap((pull, index) => {
@@ -85,7 +89,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     })
   }, [mode, route, lookup])
 
-  /** Pull auquel appartient chaque mob : c'est ce qui relie le codex à la route. */
+  /** Which pull each mob belongs to: this is what ties the codex to the route. */
   const pullByNpc = useMemo(() => {
     const map = new Map<number, PullRef>()
     route.pulls.forEach((pull, index) => {
@@ -102,7 +106,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const highlighted = useMemo(() => {
     const set = new Set<string>()
 
-    // Survoler un pull dans la liste éclaire ses mobs sur la carte, et inversement.
+    // Hovering a pull in the list highlights its mobs on the map, and the other way round.
     if (hoveredPull != null && route.pulls[hoveredPull]) {
       for (const ref of route.pulls[hoveredPull].clones) {
         set.add(cloneKey(ref.enemyIdx, ref.cloneIdx))
@@ -126,7 +130,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
 
       if (mode === 'codex') {
         setSelectedPack(entry.clone.g ?? null)
-        // Le panneau défile jusqu'à l'unité cliquée plutôt que de la laisser chercher.
+        // The panel scrolls to the clicked unit rather than leaving you to look for it.
         setFocusNpc(entry.enemy.id)
         if (selectedMob != null) navigate(`/d/${slug}`)
         return
@@ -139,7 +143,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
-  const content = getDungeonContent(slug)
+  const content = getDungeonContent(slug, locale)
   const tab = (value: Mode, label: string) => (
     <button
       onClick={() => setMode(value)}
@@ -160,9 +164,10 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         <div className="min-w-0">
           <h1 className="truncate font-semibold text-ink-100">{lookup.dungeon.englishName}</h1>
           <p className="text-[11px] text-ink-400">
-            {lookup.dungeon.totalCount} forces · {lookup.packs.size} packs
-            {content?.timer ? ` · ${content.timer} min` : ''}
-            {hasRoute && ` · route « ${route.name} »`}
+            {plural('common.forces', lookup.dungeon.totalCount)} ·{' '}
+            {plural('common.packs', lookup.packs.size)}
+            {content?.timer ? ` · ${t('common.minutes', { n: content.timer })}` : ''}
+            {hasRoute && ` · ${t('dungeon.route', { name: route.name })}`}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -172,9 +177,10 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             </span>
           )}
           <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
-            {tab('codex', 'Codex')}
-            {tab('route', 'Route')}
+            {tab('codex', t('tab.codex'))}
+            {tab('route', t('tab.route'))}
           </div>
+          <LocaleSwitcher />
         </div>
       </header>
 

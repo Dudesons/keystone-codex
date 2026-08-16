@@ -1,30 +1,31 @@
 /**
- * Indicateurs d'un mob : ce qu'on affiche en pastilles sur la carte et dans le codex.
+ * A mob's indicators: what shows up as pips on the map and in the codex.
  *
- * Deux sources se combinent. MDT sait déjà quels sorts sont **interruptibles** (75 sorts, 62
- * mobs) et quels sorts portent un **type de dispel** (108 sorts) : ces deux badges sont donc
- * corrects dès la première ouverture, sans rien rédiger. Le tank buster et la cible
- * prioritaire n'ont aucune source exploitable — ils viennent du frontmatter, et leur absence
- * signifie « pas encore jugé », pas « inoffensif ».
+ * Two sources combine. MDT already knows which spells are **interruptible** (75 spells, 62
+ * mobs) and which carry a **dispel type** (108 spells): those two badges are therefore
+ * correct on first open, without writing anything. Tank buster and priority target have no
+ * usable source — they come from the frontmatter, and their absence means "not assessed
+ * yet", not "harmless".
  */
 
 import type { Enemy } from './types'
 import { getMobContent, type Threat } from './content'
 import { getSpell } from './data'
+import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 
 export interface MobIndicators {
   threat?: Threat
-  /** Au moins un sort à couper. */
+  /** At least one spell to interrupt. */
   kick: boolean
   kickSpells: number[]
-  /** Types de dispel présents sur ses sorts (magic, curse, enrage…). */
+  /** Dispel types present on its spells (magic, curse, enrage…). */
   dispel: string[]
-  /** Gros coup sur le tank — déclaré via `tag: tank` dans le frontmatter. */
+  /** Big hit on the tank — declared via `tag: tank` in the frontmatter. */
   tankBuster: boolean
-  /** À focus en priorité : boss, miniboss, ou menace élevée. */
+  /** Focus first: boss, miniboss, or high threat. */
   priority: boolean
   hasTrap: boolean
-  /** Couleur de l'anneau du blip sur la carte. */
+  /** Colour of the blip's ring on the map. */
   ring: string
 }
 
@@ -40,12 +41,20 @@ const BOSS_RING = '#e0b552'
 
 const cache = new Map<string, MobIndicators>()
 
-export function getIndicators(slug: string, enemy: Enemy): MobIndicators {
-  const key = `${slug}/${enemy.id}`
+/**
+ * `locale` is part of the key because the indicators are derived from the card: a trap or a
+ * threat written in one language and not yet in the other genuinely yields different pips.
+ */
+export function getIndicators(
+  slug: string,
+  enemy: Enemy,
+  locale: Locale = DEFAULT_LOCALE,
+): MobIndicators {
+  const key = `${locale}/${slug}/${enemy.id}`
   const hit = cache.get(key)
   if (hit) return hit
 
-  const content = getMobContent(slug, enemy.id)
+  const content = getMobContent(slug, enemy.id, locale)
   const notes = new Map((content?.spells ?? []).map((s) => [Number(s.id), s]))
 
   const kickSpells: number[] = []
@@ -53,10 +62,12 @@ export function getIndicators(slug: string, enemy: Enemy): MobIndicators {
 
   for (const spell of enemy.spells) {
     const note = notes.get(spell.id)
-    // MDT marque explicitement l'interruptibilité ; une annotation manuelle prime.
+    // MDT marks interruptibility explicitly; a manual annotation wins over it.
     if (spell.interruptible || note?.tag === 'kick') kickSpells.push(spell.id)
     for (const d of spell.dispel ?? []) dispel.add(d)
-    if (note?.tag === 'dispel') dispel.add('manuel')
+    // Sits alongside MDT's own dispel types (magic, curse, enrage), which are English data:
+    // this marker stays a plain value rather than a translation key, for consistency.
+    if (note?.tag === 'dispel') dispel.add('manual')
   }
 
   const tankBuster = [...notes.values()].some((n) => n.tag === 'tank')
@@ -82,15 +93,24 @@ export function getIndicators(slug: string, enemy: Enemy): MobIndicators {
   return indicators
 }
 
-/** Sorts à couper, triés par priorité déclarée puis par nom — pour le briefing de pull. */
-export function kickList(slug: string, enemy: Enemy): { id: number; name: string; prio?: number }[] {
-  const content = getMobContent(slug, enemy.id)
+/**
+ * Spells to interrupt, sorted by declared priority then by name — for the pull briefing.
+ *
+ * `locale` picks the spell names and drives the alphabetical tie-break, which is not the same
+ * order from one language to the next.
+ */
+export function kickList(
+  slug: string,
+  enemy: Enemy,
+  locale: Locale = DEFAULT_LOCALE,
+): { id: number; name: string; prio?: number }[] {
+  const content = getMobContent(slug, enemy.id, locale)
   const notes = new Map((content?.spells ?? []).map((s) => [Number(s.id), s]))
-  return getIndicators(slug, enemy)
+  return getIndicators(slug, enemy, locale)
     .kickSpells.map((id) => ({
       id,
-      name: getSpell(id)?.name ?? `Sort ${id}`,
+      name: getSpell(id, locale)?.name ?? `#${id}`,
       prio: notes.get(id)?.prio,
     }))
-    .sort((a, b) => (a.prio ?? 99) - (b.prio ?? 99) || a.name.localeCompare(b.name))
+    .sort((a, b) => (a.prio ?? 99) - (b.prio ?? 99) || a.name.localeCompare(b.name, locale))
 }

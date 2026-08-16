@@ -1,7 +1,8 @@
 name: CI
 
-# Barrière de qualité : tourne sur les PR et sur ce qui atterrit dans main.
-# Le déploiement s'accroche au succès de ce workflow (voir deploy.yml).
+# Quality gate: runs on pull requests and on whatever lands in main.
+# Deployment does not hang off this workflow — being manual, it can target any ref, so it
+# replays the same checks itself (see deploy.yml).
 on:
   pull_request:
   push:
@@ -10,14 +11,14 @@ on:
 permissions:
   contents: read
 
-# Une PR qui reçoit plusieurs push n'occupe qu'un run.
+# A pull request that gets several pushes only occupies one run.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
-    name: Types, tests et build
+    name: Types, tests and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +30,14 @@ jobs:
 
       - run: npm ci
 
-      - name: Vérification des types
+      - name: Typecheck
         run: npm run typecheck
 
-      # Le codec MDT est la partie qu'on ne veut pas casser sans s'en apercevoir :
-      # une string mal encodée serait rejetée par le jeu.
+      # The MDT codec is the part we must not break unnoticed: a badly encoded string
+      # would be rejected by the game.
       - name: Tests
         run: npm test
 
-      # On construit aussi sur les PR, pour attraper ce que le typecheck laisse passer.
+      # Building on pull requests too, to catch what the typecheck lets through.
       - name: Build
         run: npm run build

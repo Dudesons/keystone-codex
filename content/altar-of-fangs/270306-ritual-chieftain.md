@@ -1,12 +1,12 @@
 ---
 npcId: 270306
 name: "Ritual Chieftain"   # auto
-count: 25   # auto — forces par unité
+count: 25   # auto — forces per unit
 
 threat: high
 role: melee
 
-# CC applicables (auto, depuis MDT) : aucun — immunisé, il faut le tuer au dégât.
+# Applicable CC (auto, from MDT): none — immune, it has to be killed with damage.
 
 spells:
   - id: 1306911
@@ -14,40 +14,40 @@ spells:
     # 3 sec cast · Unlimited range
     tag: tank
     prio: 1
-    note: "581k physique sur la cible actuelle. Le plus gros coup du pack : mitigation obligatoire."
+    note: "581k physical on the current target. The pack's biggest hit: mitigation required."
 
   - id: 1306517
     name: "Blood Sacrifice"   # auto
     # 3 sec cast
     tag: kick
     prio: 1
-    note: "87k physique et absorption des 180k soins suivants. Enchaîné avec Dismember, c'est ce qui tue le tank."
+    note: "87k physical and absorbs the next 180k of healing. Chained with Dismember, this is what kills the tank."
 
   - id: 1306893
     name: "Unstable Totem"   # auto
     # Instant
     tag: dodge
-    note: "Le totem tape 32k Nature toutes les 2 s tant que le chieftain est en combat. Le focus ou s'en écarter."
+    note: "The totem hits for 32k Nature every 2 s for as long as the chieftain is in combat. Focus it or step away."
 
   - id: 1306844
     name: "Totemic Ritual"   # auto
     tag: ignore
-    note: "Simple animation de pose du totem."
+    note: "Just the totem-planting animation."
 
   - id: 1221063
     name: "Xal'atath's Gift"   # auto
     # Instant
     tag: soak
-    note: "Orbes de saison : non pris, ils donnent aux mobs +5% dégâts et -10% dégâts subis, cumulable. Pris par les joueurs, ils donnent +2% hâte et vitesse."
+    note: "Seasonal orbs: left alone they give mobs +5% damage and -10% damage taken, stacking. Picked up by players, they give +2% haste and speed."
 
-trap: "Immunisé à tous les CC : aucun stun, aucune peur ne le retiendra. Si vous comptiez le kiter ou l'enchaîner, ça ne marche pas — il faut le burst."
+trap: "Immune to every CC: no stun, no fear will hold it. If you were counting on kiting or chain-controlling it, that does not work — you have to burst it."
 ---
 
-Deux sorts à 3 secondes d'incantation qui se répondent : **Dismember** frappe le tank pour 581k,
-et **Blood Sacrifice** absorbe les 180k de soins suivants. Laisser passer le second juste avant le
-premier est la séquence qui tue.
+Two 3-second casts that answer each other: **Dismember** hits the tank for 581k, and **Blood
+Sacrifice** absorbs the next 180k of healing. Letting the second through just before the first
+is the sequence that kills.
 
-Les trois IDs de *Blood Sacrifice* (1306517, 1306550, 1306641) sont le même sort décliné en
-versions instantanée et incantée — seule celle à 3 s est interruptible.
+The three IDs of *Blood Sacrifice* (1306517, 1306550, 1306641) are the same spell in instant
+and cast versions — only the 3 s one is interruptible.
 
-<!-- À confirmer en jeu : placement du totem, fenêtre de burst, valeur réelle du soak d'orbes. -->
+<!-- To confirm in game: totem placement, burst window, real value of the orb soak. -->

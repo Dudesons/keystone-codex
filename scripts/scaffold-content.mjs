@@ -1,31 +1,39 @@
 /**
- * Génère les fiches markdown manquantes dans `content/`.
+ * Generates the missing markdown cards in `content/`.
  *
- * C'est ce qui rend le codex tenable : on ne crée jamais un fichier à la main. Le script
- * pré-remplit tout le mécanique (npcId, nom, forces, CC, liste des sorts avec leurs noms et
- * temps d'incantation) et laisse en blanc uniquement ce qui demande un jugement humain.
+ * This is what makes the codex sustainable: a file is never created by hand. The script
+ * pre-fills everything mechanical (npcId, name, forces, CC, the spell list with names and
+ * cast times) and leaves blank only what takes human judgement.
  *
- * Un fichier existant n'est JAMAIS écrasé — relancer le script après une mise à jour de MDT
- * ne fait qu'ajouter les nouveaux mobs.
+ * An existing file is NEVER overwritten — re-running the script after an MDT update only
+ * adds the new mobs.
+ *
+ * Stubs are written in the base language (`SPELL_LOCALES[0]`). A translation is a separate
+ * `<name>.<locale>.md` file carrying text only — see the `i18n` skill.
  */
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { CONTENT_DIR, GENERATED_DIR } from './config.mjs'
+import { CONTENT_DIR, GENERATED_DIR, SPELL_LOCALES } from './config.mjs'
+
+const BASE_LANG = SPELL_LOCALES[0].lang
 
 const TIMERS = {
-  // Minutes du chrono M+. Ceux qu'on ne connaît pas restent vides, à compléter à la main.
+  // Minutes on the M+ timer. The ones we do not know stay empty, to be filled by hand.
   'murder-row': 34,
   'ruby-life-pools': 28,
 }
 
-/** Échappe une valeur pour une scalaire YAML entre guillemets. */
+/** Escapes a value for a double-quoted YAML scalar. */
 const yamlString = (s) => `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 
 function loadSpells() {
   const file = path.join(GENERATED_DIR, 'spells.json')
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
 }
+
+/** Spell labels in the base language — that is what the stubs quote. */
+const spellText = (spells, id) => spells[String(id)]?.text?.[BASE_LANG]
 
 function mobFileName(enemy) {
   const slug = enemy.name
@@ -40,41 +48,41 @@ function buildMobStub(enemy, spells) {
   const lines = ['---']
   lines.push(`npcId: ${enemy.id}`)
   lines.push(`name: ${yamlString(enemy.name)}   # auto`)
-  lines.push(`count: ${enemy.count}   # auto — forces par unité`)
+  lines.push(`count: ${enemy.count}   # auto — forces per unit`)
   if (enemy.isBoss) lines.push('isBoss: true   # auto')
   lines.push('')
-  lines.push('# À REMPLIR : low | medium | high | lethal')
+  lines.push('# TO FILL IN: low | medium | high | lethal')
   lines.push('threat:')
-  lines.push('# À REMPLIR : caster | melee | patrol | miniboss')
+  lines.push('# TO FILL IN: caster | melee | patrol | miniboss')
   lines.push('role:')
 
   if (enemy.cc.length) {
-    lines.push(`# CC applicables (auto, depuis MDT) : ${enemy.cc.join(', ')}`)
+    lines.push(`# Applicable CC (auto, from MDT): ${enemy.cc.join(', ')}`)
   }
 
   if (enemy.spells.length) {
     lines.push('')
     lines.push('spells:')
     for (const s of enemy.spells) {
-      const info = spells[String(s.id)]
+      const info = spellText(spells, s.id)
       lines.push(`  - id: ${s.id}`)
       if (info?.name) lines.push(`    name: ${yamlString(info.name)}   # auto`)
       const facts = [info?.castTime, info?.range, s.dispel?.length ? `dispel: ${s.dispel.join('/')}` : null]
         .filter(Boolean)
         .join(' · ')
       if (facts) lines.push(`    # ${facts}`)
-      lines.push('    # tag : kick | dodge | dispel | tank | soak | ignore')
+      lines.push('    # tag: kick | dodge | dispel | tank | soak | ignore')
       lines.push('    tag: todo')
       lines.push('    note:')
     }
   }
 
   lines.push('')
-  lines.push('# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.')
+  lines.push('# The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.')
   lines.push('trap:')
   lines.push('---')
   lines.push('')
-  lines.push(`<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->`)
+  lines.push(`<!-- Free prose: positioning, focus order, cooldowns. -->`)
   lines.push('')
   return lines.join('\n')
 }
@@ -84,26 +92,26 @@ function buildDungeonStub(dungeon) {
   return [
     '---',
     `name: ${yamlString(dungeon.englishName)}   # auto`,
-    `# Chrono M+ en minutes${timer ? '' : ' — À REMPLIR'}`,
+    `# M+ timer in minutes${timer ? '' : ' — TO FILL IN'}`,
     `timer:${timer ? ` ${timer}` : ''}`,
-    '# Une phrase qui résume le donjon, affichée sur la page d\'accueil.',
+    '# One sentence summing the dungeon up, shown on the home page.',
     'summary:',
     '---',
     '',
-    '## Plan de route',
+    '## Route plan',
     '',
-    '<!-- Ordre des packs, skips, positionnement des bloodlust. -->',
+    '<!-- Pack order, skips, where to drop bloodlust. -->',
     '',
     '## Affixes',
     '',
-    '<!-- Ce qui change selon la semaine. -->',
+    '<!-- What changes week to week. -->',
     '',
   ].join('\n')
 }
 
 function main() {
   const indexFile = path.join(GENERATED_DIR, 'dungeons.json')
-  if (!fs.existsSync(indexFile)) throw new Error("Lance d'abord `npm run extract`.")
+  if (!fs.existsSync(indexFile)) throw new Error('Run `npm run extract` first.')
 
   const spells = loadSpells()
   const dungeons = JSON.parse(fs.readFileSync(indexFile, 'utf8'))
@@ -122,7 +130,7 @@ function main() {
       created++
     } else kept++
 
-    // Un même NPC peut apparaître plusieurs fois dans dungeonEnemies (variantes) : une fiche suffit.
+    // The same NPC can appear several times in dungeonEnemies (variants): one card is enough.
     const seen = new Set()
     for (const enemy of dungeon.enemies) {
       if (seen.has(enemy.id)) continue
@@ -136,11 +144,11 @@ function main() {
       created++
     }
 
-    console.log(`${dungeon.englishName.padEnd(22)} ${seen.size} fiches de mob`)
+    console.log(`${dungeon.englishName.padEnd(22)} ${seen.size} mob cards`)
   }
 
-  console.log(`\n${created} fichiers créés, ${kept} conservés (jamais écrasés).`)
-  console.log(`Édite-les dans ${path.relative(process.cwd(), CONTENT_DIR)}/`)
+  console.log(`\n${created} files created, ${kept} kept (never overwritten).`)
+  console.log(`Edit them in ${path.relative(process.cwd(), CONTENT_DIR)}/`)
 }
 
 main()

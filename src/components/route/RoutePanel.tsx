@@ -4,9 +4,12 @@ import { cloneKey } from '../../lib/data'
 import { getMobContent } from '../../lib/content'
 import { getIndicators, kickList } from '../../lib/indicators'
 import { encodeMdtString } from '../../lib/mdt/string'
+import { MdtUserError } from '../../lib/mdt/errors'
 import { routeStats, routeToLua, toCssColor, type Route } from '../../lib/mdt/route'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { randomRoomCode } from '../../lib/mdt/useRouteDoc'
+import { useI18n } from '../../lib/i18n/context'
+import type { I18n } from '../../lib/i18n/context'
 import type { Enemy } from '../../lib/types'
 
 interface Props {
@@ -24,6 +27,17 @@ interface Props {
   onLeaveRoom: () => void
 }
 
+/**
+ * Import and export failures, as a sentence to show.
+ *
+ * Only `MdtUserError` is translated: the codec's other errors are diagnostics ("CBOR:
+ * truncated string") that mean a bug rather than a bad paste, and are more useful verbatim.
+ */
+function errorText(err: unknown, t: I18n['t']): string {
+  if (err instanceof MdtUserError) return t(`mdtError.${err.code}`, err.params)
+  return err instanceof Error ? err.message : String(err)
+}
+
 export default function RoutePanel({
   slug,
   lookup,
@@ -38,13 +52,14 @@ export default function RoutePanel({
   onJoinRoom,
   onLeaveRoom,
 }: Props) {
+  const { t, plural, formatPercent } = useI18n()
   const [importText, setImportText] = useState('')
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [expanded, setExpanded] = useState<number | null>(null)
 
   const stats = routeStats(route, lookup)
 
-  /** Mobs distincts d'un pull, avec leur nombre d'unités. */
+  /** Distinct mobs in a pull, with their unit count. */
   const pullMobs = useMemo(() => {
     return route.pulls.map((pull) => {
       const counts = new Map<number, { enemy: Enemy; n: number }>()
@@ -65,24 +80,27 @@ export default function RoutePanel({
       if (imported.slug !== slug) {
         setMessage({
           kind: 'error',
-          text: `Cette route est pour ${imported.slug.replace(/-/g, ' ')}, pas pour ce donjon.`,
+          text: t('route.wrongDungeon', { dungeon: imported.slug.replace(/-/g, ' ') }),
         })
         return
       }
       onCurrentPullChange(Math.max(0, imported.pulls.length - 1))
       setImportText('')
-      setMessage({ kind: 'ok', text: `« ${imported.name} » importée : ${imported.pulls.length} pulls.` })
+      setMessage({
+        kind: 'ok',
+        text: plural('route.imported', imported.pulls.length, { name: imported.name }),
+      })
     } catch (err) {
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) })
+      setMessage({ kind: 'error', text: errorText(err, t) })
     }
   }
 
   const handleExport = async () => {
     try {
       await navigator.clipboard.writeText(encodeMdtString(routeToLua(route)))
-      setMessage({ kind: 'ok', text: 'String MDT copiée. Colle-la dans MDT en jeu (Import).' })
+      setMessage({ kind: 'ok', text: t('route.copied') })
     } catch (err) {
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) })
+      setMessage({ kind: 'error', text: errorText(err, t) })
     }
   }
 
@@ -93,16 +111,16 @@ export default function RoutePanel({
           value={route.name}
           onChange={(e) => actions.setName(e.target.value)}
           className="w-full rounded border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-ink-100 focus:border-gold-500 focus:outline-none"
-          placeholder="Nom de la route"
+          placeholder={t('route.namePlaceholder')}
         />
 
         <div className="mt-3 flex items-baseline justify-between text-sm">
-          <span className="text-ink-400">Forces</span>
+          <span className="text-ink-400">{t('route.forces')}</span>
           <span className="tabular-nums">
             <span className={stats.percent >= 100 ? 'text-threat-low' : 'text-ink-100'}>{stats.total}</span>
             <span className="text-ink-600"> / {stats.required}</span>
             <span className={`ml-2 ${stats.percent >= 100 ? 'text-threat-low' : 'text-gold-400'}`}>
-              {stats.percent.toFixed(1)}%
+              {formatPercent(stats.percent, 1)}
             </span>
           </span>
         </div>
@@ -118,25 +136,25 @@ export default function RoutePanel({
             onClick={handleExport}
             className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
           >
-            Copier la string MDT
+            {t('route.copy')}
           </button>
           <button
             onClick={() => {
               actions.addPull()
-              // On bascule sur le pull qu'on vient de créer, sinon le clic suivant sur la
-              // carte irait alimenter l'ancien.
+              // Switch to the pull we just created, otherwise the next click on the map
+              // would feed the old one.
               onCurrentPullChange(route.pulls.length)
             }}
             className="rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
           >
-            + Pull
+            {t('route.addPull')}
           </button>
         </div>
       </section>
 
       <section>
         <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">
-          PULLS · {route.pulls.length}
+          {t('route.pulls', { n: route.pulls.length })}
         </h3>
         <ol className="space-y-1.5">
           {route.pulls.map((pull, i) => {
@@ -169,14 +187,14 @@ export default function RoutePanel({
                   <span className="flex-1 truncate text-xs text-ink-300">
                     {mobs.length
                       ? mobs.map((m) => `${m.n}× ${m.enemy.name}`).join(', ')
-                      : 'vide — clique un pack sur la carte'}
+                      : t('route.emptyPull')}
                   </span>
                   <span className="shrink-0 text-[11px] text-ink-400 tabular-nums">
-                    +{forces} · {((stats.cumulative[i] / stats.required) * 100).toFixed(0)}%
+                    +{forces} · {formatPercent((stats.cumulative[i] / stats.required) * 100)}
                   </span>
                 </div>
 
-                {/* Briefing du pull : ce qu'il faut savoir avant de l'engager. */}
+                {/* The pull briefing: what you need to know before engaging it. */}
                 {isOpen && mobs.length > 0 && (
                   <div className="border-t border-ink-700/60 px-2 py-2">
                     {mobs.map(({ enemy, n }) => (
@@ -196,20 +214,20 @@ export default function RoutePanel({
                     className="rounded px-1 text-ink-500 hover:text-gold-400"
                     onClick={(e) => (e.stopPropagation(), setExpanded(isOpen ? null : i))}
                   >
-                    {isOpen ? '▾ Masquer' : '▸ Briefing'}
+                    {isOpen ? t('route.hide') : t('route.briefing')}
                   </button>
                   <span className="flex-1" />
                   <button
                     className="rounded px-1 text-ink-600 hover:text-gold-400"
                     onClick={(e) => (e.stopPropagation(), actions.movePull(i, -1), onCurrentPullChange(Math.max(0, i - 1)))}
-                    title="Monter"
+                    title={t('route.moveUp')}
                   >
                     ▲
                   </button>
                   <button
                     className="rounded px-1 text-ink-600 hover:text-gold-400"
                     onClick={(e) => (e.stopPropagation(), actions.movePull(i, 1), onCurrentPullChange(Math.min(route.pulls.length - 1, i + 1)))}
-                    title="Descendre"
+                    title={t('route.moveDown')}
                   >
                     ▼
                   </button>
@@ -217,17 +235,14 @@ export default function RoutePanel({
                     className="rounded px-1 text-ink-600 hover:text-threat-lethal"
                     onClick={(e) => (e.stopPropagation(), actions.removePull(i), onCurrentPullChange(Math.max(0, i - 1)))}
                   >
-                    Supprimer
+                    {t('common.delete')}
                   </button>
                 </div>
               </li>
             )
           })}
         </ol>
-        <p className="mt-2 text-[11px] text-ink-600">
-          Clique un pack sur la carte pour l'ajouter au pull sélectionné. Ctrl+clic ne vise qu'un
-          seul mob. Cliquer à nouveau retire.
-        </p>
+        <p className="mt-2 text-[11px] text-ink-600">{t('route.hint')}</p>
       </section>
 
       <CollabSection
@@ -238,11 +253,11 @@ export default function RoutePanel({
       />
 
       <section className="rounded-lg border border-ink-700 bg-ink-850 p-3">
-        <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">IMPORTER</h3>
+        <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">{t('route.import')}</h3>
         <textarea
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
-          placeholder="Colle ici une string MDT (!~MDT2~… ou format legacy)"
+          placeholder={t('route.importPlaceholder')}
           rows={3}
           className="thin-scroll w-full resize-none rounded border border-ink-700 bg-ink-900 px-2 py-1.5 font-mono text-[11px] text-ink-300 focus:border-gold-500 focus:outline-none"
         />
@@ -252,13 +267,13 @@ export default function RoutePanel({
             disabled={!importText.trim()}
             className="flex-1 rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400 disabled:opacity-40"
           >
-            Importer
+            {t('route.importAction')}
           </button>
           <button
             onClick={() => (actions.reset(), onCurrentPullChange(0))}
             className="rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-500 hover:border-threat-lethal hover:text-threat-lethal"
           >
-            Vider
+            {t('route.clear')}
           </button>
         </div>
       </section>
@@ -289,9 +304,10 @@ function PullMobLine({
   n: number
   onClick: () => void
 }) {
-  const ind = getIndicators(slug, enemy)
-  const kicks = kickList(slug, enemy)
-  const trap = getMobContent(slug, enemy.id)?.trap
+  const { t, locale } = useI18n()
+  const ind = getIndicators(slug, enemy, locale)
+  const kicks = kickList(slug, enemy, locale)
+  const trap = getMobContent(slug, enemy.id, locale)?.trap
 
   return (
     <div
@@ -302,12 +318,12 @@ function PullMobLine({
         <span className="text-xs text-ink-100">
           {n}× {enemy.name}
         </span>
-        {ind.tankBuster && <span className="text-[9px] font-bold text-tag-tank">TANK</span>}
-        {ind.priority && <span className="text-[9px] font-bold text-gold-400">PRIO</span>}
+        {ind.tankBuster && <span className="text-[9px] font-bold text-tag-tank">{t('tag.tank')}</span>}
+        {ind.priority && <span className="text-[9px] font-bold text-gold-400">{t('route.prio')}</span>}
       </div>
       {kicks.length > 0 && (
         <div className="text-[11px] text-tag-kick">
-          kick : {kicks.map((k) => k.name).join(', ')}
+          {t('route.kickList', { spells: kicks.map((k) => k.name).join(', ') })}
         </div>
       )}
       {trap && <div className="text-[11px] text-threat-lethal">⚠ {trap}</div>}
@@ -326,6 +342,7 @@ function CollabSection({
   onLeaveRoom: () => void
   onMessage: (m: { kind: 'ok' | 'error'; text: string }) => void
 }) {
+  const { t, plural } = useI18n()
   const [code, setCode] = useState('')
 
   if (collab.status !== 'off') {
@@ -333,12 +350,16 @@ function CollabSection({
       <section className="rounded-lg border border-threat-low/40 bg-threat-low/5 p-3">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold tracking-widest text-threat-low">SESSION PARTAGÉE</div>
+            <div className="text-[10px] font-bold tracking-widest text-threat-low">
+              {t('collab.heading')}
+            </div>
             <div className="mt-0.5 font-mono text-lg tracking-widest text-ink-100">{collab.room}</div>
           </div>
           <div className="text-right">
             <div className="text-xs text-ink-300">
-              {collab.status === 'connected' ? `${collab.peers} connecté${collab.peers > 1 ? 's' : ''}` : 'connexion…'}
+              {collab.status === 'connected'
+                ? plural('collab.connected', collab.peers)
+                : t('collab.connecting')}
             </div>
             <div className="text-[10px] text-ink-500">{collab.identity}</div>
           </div>
@@ -347,17 +368,17 @@ function CollabSection({
           <button
             onClick={async () => {
               await navigator.clipboard.writeText(collab.room ?? '')
-              onMessage({ kind: 'ok', text: 'Code de session copié.' })
+              onMessage({ kind: 'ok', text: t('route.codeCopied') })
             }}
             className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
           >
-            Copier le code
+            {t('collab.copyCode')}
           </button>
           <button
             onClick={onLeaveRoom}
             className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-500 hover:border-threat-lethal hover:text-threat-lethal"
           >
-            Quitter
+            {t('collab.leave')}
           </button>
         </div>
       </section>
@@ -366,18 +387,20 @@ function CollabSection({
 
   return (
     <section className="rounded-lg border border-ink-700 bg-ink-850 p-3">
-      <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">ÉDITER À PLUSIEURS</h3>
+      <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">
+        {t('collab.editTogether')}
+      </h3>
       <button
         onClick={() => onJoinRoom(randomRoomCode(), 'host')}
         className="w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
       >
-        Ouvrir une session avec cette route
+        {t('collab.openSession')}
       </button>
       <div className="mt-2 flex gap-2">
         <input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="CODE"
+          placeholder={t('collab.codePlaceholder')}
           maxLength={6}
           className="w-24 rounded border border-ink-700 bg-ink-900 px-2 py-1.5 text-center font-mono text-xs tracking-widest text-ink-100 focus:border-gold-500 focus:outline-none"
         />
@@ -386,13 +409,10 @@ function CollabSection({
           disabled={code.trim().length < 4}
           className="flex-1 rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400 disabled:opacity-40"
         >
-          Rejoindre
+          {t('collab.join')}
         </button>
       </div>
-      <p className="mt-2 text-[11px] text-ink-600">
-        Pair-à-pair, sans serveur : la route est synchronisée en direct entre les navigateurs.
-        Rejoindre remplace ta route locale par celle du salon.
-      </p>
+      <p className="mt-2 text-[11px] text-ink-600">{t('collab.hint')}</p>
     </section>
   )
 }

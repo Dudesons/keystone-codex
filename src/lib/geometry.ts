@@ -1,11 +1,9 @@
 /**
- * Passage de l'espace de coordonnées de MDT vers les pixels de la carte, et tracé des
- * contours de packs.
+ * Going from MDT's coordinate space to map pixels, and drawing pack outlines.
  *
- * MDT travaille dans un repère 840×560 dont l'origine est en haut à gauche, avec un axe Y
- * qui pointe vers le haut (convention des ancres WoW) : les positions de mobs sont donc
- * toutes négatives. Nos images font 1920×1280, soit exactement le même rapport d'aspect,
- * d'où un facteur d'échelle unique.
+ * MDT works in an 840×560 frame whose origin is top-left, with a Y axis pointing up (the WoW
+ * anchor convention): mob positions are therefore all negative. Our images are 1920×1280,
+ * exactly the same aspect ratio, hence a single scale factor.
  */
 
 export const MDT_COORD_WIDTH = 840
@@ -20,17 +18,17 @@ export interface Point {
   y: number
 }
 
-/** Coordonnées MDT d'un clone -> pixels dans l'image de carte. */
+/** A clone's MDT coordinates -> pixels in the map image. */
 export function toPixels(x: number, y: number): Point {
   return { x: x * MAP_SCALE, y: -y * MAP_SCALE }
 }
 
-/** Pixels -> coordonnées MDT, pour l'édition (placement de notes, futurs dessins). */
+/** Pixels -> MDT coordinates, for editing (note placement, future drawings). */
 export function toMdtCoords(x: number, y: number): Point {
   return { x: x / MAP_SCALE, y: -y / MAP_SCALE }
 }
 
-/** Enveloppe convexe (monotone chain). Renvoie les points dans le sens horaire. */
+/** Convex hull (monotone chain). Returns the points in clockwise order. */
 export function convexHull(points: Point[]): Point[] {
   if (points.length <= 2) return [...points]
 
@@ -53,7 +51,7 @@ export function convexHull(points: Point[]): Point[] {
   return [...build(sorted), ...build([...sorted].reverse())]
 }
 
-/** Écarte les sommets d'un polygone de `padding` px depuis son centre, pour un contour lisible. */
+/** Pushes a polygon's vertices `padding` px out from its centre, for a legible outline. */
 export function expandPolygon(points: Point[], padding: number): Point[] {
   if (!points.length) return points
   const cx = points.reduce((s, p) => s + p.x, 0) / points.length
@@ -66,7 +64,7 @@ export function expandPolygon(points: Point[], padding: number): Point[] {
   })
 }
 
-/** Chemin SVG fermé et arrondi passant par les sommets (courbes de Catmull-Rom quadratiques). */
+/** Closed, rounded SVG path through the vertices (quadratic Catmull-Rom curves). */
 export function roundedPolygonPath(points: Point[]): string {
   if (points.length === 0) return ''
   if (points.length === 1) {

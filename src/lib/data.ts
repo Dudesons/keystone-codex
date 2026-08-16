@@ -1,12 +1,13 @@
 /**
- * Accès aux données extraites de MDT.
+ * Access to the data extracted from MDT.
  *
- * L'ensemble pèse ~500 Ko de JSON, donc tout est chargé d'emblée : ça évite les états de
- * chargement dans l'UI pour un coût négligeable.
+ * The whole set weighs about a megabyte of JSON, so everything is loaded up front: it avoids
+ * loading states in the UI for a negligible cost.
  */
 
-import type { Clone, CloneRef, Dungeon, DungeonSummary, Enemy, Pack, Spell } from './types'
+import type { Clone, CloneRef, Dungeon, DungeonSummary, Enemy, Pack, Spell, SpellEntry } from './types'
 import { convexHull, expandPolygon, toPixels } from './geometry'
+import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 import dungeonIndex from '../data/generated/dungeons.json'
 import spellData from '../data/generated/spells.json'
 
@@ -15,7 +16,7 @@ const modules = import.meta.glob<Dungeon>('../data/generated/*.json', {
   import: 'default',
 })
 
-/** Les fichiers de donjon sont ceux qui portent une liste `enemies` (exclut dungeons/spells). */
+/** Dungeon files are the ones carrying an `enemies` list (excludes dungeons/spells). */
 const dungeons = new Map<string, Dungeon>(
   Object.values(modules)
     .filter((m): m is Dungeon => Array.isArray((m as Dungeon)?.enemies))
@@ -23,17 +24,27 @@ const dungeons = new Map<string, Dungeon>(
 )
 
 export const dungeonList = dungeonIndex as DungeonSummary[]
-const spells = spellData as unknown as Record<string, Spell>
+const spells = spellData as unknown as Record<string, SpellEntry>
 
 export function getDungeon(slug: string): Dungeon | undefined {
   return dungeons.get(slug)
 }
 
-export function getSpell(id: number): Spell | undefined {
-  return spells[String(id)]
+/**
+ * A spell in the requested language, falling back to the default one.
+ *
+ * A locale can be missing a spell entirely — Wowhead does not translate everything, and a
+ * fresh spell shows up in English first — so the fallback is the normal path, not an error.
+ */
+export function getSpell(id: number, locale: Locale = DEFAULT_LOCALE): Spell | undefined {
+  const entry = spells[String(id)]
+  if (!entry) return undefined
+  const text = entry.text[locale] ?? entry.text[DEFAULT_LOCALE]
+  if (!text) return undefined
+  return { id: entry.id, icon: entry.icon, ...text }
 }
 
-/** Clé stable d'un clone dans un donjon. */
+/** Stable key of a clone within a dungeon. */
 export const cloneKey = (enemyIdx: number, cloneIdx: number) => `${enemyIdx}:${cloneIdx}`
 
 export const parseCloneKey = (key: string): CloneRef => {
@@ -43,11 +54,11 @@ export const parseCloneKey = (key: string): CloneRef => {
 
 export interface DungeonLookup {
   dungeon: Dungeon
-  /** mdtIdx -> mob. Les index MDT sont sparses, donc pas d'accès par position. */
+  /** mdtIdx -> mob. MDT indices are sparse, so no access by position. */
   enemyByIdx: Map<number, Enemy>
   cloneByKey: Map<string, { enemy: Enemy; clone: Clone }>
   packs: Map<number, Pack>
-  /** Clones isolés (`g` nul), chacun se pull seul. */
+  /** Lone clones (`g` null), each pulled on its own. */
   loners: CloneRef[]
   enemyById: Map<number, Enemy>
 }
@@ -109,7 +120,7 @@ export function getLookup(slug: string): DungeonLookup | undefined {
   return lookup
 }
 
-/** Forces apportées par un ensemble de clones. */
+/** Forces contributed by a set of clones. */
 export function countForces(lookup: DungeonLookup, refs: Iterable<CloneRef>): number {
   let total = 0
   for (const ref of refs) {
@@ -123,3 +134,10 @@ export const iconUrl = (icon: string) => `${import.meta.env.BASE_URL}icons/${ico
 export const portraitUrl = (displayId: number) =>
   `${import.meta.env.BASE_URL}portraits/${displayId}.webp`
 export const mapUrl = (slug: string) => `${import.meta.env.BASE_URL}maps/${slug}.webp`
+
+/**
+ * Wowhead in the reader's language. English lives at the root of the domain and takes no
+ * prefix, every other language gets one — hence the special case rather than a plain join.
+ */
+export const wowheadUrl = (spellId: number, locale: Locale = DEFAULT_LOCALE) =>
+  `https://www.wowhead.com/${locale === 'en' ? '' : `${locale}/`}spell=${spellId}`

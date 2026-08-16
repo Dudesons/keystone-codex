@@ -1,24 +1,25 @@
 # Keystone Codex
 
-Codex et carte interactive pour les donjons Mythique+ de World of Warcraft, actuellement
-calibré sur le pool de la **saison 2 de Midnight**. Chaque donjon a sa carte MDT avec les vrais
-packs cliquables, une fiche par mob, et un éditeur de route capable d'importer et d'exporter
-des strings MDT — à plusieurs si besoin.
+Codex and interactive map for World of Warcraft Mythic+ dungeons, currently tuned to the
+**Midnight season 2** pool. Every dungeon gets its MDT map with the real, clickable packs, a
+card per mob, and a route editor that imports and exports MDT strings — with other people if
+you want.
 
-Rien dans le code n'est lié à une extension : changer de saison ne demande que d'éditer
-`SEASON_DUNGEONS` dans `scripts/config.mjs` puis de relancer `npm run data`.
+Nothing in the code is tied to an expansion: changing season only takes editing
+`SEASON_DUNGEONS` in `scripts/config.mjs`, then re-running `npm run data`.
 
-## Démarrer
+## Getting started
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Éditer le codex
+## Editing the codex
 
-**Tout ce qui se rédige est dans `content/`, un fichier markdown par mob.** Le reste (noms,
-forces, CC applicables, sorts, positions) est extrait de MDT et ne se touche pas à la main.
+**Everything that gets written lives in `content/`, one markdown file per mob.** The rest
+(names, forces, applicable CC, spells, positions) is extracted from MDT and is not edited by
+hand.
 
 ```markdown
 ---
@@ -29,98 +30,97 @@ spells:
   - id: 1306911
     tag: tank             # kick | dodge | dispel | tank | soak | ignore
     prio: 1
-    note: "581k physique sur la cible actuelle."
-trap: "Immunisé à tous les CC : il faut le burst."
+    note: "581k physical on the current target."
+trap: "Immune to every CC: you have to burst it."
 ---
 
-Prose libre : positionnement, ordre de focus, cooldowns.
+Free-form prose: positioning, focus order, cooldowns.
 ```
 
-`threat` et `tag` pilotent le rendu (couleurs, tri des sorts par priorité de kick). Un sort sans
-`note` retombe sur sa description Wowhead, et un mob sans fichier reste affiché avec ses seules
-données MDT — le codex se remplit progressivement sans jamais casser l'app.
+`threat` and `tag` drive the rendering (colors, spell ordering by kick priority). A spell
+without a `note` falls back to its Wowhead description, and a mob without a file is still
+displayed with its MDT data alone — the codex fills in gradually without ever breaking the
+app.
 
-Le serveur de dev recharge à chaud : enregistrer un `.md` met la fiche à jour immédiatement.
+The dev server hot-reloads: saving a `.md` updates the card immediately.
 
-`content/<donjon>/_dungeon.md` porte le chrono, le résumé et le plan de route du donjon.
+`content/<dungeon>/_dungeon.md` carries the timer, the summary and the route plan of the
+dungeon.
 
-## Régénérer les données après une mise à jour de MDT
+## Regenerating data after an MDT update
 
 ```bash
 npm run data
 ```
 
-Enchaîne les quatre scripts, qui lisent l'installation WoW et écrivent des fichiers versionnés —
-**l'app ne lit jamais `D:\jeux` à l'exécution**, c'est ce qui la rend partageable.
+Chains the four scripts, which read the WoW installation and write versioned files —
+**the app never reads `D:\jeux` at runtime**, which is what makes it shareable.
 
-| Script | Rôle |
+| Script | Role |
 | --- | --- |
 | `npm run extract` | `Midnight/*.lua` → `src/data/generated/*.json` (mobs, clones, packs, forces) |
-| `npm run build:maps` | 150 tuiles PNG → une image WebP 1920×1280 par donjon |
-| `npm run fetch:assets` | IDs de sorts → noms, icônes, descriptions (Wowhead) ; portraits de mobs |
-| `npm run scaffold` | crée les fiches `.md` manquantes — **n'écrase jamais un fichier existant** |
+| `npm run build:maps` | 150 PNG tiles → one 1920×1280 WebP image per dungeon |
+| `npm run fetch:assets` | spell IDs → names, icons, descriptions (Wowhead); mob portraits |
+| `npm run scaffold` | creates the missing `.md` cards — **never overwrites an existing file** |
 
-Si WoW est installé ailleurs : `MDT_PATH="D:\autre\chemin\MythicDungeonTools" npm run extract`.
-Pour changer de pool de donjons (nouvelle saison), édite `SEASON_DUNGEONS` dans
-`scripts/config.mjs` — tout le reste (index MDT, totaux de forces, mapID) est lu dans les
-fichiers du jeu.
+If WoW is installed elsewhere: `MDT_PATH="D:\other\path\MythicDungeonTools" npm run extract`.
+To change the dungeon pool (new season), edit `SEASON_DUNGEONS` in `scripts/config.mjs` —
+everything else (MDT index, force totals, mapID) is read from the game files.
 
-## Lecture de la carte
+## Reading the map
 
-Chaque unité est un portrait circulaire, comme dans MDT. L'information se lit à trois niveaux :
+Every unit is a circular portrait, like in MDT. The information reads on three levels:
 
-- **L'anneau** donne le niveau de menace (`threat` dans la fiche) : rouge létal, orange
-  dangereux, or à surveiller, vert sans danger, doré pour un boss, gris quand ce n'est pas
-  encore renseigné.
-- **Les pastilles** au-dessus du portrait signalent `K` un sort à interrompre, `T` un tank
-  buster, `D` un sort dissipable.
-- **Les enveloppes** entourent les packs en mode Codex, et les pulls (avec leur numéro) en
-  mode Route.
+- **The ring** gives the threat level (`threat` in the card): red for lethal, orange for
+  dangerous, gold for watch-out, green for harmless, amber for a boss, grey when it has not
+  been assessed yet.
+- **The pips** above the portrait flag `K` a spell to interrupt, `T` a tank buster, `D` a
+  dispellable spell.
+- **The outlines** surround packs in Codex mode, and pulls (with their number) in Route mode.
 
-`K` et `D` sont **dérivés de MDT** — 75 sorts interruptibles et 108 types de dispel sont déjà
-renseignés sans que tu écrives quoi que ce soit. `T` et le niveau de menace viennent des
-fiches : leur absence signifie « pas encore jugé », pas « inoffensif ». Le bouton *Légende* sur
-la carte rappelle tout ça.
+`K` and `D` are **derived from MDT** — 75 interruptible spells and 108 dispel types are
+already filled in without you writing anything. `T` and the threat level come from the
+cards: their absence means "not assessed yet", not "harmless". The *Legend* button on the
+map is a reminder of all this.
 
-Survoler un mob dans le codex l'éclaire sur la carte et estompe les autres ; cliquer une unité
-sur la carte ouvre son pack et fait défiler le panneau jusqu'à sa fiche.
+Hovering a mob in the codex highlights it on the map and dims the others; clicking a unit on
+the map opens its pack and scrolls the panel to its card.
 
 ## Routes
 
-L'onglet **Route** d'un donjon permet de :
+A dungeon's **Route** tab lets you:
 
-- coller une string MDT pour l'importer (formats `!~MDT2~` actuel et legacy `!`) ;
-- cliquer un pack sur la carte pour l'ajouter au pull courant (Ctrl+clic ne vise qu'un mob,
-  recliquer retire) ;
-- réordonner et colorer les pulls, en suivant les forces cumulées ;
-- déplier le **briefing** d'un pull : ses mobs, ce qu'il faut y couper, et leurs pièges ;
-- copier une string MDT réimportable en jeu.
+- paste an MDT string to import it (current `!~MDT2~` and legacy `!` formats);
+- click a pack on the map to add it to the current pull (Ctrl+click targets a single mob,
+  clicking again removes it);
+- reorder and color the pulls, following the cumulative forces;
+- unfold a pull's **briefing**: its mobs, what to interrupt there, and their traps;
+- copy an MDT string that reimports in game.
 
-Quand une route existe, les fiches du codex portent une pastille du numéro de pull, et survoler
-un pull éclaire ses mobs sur la carte.
+When a route exists, the codex cards carry a pip with the pull number, and hovering a pull
+highlights its mobs on the map.
 
-La route en cours est sauvegardée dans le `localStorage`, encodée en string MDT — ce format
-porte déjà tout, y compris les dessins et notes d'une route importée qu'on ne sait pas éditer
-et qu'on restitue intacts au ré-export.
+The current route is saved to `localStorage`, encoded as an MDT string — that format already
+carries everything, including the drawings and notes of an imported route that we cannot
+edit and hand back untouched on re-export.
 
-### Éditer à plusieurs
+### Editing together
 
-La route est portée par un document [Y.js](https://docs.yjs.dev/) **en permanence**, même hors
-session : il n'y a donc qu'un seul chemin de code, et ouvrir une session ne fait qu'y attacher
-un provider réseau. Les modifications passent par des opérations d'intention (« ajoute ce pack
-au pull 3 ») plutôt que par un remplacement global, ce qui permet à deux personnes d'éditer des
-pulls différents sans s'écraser.
+The route is held by a [Y.js](https://docs.yjs.dev/) document **at all times**, even outside
+a session: there is therefore only one code path, and opening a session merely attaches a
+network provider to it. Changes go through intent operations ("add this pack to pull 3")
+rather than a wholesale replacement, which lets two people edit different pulls without
+overwriting each other.
 
-*Ouvrir une session* génère un code à six caractères à dicter sur Discord ; *Rejoindre* remplace
-la route locale par celle du salon. La liaison est pair-à-pair via WebRTC, donc l'hébergement
-reste statique.
+*Open a session* generates a six-character code to read out on Discord; *Join* replaces the
+local route with the room's. The link is peer-to-peer over WebRTC, so hosting stays static.
 
-Seule la mise en relation initiale passe par un serveur de signalisation public
-(`wss://y-webrtc-eu.fly.dev`). C'est le point faible du montage : s'il est indisponible, les
-pairs ne se trouvent pas. Il se change sans toucher au code :
+Only the initial matchmaking goes through a public signaling server
+(`wss://y-webrtc-eu.fly.dev`). That is the weak point of the setup: if it is unavailable,
+peers cannot find each other. It can be changed without touching the code:
 
 ```bash
-VITE_SIGNALING_URL=wss://mon-serveur npm run build
+VITE_SIGNALING_URL=wss://my-server npm run build
 ```
 
 ## Tests
@@ -129,56 +129,55 @@ VITE_SIGNALING_URL=wss://mon-serveur npm run build
 npm test
 ```
 
-Le codec CBOR est validé contre les vecteurs de l'annexe A de la RFC 8949, et contre une route
-réellement exportée du jeu : le CBOR ré-encodé est identique octet à octet à celui produit par
-MDT. Voir `src/lib/mdt/__fixtures__/README.md` pour renouveler cette fixture si un patch change
-le format.
+The CBOR codec is validated against the RFC 8949 appendix A vectors, and against a route
+actually exported from the game: the re-encoded CBOR is byte-for-byte identical to what MDT
+produced. See `src/lib/mdt/__fixtures__/README.md` to renew that fixture if a patch changes
+the format.
 
-Trois particularités du sérialiseur du jeu, découvertes via cette fixture et documentées dans
-le code : les chaînes partent en CBOR major 2 (Lua n'a que des chaînes d'octets), la
-compression est du deflate **brut**, et une table vide devient un tableau vide (`0x80`).
+Three quirks of the game's serializer, discovered through this fixture and documented in the
+code: strings go out as CBOR major 2 (Lua only has byte strings), the compression is **raw**
+deflate, and an empty table becomes an empty array (`0x80`).
 
-## Intégration et déploiement continus
+## Continuous integration and deployment
 
-Deux workflows séparés :
+Two separate workflows:
 
-| Workflow | Déclencheur | Rôle |
+| Workflow | Trigger | Role |
 | --- | --- | --- |
-| [CI](.github/workflows/ci.yml) | pull requests, push sur `main` | types, tests, build |
-| [Déploiement](.github/workflows/deploy.yml) | **manuel**, par un mainteneur | types, tests, build, tag, publication Pages |
+| [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build |
+| [Deploy](.github/workflows/deploy.yml) | **manual**, by a maintainer | types, tests, build, tag, publish to Pages |
 
-La mise en ligne est un geste délibéré : rien ne part automatiquement. Depuis l'onglet
-*Actions* → *Déploiement* → *Run workflow*, on choisit la branche ou le tag à publier.
+Going live is a deliberate gesture: nothing ships automatically. From the *Actions* tab →
+*Deploy* → *Run workflow*, you pick the branch or tag to publish.
 
-Le déploiement rejoue les types et les tests plutôt que de s'en remettre à la CI. Étant
-manuel, il peut viser n'importe quel ref — y compris un commit que la CI n'a jamais vu — donc
-il ne peut hériter d'aucune garantie. Une minute de vérification en échange de l'impossibilité
-de publier un build cassé.
+The deployment replays the types and the tests rather than relying on CI. Being manual, it
+can target any ref — including a commit CI has never seen — so it cannot inherit any
+guarantee. One minute of checking in exchange for not being able to publish a broken build.
 
-Chaque publication pose un tag `vAAAA.MM.JJ-<numéro de run>`, pour savoir d'un coup d'œil quel
-commit est en ligne. Le nom se surcharge au lancement, et le tag se désactive si on n'en veut
-pas. La pose est idempotente : un tag déjà présent n'interrompt pas le déploiement.
+Every publication lays down a `vYYYY.MM.DD-<run number>` tag, so you can tell at a glance
+which commit is online. The name can be overridden at launch, and tagging can be turned off.
+Laying the tag is idempotent: an already-present tag does not interrupt the deployment.
 
-**À faire une seule fois**, dans les réglages du dépôt : *Settings → Pages → Source* →
-**GitHub Actions**. Sans ça, le workflow échoue à l'étape de déploiement.
+**To do once**, in the repository settings: *Settings → Pages → Source* → **GitHub Actions**.
+Without it, the workflow fails at the deployment step.
 
-Le workflow ne lance **aucun** script d'extraction : ils ont besoin d'une installation de WoW,
-qui n'existe pas sur le runner. Les données et les assets étant versionnés, le build se suffit
-à lui-même. Après un `npm run data` en local, il faut donc committer le résultat pour que le
-site en ligne se mette à jour.
+The workflow runs **no** extraction script: they need a WoW installation, which does not
+exist on the runner. Since the data and the assets are versioned, the build stands on its
+own. After an `npm run data` locally, the result must therefore be committed for the live
+site to update.
 
-Pour un build manuel :
+For a manual build:
 
 ```bash
 npm run build
 ```
 
-Produit un `dist/` statique d'environ 6 Mo. Les chemins d'assets sont relatifs et le routage est
-en hash, donc le site fonctionne aussi bien à la racine d'un domaine que dans un sous-chemin du
-type `/keystone-codex/`, sans réécriture d'URL côté serveur.
+Produces a static `dist/` of about 6 MB. Asset paths are relative and routing is hash-based,
+so the site works just as well at the root of a domain as in a subpath like
+`/keystone-codex/`, with no server-side URL rewriting.
 
 ## Sources
 
-Données de mobs, cartes et positions extraites de
-[Mythic Dungeon Tools](https://github.com/Nnoggie/MythicDungeonTools). Noms, icônes et
-descriptions de sorts via Wowhead.
+Mob data, maps and positions extracted from
+[Mythic Dungeon Tools](https://github.com/Nnoggie/MythicDungeonTools). Spell names, icons and
+descriptions via Wowhead.

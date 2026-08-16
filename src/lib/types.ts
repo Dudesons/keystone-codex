@@ -1,11 +1,13 @@
-/** Types des données produites par `scripts/extract-mdt.mjs` et `scripts/fetch-assets.mjs`. */
+/** Types of the data produced by `scripts/extract-mdt.mjs` and `scripts/fetch-assets.mjs`. */
+
+import type { Locale } from './i18n/locales'
 
 export interface Clone {
-  /** Index tel que MDT le référence dans les routes. Sparse : il y a des trous. */
+  /** Index as MDT references it in routes. Sparse: there are holes. */
   mdtIdx: number
   x: number
   y: number
-  /** Identifiant de pack : les clones partageant un `g` se pull ensemble. `null` = isolé. */
+  /** Pack id: clones sharing a `g` are pulled together. `null` = on its own. */
   g: number | null
   sublevel: number
   patrol?: { x: number; y: number }[]
@@ -21,7 +23,7 @@ export interface Enemy {
   mdtIdx: number
   id: number
   name: string
-  /** Forces apportées par une unité de ce mob. */
+  /** Forces contributed by one unit of this mob. */
   count: number
   health: number
   level: number
@@ -33,7 +35,7 @@ export interface Enemy {
   instanceID?: number
   stealth?: true
   stealthDetect?: true
-  /** CC applicables, tels que MDT les déclare (Stun, Fear, Silence…). */
+  /** Applicable CC, as MDT declares them (Stun, Fear, Silence…). */
   cc: string[]
   spells: EnemySpell[]
   clones: Clone[]
@@ -47,7 +49,7 @@ export interface Dungeon {
   mapID?: number
   teleportId?: number
   textureFolder: string | null
-  /** Forces requises pour compléter le donjon. */
+  /** Forces required to complete the dungeon. */
   totalCount: number
   sublevelCount: number
   enemies: Enemy[]
@@ -66,26 +68,38 @@ export interface DungeonSummary {
   textureFolder: string | null
 }
 
-export interface Spell {
-  id: number
+/** The part of a spell that changes with the language, as Wowhead serves it per locale. */
+export interface SpellText {
   name: string
-  icon: string
   castTime?: string
   range?: string
   description?: string
 }
 
-/** Référence stable vers un clone précis, dans les index MDT. */
+/**
+ * A `spells.json` entry: the id and the icon are the same in every language, so they sit
+ * outside `text`, which carries one block per locale fetched.
+ */
+export interface SpellEntry {
+  id: number
+  icon: string
+  text: Partial<Record<Locale, SpellText>>
+}
+
+/** A spell resolved for one language — what the UI consumes. */
+export type Spell = SpellText & { id: number; icon: string }
+
+/** Stable reference to one precise clone, in MDT indices. */
 export interface CloneRef {
   enemyIdx: number
   cloneIdx: number
 }
 
-/** Groupe de clones partageant le même `g`, c'est-à-dire ce qu'un pull ramasse d'un bloc. */
+/** Group of clones sharing the same `g` — what a pull picks up in one go. */
 export interface Pack {
   g: number
   members: CloneRef[]
-  /** Forces totales du pack. */
+  /** Total forces of the pack. */
   count: number
   center: { x: number; y: number }
   hull: { x: number; y: number }[]

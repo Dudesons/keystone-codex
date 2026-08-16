@@ -1,11 +1,5 @@
 import type { Threat, SpellTag } from '../../lib/content'
-
-const THREAT_LABEL: Record<Threat, string> = {
-  low: 'Sans danger',
-  medium: 'À surveiller',
-  high: 'Dangereux',
-  lethal: 'Létal',
-}
+import { useI18n } from '../../lib/i18n/context'
 
 const THREAT_STYLE: Record<Threat, string> = {
   low: 'bg-threat-low/15 text-threat-low border-threat-low/40',
@@ -15,22 +9,13 @@ const THREAT_STYLE: Record<Threat, string> = {
 }
 
 export function ThreatBadge({ threat }: { threat?: Threat }) {
+  const { t } = useI18n()
   if (!threat) return null
   return (
     <span className={`rounded border px-1.5 py-0.5 text-[11px] font-semibold ${THREAT_STYLE[threat]}`}>
-      {THREAT_LABEL[threat]}
+      {t(`threat.${threat}`)}
     </span>
   )
-}
-
-const TAG_LABEL: Record<SpellTag, string> = {
-  kick: 'KICK',
-  dodge: 'ESQUIVE',
-  dispel: 'DISPEL',
-  tank: 'TANK',
-  soak: 'SOAK',
-  ignore: 'IGNORER',
-  todo: '—',
 }
 
 const TAG_STYLE: Record<SpellTag, string> = {
@@ -44,18 +29,19 @@ const TAG_STYLE: Record<SpellTag, string> = {
 }
 
 export function TagBadge({ tag, prio }: { tag?: SpellTag; prio?: number }) {
+  const { t } = useI18n()
   if (!tag || tag === 'todo') return null
   return (
     <span
       className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold tracking-wide ${TAG_STYLE[tag]}`}
     >
-      {TAG_LABEL[tag]}
+      {t(`tag.${tag}`)}
       {prio ? ` ${prio}` : ''}
     </span>
   )
 }
 
-/** CC applicables, tels que MDT les déclare. Aucune saisie manuelle. */
+/** Applicable CC, exactly as MDT declares them. Nothing typed by hand. */
 export function CcBadges({ cc }: { cc: string[] }) {
   if (!cc.length) return null
   return (

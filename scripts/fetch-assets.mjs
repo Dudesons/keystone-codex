@@ -7,12 +7,13 @@
  * versionnés — le script ne re-télécharge que ce qui manque.
  *
  *   npm run fetch:assets          # complète ce qui manque
- *   FORCE=1 npm run fetch:assets  # re-télécharge tout (nouveau patch)
+ *   FORCE=1 npm run fetch:assets  # re-télécharge tout (nouveau patch, ou nouvelle langue
+ *                                 # ajoutée à SPELL_LOCALES)
  */
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { GENERATED_DIR, PUBLIC_DIR } from './config.mjs'
+import { GENERATED_DIR, PUBLIC_DIR, SPELL_LOCALES } from './config.mjs'
 
 const FORCE = process.env.FORCE === '1'
 const CONCURRENCY = 8
@@ -68,39 +69,102 @@ const stripTags = (html) =>
     .trim()
 
 /**
- * Extrait durée d'incantation, portée et description du tooltip Wowhead.
+ * Lignes d'en-tête du tooltip, hors nom.
  * Structure : un premier tableau `nom<br/>[portée<br/>]temps`, puis un `<div class="q">`
  * qui porte la description.
  */
-function parseTooltip(html) {
-  const out = {}
-
+function tooltipLines(html) {
   const header = /<table>.*?<td>(.*?)<\/td>/s.exec(html)
-  if (header) {
-    const lines = stripTags(header[1]).split('\n').map((l) => l.trim()).filter(Boolean)
-    for (const line of lines.slice(1)) {
-      if (/range$/i.test(line)) out.range = line
-      else if (/cast$/i.test(line) || /^instant$/i.test(line) || /channel/i.test(line)) out.castTime = line
-    }
-  }
-
-  const desc = /<div class="q[0-9]?">(.*?)<\/div>/s.exec(html)
-  if (desc) out.description = stripTags(desc[1])
-
-  return out
+  if (!header) return []
+  return stripTags(header[1]).split('\n').map((l) => l.trim()).filter(Boolean).slice(1)
 }
 
-async function fetchSpell(id) {
-  const res = await fetchRetry(`https://nether.wowhead.com/tooltip/spell/${id}?dataEnv=1&locale=0`)
-  if (!res) return { id, missing: true }
+function tooltipDescription(html) {
+  const desc = /<div class="q[0-9]?">(.*?)<\/div>/s.exec(html)
+  return desc ? stripTags(desc[1]) : undefined
+}
+
+/**
+ * Attribue un sens à chaque ligne d'en-tête — `range` ou `castTime` — à partir de l'anglais.
+ *
+ * Ces motifs ne matchent que l'anglais, et c'est volontaire : plutôt que de maintenir un jeu
+ * de regex par langue (« Portée illimitée », « 3 s d'incantation »…), on classe **une fois**
+ * sur la langue de base et on applique le même mapping par position aux autres locales.
+ * Wowhead rend les mêmes lignes dans le même ordre quelle que soit la langue.
+ */
+function classifyLines(lines) {
+  const layout = {}
+  lines.forEach((line, i) => {
+    if (/range$/i.test(line)) layout[i] = 'range'
+    else if (/cast$/i.test(line) || /^instant$/i.test(line) || /channel/i.test(line)) {
+      layout[i] = 'castTime'
+    }
+  })
+  return layout
+}
+
+function buildText(tooltip, layout) {
+  const text = { name: tooltip.name }
+  for (const [index, field] of Object.entries(layout)) {
+    const value = tooltip.lines[Number(index)]
+    if (value) text[field] = value
+  }
+  if (tooltip.description) text.description = tooltip.description
+  return text
+}
+
+async function fetchTooltip(id, wowheadLocale) {
+  const res = await fetchRetry(
+    `https://nether.wowhead.com/tooltip/spell/${id}?dataEnv=1&locale=${wowheadLocale}`,
+  )
+  if (!res) return null
   const json = await res.json()
-  if (!json?.name) return { id, missing: true }
+  if (!json?.name) return null
+  const html = json.tooltip || ''
   return {
-    id,
     name: json.name,
     icon: json.icon,
-    ...parseTooltip(json.tooltip || ''),
+    lines: tooltipLines(html),
+    description: tooltipDescription(html),
   }
+}
+
+/**
+ * Un sort dans toutes les langues configurées.
+ *
+ * L'`id` et l'`icon` ne dépendent pas de la langue et restent en tête ; le reste part dans
+ * `text.<langue>`. Une locale absente n'est pas une erreur : l'app retombe sur la langue de
+ * base, ce que Wowhead impose de toute façon pour les sorts récents.
+ */
+async function fetchSpell(id) {
+  const [baseLocale, ...others] = SPELL_LOCALES
+
+  const base = await fetchTooltip(id, baseLocale.wowhead)
+  if (!base) return { id, missing: true }
+
+  const layout = classifyLines(base.lines)
+  const text = { [baseLocale.lang]: buildText(base, layout) }
+  const warnings = []
+
+  for (const { lang, wowhead } of others) {
+    const tooltip = await fetchTooltip(id, wowhead)
+    if (!tooltip) {
+      warnings.push(`${id} : pas de tooltip ${lang}`)
+      continue
+    }
+    // Le mapping par position ne vaut que si les deux tooltips ont la même forme. En cas
+    // d'écart on ne devine pas : le nom et la description suffisent, l'app tolère le reste.
+    if (tooltip.lines.length !== base.lines.length) {
+      warnings.push(
+        `${id} : en-tête ${lang} de ${tooltip.lines.length} lignes contre ${base.lines.length} en ${baseLocale.lang}, incantation et portée omises`,
+      )
+      text[lang] = { name: tooltip.name, ...(tooltip.description && { description: tooltip.description }) }
+      continue
+    }
+    text[lang] = buildText(tooltip, layout)
+  }
+
+  return { id, icon: base.icon, text, warnings }
 }
 
 async function downloadTo(url, dest) {
@@ -131,19 +195,29 @@ async function main() {
 
   // --- Sorts -------------------------------------------------------------
   const cache = !FORCE && fs.existsSync(SPELL_CACHE) ? JSON.parse(fs.readFileSync(SPELL_CACHE, 'utf8')) : {}
-  const todo = spellIds.filter((id) => !cache[String(id)])
-  console.log(`Sorts : ${spellIds.length} uniques, ${todo.length} à récupérer`)
+  // Une entrée sans bloc `text` vient d'un format antérieur à la localisation : à refaire.
+  // Une locale secondaire absente n'est en revanche pas un signal — Wowhead ne traduit pas
+  // tout — donc **ajouter une langue à SPELL_LOCALES demande un `FORCE=1`**.
+  const isCurrent = (entry) => Boolean(entry?.text?.[SPELL_LOCALES[0].lang])
+  const todo = spellIds.filter((id) => !isCurrent(cache[String(id)]))
+  const langs = SPELL_LOCALES.map((l) => l.lang).join(', ')
+  console.log(`Sorts : ${spellIds.length} uniques, ${todo.length} à récupérer (${langs})`)
 
   let done = 0
   const spellResults = await pool(todo, CONCURRENCY, async (id) => {
     const spell = await fetchSpell(id)
-    if (!spell.missing) cache[String(id)] = spell
+    if (!spell.missing) cache[String(id)] = { id: spell.id, icon: spell.icon, text: spell.text }
     if (++done % 50 === 0) process.stdout.write(`  ${done}/${todo.length}\r`)
     return spell
   })
   const missingSpells = spellResults.filter((s) => s.missing || s.error)
+  const spellWarnings = spellResults.flatMap((s) => s.warnings ?? [])
   fs.writeFileSync(SPELL_CACHE, JSON.stringify(cache, null, 1), 'utf8')
   console.log(`  ${Object.keys(cache).length} sorts en cache${missingSpells.length ? `, ${missingSpells.length} non résolus` : ''}`)
+  if (spellWarnings.length) {
+    console.log(`  ${spellWarnings.length} tooltips partiels :`)
+    for (const w of spellWarnings) console.log(`    ${w}`)
+  }
 
   // --- Icônes ------------------------------------------------------------
   const icons = [...new Set(Object.values(cache).map((s) => s.icon).filter(Boolean))]

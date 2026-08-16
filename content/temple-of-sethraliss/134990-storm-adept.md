@@ -1,24 +1,24 @@
 ---
 npcId: 134990
 name: "Storm Adept"   # auto
-count: 7   # auto — forces par unité
+count: 7   # auto — forces per unit
 
-# À REMPLIR : low | medium | high | lethal
+# TO FILL IN: low | medium | high | lethal
 threat:
-# À REMPLIR : caster | melee | patrol | miniboss
+# TO FILL IN: caster | melee | patrol | miniboss
 role:
-# CC applicables (auto, depuis MDT) : Stun, Incapacitate, Silence, Fear, Root, Slow, Disorient, Sap, Imprison, Taunt
+# Applicable CC (auto, from MDT): Stun, Incapacitate, Silence, Fear, Root, Slow, Disorient, Sap, Imprison, Taunt
 
 spells:
   - id: 1291262
     name: "Lightning Bolt"   # auto
     # 2.5 sec cast · 100 yd range
-    # tag : kick | dodge | dispel | tank | soak | ignore
+    # tag: kick | dodge | dispel | tank | soak | ignore
     tag: todo
     note:
 
-# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.
+# The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->
+<!-- Free prose: positioning, focus order, cooldowns. -->

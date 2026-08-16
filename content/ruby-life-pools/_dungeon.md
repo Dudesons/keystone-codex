@@ -1,15 +1,15 @@
 ---
 name: "Ruby Life Pools"   # auto
-# Chrono M+ en minutes
+# M+ timer in minutes
 timer: 28
-# Une phrase qui résume le donjon, affichée sur la page d'accueil.
+# One sentence summing the dungeon up, shown on the home page.
 summary:
 ---
 
-## Plan de route
+## Route plan
 
-<!-- Ordre des packs, skips, positionnement des bloodlust. -->
+<!-- Pack order, skips, where to drop bloodlust. -->
 
 ## Affixes
 
-<!-- Ce qui change selon la semaine. -->
+<!-- What changes week to week. -->
