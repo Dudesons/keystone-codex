@@ -167,21 +167,21 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-483 tests, all green. No mocks anywhere: the tests read the real generated data, the real
+508 tests, all green. No mocks anywhere: the tests read the real generated data, the real
 `content/*.md` through `import.meta.glob`, and real committed artefacts for anything that
 would otherwise need the network or a WoW install.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
-| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon` and `scripts/wowhead-tooltip` |
+| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon`, `scripts/wowhead-tooltip` and `scripts/content-stub` |
 | Integration | Vitest + jsdom | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
 | End-to-end | — | **None.** No browser runner is installed |
 
-**Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`,
-`main.tsx` and `scripts/scaffold-content`. The first two are exercised by every component
-test through `renderEn` / `renderFr`. What remains in `fetch-assets.mjs` after the parsing
-moved out — `fetchRetry`, `pool`, `downloadTo` — is generic plumbing; standing up a local
-server to test it would cost more than it proves.
+**Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`
+and `main.tsx`. The first two are exercised by every component test through `renderEn` /
+`renderFr`; the last two are wiring. What remains in the scripts after their logic moved out
+is reading and writing — plus `fetchRetry`, `pool` and `downloadTo`, generic plumbing whose
+testing would need a local server for less than it proves.
 
 ### Testing what needs a WoW install or the network
 
