@@ -138,11 +138,22 @@ Trois particularités du sérialiseur du jeu, découvertes via cette fixture et 
 le code : les chaînes partent en CBOR major 2 (Lua n'a que des chaînes d'octets), la
 compression est du deflate **brut**, et une table vide devient un tableau vide (`0x80`).
 
-## Déployer
+## Intégration et déploiement continus
 
-Un workflow GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) lance
-les tests puis publie sur GitHub Pages à chaque push sur `main`. Un échec des tests bloque le
-déploiement.
+Deux workflows séparés, le second suspendu au succès du premier :
+
+| Workflow | Déclencheur | Rôle |
+| --- | --- | --- |
+| [CI](.github/workflows/ci.yml) | pull requests, push sur `main` | types, tests, build |
+| [Déploiement](.github/workflows/deploy.yml) | CI verte sur `main`, ou manuel | build, tag, publication Pages |
+
+Le déploiement s'accroche à la CI via `workflow_run` plutôt que de se redéclencher sur `push`.
+Une CI rouge ne publie donc rien, et le job se cale explicitement sur le commit que la CI a
+validé (`workflow_run.head_sha`) plutôt que sur la pointe de `main`, qui aurait pu avancer
+entre-temps.
+
+Chaque publication pose un tag `vAAAA.MM.JJ-<numéro de run>`, pour savoir d'un coup d'œil quel
+commit est en ligne.
 
 **À faire une seule fois**, dans les réglages du dépôt : *Settings → Pages → Source* →
 **GitHub Actions**. Sans ça, le workflow échoue à l'étape de déploiement.

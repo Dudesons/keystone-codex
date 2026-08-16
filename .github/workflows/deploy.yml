@@ -1,26 +1,39 @@
-name: Déploiement GitHub Pages
+name: Déploiement
 
+# Ne se déclenche qu'après une CI verte sur main : le déploiement hérite ainsi de la
+# garantie des tests au lieu de refaire sa propre vérification en parallèle.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   # Permet de redéployer à la main depuis l'onglet Actions.
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # nécessaire pour poser le tag
   pages: write
   id-token: write
 
-# Un seul déploiement à la fois ; les push rapprochés annulent le précédent.
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
   build:
+    name: Build et tag
     runs-on: ubuntu-latest
+    # Une CI en échec ne doit rien publier. Le déclenchement manuel reste toujours permis.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      tag: ${{ steps.tag.outputs.name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # workflow_run part par défaut de la pointe de main : on se cale explicitement
+          # sur le commit que la CI a validé.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -29,21 +42,31 @@ jobs:
 
       - run: npm ci
 
-      # Le codec MDT est la partie qu'on ne veut pas casser sans s'en apercevoir :
-      # un échec ici empêche le déploiement.
-      - name: Tests
-        run: npm test
-
       # Aucun script d'extraction n'est lancé : ils ont besoin d'une installation de WoW.
       # Les données et les assets sont versionnés, le build se suffit à lui-même.
       - name: Build
         run: npm run build
+
+      - name: Poser un tag sur ce qui part en ligne
+        id: tag
+        run: |
+          NAME="v$(date -u +%Y.%m.%d)-${{ github.run_number }}"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          if git rev-parse "$NAME" >/dev/null 2>&1; then
+            echo "Le tag $NAME existe déjà, on ne le recrée pas."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NAME" -m "Déploiement $NAME"
+          git push origin "$NAME"
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
+    name: Publication GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -52,3 +75,9 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Récapitulatif
+        run: |
+          echo "### Déployé : ${{ needs.build.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

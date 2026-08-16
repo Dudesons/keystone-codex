@@ -1,0 +1,42 @@
+name: CI
+
+# Barrière de qualité : tourne sur les PR et sur ce qui atterrit dans main.
+# Le déploiement s'accroche au succès de ce workflow (voir deploy.yml).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Une PR qui reçoit plusieurs push n'occupe qu'un run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Types, tests et build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Vérification des types
+        run: npm run typecheck
+
+      # Le codec MDT est la partie qu'on ne veut pas casser sans s'en apercevoir :
+      # une string mal encodée serait rejetée par le jeu.
+      - name: Tests
+        run: npm test
+
+      # On construit aussi sur les PR, pour attraper ce que le typecheck laisse passer.
+      - name: Build
+        run: npm run build
