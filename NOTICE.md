@@ -4,7 +4,7 @@ keystone-codex is licensed under the **GNU General Public License, version 2** â
 [LICENSE](LICENSE).
 
     keystone-codex â€” codex and interactive map for World of Warcraft Mythic+ dungeons
-    Copyright (C) 2026 Damien
+    Copyright (C) 2026 Dudesons
 
     This program is free software; you can redistribute it and/or modify it under the terms
     of the GNU General Public License as published by the Free Software Foundation; either
