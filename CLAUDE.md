@@ -167,19 +167,24 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-348 tests, all green. No mocks anywhere: the tests read the real generated data and the real
+380 tests, all green. No mocks anywhere: the tests read the real generated data and the real
 `content/*.md` through `import.meta.glob`.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
 | Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `scripts/tile-layout` and `scripts/lua-table` |
-| Integration | Vitest + jsdom | The codex components (`Badges`, `MobCard`, `CodexPanel`), the home page, and `DungeonPage` — which mounts the map and both side panels together, against the real dungeon pool |
+| Integration | Vitest + jsdom | The codex components (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, the home page, and `DungeonPage` — which mounts the map and both side panels together, against the real dungeon pool |
 | End-to-end | — | **None.** No browser runner is installed |
 
-**Not covered directly:** `components/map/DungeonMap.tsx`,
-`components/route/RoutePanel.tsx`, `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`,
-and the extraction scripts (`extract-mdt`, `fetch-assets`, `scaffold-content`). The first two
-are mounted by the `DungeonPage` tests, so they are exercised but not pinned.
+**Not covered directly:** `components/map/DungeonMap.tsx`, `lib/i18n/context.tsx`,
+`components/LocaleSwitcher.tsx`, and the extraction scripts (`extract-mdt`, `fetch-assets`,
+`scaffold-content`). The map is mounted by the `DungeonPage` tests, so it is exercised but
+not pinned.
+
+`RoutePanel` owns no route state — it calls `actions`. Its tests pass a recorder in place of
+the real actions and assert on the calls. That is not a mock of behaviour under test: the
+actions themselves are covered by `useRouteDoc.test.tsx`, and what these tests pin is that a
+click reaches the document at all.
 
 Component tests carry the `// @vitest-environment jsdom` pragma at the top of the file — the
 default environment stays `node` so the `lib/` suite stays fast. Testing Library runs without
