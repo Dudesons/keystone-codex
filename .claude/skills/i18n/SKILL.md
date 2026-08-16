@@ -213,7 +213,53 @@ uniform interpolation.
 
 ---
 
-## 4. Testing
+## 4. Adding a language
+
+Six steps, in this order. There is deliberately no script for them: they are run once every
+couple of years, and a script would be one more thing to keep true.
+
+**1. Probe the Wowhead locale code.** It is not documented anywhere, so do not guess it:
+
+```bash
+curl -s "https://nether.wowhead.com/tooltip/spell/1306911?dataEnv=1&locale=3" | head -c 200
+```
+
+Read the `name` field. `Dismember` means you found English again, not German. Walk the small
+integers until the language matches.
+
+**2. Declare it.** One entry in `LOCALES`
+([locales.ts](../../../src/lib/i18n/locales.ts)) and one in `SPELL_LOCALES`
+([config.mjs](../../../scripts/config.mjs)), with the code you just probed.
+
+**3. Write the dictionary.** Copy `fr.ts` to `<lang>.ts`, translate the values, register it in
+the `DICTIONARIES` map of [context.tsx](../../../src/lib/i18n/context.tsx). Do not chase the
+key list by hand — `npm run typecheck` prints exactly what is missing or surplus, and keeps
+failing until the file is complete. That is the whole point of the typed dictionary.
+
+**4. Refetch the spells, with `FORCE=1`.**
+
+```bash
+FORCE=1 npm run fetch:assets
+```
+
+The per-spell cache check only looks at the base language, because a missing secondary label
+is legitimate. Forgetting `FORCE=1` would therefore have meant "0 to fetch" and a silent
+fallback to English across the pool — so `fetch-assets.mjs` now refuses to run instead,
+naming the language it has never seen. Commit the regenerated `spells.json`: CI runs no
+extraction script.
+
+**5. Translate content if you want to.** Entirely optional and always partial: a mob with no
+`<name>.<lang>.md` renders from the base. Nothing breaks by skipping this.
+
+**6. Check both new and old.** `npm test`, then the app in the new language, then in the ones
+that already worked — the switcher is in the header of the home and dungeon pages.
+
+What you do **not** touch: mob names, spell names, spell descriptions. Those arrive localized
+from the pipeline in step 4.
+
+---
+
+## 5. Testing
 
 A component that displays text reads the context: a bare `render()` throws. Go through
 [src/test/render.tsx](../../../src/test/render.tsx) — `renderEn` / `renderFr` — which forces

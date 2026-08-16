@@ -12,6 +12,7 @@ import {
   stripTags,
   tooltipDescription,
   tooltipLines,
+  unfetchedLocales,
 } from './wowhead-tooltip.mjs'
 
 /**
@@ -186,5 +187,32 @@ describe('buildText', () => {
 
   it('omits the description when there is none', () => {
     expect('description' in buildText({ name: 'X', lines: [] }, {})).toBe(false)
+  })
+})
+
+describe('unfetchedLocales', () => {
+  const cache = {
+    1: { id: 1, icon: 'a', text: { en: { name: 'Dismember' }, fr: { name: 'Démembrer' } } },
+    2: { id: 2, icon: 'b', text: { en: { name: 'Enrage' } } },
+  }
+
+  it('says nothing when every configured language is present somewhere', () => {
+    expect(unfetchedLocales(cache, ['en', 'fr'])).toEqual([])
+  })
+
+  it('names a language the cache has never heard of', () => {
+    // The case that matters: someone adds `de` to SPELL_LOCALES. Without this, the run
+    // reports "0 to fetch", exits happy, and the app silently falls back to English.
+    expect(unfetchedLocales(cache, ['en', 'fr', 'de'])).toEqual(['de'])
+  })
+
+  it('is not fooled by a language Wowhead simply lacks for one spell', () => {
+    // Spell 2 has no French label, and that is legitimate — Wowhead does not translate
+    // everything. One entry carrying it is enough to prove the pass ran.
+    expect(unfetchedLocales(cache, ['fr'])).toEqual([])
+  })
+
+  it('reports an empty cache as missing every language, not as complete', () => {
+    expect(unfetchedLocales({}, ['en', 'fr'])).toEqual(['en', 'fr'])
   })
 })

@@ -17,7 +17,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { GENERATED_DIR, PUBLIC_DIR, SPELL_LOCALES } from './config.mjs'
-import { buildSpellText, parseTooltip } from './wowhead-tooltip.mjs'
+import { buildSpellText, parseTooltip, unfetchedLocales } from './wowhead-tooltip.mjs'
 
 const FORCE = process.env.FORCE === '1'
 const CONCURRENCY = 8
@@ -122,9 +122,21 @@ async function main() {
   // secondary locale, on the other hand, is not a signal — Wowhead does not translate
   // everything — so **adding a language to SPELL_LOCALES requires a `FORCE=1`**.
   const isCurrent = (entry) => Boolean(entry?.text?.[SPELL_LOCALES[0].lang])
+  const langs = SPELL_LOCALES.map((l) => l.lang)
+
+  // That leniency would otherwise let a newly configured language pass unnoticed: every
+  // entry still looks current, the run reports "0 to fetch" and succeeds, and the app falls
+  // back to the base language for the whole pool without anyone being told.
+  const never = unfetchedLocales(cache, langs)
+  if (never.length && Object.keys(cache).length) {
+    throw new Error(
+      `spells.json holds no ${never.join(', ')} label at all. A language added to ` +
+        'SPELL_LOCALES needs a full pass: FORCE=1 npm run fetch:assets',
+    )
+  }
+
   const todo = spellIds.filter((id) => !isCurrent(cache[String(id)]))
-  const langs = SPELL_LOCALES.map((l) => l.lang).join(', ')
-  console.log(`Spells: ${spellIds.length} unique, ${todo.length} to fetch (${langs})`)
+  console.log(`Spells: ${spellIds.length} unique, ${todo.length} to fetch (${langs.join(', ')})`)
 
   let done = 0
   const spellResults = await pool(todo, CONCURRENCY, async (id) => {

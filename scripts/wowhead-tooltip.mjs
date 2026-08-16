@@ -116,3 +116,18 @@ export function buildSpellText(id, entries) {
 
   return { icon: base.tooltip.icon, text, warnings }
 }
+
+/**
+ * Configured languages that the cache has never seen a single label for.
+ *
+ * The per-spell cache check only looks at the base language, because a *missing secondary*
+ * locale is legitimate — Wowhead does not translate everything. That leniency has a blind
+ * spot: add a language to `SPELL_LOCALES` and every entry still looks current, so the run
+ * reports "0 to fetch", exits successfully, and the app silently falls back to English for
+ * the whole pool. One entry carrying a label is enough to prove the pass actually ran, so
+ * this looks across the cache rather than per spell.
+ */
+export function unfetchedLocales(cache, configured) {
+  const seen = new Set(Object.values(cache).flatMap((entry) => Object.keys(entry?.text ?? {})))
+  return configured.filter((lang) => !seen.has(lang))
+}
