@@ -4,9 +4,15 @@ import { cloneKey, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/dat
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
-
-const MIN_SCALE = 0.4
-const MAX_SCALE = 6
+import {
+  BUTTON_STEP,
+  WHEEL_STEP,
+  badgeArc,
+  blipRadius,
+  fitTransform,
+  zoomAt,
+  type Transform,
+} from './viewport'
 
 export interface PullMark {
   pullIdx: number
@@ -35,12 +41,6 @@ interface Props {
   showPackOutlines?: boolean
 }
 
-interface Transform {
-  scale: number
-  tx: number
-  ty: number
-}
-
 export default function DungeonMap({
   slug,
   lookup,
@@ -65,12 +65,7 @@ export default function DungeonMap({
   const fit = useCallback(() => {
     const el = containerRef.current
     if (!el) return
-    const scale = Math.min(el.clientWidth / MAP_WIDTH, el.clientHeight / MAP_HEIGHT)
-    setTransform({
-      scale,
-      tx: (el.clientWidth - MAP_WIDTH * scale) / 2,
-      ty: (el.clientHeight - MAP_HEIGHT * scale) / 2,
-    })
+    setTransform(fitTransform({ width: el.clientWidth, height: el.clientHeight }))
   }, [])
 
   useLayoutEffect(fit, [fit, slug])
@@ -89,13 +84,9 @@ export default function DungeonMap({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
       const rect = el.getBoundingClientRect()
-      const px = e.clientX - rect.left
-      const py = e.clientY - rect.top
-      setTransform((t) => {
-        const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15)))
-        const k = next / t.scale
-        return { scale: next, tx: px - (px - t.tx) * k, ty: py - (py - t.ty) * k }
-      })
+      const pivot = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      const factor = e.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP
+      setTransform((t) => zoomAt(t, factor, pivot))
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
@@ -273,11 +264,9 @@ export default function DungeonMap({
           setTransform((t) => {
             const el = containerRef.current
             if (!el) return t
-            const px = el.clientWidth / 2
-            const py = el.clientHeight / 2
-            const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.scale * (dir > 0 ? 1.25 : 1 / 1.25)))
-            const k = next / t.scale
-            return { scale: next, tx: px - (px - t.tx) * k, ty: py - (py - t.ty) * k }
+            // The buttons zoom on the middle of the view, where the wheel zooms on the cursor.
+            const pivot = { x: el.clientWidth / 2, y: el.clientHeight / 2 }
+            return zoomAt(t, dir > 0 ? BUTTON_STEP : 1 / BUTTON_STEP, pivot)
           })
         }
       />
@@ -332,7 +321,7 @@ function Blip({
 }: BlipProps) {
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
-  const r = (enemy.isBoss ? 22 : 14) * Math.min(enemy.scale || 1, 1.9)
+  const r = blipRadius(enemy)
   const emphasised = isHighlighted || isHovered
 
   // Indicator pips, laid out in an arc above the portrait.
@@ -340,6 +329,7 @@ function Blip({
   if (ind.kick) badges.push({ color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
   if (ind.tankBuster) badges.push({ color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
   if (ind.dispel.length) badges.push({ color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
+  const placements = badgeArc(badges.length, { x, y }, r)
 
   return (
     <g
@@ -397,12 +387,7 @@ function Blip({
       )}
 
       {badges.map((badge, i) => {
-        // Arc from -50° to +50° above the blip, centred whatever the number of pips.
-        const spread = 46
-        const angle = (-90 + (i - (badges.length - 1) / 2) * spread) * (Math.PI / 180)
-        const bx = x + Math.cos(angle) * (r + 5)
-        const by = y + Math.sin(angle) * (r + 5)
-        const br = Math.max(6, r * 0.42)
+        const { x: bx, y: by, r: br } = placements[i]
         return (
           <g key={badge.glyph} className="pointer-events-none">
             <title>{badge.title}</title>
