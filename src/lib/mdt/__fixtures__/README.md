@@ -8,6 +8,17 @@ Le test compare le **CBOR décompressé**, pas la string finale : deux compresse
 corrects produisent des flux différents pour la même entrée, et le jeu décompresse les deux.
 L'invariant qui compte est que les octets sérialisés coïncident.
 
+## Le nom de la route a été anonymisé
+
+Seuls les octets du champ `text` ont été réécrits, par `scripts/patch-fixture-name.mjs` :
+958 des 982 octets d'origine sont intacts, tels que le jeu les a émis.
+
+Le patch est chirurgical exprès. Décoder puis ré-encoder la fixture entière avec notre propre
+encodeur aurait rendu le test **circulaire** — il aurait comparé notre code à lui-même et
+n'aurait plus rien prouvé sur la compatibilité in-game. En patchant sur place, le test continue
+de vérifier que notre encodeur reproduit la mise en octets de MDT pour les maps, les tableaux,
+les flottants, les entiers, les booléens et les index sparses.
+
 ## Ce que cette fixture a permis de corriger
 
 Trois écarts que seul un export réel pouvait révéler, tous découverts et corrigés grâce à elle :
