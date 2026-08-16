@@ -3,7 +3,7 @@ npcId: 263109
 name: "Ula'tek's Chosen"   # auto
 count: 25   # auto — forces per unit
 
-threat: medium
+threat: high
 role: caster
 
 spells:
@@ -62,5 +62,4 @@ comes while [Living Venom](#/d/altar-of-fangs/mob/263112) adds are alive — pac
 Blades of the Altar instead, which changes what your interrupts are competing for.
 
 **Toxic Surge** is a frontal, and the 339k of Toxic Beam is by far the largest single number
-in Altar of Fangs. It is avoidable, which is why the threat sits at medium rather than
-higher — but it is unforgiving of anyone who does not move.
+in Altar of Fangs. Avoidable, but unforgiving of anyone who does not move.

@@ -3,39 +3,45 @@ npcId: 262011
 name: "Rattling Writhe"   # auto
 count: 25   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+threat: medium
+role: melee
 
 spells:
+  # MDT does not flag this as interruptible — it declares it dispellable as poison. If it is
+  # in fact kickable in game, change the tag: MDT's data is not exhaustive.
+  - id: 1294845
+    name: "Corrosive Fangs"   # auto
+    # 3 sec cast · dispel: poison
+    tag: dispel
+    prio: 1
+    note: "242k Nature and +20% damage taken for 20 sec. Everything the pack does afterwards hits harder."
+
+  - id: 1294849
+    name: "Rattle"   # auto
+    # 3 sec cast
+    tag: tank
+    note: "58k Physical every second for 5 sec, and it ignores armour — mitigation that relies on armour does nothing here."
+
+  - id: 1294859
+    name: "Rattle"   # auto
+    # Instant
+    tag: tank
+
   - id: 1221063
     name: "Xal'atath's Gift"   # auto
     # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1294845
-    name: "Corrosive Fangs"   # auto
-    # 3 sec cast · 100 yd range · dispel: poison
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1294849
-    name: "Rattle"   # auto
-    # 3 sec cast · 50 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1294859
-    name: "Rattle"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: ignore
+    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Corrosive Fangs leaves +20% damage taken for 20 sec, and Rattle ignores armour. The two together turn a survivable pull into a dead tank — clear the debuff rather than trying to heal through it."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Twenty-five forces per unit, and a mob whose two abilities are only dangerous as a pair.
+
+**Corrosive Fangs** is the one that matters, not for its 242k but for the twenty seconds of
++20% damage taken that follow it. **Rattle** then lands 58k a second through armour, which is
+the part no mitigation cooldown fully answers.
+
+Order matters more than raw numbers here: clear the amplifier, and the rest is ordinary trash
+damage.
