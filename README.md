@@ -140,12 +140,27 @@ compression est du deflate **brut**, et une table vide devient un tableau vide (
 
 ## Déployer
 
+Un workflow GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) lance
+les tests puis publie sur GitHub Pages à chaque push sur `main`. Un échec des tests bloque le
+déploiement.
+
+**À faire une seule fois**, dans les réglages du dépôt : *Settings → Pages → Source* →
+**GitHub Actions**. Sans ça, le workflow échoue à l'étape de déploiement.
+
+Le workflow ne lance **aucun** script d'extraction : ils ont besoin d'une installation de WoW,
+qui n'existe pas sur le runner. Les données et les assets étant versionnés, le build se suffit
+à lui-même. Après un `npm run data` en local, il faut donc committer le résultat pour que le
+site en ligne se mette à jour.
+
+Pour un build manuel :
+
 ```bash
 npm run build
 ```
 
-Produit un `dist/` statique d'environ 6 Mo, servable tel quel (GitHub Pages, n'importe quel
-hébergeur). Le routage est en hash, donc aucune configuration serveur n'est nécessaire.
+Produit un `dist/` statique d'environ 6 Mo. Les chemins d'assets sont relatifs et le routage est
+en hash, donc le site fonctionne aussi bien à la racine d'un domaine que dans un sous-chemin du
+type `/keystone-codex/`, sans réécriture d'URL côté serveur.
 
 ## Sources
 
