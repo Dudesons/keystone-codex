@@ -99,7 +99,6 @@ export default function DungeonMap({
     if (e.button !== 0) return
     drag.current = { x: e.clientX, y: e.clientY, tx: transform.tx, ty: transform.ty, moved: false }
     setPanning(true)
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -107,7 +106,14 @@ export default function DungeonMap({
     if (!d) return
     const dx = e.clientX - d.x
     const dy = e.clientY - d.y
-    if (!d.moved && Math.hypot(dx, dy) > 4) d.moved = true
+    if (!d.moved && Math.hypot(dx, dy) > 4) {
+      d.moved = true
+      // Capture only from here on. A pointer captured at release redirects the click to the
+      // capturing element, so capturing on press would aim every click at this container and
+      // no blip would ever hear one. Once the press is a drag, that redirection is the point:
+      // it keeps the pan alive outside the map, and stops it from landing as a click.
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
     if (d.moved) setTransform((t) => ({ ...t, tx: d.tx + dx, ty: d.ty + dy }))
   }
 

@@ -11,6 +11,12 @@ import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
 afterEach(cleanup)
 
+/** Pointer ids captured during a test, recorded by the stub installed below. */
+const captured: number[] = []
+afterEach(() => {
+  captured.length = 0
+})
+
 beforeAll(() => {
   // jsdom has no ResizeObserver; the map watches its container to fit the image.
   globalThis.ResizeObserver = class {
@@ -18,6 +24,12 @@ beforeAll(() => {
     unobserve() {}
     disconnect() {}
   }
+  // jsdom implements no pointer capture either. Recording it rather than ignoring it is
+  // what the panning tests assert on.
+  Element.prototype.setPointerCapture = (id: number) => {
+    captured.push(id)
+  }
+  Element.prototype.releasePointerCapture = () => {}
 })
 
 const SLUG = 'altar-of-fangs'
@@ -252,6 +264,43 @@ describe('Clicking a unit', () => {
     fireEvent.click(blips(container)[0])
     fireEvent.click(blips(container)[0], { ctrlKey: true })
     expect(additive).toEqual([false, true])
+  })
+})
+
+/**
+ * Pan and click share one pointer, and pointer capture is what tells them apart.
+ *
+ * A capture in place when the pointer is released redirects the `click` to the capturing
+ * element (Pointer Events level 3: "if userEvent was dispatched while the corresponding
+ * pointer was captured, then let target be the target of userEvent"). Capturing on
+ * `pointerdown` would therefore aim every click at the map container, and no blip would ever
+ * hear one — while jsdom, which implements no capture at all, would keep reporting green.
+ * So the capture is taken only once the press has turned into a drag, where redirecting the
+ * click is exactly what we want.
+ */
+describe('Panning', () => {
+  const surface = (container: HTMLElement) => container.querySelector('.map-surface')!
+
+  it('captures no pointer on a plain press, or the click would never reach a blip', () => {
+    const { container } = mount()
+    fireEvent.pointerDown(surface(container), { button: 0, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerUp(surface(container), { pointerId: 1, clientX: 100, clientY: 100 })
+    expect(captured).toEqual([])
+  })
+
+  it('ignores the few pixels a hand shifts while clicking', () => {
+    const { container } = mount()
+    fireEvent.pointerDown(surface(container), { button: 0, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(surface(container), { pointerId: 1, clientX: 102, clientY: 101 })
+    expect(captured).toEqual([])
+  })
+
+  it('captures once the press becomes a drag, so panning survives leaving the map', () => {
+    const { container } = mount()
+    fireEvent.pointerDown(surface(container), { button: 0, pointerId: 7, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(surface(container), { pointerId: 7, clientX: 160, clientY: 140 })
+    fireEvent.pointerMove(surface(container), { pointerId: 7, clientX: 200, clientY: 180 })
+    expect(captured).toEqual([7])
   })
 })
 
