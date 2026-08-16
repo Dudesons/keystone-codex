@@ -3,27 +3,22 @@ npcId: 264798
 name: "Infused Eggs"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+threat: low
+role: melee
 
 spells:
   - id: 1293059
     name: "Hatch"   # auto
     # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: ignore
+    note: "Breaks open and releases Hatchlings, which then fixate."
   - id: 1293079
     name: "Hatch"   # auto
-    # Instant · 60 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: ignore
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Not a mob so much as a spawner, and worth no forces. What comes out is
+[Hatchling](#/d/altar-of-fangs/mob/261556), which fixates.

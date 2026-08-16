@@ -3,15 +3,35 @@
 
 import { describe, expect, it } from 'vitest'
 import { ROLES, contentProgress, getDungeonContent, getMobContent, isRole } from './content'
+import { dungeonList, getDungeon } from './data'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
  * written, the other is an untouched stub exactly as `npm run scaffold` produces it.
+ *
+ * The stub is *found* rather than named. Altar of Fangs is fully written now, and pinning a
+ * npcId here would mean editing this file every time an entry is finished — a test that
+ * punishes the work it protects. If the whole codex is ever written, the lookup returns
+ * undefined and the stub tests fail loudly, which is the right moment to rewrite them
+ * against a fixture instead of against real content.
  */
 const SLUG = 'altar-of-fangs'
 const WRITTEN = 270306 // Ritual Chieftain
-const STUB = 259445 // Rav'i
 const NO_ENTRY = 999_999
+
+/** The first entry across the pool that `npm run scaffold` produced and nobody has touched. */
+function findStub(): { slug: string; npcId: number } {
+  for (const summary of dungeonList) {
+    const dungeon = getDungeon(summary.slug)
+    if (!dungeon) continue
+    for (const npcId of new Set(dungeon.enemies.map((e) => e.id))) {
+      if (getMobContent(summary.slug, npcId)?.isStub) return { slug: summary.slug, npcId }
+    }
+  }
+  throw new Error('No untouched stub left in content/ — see the note above this function.')
+}
+
+const stub = findStub()
 
 describe('isRole', () => {
   it('recognises the vocabulary the scaffold template offers', () => {
@@ -64,22 +84,22 @@ describe('Written mob entry', () => {
 })
 
 describe('Unwritten stub', () => {
-  const stub = getMobContent(SLUG, STUB)
+  const entry = getMobContent(stub.slug, stub.npcId)
 
   it('loads even though nothing has been written', () => {
-    expect(stub).toBeDefined()
-    expect(stub!.npcId).toBe(STUB)
+    expect(entry).toBeDefined()
+    expect(entry!.npcId).toBe(stub.npcId)
   })
 
   it('invents no judgement: no threat, no trap, no prose', () => {
-    expect(stub!.threat).toBeFalsy()
-    expect(stub!.trap).toBeFalsy()
-    expect(stub!.html.trim()).toBe('')
+    expect(entry!.threat).toBeFalsy()
+    expect(entry!.trap).toBeFalsy()
+    expect(entry!.html.trim()).toBe('')
   })
 
   it('is marked as a stub: `tag: todo` does not count as writing', () => {
-    expect(stub!.isStub).toBe(true)
-    expect(stub!.spells?.every((s) => s.tag === 'todo')).toBe(true)
+    expect(entry!.isStub).toBe(true)
+    expect(entry!.spells?.every((s) => s.tag === 'todo')).toBe(true)
   })
 })
 
@@ -149,8 +169,10 @@ describe('Translated entry', () => {
 
 describe('Falling back to the base language', () => {
   it('serves the base entry when the translation is missing', () => {
-    // Rav'i has no .fr.md: a French reader sees the base rather than a hole.
-    expect(getMobContent(SLUG, STUB, 'fr')).toEqual(getMobContent(SLUG, STUB, 'en'))
+    // The stub has no .fr.md: a French reader sees the base rather than a hole.
+    expect(getMobContent(stub.slug, stub.npcId, 'fr')).toEqual(
+      getMobContent(stub.slug, stub.npcId, 'en'),
+    )
   })
 
   it('serves the base dungeon plan in both languages', () => {
@@ -164,11 +186,15 @@ describe('Falling back to the base language', () => {
 
 describe('contentProgress', () => {
   it('only counts entries carrying actual writing', () => {
-    expect(contentProgress(SLUG, [WRITTEN, STUB])).toEqual({ written: 1, total: 2 })
+    expect(contentProgress(SLUG, [WRITTEN])).toEqual({ written: 1, total: 1 })
+    expect(contentProgress(stub.slug, [stub.npcId])).toEqual({ written: 0, total: 1 })
   })
 
   it('counts what the reader sees: a fallback to the base counts as readable', () => {
-    expect(contentProgress(SLUG, [WRITTEN, STUB], 'fr')).toEqual({ written: 1, total: 2 })
+    // Ritual Chieftain is written in both languages; the stub is written in neither. Neither
+    // count changes with the locale, because the fallback serves the base either way.
+    expect(contentProgress(SLUG, [WRITTEN], 'fr')).toEqual({ written: 1, total: 1 })
+    expect(contentProgress(stub.slug, [stub.npcId], 'fr')).toEqual({ written: 0, total: 1 })
   })
 
   it('counts a mob with no file as unwritten', () => {

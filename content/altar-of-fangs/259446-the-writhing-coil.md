@@ -1,144 +1,65 @@
 ---
 npcId: 259446
 name: "The Writhing Coil"   # auto
-count: 0   # auto — forces per unit
 isBoss: true   # auto
+count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# A boss ring is gold whatever this says, so threat only adds a badge here.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: melee
 
 spells:
-  - id: 1287798
-    name: "Vine Grip"   # auto
-    # Instant · 20 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1287811
-    name: "Uncoil"   # auto
-    # Instant · Unlimited range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
   - id: 1298949
     name: "Tail Scythe"   # auto
-    # 3 sec cast · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # 3 sec cast
+    tag: tank
+    prio: 1
+    note: "678k Physical on the current target — the largest single hit in the dungeon."
   - id: 1299053
     name: "Death Rattle"   # auto
     # 5 sec cast
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1299080
-    name: "Death Rattle"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    prio: 1
+    note: "9.7k per second, and it adds an application every second. It does not stop on its own: only pulling the Coil apart ends it."
+  - id: 1287798
+    name: "Vine Grip"   # auto
+    tag: dodge
+    note: "Attaches players to the Coil. Every attached player moving 10 yards away is what forces the Uncoil."
+  - id: 1287811
+    name: "Uncoil"   # auto
+    tag: dodge
+    note: "145k to everyone, and the Coil breaks into Uncoiled Writhes."
   - id: 1299130
     name: "Burrowing Charge"   # auto
-    # 3 sec cast · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1299135
-    name: "Burrowing Charge"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1299154
-    name: "Synchronized Venom"   # auto
-    # 2 sec cast · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1299189
-    name: "Synchronized Venom"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # 3 sec cast
+    tag: dodge
+    note: "387k to anything in its path."
   - id: 1299902
     name: "Venom Jet"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    note: "Frontal cone, 387k."
+  - id: 1299154
+    name: "Synchronized Venom"   # auto
+    # 2 sec cast
+    tag: dodge
+    note: "87k to everyone, then 17k every second for 35 sec."
   - id: 1299940
     name: "Vindictive Onslaught"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1300044
-    name: "Venom Jet"   # auto
-    # 4 sec cast · 60 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1300083
-    name: "Burrowing Charge"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1300503
-    name: "Spiteful Hunt"   # auto
-    # Channeled (20 sec cast) · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1300612
-    name: "Uncoiled"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1300686
-    name: "Assimilation"   # auto
-    # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1305368
-    name: "Spiteful Venom"   # auto
-    # Instant · Melee Range · dispel: poison
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1305393
-    name: "Undermining"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1310357
-    name: "Toxic Barrage"   # auto
-    # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1310547
-    name: "Toxic Atrophy"   # auto
-    # Instant · 500 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1310974
-    name: "Toxic Atrophy"   # auto
-    # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: tank
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+One mechanic decides this fight, and it is easy to read backwards.
+
+**Death Rattle** does not expire. It adds an application every second and keeps going *until
+the Writhing Coil is pulled apart*. The only thing that pulls it apart is **Uncoil** — and
+Uncoil is triggered by **Vine Grip**: the attached players walking 10 yards out.
+
+So the vines are not a punishment to escape, they are the tool. Staying put lets Death Rattle
+ramp unopposed; running out ends it and splits the boss into
+[Uncoiled Writhes](#/d/altar-of-fangs/mob/262398), whose **Toxic Atrophy** then has to be
+interrupted.
+
+**Tail Scythe** is 678k on the tank, the hardest hit in Altar of Fangs.

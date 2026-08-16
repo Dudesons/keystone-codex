@@ -129,9 +129,16 @@ describe('Indicator pips', () => {
     expect(titled(container, 'To interrupt')).toBe(expected)
   })
 
-  it('draws a dispel pip where MDT declares a dispel type', () => {
-    const expected = clonesWhere((e) => e.spells.some((s) => s.dispel?.length))
-    expect(expected).toBeGreaterThan(0)
+  it('draws a dispel pip from either source: MDT, or a card tagged `dispel`', () => {
+    const fromMdt = clonesWhere((e) => e.spells.some((s) => s.dispel?.length))
+    const expected = clonesWhere(
+      (e) =>
+        e.spells.some((s) => s.dispel?.length) ||
+        (getMobContent(SLUG, e.id)?.spells?.some((s) => s.tag === 'dispel') ?? false),
+    )
+
+    expect(fromMdt).toBeGreaterThan(0) // MDT alone already lights pips, with no card written
+
     const { container } = mount()
     expect(titled(container, 'Dispel')).toBe(expected)
   })
