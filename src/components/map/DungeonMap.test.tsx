@@ -136,9 +136,15 @@ describe('Indicator pips', () => {
     expect(titled(container, 'Dispel')).toBe(expected)
   })
 
-  it('draws no tank pip without a card declaring one', () => {
-    // `tag: tank` has no source in MDT; only a written card can raise it.
-    const expected = clonesWhere((e) => e.id === 270_306)
+  it('draws a tank pip only where a written card declares one', () => {
+    // `tag: tank` has no source in MDT; only a written card can raise it. Derived from the
+    // content rather than pinned to one npcId: the codex fills in over time, and a test that
+    // has to be edited every time an entry is written would punish the work it protects.
+    const declaresTank = (id: number) =>
+      getMobContent(SLUG, id)?.spells?.some((s) => s.tag === 'tank') === true
+    const expected = clonesWhere((e) => declaresTank(e.id))
+
+    expect(expected).toBeGreaterThan(0)
     const { container } = mount()
     expect(titled(container, 'Tank buster')).toBe(expected)
   })
