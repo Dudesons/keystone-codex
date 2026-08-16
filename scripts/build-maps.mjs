@@ -11,9 +11,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
 import { GENERATED_DIR, MDT_EXPANSION, MDT_GEOMETRY, MDT_PATH, PUBLIC_DIR } from './config.mjs'
+import { tileLayout } from './tile-layout.mjs'
 
-const { tileCols, tileRows, tileSize, pixelWidth, pixelHeight } = MDT_GEOMETRY
-const TILE_COUNT = tileCols * tileRows
+const { pixelWidth, pixelHeight } = MDT_GEOMETRY
 const QUALITY = Number(process.env.MAP_QUALITY || 82)
 
 async function buildMap(dungeon) {
@@ -22,18 +22,9 @@ async function buildMap(dungeon) {
     throw new Error(`Tuiles introuvables pour ${dungeon.englishName} : ${tileDir}`)
   }
 
-  const composites = []
-  const missing = []
-  for (let n = 1; n <= TILE_COUNT; n++) {
-    const file = path.join(tileDir, `1_${n}.png`)
-    if (!fs.existsSync(file)) {
-      missing.push(n)
-      continue
-    }
-    const row = Math.ceil(n / tileCols) - 1
-    const col = ((n - 1) % tileCols)
-    composites.push({ input: file, left: col * tileSize, top: row * tileSize })
-  }
+  const tileFile = (n) => path.join(tileDir, `1_${n}.png`)
+  const { placements, missing } = tileLayout((n) => fs.existsSync(tileFile(n)))
+  const composites = placements.map(({ n, left, top }) => ({ input: tileFile(n), left, top }))
 
   if (missing.length) {
     console.warn(`  ! ${dungeon.englishName}: ${missing.length} tuiles manquantes (${missing.slice(0, 8).join(', ')}…)`)
