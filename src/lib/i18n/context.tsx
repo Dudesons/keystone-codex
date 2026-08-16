@@ -1,3 +1,6 @@
+// ABOUTME: The running app's language: detection, persistence, and the useI18n hook.
+// ABOUTME: React state, not a module variable, so a switch re-renders everything that reads it.
+
 /**
  * The language of the running app: detection, persistence, and the hook components use.
  *

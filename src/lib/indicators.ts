@@ -1,3 +1,6 @@
+// ABOUTME: A mob's indicators: what shows as pips on the map and badges in the codex.
+// ABOUTME: Combines what MDT already knows with what the written entry declares.
+
 /**
  * A mob's indicators: what shows up as pips on the map and in the codex.
  *

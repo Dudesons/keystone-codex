@@ -1,3 +1,6 @@
+// ABOUTME: The French dictionary, typed against English so tsc fails on a missing or extra key.
+// ABOUTME: Holds no game term — those are localized by the pipeline, never written here.
+
 /**
  * French dictionary. Typed as `Dictionary`, so a missing or surplus key fails `tsc`.
  *

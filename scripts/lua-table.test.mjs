@@ -1,3 +1,6 @@
+// ABOUTME: Tests the Lua table parser against the syntax MDT actually emits.
+// ABOUTME: Covers sparse integer keys, string concatenation and locale lookups.
+
 import { describe, expect, it } from 'vitest'
 import { LuaExpr, parseAssignment, parseTableAt, toPlain } from './lua-table.mjs'
 

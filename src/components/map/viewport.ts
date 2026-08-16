@@ -1,3 +1,6 @@
+// ABOUTME: The map's arithmetic — fitting, zooming, blip layout — separated from its rendering.
+// ABOUTME: Pure functions, because these are the parts that can be wrong without looking broken.
+
 /**
  * The map's arithmetic, separated from its rendering.
  *

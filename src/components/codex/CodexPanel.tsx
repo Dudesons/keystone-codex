@@ -1,3 +1,6 @@
+// ABOUTME: The codex side panel: the dungeon plan, bosses and trash, or one pack or mob.
+// ABOUTME: Follows the map — clicking a unit scrolls its card into view.
+
 import { useEffect, useMemo, useRef } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { getDungeonContent } from '../../lib/content'

@@ -1,3 +1,6 @@
+// ABOUTME: Parses Wowhead's tooltip HTML into per-language spell labels.
+// ABOUTME: classifyLines maps lines by position, so one English pass serves every other locale.
+
 /**
  * Reading Wowhead's tooltip HTML, separated from the fetching.
  *

@@ -1,3 +1,6 @@
+// ABOUTME: Tests a mob card against real MDT data and real content/ entries.
+// ABOUTME: Covers the header, trap, CC, spell ordering, Wowhead links and interactions.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'

@@ -1,3 +1,6 @@
+// ABOUTME: Renders a component in a chosen language, since every one of them reads the locale.
+// ABOUTME: A caller's own wrapper is nested inside the provider rather than replacing it.
+
 /**
  * Rendering a component in a chosen language.
  *

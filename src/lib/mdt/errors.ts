@@ -1,3 +1,6 @@
+// ABOUTME: Import failures the user can act on, carrying a code the UI translates.
+// ABOUTME: Distinct from the codec's diagnostics, which stay in English and surface verbatim.
+
 /**
  * Import failures that are the user's to act on, as opposed to codec diagnostics.
  *

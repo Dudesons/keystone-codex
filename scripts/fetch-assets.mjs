@@ -1,3 +1,6 @@
+// ABOUTME: Downloads spell labels, icons and mob portraits into versioned, cached files.
+// ABOUTME: One fetch pass per SPELL_LOCALES entry; the parsing lives in wowhead-tooltip.mjs.
+
 /**
  * Fetches artwork and spell labels.
  *

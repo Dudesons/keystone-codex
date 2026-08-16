@@ -1,3 +1,6 @@
+// ABOUTME: The EN | FR toggle that overrides the language detected from the browser.
+// ABOUTME: Placed in each route's header, since the app has no shared shell.
+
 /**
  * The EN | FR toggle. The browser decides on first load; this is how you override it.
  *

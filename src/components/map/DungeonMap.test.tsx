@@ -1,3 +1,6 @@
+// ABOUTME: Tests the map's rendering: blips, indicator pips, pack and pull outlines, legend.
+// ABOUTME: jsdom lays everything out at zero, so this asserts structure rather than geometry.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'

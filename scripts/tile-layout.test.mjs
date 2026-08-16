@@ -1,3 +1,6 @@
+// ABOUTME: Tests where each map tile lands on the recomposed image.
+// ABOUTME: An off-by-one here shifts a whole map without failing any build.
+
 import { describe, expect, it } from 'vitest'
 import { MDT_GEOMETRY } from './config.mjs'
 import { tileLayout, tilePosition } from './tile-layout.mjs'

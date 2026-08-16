@@ -1,3 +1,6 @@
+// ABOUTME: A mob's card: portrait, threat, forces, trap, applicable CC and its spell list.
+// ABOUTME: Spells are ordered by what needs an immediate reaction, then by declared priority.
+
 import type { Enemy } from '../../lib/types'
 import { getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
 import { getMobContent, type SpellNote } from '../../lib/content'

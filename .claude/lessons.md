@@ -1,23 +1,23 @@
-# Leçons
+# Lessons
 
-Journal des corrections. Chaque fois que RwlRwlRwlRwl corrige une erreur, on écrit ici la
-**règle** qui l'aurait évitée — pas le récit de l'incident.
+A log of corrections. Every time RwlRwlRwlRwl corrects a mistake, what gets written here is
+the **rule** that would have avoided it — not the story of the incident.
 
-À relire en début de session avant de travailler sur ce dépôt.
+To be re-read at the start of a session, before working on this repository.
 
 ## Format
 
 ```markdown
-## AAAA-MM-JJ — Titre court de la règle
+## YYYY-MM-DD — Short title of the rule
 
-**Ce qui s'est passé :** une ou deux phrases, factuelles.
-**La règle :** l'impératif à appliquer la prochaine fois.
-**Portée :** où elle s'applique (fichier, domaine, ou « partout »).
+**What happened:** one or two factual sentences.
+**The rule:** the imperative to apply next time.
+**Scope:** where it applies (file, domain, or "everywhere").
 ```
 
-Une leçon qui ne se formule pas en impératif n'en est pas une : c'est une anecdote, elle n'a
-pas sa place ici. Si deux leçons disent la même chose, fusionne-les.
+A lesson that cannot be phrased as an imperative is not one: it is an anecdote, and it does
+not belong here. If two lessons say the same thing, merge them.
 
 ---
 
-<!-- Les leçons les plus récentes en haut. -->
+<!-- Most recent lessons at the top. -->

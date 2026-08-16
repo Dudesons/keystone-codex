@@ -1,3 +1,6 @@
+// ABOUTME: Rewrites only the route-name bytes inside the real MDT export fixture.
+// ABOUTME: Surgical on purpose: re-encoding the whole fixture would make the codec test circular.
+
 /**
  * Replaces the route name inside the MDT export fixture.
  *

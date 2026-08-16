@@ -1,3 +1,6 @@
+// ABOUTME: Tests the MDT dungeon parsing against a committed, real .lua fixture.
+// ABOUTME: A real file, not a sample: a sample would only hold the cases we already thought of.
+
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'

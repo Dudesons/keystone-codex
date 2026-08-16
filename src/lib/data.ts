@@ -1,3 +1,6 @@
+// ABOUTME: Access to the MDT data extracted into src/data/generated/, all loaded up front.
+// ABOUTME: Resolves dungeons, lookups, spells per language, and the asset and Wowhead URLs.
+
 /**
  * Access to the data extracted from MDT.
  *

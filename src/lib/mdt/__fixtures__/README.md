@@ -1,37 +1,37 @@
-# Fixture de compatibilité in-game
+# In-game compatibility fixture
 
-`real-export.txt` contient une string exportée depuis MDT en jeu. C'est la seule chose qui
-prouve qu'une string produite ici sera acceptée par le jeu — les autres tests ne valident que
-notre cohérence interne et la conformité à la RFC 8949.
+`real-export.txt` holds a string exported from MDT in game. It is the only thing that proves
+a string produced here will be accepted by the game — the other tests only validate our own
+internal consistency and RFC 8949 conformance.
 
-Le test compare le **CBOR décompressé**, pas la string finale : deux compresseurs deflate
-corrects produisent des flux différents pour la même entrée, et le jeu décompresse les deux.
-L'invariant qui compte est que les octets sérialisés coïncident.
+The test compares the **decompressed CBOR**, not the final string: two correct deflate
+compressors produce different streams for the same input, and the game decompresses both.
+The invariant that matters is that the serialized bytes coincide.
 
-## Le nom de la route a été anonymisé
+## The route name has been anonymized
 
-Seuls les octets du champ `text` ont été réécrits, par `scripts/patch-fixture-name.mjs` :
-958 des 982 octets d'origine sont intacts, tels que le jeu les a émis.
+Only the bytes of the `text` field were rewritten, by `scripts/patch-fixture-name.mjs`: 958
+of the original 982 bytes are intact, exactly as the game emitted them.
 
-Le patch est chirurgical exprès. Décoder puis ré-encoder la fixture entière avec notre propre
-encodeur aurait rendu le test **circulaire** — il aurait comparé notre code à lui-même et
-n'aurait plus rien prouvé sur la compatibilité in-game. En patchant sur place, le test continue
-de vérifier que notre encodeur reproduit la mise en octets de MDT pour les maps, les tableaux,
-les flottants, les entiers, les booléens et les index sparses.
+The patch is surgical on purpose. Decoding then re-encoding the whole fixture with our own
+encoder would have made the test **circular** — it would have compared our code to itself and
+proved nothing about in-game compatibility. By patching in place, the test keeps verifying
+that our encoder reproduces MDT's byte layout for maps, arrays, floats, integers, booleans
+and sparse indices.
 
-## Ce que cette fixture a permis de corriger
+## What this fixture caught
 
-Trois écarts que seul un export réel pouvait révéler, tous découverts et corrigés grâce à elle :
+Three divergences only a real export could reveal, all found and fixed thanks to it:
 
-1. **Chaînes en major 2.** Lua n'a que des chaînes d'octets : `C_EncodingUtil.SerializeCBOR`
-   émet du major 2 (byte string), jamais du major 3 (text string). Notre décodeur rendait
-   donc un `Uint8Array` là où une clé de table était attendue.
-2. **Deflate brut.** `Enum.CompressionMethod.Deflate` ne pose pas d'en-tête zlib.
-3. **Table vide.** `{}` part en tableau vide (`0x80`), pas en map vide (`0xa0`). C'était la
-   dernière divergence, sur 1 octet parmi 982.
+1. **Strings in major 2.** Lua only has byte strings: `C_EncodingUtil.SerializeCBOR` emits
+   major 2 (byte string), never major 3 (text string). Our decoder was therefore returning a
+   `Uint8Array` where a table key was expected.
+2. **Raw deflate.** `Enum.CompressionMethod.Deflate` writes no zlib header.
+3. **Empty table.** `{}` goes out as an empty array (`0x80`), not an empty map (`0xa0`). That
+   was the last divergence, one byte out of 982.
 
-## Renouveler la fixture
+## Renewing the fixture
 
-Si un patch change le format, exporte une nouvelle route depuis MDT et remplace le contenu de
-`real-export.txt`. Les tests sont automatiquement ignorés si le fichier est absent, donc le
-dépôt reste testable sans lui.
+If a patch changes the format, export a new route from MDT and replace the contents of
+`real-export.txt`. The tests are skipped automatically when the file is absent, so the
+repository stays testable without it.

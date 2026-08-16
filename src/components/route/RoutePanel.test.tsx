@@ -1,3 +1,6 @@
+// ABOUTME: Tests the route panel: forces, pull list, briefings, import, export and sharing.
+// ABOUTME: Passes a recorder in place of the actions and asserts a click reaches the document.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'

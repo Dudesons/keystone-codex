@@ -1,3 +1,6 @@
+// ABOUTME: Hand-written parser for the Lua table literals MDT's dungeon files are made of.
+// ABOUTME: Handles the two exotic cases MDT emits: string concatenation and L["Name"] lookups.
+
 /**
  * Parser for Lua table literals.
  *

@@ -1,3 +1,6 @@
+// ABOUTME: The route side panel: forces, pull list and briefings, MDT import/export, sharing.
+// ABOUTME: Owns no route state — every change goes through the actions of useRouteDoc.
+
 import { useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { cloneKey } from '../../lib/data'

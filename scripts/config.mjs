@@ -1,3 +1,6 @@
+// ABOUTME: The one file to edit when the season, the machine or the spell languages change.
+// ABOUTME: Holds MDT_CANDIDATES, SEASON_DUNGEONS, SPELL_LOCALES and MDT's coordinate geometry.
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

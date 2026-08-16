@@ -1,3 +1,6 @@
+// ABOUTME: Tests the MDT codec against the RFC 8949 vectors and a real in-game export.
+// ABOUTME: The fixture is the only proof a string produced here is accepted by the game.
+
 import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'

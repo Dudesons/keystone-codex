@@ -1,3 +1,6 @@
+// ABOUTME: The shapes of the data produced by the extraction scripts and consumed by the app.
+// ABOUTME: The generated files match these exactly — changing one means regenerating the other.
+
 /** Types of the data produced by `scripts/extract-mdt.mjs` and `scripts/fetch-assets.mjs`. */
 
 import type { Locale } from './i18n/locales'

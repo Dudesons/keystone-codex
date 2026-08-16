@@ -1,3 +1,6 @@
+// ABOUTME: Turns the text of an MDT dungeon file into the shape the app consumes.
+// ABOUTME: Pure functions, so extraction can be tested against a committed fixture without WoW.
+
 /**
  * Turns the text of an MDT dungeon file into the shape the app consumes.
  *

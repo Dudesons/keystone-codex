@@ -1,3 +1,6 @@
+// ABOUTME: Loads the written entries from content/**.md and merges a translation over its base.
+// ABOUTME: A mob with no entry, or no translation, still renders — the codex fills in gradually.
+
 /**
  * Loading the written content (`content/**.md`).
  *

@@ -1,3 +1,6 @@
+// ABOUTME: Works out where each of MDT's 150 map tiles lands on the recomposed image.
+// ABOUTME: Isolated from all I/O: an off-by-one here shifts a whole map without failing a build.
+
 /**
  * Map tile layout for MDT, isolated from all I/O.
  *

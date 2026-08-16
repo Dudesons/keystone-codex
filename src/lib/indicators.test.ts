@@ -1,3 +1,6 @@
+// ABOUTME: Tests the indicators derived from MDT data and written entries, and the kick list.
+// ABOUTME: Runs against the real pool, so a mob whose data changes shape fails here.
+
 import { describe, expect, it } from 'vitest'
 import type { Enemy } from './types'
 import { dungeonList, getDungeon, getLookup } from './data'

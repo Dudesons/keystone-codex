@@ -1,3 +1,6 @@
+// ABOUTME: Tests the route model and its conversion to and from MDT preset tables.
+// ABOUTME: Pins that fields we cannot edit survive an import and re-export untouched.
+
 import { describe, expect, it } from 'vitest'
 import { cloneKey, getLookup } from '../data'
 import {

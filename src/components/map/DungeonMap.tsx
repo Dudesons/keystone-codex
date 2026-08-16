@@ -1,3 +1,6 @@
+// ABOUTME: The interactive map: pan and zoom, mob blips, pack and pull outlines, legend.
+// ABOUTME: Rendering only; the pan, zoom and layout arithmetic lives in viewport.ts.
+
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CloneRef, Enemy, Pack } from '../../lib/types'
 import { cloneKey, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'

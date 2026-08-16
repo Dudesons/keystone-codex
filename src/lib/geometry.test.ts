@@ -1,3 +1,6 @@
+// ABOUTME: Tests the MDT-to-pixel conversion and the pack outline tracing.
+// ABOUTME: Pins the frame corners, since a scale slip offsets every mob at once.
+
 import { describe, expect, it } from 'vitest'
 import {
   MAP_HEIGHT,

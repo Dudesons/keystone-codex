@@ -1,3 +1,6 @@
+// ABOUTME: Tests the loading and merging of content/**.md against the real files.
+// ABOUTME: Covers a written entry, an untouched stub, the bilingual pair, and the fallback.
+
 import { describe, expect, it } from 'vitest'
 import { contentProgress, getDungeonContent, getMobContent } from './content'
 

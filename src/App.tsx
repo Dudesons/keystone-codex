@@ -1,3 +1,6 @@
+// ABOUTME: The route table: home, a dungeon page, and a dungeon page focused on one mob.
+// ABOUTME: Anything unrecognised redirects home.
+
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Home from './routes/Home'
 import DungeonPage from './routes/DungeonPage'

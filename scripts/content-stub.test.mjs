@@ -1,3 +1,6 @@
+// ABOUTME: Tests the markdown stub builder and the scaffold plan.
+// ABOUTME: Pins the invariant that matters: an existing card is never overwritten.
+
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'

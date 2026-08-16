@@ -1,3 +1,6 @@
+// ABOUTME: Tests access to the generated MDT data: pool index, lookups, spells and URLs.
+// ABOUTME: Runs against the committed data, so a broken regeneration fails here.
+
 import { describe, expect, it } from 'vitest'
 import {
   cloneKey,

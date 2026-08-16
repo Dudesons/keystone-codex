@@ -1,3 +1,6 @@
+// ABOUTME: Resolves the language from the stored choice and the browser's preferences.
+// ABOUTME: Pure and parameterised, so the priority rules are testable without a browser.
+
 /**
  * Picking a language from what the browser and the stored preference say.
  *

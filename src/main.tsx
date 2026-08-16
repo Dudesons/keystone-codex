@@ -1,3 +1,6 @@
+// ABOUTME: The entry point: mounts React under the locale provider and a hash router.
+// ABOUTME: HashRouter because the build is static, with no server to reroute deep paths.
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'

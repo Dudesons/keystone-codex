@@ -1,3 +1,6 @@
+// ABOUTME: Tests the codex panel against the real dungeon pool.
+// ABOUTME: Covers the default list, a selected pack, a selected mob, and following the map.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'

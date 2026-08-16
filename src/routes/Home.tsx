@@ -1,3 +1,6 @@
+// ABOUTME: The home page: one card per dungeon in the season pool, with its codex progress.
+// ABOUTME: Progress counts what the reader sees, fallback to the base language included.
+
 import { Link } from 'react-router-dom'
 import { dungeonList, getDungeon, mapUrl } from '../lib/data'
 import { contentProgress, getDungeonContent } from '../lib/content'

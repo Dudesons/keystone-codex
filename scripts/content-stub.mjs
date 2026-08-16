@@ -1,3 +1,6 @@
+// ABOUTME: Builds the markdown stubs for content/ and decides which ones to write.
+// ABOUTME: Filesystem-free, so the "never overwrite an existing card" invariant can be tested.
+
 /**
  * Building the markdown stubs, and deciding which ones to write.
  *

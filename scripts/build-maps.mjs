@@ -1,3 +1,6 @@
+// ABOUTME: Assembles MDT's 150 map tiles per floor into one WebP image per dungeon.
+// ABOUTME: Reads and writes; the tile placement arithmetic lives in tile-layout.mjs.
+
 /**
  * Assembles MDT's map tiles into one image per dungeon.
  *

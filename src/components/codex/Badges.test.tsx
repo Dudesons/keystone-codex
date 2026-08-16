@@ -1,3 +1,6 @@
+// ABOUTME: Tests the mob card badges: threat, spell tag, CC and dispel.
+// ABOUTME: Checks both languages, these labels being the most translated part of the codex.
+
 // @vitest-environment jsdom
 import { cleanup, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'

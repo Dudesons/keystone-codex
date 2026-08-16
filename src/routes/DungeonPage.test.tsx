@@ -1,3 +1,6 @@
+// ABOUTME: Tests a dungeon page with the map and both side panels mounted together.
+// ABOUTME: Covers the header, the tab switch, and an unknown dungeon.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'

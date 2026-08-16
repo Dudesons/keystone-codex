@@ -1,3 +1,6 @@
+// ABOUTME: Creates the content/ markdown cards that are missing after an MDT update.
+// ABOUTME: Reads and writes only; what to build and what to skip lives in content-stub.mjs.
+
 /**
  * Generates the missing markdown cards in `content/`.
  *

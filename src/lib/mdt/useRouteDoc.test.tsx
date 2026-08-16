@@ -1,3 +1,6 @@
+// ABOUTME: Tests the Y.js route document: pulls, clones, import, reset and persistence.
+// ABOUTME: Uses a real Y.Doc, with no network provider attached.
+
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'

@@ -1,3 +1,6 @@
+// ABOUTME: Turns a dictionary entry into a string: interpolation, plurals, numbers, percentages.
+// ABOUTME: Takes its dictionary and locale as arguments, so the rules are testable on their own.
+
 /**
  * Turning a dictionary entry into a string: interpolation, plural selection, numbers.
  *

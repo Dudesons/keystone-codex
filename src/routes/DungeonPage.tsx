@@ -1,3 +1,6 @@
+// ABOUTME: A dungeon's page: the map beside either the codex panel or the route panel.
+// ABOUTME: Holds the selection and hover state that ties the two halves together.
+
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'

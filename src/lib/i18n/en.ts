@@ -1,3 +1,6 @@
+// ABOUTME: The reference dictionary of UI strings, and the key types derived from it.
+// ABOUTME: Holds no game term: mob and spell names come from the MDT and Wowhead pipeline.
+
 /**
  * The reference dictionary. Every other language is typed against it, so `tsc` fails on any
  * key that is missing or left over — that check replaces a completeness test.

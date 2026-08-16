@@ -1,3 +1,6 @@
+// ABOUTME: Tests the tooltip parsing against captured Wowhead responses in two languages.
+// ABOUTME: Pins that classifyLines does NOT match the French wording — position alone places it.
+
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'

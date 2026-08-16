@@ -1,3 +1,6 @@
+// ABOUTME: Encodes and decodes MDT share strings, in both the current and legacy formats.
+// ABOUTME: Always writes MDT2; reads legacy too, since many routes on Wago still use it.
+
 /**
  * Encoding and decoding MDT share strings.
  *

@@ -1,3 +1,6 @@
+// ABOUTME: Tests how the language is resolved from the stored choice and the browser.
+// ABOUTME: Covers regional variants, unknown languages and the order of preference.
+
 import { describe, expect, it } from 'vitest'
 import { resolveLocale } from './detect'
 import { DEFAULT_LOCALE } from './locales'

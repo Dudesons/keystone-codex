@@ -1,3 +1,6 @@
+// ABOUTME: Tests interpolation, plural selection and number formatting in both languages.
+// ABOUTME: Includes zero, where English and French genuinely disagree.
+
 import { describe, expect, it } from 'vitest'
 import { en } from './en'
 import { fr } from './fr'

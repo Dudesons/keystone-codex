@@ -1,3 +1,6 @@
+// ABOUTME: Extracts MDT's dungeon .lua files into versioned JSON under src/data/generated/.
+// ABOUTME: Reads and writes only; the parsing lives in mdt-dungeon.mjs.
+
 /**
  * Extracts MDT's dungeon data into versioned JSON.
  *

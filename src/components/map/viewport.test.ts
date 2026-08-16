@@ -1,3 +1,6 @@
+// ABOUTME: Tests the map's pan, zoom and blip layout arithmetic without a DOM.
+// ABOUTME: These are the parts that can be wrong while still looking plausible.
+
 import { describe, expect, it } from 'vitest'
 import { MAP_HEIGHT, MAP_WIDTH, type Point } from '../../lib/geometry'
 import {

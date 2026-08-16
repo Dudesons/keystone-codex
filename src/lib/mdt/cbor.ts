@@ -1,3 +1,6 @@
+// ABOUTME: A hand-written CBOR codec, the subset MDT's route exports need.
+// ABOUTME: Reimplemented rather than taken off the shelf, to control the Lua array/map rule.
+
 /**
  * CBOR (RFC 8949), the subset that MDT exports need.
  *

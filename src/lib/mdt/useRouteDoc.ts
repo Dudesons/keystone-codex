@@ -1,3 +1,6 @@
+// ABOUTME: Route state, held by a Y.js document that is the source of truth at all times.
+// ABOUTME: Mutations are intent operations, so two people can edit different pulls at once.
+
 /**
  * Route state, held by a Y.js document.
  *

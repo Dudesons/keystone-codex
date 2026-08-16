@@ -1,3 +1,6 @@
+// ABOUTME: Converts MDT's coordinate space to map pixels, and traces the pack outlines.
+// ABOUTME: One scale factor: MDT's 840x560 frame and our 1920x1280 images share an aspect ratio.
+
 /**
  * Going from MDT's coordinate space to map pixels, and drawing pack outlines.
  *

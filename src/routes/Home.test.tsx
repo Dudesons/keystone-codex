@@ -1,3 +1,6 @@
+// ABOUTME: Tests the home page against the real season pool.
+// ABOUTME: Covers the dungeon cards, the codex progress bar and the language switcher.
+
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'

@@ -1,3 +1,6 @@
+// ABOUTME: The route model, and the bridge to and from MDT preset tables.
+// ABOUTME: Keeps the original Lua table so drawings and notes survive a round trip.
+
 /**
  * The route model, and the bridge to MDT presets.
  *

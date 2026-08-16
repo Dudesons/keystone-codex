@@ -1,3 +1,6 @@
+// ABOUTME: The set of languages the app speaks, and the default it falls back to.
+// ABOUTME: Adding one also needs a dictionary and a probed Wowhead locale code.
+
 /**
  * The set of languages the app speaks.
  *
