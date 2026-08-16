@@ -1,14 +1,19 @@
 name: Déploiement
 
-# Ne se déclenche qu'après une CI verte sur main : le déploiement hérite ainsi de la
-# garantie des tests au lieu de refaire sa propre vérification en parallèle.
+# Déclenchement manuel uniquement, par les mainteneurs du dépôt.
+# L'interface Actions permet de choisir la branche ou le tag à publier.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
-  # Permet de redéployer à la main depuis l'onglet Actions.
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Nom du tag à poser (vide = vAAAA.MM.JJ-<numéro de run>)"
+        required: false
+        default: ''
+      create_tag:
+        description: 'Poser un tag sur le commit publié'
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: write # nécessaire pour poser le tag
@@ -21,18 +26,14 @@ concurrency:
 
 jobs:
   build:
-    name: Build et tag
+    name: Vérification, build et tag
     runs-on: ubuntu-latest
-    # Une CI en échec ne doit rien publier. Le déclenchement manuel reste toujours permis.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     outputs:
       tag: ${{ steps.tag.outputs.name }}
     steps:
       - uses: actions/checkout@v4
         with:
-          # workflow_run part par défaut de la pointe de main : on se cale explicitement
-          # sur le commit que la CI a validé.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # Historique complet : nécessaire pour savoir si le tag existe déjà.
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -42,6 +43,14 @@ jobs:
 
       - run: npm ci
 
+      # Le déploiement étant manuel, il ne peut pas hériter de la garantie de la CI :
+      # on revérifie ici, pour qu'aucune publication ne parte sur un build cassé.
+      - name: Vérification des types
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
       # Aucun script d'extraction n'est lancé : ils ont besoin d'une installation de WoW.
       # Les données et les assets sont versionnés, le build se suffit à lui-même.
       - name: Build
@@ -49,8 +58,12 @@ jobs:
 
       - name: Poser un tag sur ce qui part en ligne
         id: tag
+        if: inputs.create_tag
         run: |
-          NAME="v$(date -u +%Y.%m.%d)-${{ github.run_number }}"
+          NAME="${{ inputs.tag }}"
+          if [ -z "$NAME" ]; then
+            NAME="v$(date -u +%Y.%m.%d)-${{ github.run_number }}"
+          fi
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           if git rev-parse "$NAME" >/dev/null 2>&1; then
             echo "Le tag $NAME existe déjà, on ne le recrée pas."
@@ -78,6 +91,9 @@ jobs:
 
       - name: Récapitulatif
         run: |
-          echo "### Déployé : ${{ needs.build.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Déploiement effectué" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ref : \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit : \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag : \`${{ needs.build.outputs.tag || 'aucun' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL : ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

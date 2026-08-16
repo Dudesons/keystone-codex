@@ -140,20 +140,24 @@ compression est du deflate **brut**, et une table vide devient un tableau vide (
 
 ## Intégration et déploiement continus
 
-Deux workflows séparés, le second suspendu au succès du premier :
+Deux workflows séparés :
 
 | Workflow | Déclencheur | Rôle |
 | --- | --- | --- |
 | [CI](.github/workflows/ci.yml) | pull requests, push sur `main` | types, tests, build |
-| [Déploiement](.github/workflows/deploy.yml) | CI verte sur `main`, ou manuel | build, tag, publication Pages |
+| [Déploiement](.github/workflows/deploy.yml) | **manuel**, par un mainteneur | types, tests, build, tag, publication Pages |
 
-Le déploiement s'accroche à la CI via `workflow_run` plutôt que de se redéclencher sur `push`.
-Une CI rouge ne publie donc rien, et le job se cale explicitement sur le commit que la CI a
-validé (`workflow_run.head_sha`) plutôt que sur la pointe de `main`, qui aurait pu avancer
-entre-temps.
+La mise en ligne est un geste délibéré : rien ne part automatiquement. Depuis l'onglet
+*Actions* → *Déploiement* → *Run workflow*, on choisit la branche ou le tag à publier.
+
+Le déploiement rejoue les types et les tests plutôt que de s'en remettre à la CI. Étant
+manuel, il peut viser n'importe quel ref — y compris un commit que la CI n'a jamais vu — donc
+il ne peut hériter d'aucune garantie. Une minute de vérification en échange de l'impossibilité
+de publier un build cassé.
 
 Chaque publication pose un tag `vAAAA.MM.JJ-<numéro de run>`, pour savoir d'un coup d'œil quel
-commit est en ligne.
+commit est en ligne. Le nom se surcharge au lancement, et le tag se désactive si on n'en veut
+pas. La pose est idempotente : un tag déjà présent n'interrompt pas le déploiement.
 
 **À faire une seule fois**, dans les réglages du dépôt : *Settings → Pages → Source* →
 **GitHub Actions**. Sans ça, le workflow échoue à l'étape de déploiement.
