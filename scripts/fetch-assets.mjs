@@ -1,14 +1,14 @@
 /**
- * Récupère les illustrations et les libellés de sorts.
+ * Fetches artwork and spell labels.
  *
- * MDT ne stocke que des IDs de sorts et des `displayId` de créatures : les noms, icônes et
- * descriptions viennent du jeu à l'exécution, ce qu'on ne peut pas faire sur le web. On les
- * résout donc une fois au build via Wowhead, et on met tout en cache dans des fichiers
- * versionnés — le script ne re-télécharge que ce qui manque.
+ * MDT stores only spell IDs and creature `displayId`s: names, icons and descriptions come
+ * from the game at runtime, which is not available on the web. So we resolve them once at
+ * build time through Wowhead and cache everything into versioned files — the script only
+ * re-downloads what is missing.
  *
- *   npm run fetch:assets          # complète ce qui manque
- *   FORCE=1 npm run fetch:assets  # re-télécharge tout (nouveau patch, ou nouvelle langue
- *                                 # ajoutée à SPELL_LOCALES)
+ *   npm run fetch:assets          # fill in what is missing
+ *   FORCE=1 npm run fetch:assets  # re-download everything (new patch, or a new language
+ *                                 # added to SPELL_LOCALES)
  */
 
 import fs from 'node:fs'
@@ -21,7 +21,7 @@ const SPELL_CACHE = path.join(GENERATED_DIR, 'spells.json')
 const ICON_DIR = path.join(PUBLIC_DIR, 'icons')
 const PORTRAIT_DIR = path.join(PUBLIC_DIR, 'portraits')
 
-/** Exécute `worker` sur chaque item avec un pool de taille fixe. */
+/** Runs `worker` over every item with a fixed-size pool. */
 async function pool(items, size, worker) {
   const queue = [...items]
   const results = []
@@ -46,7 +46,7 @@ async function fetchRetry(url, init, attempts = 3) {
     try {
       const res = await fetch(url, init)
       if (res.ok) return res
-      // 404 = ressource absente pour de bon, inutile d'insister.
+      // 404 = the resource is gone for good, no point insisting.
       if (res.status === 404) return null
       lastErr = new Error(`HTTP ${res.status}`)
     } catch (err) {
@@ -69,9 +69,9 @@ const stripTags = (html) =>
     .trim()
 
 /**
- * Lignes d'en-tête du tooltip, hors nom.
- * Structure : un premier tableau `nom<br/>[portée<br/>]temps`, puis un `<div class="q">`
- * qui porte la description.
+ * The tooltip's header lines, name excluded.
+ * Structure: a first table holding `name<br/>[range<br/>]cast time`, then a `<div class="q">`
+ * carrying the description.
  */
 function tooltipLines(html) {
   const header = /<table>.*?<td>(.*?)<\/td>/s.exec(html)
@@ -85,12 +85,12 @@ function tooltipDescription(html) {
 }
 
 /**
- * Attribue un sens à chaque ligne d'en-tête — `range` ou `castTime` — à partir de l'anglais.
+ * Assigns a meaning to each header line — `range` or `castTime` — based on English.
  *
- * Ces motifs ne matchent que l'anglais, et c'est volontaire : plutôt que de maintenir un jeu
- * de regex par langue (« Portée illimitée », « 3 s d'incantation »…), on classe **une fois**
- * sur la langue de base et on applique le même mapping par position aux autres locales.
- * Wowhead rend les mêmes lignes dans le même ordre quelle que soit la langue.
+ * These patterns only match English, and that is deliberate: rather than maintaining one
+ * regex set per language ("Portée illimitée", "3 s d'incantation"…), we classify **once** on
+ * the base language and apply the same positional mapping to the other locales. Wowhead
+ * renders the same lines in the same order whatever the language.
  */
 function classifyLines(lines) {
   const layout = {}
@@ -130,11 +130,11 @@ async function fetchTooltip(id, wowheadLocale) {
 }
 
 /**
- * Un sort dans toutes les langues configurées.
+ * One spell in every configured language.
  *
- * L'`id` et l'`icon` ne dépendent pas de la langue et restent en tête ; le reste part dans
- * `text.<langue>`. Une locale absente n'est pas une erreur : l'app retombe sur la langue de
- * base, ce que Wowhead impose de toute façon pour les sorts récents.
+ * `id` and `icon` are language-independent and stay at the top; the rest goes under
+ * `text.<language>`. A missing locale is not an error: the app falls back to the base
+ * language, which Wowhead forces anyway for recent spells.
  */
 async function fetchSpell(id) {
   const [baseLocale, ...others] = SPELL_LOCALES
@@ -149,14 +149,14 @@ async function fetchSpell(id) {
   for (const { lang, wowhead } of others) {
     const tooltip = await fetchTooltip(id, wowhead)
     if (!tooltip) {
-      warnings.push(`${id} : pas de tooltip ${lang}`)
+      warnings.push(`${id}: no ${lang} tooltip`)
       continue
     }
-    // Le mapping par position ne vaut que si les deux tooltips ont la même forme. En cas
-    // d'écart on ne devine pas : le nom et la description suffisent, l'app tolère le reste.
+    // Positional mapping only holds if both tooltips have the same shape. On a mismatch we
+    // do not guess: name and description are enough, the app tolerates the rest missing.
     if (tooltip.lines.length !== base.lines.length) {
       warnings.push(
-        `${id} : en-tête ${lang} de ${tooltip.lines.length} lignes contre ${base.lines.length} en ${baseLocale.lang}, incantation et portée omises`,
+        `${id}: ${lang} header has ${tooltip.lines.length} lines against ${base.lines.length} in ${baseLocale.lang}, cast time and range omitted`,
       )
       text[lang] = { name: tooltip.name, ...(tooltip.description && { description: tooltip.description }) }
       continue
@@ -178,7 +178,7 @@ async function downloadTo(url, dest) {
 function loadDungeons() {
   const indexFile = path.join(GENERATED_DIR, 'dungeons.json')
   if (!fs.existsSync(indexFile)) {
-    throw new Error("Lance d'abord `npm run extract`.")
+    throw new Error('Run `npm run extract` first.')
   }
   return JSON.parse(fs.readFileSync(indexFile, 'utf8')).map((d) =>
     JSON.parse(fs.readFileSync(path.join(GENERATED_DIR, `${d.slug}.json`), 'utf8')),
@@ -193,15 +193,15 @@ async function main() {
   const spellIds = [...new Set(dungeons.flatMap((d) => d.enemies.flatMap((e) => e.spells.map((s) => s.id))))]
   const displayIds = [...new Set(dungeons.flatMap((d) => d.enemies.map((e) => e.displayId).filter(Boolean)))]
 
-  // --- Sorts -------------------------------------------------------------
+  // --- Spells ------------------------------------------------------------
   const cache = !FORCE && fs.existsSync(SPELL_CACHE) ? JSON.parse(fs.readFileSync(SPELL_CACHE, 'utf8')) : {}
-  // Une entrée sans bloc `text` vient d'un format antérieur à la localisation : à refaire.
-  // Une locale secondaire absente n'est en revanche pas un signal — Wowhead ne traduit pas
-  // tout — donc **ajouter une langue à SPELL_LOCALES demande un `FORCE=1`**.
+  // An entry with no `text` block predates localization and has to be redone. A missing
+  // secondary locale, on the other hand, is not a signal — Wowhead does not translate
+  // everything — so **adding a language to SPELL_LOCALES requires a `FORCE=1`**.
   const isCurrent = (entry) => Boolean(entry?.text?.[SPELL_LOCALES[0].lang])
   const todo = spellIds.filter((id) => !isCurrent(cache[String(id)]))
   const langs = SPELL_LOCALES.map((l) => l.lang).join(', ')
-  console.log(`Sorts : ${spellIds.length} uniques, ${todo.length} à récupérer (${langs})`)
+  console.log(`Spells: ${spellIds.length} unique, ${todo.length} to fetch (${langs})`)
 
   let done = 0
   const spellResults = await pool(todo, CONCURRENCY, async (id) => {
@@ -213,22 +213,22 @@ async function main() {
   const missingSpells = spellResults.filter((s) => s.missing || s.error)
   const spellWarnings = spellResults.flatMap((s) => s.warnings ?? [])
   fs.writeFileSync(SPELL_CACHE, JSON.stringify(cache, null, 1), 'utf8')
-  console.log(`  ${Object.keys(cache).length} sorts en cache${missingSpells.length ? `, ${missingSpells.length} non résolus` : ''}`)
+  console.log(`  ${Object.keys(cache).length} spells cached${missingSpells.length ? `, ${missingSpells.length} unresolved` : ''}`)
   if (spellWarnings.length) {
-    console.log(`  ${spellWarnings.length} tooltips partiels :`)
+    console.log(`  ${spellWarnings.length} partial tooltips:`)
     for (const w of spellWarnings) console.log(`    ${w}`)
   }
 
-  // --- Icônes ------------------------------------------------------------
+  // --- Icons -------------------------------------------------------------
   const icons = [...new Set(Object.values(cache).map((s) => s.icon).filter(Boolean))]
   const iconResults = await pool(icons, CONCURRENCY, (icon) =>
     downloadTo(`https://wow.zamimg.com/images/wow/icons/large/${icon}.jpg`, path.join(ICON_DIR, `${icon}.jpg`)),
   )
   const iconsOk = iconResults.filter((r) => r === 'downloaded' || r === 'cached').length
-  console.log(`Icônes : ${iconsOk}/${icons.length}`)
+  console.log(`Icons: ${iconsOk}/${icons.length}`)
 
-  // --- Portraits de créatures -------------------------------------------
-  // Chemin des vignettes du model viewer : le dossier est displayId % 256.
+  // --- Creature portraits ------------------------------------------------
+  // Model viewer thumbnail path: the folder is displayId % 256.
   const portraitResults = await pool(displayIds, CONCURRENCY, (id) =>
     downloadTo(
       `https://wow.zamimg.com/modelviewer/live/webthumbs/npc/${id % 256}/${id}.webp`,
@@ -236,14 +236,14 @@ async function main() {
     ),
   )
   const portraitsOk = portraitResults.filter((r) => r === 'downloaded' || r === 'cached').length
-  console.log(`Portraits : ${portraitsOk}/${displayIds.length}`)
+  console.log(`Portraits: ${portraitsOk}/${displayIds.length}`)
 
   const weight = (dir) =>
     fs.readdirSync(dir).reduce((n, f) => n + fs.statSync(path.join(dir, f)).size, 0) / 1024 / 1024
-  console.log(`\nPoids : icônes ${weight(ICON_DIR).toFixed(1)} Mo, portraits ${weight(PORTRAIT_DIR).toFixed(1)} Mo`)
+  console.log(`\nWeight: icons ${weight(ICON_DIR).toFixed(1)} MB, portraits ${weight(PORTRAIT_DIR).toFixed(1)} MB`)
 
   if (missingSpells.length) {
-    console.log(`\nSorts non résolus (affichés avec leur ID brut) : ${missingSpells.map((s) => s.id).join(', ')}`)
+    console.log(`\nUnresolved spells (rendered with their raw ID): ${missingSpells.map((s) => s.id).join(', ')}`)
   }
 }
 

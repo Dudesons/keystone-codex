@@ -17,8 +17,8 @@ import { DEFAULT_LOCALE } from './i18n/locales'
 
 const SLUG = 'altar-of-fangs'
 
-describe('Index du pool', () => {
-  it('expose les donjons de la saison', () => {
+describe('Pool index', () => {
+  it("exposes the season's dungeons", () => {
     expect(dungeonList.length).toBeGreaterThan(0)
     for (const d of dungeonList) {
       expect(d.slug).toBeTruthy()
@@ -27,102 +27,102 @@ describe('Index du pool', () => {
     }
   })
 
-  it('a un fichier de données pour chaque donjon annoncé', () => {
+  it('has a data file for every dungeon it announces', () => {
     for (const d of dungeonList) {
       expect(getDungeon(d.slug), d.slug).toBeDefined()
     }
   })
 
-  it('renvoie undefined pour un donjon inconnu', () => {
-    expect(getDungeon('donjon-inexistant')).toBeUndefined()
+  it('returns undefined for an unknown dungeon', () => {
+    expect(getDungeon('no-such-dungeon')).toBeUndefined()
   })
 })
 
-describe('Sorts', () => {
-  it('résout un sort extrait de MDT', () => {
+describe('Spells', () => {
+  it('resolves a spell extracted from MDT', () => {
     const spell = getSpell(5543)
     expect(spell).toBeDefined()
     expect(spell!.name).toBe('Fade Out')
   })
 
-  it('renvoie undefined pour un sort absent du jeu de données', () => {
+  it('returns undefined for a spell absent from the data set', () => {
     expect(getSpell(999_999_999)).toBeUndefined()
   })
 
-  it('sert le libellé de la langue demandée', () => {
+  it('serves the label in the requested language', () => {
     expect(getSpell(1_306_911, 'en')!.name).toBe('Dismember')
     expect(getSpell(1_306_911, 'fr')!.name).toBe('Démembrer')
   })
 
-  it('localise aussi incantation et description, pas seulement le nom', () => {
+  it('localizes cast time and description too, not just the name', () => {
     const fr = getSpell(1_306_911, 'fr')!
     expect(fr.castTime).toBe("3 s d'incantation")
     expect(fr.range).toBe('Portée illimitée')
     expect(fr.description).toContain('dégâts physiques')
   })
 
-  it('garde une icône unique quelle que soit la langue', () => {
+  it('keeps a single icon whatever the language', () => {
     expect(getSpell(1_306_911, 'fr')!.icon).toBe(getSpell(1_306_911, 'en')!.icon)
   })
 
-  it('prend la langue par défaut quand on ne précise rien', () => {
+  it('takes the default language when none is given', () => {
     expect(getSpell(1_306_911)).toEqual(getSpell(1_306_911, DEFAULT_LOCALE))
   })
 })
 
 describe('wowheadUrl', () => {
-  it('n\'ajoute pas de préfixe en anglais : wowhead.com sert l\'anglais à sa racine', () => {
+  it('adds no prefix for English: wowhead.com serves English at its root', () => {
     expect(wowheadUrl(1_306_911, 'en')).toBe('https://www.wowhead.com/spell=1306911')
   })
 
-  it('préfixe la langue pour les autres', () => {
+  it('prefixes the language for the others', () => {
     expect(wowheadUrl(1_306_911, 'fr')).toBe('https://www.wowhead.com/fr/spell=1306911')
   })
 
-  it('retombe sur la langue par défaut sans argument', () => {
+  it('falls back to the default language with no argument', () => {
     expect(wowheadUrl(1_306_911)).toBe(wowheadUrl(1_306_911, DEFAULT_LOCALE))
   })
 })
 
-describe('Clés de clone', () => {
-  it('fait un aller-retour', () => {
+describe('Clone keys', () => {
+  it('round-trips', () => {
     expect(parseCloneKey(cloneKey(7, 12))).toEqual({ enemyIdx: 7, cloneIdx: 12 })
   })
 
-  it('produit une clé lisible', () => {
+  it('produces a readable key', () => {
     expect(cloneKey(7, 12)).toBe('7:12')
   })
 })
 
 describe('getLookup', () => {
-  it('renvoie undefined pour un donjon inconnu', () => {
-    expect(getLookup('donjon-inexistant')).toBeUndefined()
+  it('returns undefined for an unknown dungeon', () => {
+    expect(getLookup('no-such-dungeon')).toBeUndefined()
   })
 
-  it('mémoïse le résultat', () => {
+  it('memoizes its result', () => {
     expect(getLookup(SLUG)).toBe(getLookup(SLUG))
   })
 
-  it('indexe les mobs par index MDT, jamais par position', () => {
+  it('indexes mobs by MDT index, never by position', () => {
     const lookup = getLookup(SLUG)!
     for (const enemy of lookup.dungeon.enemies) {
       expect(lookup.enemyByIdx.get(enemy.mdtIdx)).toBe(enemy)
     }
   })
 
-  it('indexe aussi les mobs par npcId', () => {
+  it('also indexes mobs by npcId', () => {
     const lookup = getLookup(SLUG)!
     const first = lookup.dungeon.enemies[0]
     expect(lookup.enemyById.get(first.id)).toBeDefined()
   })
 })
 
-describe('Index de clones sparses', () => {
+describe('Sparse clone indices', () => {
   /**
-   * Supprimer un clone dans MDT laisse un trou, et cet index est exactement ce que les routes
-   * référencent : le renuméroter casserait silencieusement toutes les routes existantes.
+   * Deleting a clone in MDT leaves a hole, and that index is exactly what routes reference:
+   * renumbering it would silently break every existing route.
    */
-  const troués = dungeonList.flatMap((d) => {
+  const withHoles = dungeonList.flatMap((d) => {
     const dungeon = getDungeon(d.slug)
     if (!dungeon) return []
     return dungeon.enemies
@@ -130,12 +130,12 @@ describe('Index de clones sparses', () => {
       .map((e) => ({ slug: d.slug, enemy: e }))
   })
 
-  it('le pool contient bien des mobs aux index de clones troués', () => {
-    expect(troués.length).toBeGreaterThan(0)
+  it('the pool does contain mobs with holes in their clone indices', () => {
+    expect(withHoles.length).toBeGreaterThan(0)
   })
 
-  it('conserve les index tels que MDT les donne, sans recompacter', () => {
-    for (const { slug, enemy } of troués) {
+  it('keeps the indices exactly as MDT gives them, without compacting', () => {
+    for (const { slug, enemy } of withHoles) {
       const lookup = getLookup(slug)!
       for (const clone of enemy.clones) {
         expect(
@@ -143,21 +143,21 @@ describe('Index de clones sparses', () => {
           `${slug} ${enemy.name} clone ${clone.mdtIdx}`,
         ).toBeDefined()
       }
-      // Les positions manquantes ne doivent surtout pas avoir été comblées.
-      const présents = new Set(enemy.clones.map((c) => c.mdtIdx))
-      const max = Math.max(...présents)
+      // The missing positions must under no circumstances have been filled in.
+      const present = new Set(enemy.clones.map((c) => c.mdtIdx))
+      const max = Math.max(...present)
       for (let i = 1; i <= max; i++) {
-        if (présents.has(i)) continue
+        if (present.has(i)) continue
         expect(lookup.cloneByKey.has(cloneKey(enemy.mdtIdx, i))).toBe(false)
       }
     }
   })
 })
 
-describe('Packs et clones isolés', () => {
+describe('Packs and lone clones', () => {
   const lookup = getLookup(SLUG)!
 
-  it('regroupe sous un même `g` les clones qui se pull ensemble', () => {
+  it('groups clones pulled together under the same `g`', () => {
     expect(lookup.packs.size).toBeGreaterThan(0)
     for (const [g, pack] of lookup.packs) {
       expect(pack.g).toBe(g)
@@ -170,22 +170,22 @@ describe('Packs et clones isolés', () => {
     }
   })
 
-  it('somme les forces des membres d\'un pack', () => {
+  it("sums its members' forces", () => {
     for (const pack of lookup.packs.values()) {
-      const attendu = pack.members.reduce(
+      const expected = pack.members.reduce(
         (n, ref) => n + lookup.cloneByKey.get(cloneKey(ref.enemyIdx, ref.cloneIdx))!.enemy.count,
         0,
       )
-      expect(pack.count).toBe(attendu)
+      expect(pack.count).toBe(expected)
     }
   })
 
-  it('place le centre et l\'enveloppe de chaque pack dans l\'image', () => {
+  it('keeps every pack centre and hull inside the image', () => {
     for (const pack of lookup.packs.values()) {
       expect(Number.isFinite(pack.center.x)).toBe(true)
       expect(Number.isFinite(pack.center.y)).toBe(true)
       expect(pack.hull.length).toBeGreaterThan(0)
-      // Marge large : l'enveloppe est dilatée de 26 px au-delà des positions réelles.
+      // Generous margin: the hull is grown 26 px beyond the real positions.
       expect(pack.center.x).toBeGreaterThan(-200)
       expect(pack.center.x).toBeLessThan(MAP_WIDTH + 200)
       expect(pack.center.y).toBeGreaterThan(-200)
@@ -193,52 +193,52 @@ describe('Packs et clones isolés', () => {
     }
   })
 
-  it('sort les clones isolés (`g` nul) des packs : chacun se pull seul', () => {
-    const dansUnPack = new Set(
+  it('keeps lone clones (`g` null) out of packs: each pulls on its own', () => {
+    const inSomePack = new Set(
       [...lookup.packs.values()].flatMap((p) => p.members.map((m) => cloneKey(m.enemyIdx, m.cloneIdx))),
     )
     for (const ref of lookup.loners) {
       const key = cloneKey(ref.enemyIdx, ref.cloneIdx)
-      expect(dansUnPack.has(key)).toBe(false)
+      expect(inSomePack.has(key)).toBe(false)
       expect(lookup.cloneByKey.get(key)!.clone.g).toBeNull()
     }
   })
 
-  it('range chaque clone soit dans un pack, soit chez les isolés', () => {
-    const classés = new Set([
+  it('files every clone either in a pack or among the loners', () => {
+    const filed = new Set([
       ...[...lookup.packs.values()].flatMap((p) => p.members.map((m) => cloneKey(m.enemyIdx, m.cloneIdx))),
       ...lookup.loners.map((r) => cloneKey(r.enemyIdx, r.cloneIdx)),
     ])
-    expect(classés.size).toBe(lookup.cloneByKey.size)
+    expect(filed.size).toBe(lookup.cloneByKey.size)
   })
 })
 
 describe('countForces', () => {
   const lookup = getLookup(SLUG)!
 
-  it('additionne les forces des clones référencés', () => {
+  it('adds up the forces of the referenced clones', () => {
     const pack = [...lookup.packs.values()][0]
     expect(countForces(lookup, pack.members)).toBe(pack.count)
   })
 
-  it('ignore les références qui ne correspondent à rien', () => {
+  it('ignores references that match nothing', () => {
     expect(countForces(lookup, [{ enemyIdx: 9999, cloneIdx: 9999 }])).toBe(0)
   })
 
-  it('renvoie zéro sans référence', () => {
+  it('returns zero with no reference', () => {
     expect(countForces(lookup, [])).toBe(0)
   })
 
-  it('ne dépasse pas le total de forces du donjon en ramassant tout', () => {
-    const tous = [...lookup.cloneByKey.keys()].map(parseCloneKey)
-    expect(countForces(lookup, tous)).toBeGreaterThanOrEqual(lookup.dungeon.totalCount)
+  it("covers the dungeon's required total when everything is picked up", () => {
+    const all = [...lookup.cloneByKey.keys()].map(parseCloneKey)
+    expect(countForces(lookup, all)).toBeGreaterThanOrEqual(lookup.dungeon.totalCount)
   })
 })
 
-describe('URLs d\'assets', () => {
+describe('Asset URLs', () => {
   const base = import.meta.env.BASE_URL
 
-  it('partent de BASE_URL, pour rester valides en sous-chemin GitHub Pages', () => {
+  it('start from BASE_URL, to stay valid under a GitHub Pages subpath', () => {
     expect(iconUrl('spell_nature_invisibilty')).toBe(`${base}icons/spell_nature_invisibilty.jpg`)
     expect(portraitUrl(12345)).toBe(`${base}portraits/12345.webp`)
     expect(mapUrl(SLUG)).toBe(`${base}maps/${SLUG}.webp`)

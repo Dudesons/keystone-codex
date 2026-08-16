@@ -1,15 +1,15 @@
 /**
- * Disposition des tuiles de carte de MDT, isolée de toute entrée-sortie.
+ * Map tile layout for MDT, isolated from all I/O.
  *
- * MDT découpe chaque plan en 150 PNG de 128×128 disposés en grille 15×10, la tuile `n`
- * occupant la ligne `ceil(n/15)` et la colonne `((n-1) % 15) + 1` (MapView.lua:584).
- * Ce calcul est la seule chose qui décide où chaque morceau atterrit : une erreur d'un
- * indice décale toute la carte sans qu'aucun build n'échoue, d'où sa séparation.
+ * MDT slices each floor into 150 PNGs of 128×128 laid out on a 15×10 grid, with tile `n`
+ * occupying row `ceil(n/15)` and column `((n-1) % 15) + 1` (MapView.lua:584). This
+ * arithmetic is the only thing deciding where each piece lands: a one-index slip offsets the
+ * whole map without failing any build, which is why it lives on its own.
  */
 
 import { MDT_GEOMETRY } from './config.mjs'
 
-/** Position en pixels du coin haut-gauche de la tuile `n`, indexée depuis 1. */
+/** Pixel position of the top-left corner of tile `n`, indexed from 1. */
 export function tilePosition(n, geometry = MDT_GEOMETRY) {
   const { tileCols, tileSize } = geometry
   const row = Math.ceil(n / tileCols) - 1
@@ -18,10 +18,10 @@ export function tilePosition(n, geometry = MDT_GEOMETRY) {
 }
 
 /**
- * Place toutes les tuiles d'un plan.
+ * Lays out every tile of one floor.
  *
- * `hasTile(n)` dit si la tuile existe ; les manquantes sont rapportées plutôt qu'ignorées
- * silencieusement — un plan troué reste exploitable, mais on veut le savoir.
+ * `hasTile(n)` says whether the tile exists; missing ones are reported rather than silently
+ * skipped — a floor with holes is still usable, but we want to know about it.
  */
 export function tileLayout(hasTile, geometry = MDT_GEOMETRY) {
   const total = geometry.tileCols * geometry.tileRows

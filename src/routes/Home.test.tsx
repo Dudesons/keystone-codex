@@ -9,98 +9,98 @@ import Home from './Home'
 
 afterEach(cleanup)
 
-const monter = () => renderEn(<Home />, { wrapper: MemoryRouter })
+const mount = () => renderEn(<Home />, { wrapper: MemoryRouter })
 
-describe('Liste des donjons', () => {
-  it('affiche une carte par donjon du pool', () => {
-    const { container } = monter()
+describe('Dungeon list', () => {
+  it('shows one card per dungeon in the pool', () => {
+    const { container } = mount()
     expect(container.querySelectorAll('a[href^="/d/"]')).toHaveLength(dungeonList.length)
   })
 
-  it('mène à la page de chaque donjon', () => {
-    const { container } = monter()
+  it('links to every dungeon page', () => {
+    const { container } = mount()
     for (const d of dungeonList) {
       expect(container.querySelector(`a[href="/d/${d.slug}"]`), d.slug).not.toBeNull()
     }
   })
 
-  it('nomme chaque donjon', () => {
-    monter()
+  it('names every dungeon', () => {
+    mount()
     for (const d of dungeonList) {
       expect(screen.getByText(d.englishName)).toBeDefined()
     }
   })
 
-  it('résume boss, packs et forces', () => {
-    const { container } = monter()
-    const premier = dungeonList[0]
-    const carte = container.querySelector(`a[href="/d/${premier.slug}"]`) as HTMLElement
-    const texte = within(carte)
-    expect(texte.getByText(`${premier.bosses} ${premier.bosses === 1 ? 'boss' : 'bosses'}`)).toBeDefined()
-    expect(texte.getByText(`${premier.packCount} packs`)).toBeDefined()
-    expect(texte.getByText(`${premier.totalCount} forces`)).toBeDefined()
+  it('summarizes bosses, packs and forces', () => {
+    const { container } = mount()
+    const first = dungeonList[0]
+    const card = container.querySelector(`a[href="/d/${first.slug}"]`) as HTMLElement
+    const text = within(card)
+    expect(text.getByText(`${first.bosses} ${first.bosses === 1 ? 'boss' : 'bosses'}`)).toBeDefined()
+    expect(text.getByText(`${first.packCount} packs`)).toBeDefined()
+    expect(text.getByText(`${first.totalCount} forces`)).toBeDefined()
   })
 })
 
-describe('Avancement du codex', () => {
-  it('compte les fiches rédigées sur le nombre de mobs distincts', () => {
-    const { container } = monter()
-    const premier = dungeonList[0]
-    const dungeon = getDungeon(premier.slug)!
-    const attendu = contentProgress(premier.slug, [...new Set(dungeon.enemies.map((e) => e.id))])
-    const carte = container.querySelector(`a[href="/d/${premier.slug}"]`) as HTMLElement
-    expect(within(carte).getByText(`${attendu.written}/${attendu.total} cards`)).toBeDefined()
+describe('Codex progress', () => {
+  it('counts written entries against the number of distinct mobs', () => {
+    const { container } = mount()
+    const first = dungeonList[0]
+    const dungeon = getDungeon(first.slug)!
+    const expected = contentProgress(first.slug, [...new Set(dungeon.enemies.map((e) => e.id))])
+    const card = container.querySelector(`a[href="/d/${first.slug}"]`) as HTMLElement
+    expect(within(card).getByText(`${expected.written}/${expected.total} cards`)).toBeDefined()
   })
 
-  it('reflète l\'avancement dans la largeur de la barre', () => {
-    const { container } = monter()
-    const premier = dungeonList[0]
-    const dungeon = getDungeon(premier.slug)!
+  it('reflects the progress in the bar width', () => {
+    const { container } = mount()
+    const first = dungeonList[0]
+    const dungeon = getDungeon(first.slug)!
     const { written, total } = contentProgress(
-      premier.slug,
+      first.slug,
       [...new Set(dungeon.enemies.map((e) => e.id))],
     )
-    const carte = container.querySelector(`a[href="/d/${premier.slug}"]`) as HTMLElement
-    const barre = carte.querySelector<HTMLElement>('.bg-gold-500')!
-    expect(barre.style.width).toBe(`${total ? (written / total) * 100 : 0}%`)
+    const card = container.querySelector(`a[href="/d/${first.slug}"]`) as HTMLElement
+    const bar = card.querySelector<HTMLElement>('.bg-gold-500')!
+    expect(bar.style.width).toBe(`${total ? (written / total) * 100 : 0}%`)
   })
 })
 
-describe('Métadonnées de donjon', () => {
-  it('n\'affiche chrono et résumé que lorsqu\'ils sont renseignés', () => {
-    const { container } = monter()
+describe('Dungeon metadata', () => {
+  it('shows timer and summary only once they are filled in', () => {
+    const { container } = mount()
     for (const d of dungeonList) {
       const content = getDungeonContent(d.slug)
-      const carte = container.querySelector(`a[href="/d/${d.slug}"]`) as HTMLElement
+      const card = container.querySelector(`a[href="/d/${d.slug}"]`) as HTMLElement
       if (!content?.timer) {
-        expect(within(carte).queryByText(/ min$/), d.slug).toBeNull()
+        expect(within(card).queryByText(/ min$/), d.slug).toBeNull()
       }
       if (content?.summary) {
-        expect(within(carte).getByText(content.summary), d.slug).toBeDefined()
+        expect(within(card).getByText(content.summary), d.slug).toBeDefined()
       }
     }
   })
 })
 
-describe('Repères de page', () => {
-  it('annonce la saison couverte', () => {
-    monter()
+describe('Page landmarks', () => {
+  it('announces which season it covers', () => {
+    mount()
     expect(screen.getByText('MIDNIGHT · SEASON 2')).toBeDefined()
     expect(screen.getByText('Mythic+ Codex')).toBeDefined()
   })
 
-  it('offre le sélecteur de langue et bascule tout le chrome', () => {
-    monter()
-    const enBouton = screen.getByRole('button', { name: 'EN' })
-    expect(enBouton.getAttribute('aria-pressed')).toBe('true')
+  it('offers the language switcher and flips the whole chrome', () => {
+    mount()
+    const enButton = screen.getByRole('button', { name: 'EN' })
+    expect(enButton.getAttribute('aria-pressed')).toBe('true')
 
     fireEvent.click(screen.getByRole('button', { name: 'FR' }))
     expect(screen.getByText('MIDNIGHT · SAISON 2')).toBeDefined()
     expect(screen.getByText('Codex Mythique+')).toBeDefined()
   })
 
-  it('renvoie vers `content/` pour la rédaction', () => {
-    const { container } = monter()
+  it('points at `content/` for writing', () => {
+    const { container } = mount()
     expect(container.textContent).toContain('content/')
   })
 })

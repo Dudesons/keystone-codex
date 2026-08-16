@@ -2,162 +2,162 @@ import { describe, expect, it } from 'vitest'
 import { contentProgress, getDungeonContent, getMobContent } from './content'
 
 /**
- * Ces tests lisent les vrais fichiers de `content/`. Deux fiches servent de repères :
- * l'une est rédigée, l'autre est un gabarit intact tel que `npm run scaffold` le produit.
+ * These tests read the real files under `content/`. Two entries serve as landmarks: one is
+ * written, the other is an untouched stub exactly as `npm run scaffold` produces it.
  */
 const SLUG = 'altar-of-fangs'
-const REDIGEE = 270306 // Ritual Chieftain
-const GABARIT = 259445 // Rav'i
-const SANS_FICHE = 999_999
+const WRITTEN = 270306 // Ritual Chieftain
+const STUB = 259445 // Rav'i
+const NO_ENTRY = 999_999
 
-describe('Fiche de mob rédigée', () => {
-  const fiche = getMobContent(SLUG, REDIGEE)
+describe('Written mob entry', () => {
+  const entry = getMobContent(SLUG, WRITTEN)
 
-  it('existe et porte son npcId', () => {
-    expect(fiche).toBeDefined()
-    expect(fiche!.npcId).toBe(REDIGEE)
+  it('exists and carries its npcId', () => {
+    expect(entry).toBeDefined()
+    expect(entry!.npcId).toBe(WRITTEN)
   })
 
-  it('lit le jugement humain du frontmatter', () => {
-    expect(fiche!.threat).toBe('high')
-    expect(fiche!.role).toBe('melee')
-    expect(fiche!.trap).toContain('Immune to every CC')
+  it('reads the human judgement out of the frontmatter', () => {
+    expect(entry!.threat).toBe('high')
+    expect(entry!.role).toBe('melee')
+    expect(entry!.trap).toContain('Immune to every CC')
   })
 
-  it('conserve les annotations de sorts avec leur tag et leur priorité', () => {
-    const dismember = fiche!.spells?.find((s) => s.id === 1306911)
+  it('keeps the spell annotations with their tag and priority', () => {
+    const dismember = entry!.spells?.find((s) => s.id === 1306911)
     expect(dismember).toMatchObject({ tag: 'tank', prio: 1 })
     expect(dismember!.note).toContain('581k')
   })
 
-  it('convertit la prose en HTML', () => {
-    expect(fiche!.html).toContain('<p>')
-    expect(fiche!.html).toContain('<strong>Dismember</strong>')
+  it('converts the prose to HTML', () => {
+    expect(entry!.html).toContain('<p>')
+    expect(entry!.html).toContain('<strong>Dismember</strong>')
   })
 
-  it('n\'émet pas les commentaires HTML d\'aide dans le rendu', () => {
-    expect(fiche!.html).not.toContain('<!--')
-    expect(fiche!.html).not.toContain('To confirm in game')
+  it('does not emit the HTML helper comments into the render', () => {
+    expect(entry!.html).not.toContain('<!--')
+    expect(entry!.html).not.toContain('To confirm in game')
   })
 
-  it('ne compte pas comme gabarit', () => {
-    expect(fiche!.isStub).toBe(false)
-  })
-})
-
-describe('Gabarit non rédigé', () => {
-  const gabarit = getMobContent(SLUG, GABARIT)
-
-  it('est chargé malgré l\'absence de rédaction', () => {
-    expect(gabarit).toBeDefined()
-    expect(gabarit!.npcId).toBe(GABARIT)
-  })
-
-  it('n\'invente aucun jugement : ni menace, ni piège, ni prose', () => {
-    expect(gabarit!.threat).toBeFalsy()
-    expect(gabarit!.trap).toBeFalsy()
-    expect(gabarit!.html.trim()).toBe('')
-  })
-
-  it('est marqué comme gabarit : `tag: todo` ne vaut pas rédaction', () => {
-    expect(gabarit!.isStub).toBe(true)
-    expect(gabarit!.spells?.every((s) => s.tag === 'todo')).toBe(true)
+  it('does not count as a stub', () => {
+    expect(entry!.isStub).toBe(false)
   })
 })
 
-describe('Mob sans fichier', () => {
-  it('renvoie undefined plutôt que d\'échouer — le codex se remplit progressivement', () => {
-    expect(getMobContent(SLUG, SANS_FICHE)).toBeUndefined()
+describe('Unwritten stub', () => {
+  const stub = getMobContent(SLUG, STUB)
+
+  it('loads even though nothing has been written', () => {
+    expect(stub).toBeDefined()
+    expect(stub!.npcId).toBe(STUB)
   })
 
-  it('renvoie undefined pour un donjon inconnu', () => {
-    expect(getMobContent('donjon-inexistant', REDIGEE)).toBeUndefined()
+  it('invents no judgement: no threat, no trap, no prose', () => {
+    expect(stub!.threat).toBeFalsy()
+    expect(stub!.trap).toBeFalsy()
+    expect(stub!.html.trim()).toBe('')
+  })
+
+  it('is marked as a stub: `tag: todo` does not count as writing', () => {
+    expect(stub!.isStub).toBe(true)
+    expect(stub!.spells?.every((s) => s.tag === 'todo')).toBe(true)
   })
 })
 
-describe('Fiche de donjon', () => {
-  it('charge `_dungeon.md` et rend son plan de route', () => {
+describe('Mob with no file', () => {
+  it('returns undefined rather than failing — the codex fills in gradually', () => {
+    expect(getMobContent(SLUG, NO_ENTRY)).toBeUndefined()
+  })
+
+  it('returns undefined for an unknown dungeon', () => {
+    expect(getMobContent('no-such-dungeon', WRITTEN)).toBeUndefined()
+  })
+})
+
+describe('Dungeon entry', () => {
+  it('loads `_dungeon.md` and renders its route plan', () => {
     const dungeon = getDungeonContent(SLUG)
     expect(dungeon).toBeDefined()
     expect(dungeon!.html).toContain('Route plan')
   })
 
-  it('laisse chrono et résumé vides tant qu\'ils ne sont pas renseignés', () => {
+  it('leaves timer and summary empty until they are filled in', () => {
     const dungeon = getDungeonContent(SLUG)!
     expect(dungeon.timer).toBeFalsy()
     expect(dungeon.summary).toBeFalsy()
   })
 
-  it('renvoie undefined pour un donjon inconnu', () => {
-    expect(getDungeonContent('donjon-inexistant')).toBeUndefined()
+  it('returns undefined for an unknown dungeon', () => {
+    expect(getDungeonContent('no-such-dungeon')).toBeUndefined()
   })
 })
 
 /**
- * Le Ritual Chieftain est la fiche bilingue de référence : base anglaise
- * (`270306-ritual-chieftain.md`) et traduction française (`.fr.md`) qui ne reprend que le
- * texte. C'est ce couple qui exerce la fusion champ par champ.
+ * Ritual Chieftain is the reference bilingual entry: an English base
+ * (`270306-ritual-chieftain.md`) and a French translation (`.fr.md`) carrying text only.
+ * That pair is what exercises the field-by-field merge.
  */
-describe('Fiche traduite', () => {
-  const base = getMobContent(SLUG, REDIGEE, 'en')!
-  const traduite = getMobContent(SLUG, REDIGEE, 'fr')!
+describe('Translated entry', () => {
+  const base = getMobContent(SLUG, WRITTEN, 'en')!
+  const translated = getMobContent(SLUG, WRITTEN, 'fr')!
 
-  it('reprend le texte de la traduction', () => {
-    expect(traduite.trap).toContain('Immunisé à tous les CC')
-    expect(traduite.html).toContain('séquence qui tue')
+  it('takes the text from the translation', () => {
+    expect(translated.trap).toContain('Immunisé à tous les CC')
+    expect(translated.html).toContain('séquence qui tue')
   })
 
-  it('hérite des jugements de la base, que la traduction ne redit pas', () => {
-    // `threat`, `role`, `tag` et `prio` n'apparaissent pas dans le .fr.md : les dupliquer
-    // serait la garantie qu'ils divergent un jour.
-    expect(traduite.threat).toBe('high')
-    expect(traduite.role).toBe('melee')
-    expect(traduite.spells?.find((s) => s.id === 1306911)).toMatchObject({ tag: 'tank', prio: 1 })
+  it('inherits the judgements from the base, which the translation does not repeat', () => {
+    // `threat`, `role`, `tag` and `prio` do not appear in the .fr.md: duplicating them would
+    // guarantee they drift apart eventually.
+    expect(translated.threat).toBe('high')
+    expect(translated.role).toBe('melee')
+    expect(translated.spells?.find((s) => s.id === 1306911)).toMatchObject({ tag: 'tank', prio: 1 })
   })
 
-  it('fusionne les notes de sorts par id', () => {
-    const dismemberFr = traduite.spells?.find((s) => s.id === 1306911)
+  it('merges the spell notes by id', () => {
+    const dismemberFr = translated.spells?.find((s) => s.id === 1306911)
     const dismemberEn = base.spells?.find((s) => s.id === 1306911)
     expect(dismemberFr!.note).toContain('581k physique')
     expect(dismemberEn!.note).toContain('581k physical')
-    expect(traduite.spells).toHaveLength(base.spells!.length)
+    expect(translated.spells).toHaveLength(base.spells!.length)
   })
 
-  it('reste rédigée dans les deux langues', () => {
+  it('counts as written in both languages', () => {
     expect(base.isStub).toBe(false)
-    expect(traduite.isStub).toBe(false)
+    expect(translated.isStub).toBe(false)
   })
 })
 
-describe('Retombée sur la langue de base', () => {
-  it('sert la fiche de base quand la traduction manque', () => {
-    // Rav'i n'a pas de .fr.md : le lecteur francophone voit la base plutôt qu'un trou.
-    expect(getMobContent(SLUG, GABARIT, 'fr')).toEqual(getMobContent(SLUG, GABARIT, 'en'))
+describe('Falling back to the base language', () => {
+  it('serves the base entry when the translation is missing', () => {
+    // Rav'i has no .fr.md: a French reader sees the base rather than a hole.
+    expect(getMobContent(SLUG, STUB, 'fr')).toEqual(getMobContent(SLUG, STUB, 'en'))
   })
 
-  it('sert le plan de donjon de base dans les deux langues', () => {
+  it('serves the base dungeon plan in both languages', () => {
     expect(getDungeonContent(SLUG, 'fr')!.html).toBe(getDungeonContent(SLUG, 'en')!.html)
   })
 
-  it('ne fabrique rien pour un mob sans aucun fichier', () => {
-    expect(getMobContent(SLUG, SANS_FICHE, 'fr')).toBeUndefined()
+  it('fabricates nothing for a mob with no file at all', () => {
+    expect(getMobContent(SLUG, NO_ENTRY, 'fr')).toBeUndefined()
   })
 })
 
 describe('contentProgress', () => {
-  it('ne compte que les fiches portant une rédaction', () => {
-    expect(contentProgress(SLUG, [REDIGEE, GABARIT])).toEqual({ written: 1, total: 2 })
+  it('only counts entries carrying actual writing', () => {
+    expect(contentProgress(SLUG, [WRITTEN, STUB])).toEqual({ written: 1, total: 2 })
   })
 
-  it('compte ce que le lecteur voit : la retombée sur la base compte comme lisible', () => {
-    expect(contentProgress(SLUG, [REDIGEE, GABARIT], 'fr')).toEqual({ written: 1, total: 2 })
+  it('counts what the reader sees: a fallback to the base counts as readable', () => {
+    expect(contentProgress(SLUG, [WRITTEN, STUB], 'fr')).toEqual({ written: 1, total: 2 })
   })
 
-  it('compte un mob sans fichier comme non rédigé', () => {
-    expect(contentProgress(SLUG, [SANS_FICHE])).toEqual({ written: 0, total: 1 })
+  it('counts a mob with no file as unwritten', () => {
+    expect(contentProgress(SLUG, [NO_ENTRY])).toEqual({ written: 0, total: 1 })
   })
 
-  it('renvoie un total nul pour une liste vide', () => {
+  it('returns a zero total for an empty list', () => {
     expect(contentProgress(SLUG, [])).toEqual({ written: 0, total: 0 })
   })
 })

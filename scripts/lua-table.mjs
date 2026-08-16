@@ -1,16 +1,16 @@
 /**
- * Parseur de littéraux de table Lua.
+ * Parser for Lua table literals.
  *
- * Les fichiers de donjon de MDT sont générés automatiquement, donc leur syntaxe est très
- * régulière : uniquement des tables imbriquées avec des clés `["str"]`, `[nombre]` ou nues,
- * et des valeurs string / nombre / booléen / nil / table. Le seul cas exotique est la
- * concaténation de chaînes (`'Interface\\AddOns\\'..addonName..'\\Textures'`) et les appels
- * de locale (`L["Nom"]`), qu'on renvoie sous forme d'expression brute à post-traiter.
+ * MDT's dungeon files are machine-generated, so their syntax is very regular: nested tables
+ * only, with `["str"]`, `[number]` or bare keys, and string / number / boolean / nil / table
+ * values. The only exotic cases are string concatenation
+ * (`'Interface\\AddOns\\'..addonName..'\\Textures'`) and locale lookups (`L["Name"]`), which
+ * we hand back as raw expressions for the caller to post-process.
  */
 
 const WHITESPACE = new Set([' ', '\t', '\r', '\n'])
 
-/** Marqueur pour une valeur qu'on n'a pas su réduire à une primitive. */
+/** Marker for a value we could not reduce to a primitive. */
 export class LuaExpr {
   constructor(raw) {
     this.raw = raw
@@ -25,7 +25,7 @@ class Parser {
 
   error(msg) {
     const line = this.src.slice(0, this.pos).split('\n').length
-    return new Error(`${msg} (ligne ${line}, offset ${this.pos})`)
+    return new Error(`${msg} (line ${line}, offset ${this.pos})`)
   }
 
   skipTrivia() {
@@ -34,7 +34,7 @@ class Parser {
       if (WHITESPACE.has(c)) {
         this.pos++
       } else if (c === '-' && this.src[this.pos + 1] === '-') {
-        // Commentaire ligne (les fichiers MDT n'utilisent pas les commentaires longs).
+        // Line comment (MDT files do not use long comments).
         const nl = this.src.indexOf('\n', this.pos)
         this.pos = nl === -1 ? this.src.length : nl
       } else {
@@ -71,16 +71,16 @@ class Parser {
         this.pos++
       }
     }
-    throw this.error('chaîne non terminée')
+    throw this.error('unterminated string')
   }
 
-  /** Lit une valeur, en absorbant une éventuelle concaténation `..`. */
+  /** Reads a value, absorbing a `..` concatenation if there is one. */
   parseValue() {
     this.skipTrivia()
     const start = this.pos
     let first = this.parseAtom()
 
-    // Concaténation : on garde l'expression brute, en mémorisant les segments littéraux.
+    // Concatenation: keep the raw expression, remembering the literal segments.
     this.skipTrivia()
     if (this.src[this.pos] === '.' && this.src[this.pos + 1] === '.') {
       const parts = [first]
@@ -111,7 +111,7 @@ class Parser {
       }
     }
 
-    // Identifiant, mot-clé, ou accès indexé type `L["Nom"]`.
+    // Identifier, keyword, or an indexed access such as `L["Name"]`.
     const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(this.src.slice(this.pos))
     if (m) {
       this.pos += m[0].length
@@ -119,7 +119,7 @@ class Parser {
       if (m[0] === 'false') return false
       if (m[0] === 'nil') return null
 
-      // `L["Nom"]` ou `MDT.foo` : on capture l'expression et on garde la dernière chaîne vue.
+      // `L["Name"]` or `MDT.foo`: capture the expression and keep the last string seen.
       const startExpr = this.pos - m[0].length
       let literal = null
       for (;;) {
@@ -128,13 +128,13 @@ class Parser {
           this.pos++
           const inner = this.parseValue()
           this.skipTrivia()
-          if (this.src[this.pos] !== ']') throw this.error("']' attendu")
+          if (this.src[this.pos] !== ']') throw this.error("expected ']'")
           this.pos++
           if (typeof inner === 'string') literal = inner
         } else if (this.src[this.pos] === '.' && this.src[this.pos + 1] !== '.') {
           this.pos++
           const id = /^[A-Za-z_][A-Za-z0-9_]*/.exec(this.src.slice(this.pos))
-          if (!id) throw this.error('identifiant attendu après "."')
+          if (!id) throw this.error('expected an identifier after "."')
           this.pos += id[0].length
         } else {
           break
@@ -150,11 +150,11 @@ class Parser {
       return expr
     }
 
-    throw this.error(`valeur inattendue: ${JSON.stringify(this.src.slice(this.pos, this.pos + 24))}`)
+    throw this.error(`unexpected value: ${JSON.stringify(this.src.slice(this.pos, this.pos + 24))}`)
   }
 
   parseTable() {
-    if (this.src[this.pos] !== '{') throw this.error("'{' attendu")
+    if (this.src[this.pos] !== '{') throw this.error("expected '{'")
     this.pos++
 
     const entries = new Map()
@@ -166,20 +166,20 @@ class Parser {
         this.pos++
         return entries
       }
-      if (this.pos >= this.src.length) throw this.error('table non terminée')
+      if (this.pos >= this.src.length) throw this.error('unterminated table')
 
       let key = null
       if (this.src[this.pos] === '[') {
         this.pos++
         key = this.parseValue()
         this.skipTrivia()
-        if (this.src[this.pos] !== ']') throw this.error("']' attendu")
+        if (this.src[this.pos] !== ']') throw this.error("expected ']'")
         this.pos++
         this.skipTrivia()
-        if (this.src[this.pos] !== '=') throw this.error("'=' attendu")
+        if (this.src[this.pos] !== '=') throw this.error("expected '='")
         this.pos++
       } else {
-        // Clé nue `foo = ...` ou valeur positionnelle.
+        // Bare key `foo = ...`, or a positional value.
         const save = this.pos
         const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(this.src.slice(this.pos))
         if (m) {
@@ -204,18 +204,18 @@ class Parser {
   }
 }
 
-/** Parse le littéral de table Lua qui commence au premier `{` à partir de `from`. */
+/** Parses the Lua table literal starting at the first `{` at or after `from`. */
 export function parseTableAt(src, from) {
   const open = src.indexOf('{', from)
-  if (open === -1) throw new Error('aucune table trouvée')
+  if (open === -1) throw new Error('no table found')
   const p = new Parser(src, open)
   const value = p.parseTable()
   return { value, end: p.pos }
 }
 
 /**
- * Parse l'expression qui suit `MDT.<field>[dungeonIndex] = ` dans le source.
- * Renvoie `undefined` si l'affectation est absente.
+ * Parses the expression following `MDT.<field>[dungeonIndex] = ` in the source.
+ * Returns `undefined` when the assignment is absent.
  */
 export function parseAssignment(src, field) {
   const re = new RegExp(`MDT\\.${field}\\[dungeonIndex\\]\\s*=\\s*`, 'g')
@@ -225,7 +225,7 @@ export function parseAssignment(src, field) {
   return p.parseValue()
 }
 
-/** Convertit une Map issue du parseur en objet/tableau JS ordinaire. */
+/** Converts a Map produced by the parser into a plain JS object or array. */
 export function toPlain(value, { arrays = true } = {}) {
   if (value instanceof LuaExpr) return value
   if (!(value instanceof Map)) return value

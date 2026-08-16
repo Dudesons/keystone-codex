@@ -4,20 +4,20 @@ import { fileURLToPath } from 'node:url'
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 /**
- * Racine de l'addon MDT. Surchargeable via la variable d'environnement MDT_PATH,
- * utile si WoW est installé ailleurs ou pour re-générer depuis une autre machine.
+ * Root of the MDT addon. Overridable through the MDT_PATH environment variable, which helps
+ * when WoW lives elsewhere or when regenerating from another machine.
  */
 export const MDT_PATH =
   process.env.MDT_PATH ||
   'D:\\jeux\\World of Warcraft\\_retail_\\Interface\\AddOns\\MythicDungeonTools'
 
-/** Dossier des données de donjon de l'extension courante, à l'intérieur de MDT. */
+/** Folder holding the current expansion's dungeon data, inside MDT. */
 export const MDT_EXPANSION = process.env.MDT_EXPANSION || 'Midnight'
 
 /**
- * Pool Mythic+ de la saison 2 de Midnight (démarrage 18/08/2026).
- * Les noms correspondent aux fichiers .lua de MDT ; tout le reste (index de donjon,
- * total de forces, mapID) est lu dans ces fichiers, rien n'est codé en dur ici.
+ * Mythic+ pool for Midnight season 2 (started 2026-08-18).
+ * The names match MDT's .lua filenames; everything else — dungeon index, total forces,
+ * mapID — is read from those files. Nothing else is hardcoded here.
  */
 export const SEASON_DUNGEONS = [
   'AltarOfFangs',
@@ -31,15 +31,14 @@ export const SEASON_DUNGEONS = [
 ]
 
 /**
- * Langues pour lesquelles on récupère les libellés de sorts, et leur code de locale sur
- * nether.wowhead.com.
+ * Languages we fetch spell labels for, and their locale code on nether.wowhead.com.
  *
- * Ces codes ont été **vérifiés par sonde**, pas lus dans une documentation : `0` rend
- * l'anglais, `2` le français. Sonde avant d'en ajouter un, ne le devine pas.
+ * These codes were **established by probing**, not read from documentation: `0` returns
+ * English, `2` French. Probe before adding one; do not guess it.
  *
- * Le **premier** élément est la langue de base : c'est son passage qui détermine le sens de
- * chaque ligne de tooltip pour toutes les autres (voir `parseTooltip` dans fetch-assets.mjs).
- * Il doit correspondre à `DEFAULT_LOCALE` dans `src/lib/i18n/locales.ts`.
+ * The **first** entry is the base language: its pass is what determines the meaning of every
+ * tooltip line for all the others (see `parseTooltip` in fetch-assets.mjs). It must match
+ * `DEFAULT_LOCALE` in `src/lib/i18n/locales.ts`.
  */
 export const SPELL_LOCALES = [
   { lang: 'en', wowhead: 0 },
@@ -50,7 +49,7 @@ export const GENERATED_DIR = path.join(ROOT, 'src', 'data', 'generated')
 export const PUBLIC_DIR = path.join(ROOT, 'public')
 export const CONTENT_DIR = path.join(ROOT, 'content')
 
-/** Espace de coordonnées de MDT (MainFrame.lua : sizex/sizey) et géométrie des tuiles. */
+/** MDT's coordinate space (MainFrame.lua: sizex/sizey) and the tile grid. */
 export const MDT_GEOMETRY = {
   coordWidth: 840,
   coordHeight: 560,
@@ -71,7 +70,7 @@ export function slugify(name) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    // Les apostrophes disparaissent au lieu de devenir un s\u00e9parateur, sinon "King's" -> "king-s".
+    // Apostrophes vanish rather than becoming a separator, otherwise "King's" -> "king-s".
     .replace(/['\u2019]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')

@@ -1,9 +1,9 @@
 /**
- * Extrait les données de donjon de MDT vers du JSON versionné.
+ * Extracts MDT's dungeon data into versioned JSON.
  *
- * L'app ne lit jamais l'installation WoW à l'exécution : ce script est le seul pont entre
- * `D:\jeux\...\MythicDungeonTools\Midnight\*.lua` et `src/data/generated/`. À relancer
- * quand MDT est mis à jour (`npm run extract`).
+ * The app never reads the WoW install at runtime: this script is the only bridge between
+ * `D:\jeux\...\MythicDungeonTools\Midnight\*.lua` and `src/data/generated/`. Re-run it when
+ * MDT is updated (`npm run extract`).
  */
 
 import fs from 'node:fs'
@@ -11,7 +11,7 @@ import path from 'node:path'
 import { LuaExpr, parseAssignment, toPlain } from './lua-table.mjs'
 import { GENERATED_DIR, MDT_EXPANSION, MDT_PATH, SEASON_DUNGEONS, slugify } from './config.mjs'
 
-/** Les CC que MDT référence dans `characteristics`, dans l'ordre d'affichage du codex. */
+/** The crowd control MDT lists in `characteristics`, in the codex display order. */
 const CC_ORDER = [
   'Stun', 'Incapacitate', 'Silence', 'Fear', 'Root', 'Slow', 'Knock', 'Grip',
   'Disorient', 'Polymorph', 'Sap', 'Banish', 'Imprison', 'Hibernate', 'Repentance',
@@ -19,11 +19,11 @@ const CC_ORDER = [
 ]
 
 /**
- * Renvoie les entrées à clé entière d'une table Lua, triées numériquement.
+ * Returns a Lua table's integer-keyed entries, sorted numerically.
  *
- * Les index de MDT sont *sparses* : supprimer un mob ou un clone laisse un trou
- * (`clones = { [8] = ..., [13] = ... }`). Or cet index est exactement ce que les routes
- * référencent, donc il doit être préservé tel quel et jamais renuméroté.
+ * MDT's indices are *sparse*: deleting a mob or a clone leaves a hole
+ * (`clones = { [8] = ..., [13] = ... }`). Those indices are exactly what routes reference,
+ * so they must be preserved as-is and never renumbered.
  */
 function intEntries(table) {
   if (!table || typeof table !== 'object') return []
@@ -33,34 +33,34 @@ function intEntries(table) {
     .sort((a, b) => a[0] - b[0])
 }
 
-/** Types de dispel que MDT pose comme drapeaux sur les sorts. */
+/** Dispel types MDT sets as flags on spells. */
 const DISPEL_FLAGS = ['magic', 'curse', 'disease', 'poison', 'bleed', 'enrage']
 
 function readDungeonSource(file) {
   const full = path.join(MDT_PATH, MDT_EXPANSION, `${file}.lua`)
   if (!fs.existsSync(full)) {
     throw new Error(
-      `Fichier MDT introuvable : ${full}\n` +
-        `Vérifie que MDT est installé, ou surcharge MDT_PATH / MDT_EXPANSION.`,
+      `MDT file not found: ${full}\n` +
+        `Check that MDT is installed, or override MDT_PATH / MDT_EXPANSION.`,
     )
   }
   return fs.readFileSync(full, 'utf8')
 }
 
-/** Résout la valeur d'un `local <name> = <nombre>` en tête de fichier. */
+/** Resolves the value of a `local <name> = <number>` at the top of the file. */
 function readLocalNumber(src, name) {
   const m = new RegExp(`local\\s+${name}\\s*=\\s*(-?\\d+)`).exec(src)
   return m ? Number(m[1]) : undefined
 }
 
-/** Déplie `plain(expr)` : les LuaExpr issues de `L["X"]` portent leur littéral. */
+/** Unfolds `plain(expr)`: LuaExpr values coming from `L["X"]` carry their literal. */
 function unwrap(value) {
   if (value instanceof LuaExpr) return value.literal ?? value.identifier ?? value.raw
   return value
 }
 
 function extractTextureFolder(dungeonMaps) {
-  // dungeonMaps[1].customTextures = 'Interface\\AddOns\\'..addonName..'\\Midnight\\Textures\\<Dossier>'
+  // dungeonMaps[1].customTextures = 'Interface\\AddOns\\'..addonName..'\\Midnight\\Textures\\<Folder>'
   const level = dungeonMaps?.['1'] ?? dungeonMaps?.[1]
   const raw = level?.customTextures
   const source = raw instanceof LuaExpr ? raw.raw : typeof raw === 'string' ? raw : ''
@@ -75,7 +75,7 @@ function normaliseSpells(spells) {
     const dispel = DISPEL_FLAGS.filter((f) => flags?.[f] === true)
     return {
       id: Number(id),
-      // MDT ne pose `interruptible` que quand c'est pertinent ; l'absence n'est pas une négation.
+      // MDT only sets `interruptible` when it is relevant; its absence is not a denial.
       interruptible: flags?.interruptible === true ? true : undefined,
       dispel: dispel.length ? dispel : undefined,
     }
@@ -86,7 +86,7 @@ function normaliseCharacteristics(characteristics) {
   if (!characteristics || typeof characteristics !== 'object') return []
   const known = CC_ORDER.filter((cc) => characteristics[cc] === true)
   const extra = Object.keys(characteristics).filter((k) => characteristics[k] === true && !CC_ORDER.includes(k))
-  if (extra.length) console.warn(`  ! characteristics inconnues, ajoute-les à CC_ORDER : ${extra.join(', ')}`)
+  if (extra.length) console.warn(`  ! unknown characteristics, add them to CC_ORDER: ${extra.join(', ')}`)
   return [...known, ...extra]
 }
 
@@ -94,7 +94,7 @@ function normaliseClones(clones) {
   return intEntries(clones).map(([mdtIdx, clone]) => {
     const patrol = intEntries(clone.patrol).map(([, p]) => ({ x: p.x, y: p.y }))
     return {
-      // Index tel que MDT le référence dans les routes — sparse, donc conservé à l'identique.
+      // The index as MDT references it in routes — sparse, so kept exactly as found.
       mdtIdx,
       x: clone.x,
       y: clone.y,
@@ -108,7 +108,7 @@ function normaliseClones(clones) {
 function extractDungeon(file) {
   const src = readDungeonSource(file)
   const dungeonIndex = readLocalNumber(src, 'dungeonIndex')
-  if (dungeonIndex === undefined) throw new Error(`${file}: dungeonIndex introuvable`)
+  if (dungeonIndex === undefined) throw new Error(`${file}: dungeonIndex not found`)
 
   const mapInfo = toPlain(parseAssignment(src, 'mapInfo'), { arrays: false }) ?? {}
   const dungeonMaps = toPlain(parseAssignment(src, 'dungeonMaps'), { arrays: false }) ?? {}
@@ -144,7 +144,7 @@ function extractDungeon(file) {
 
   const sublevelCount = Object.keys(subLevels).length || 1
   if (sublevelCount !== 1) {
-    console.warn(`  ! ${englishName} a ${sublevelCount} étages — la carte n'en gère qu'un pour l'instant`)
+    console.warn(`  ! ${englishName} has ${sublevelCount} floors — the map only handles one for now`)
   }
 
   return {
@@ -184,9 +184,9 @@ function main() {
       'utf8',
     )
 
-    // Le total de forces atteignable doit couvrir le total requis, sinon l'extraction a raté.
+    // The reachable force total must cover the required total, otherwise extraction missed something.
     const coverage = dungeon.totalCount ? Math.round((stats.forces / dungeon.totalCount) * 100) : 0
-    const flag = coverage < 100 ? '  <-- forces insuffisantes' : ''
+    const flag = coverage < 100 ? '  <-- not enough forces' : ''
     console.log(
       `${dungeon.englishName.padEnd(22)} idx=${String(dungeon.mdtIndex).padEnd(4)} ` +
         `mobs=${String(dungeon.enemies.length).padStart(3)} clones=${String(stats.clones).padStart(4)} ` +
@@ -208,7 +208,7 @@ function main() {
   }
 
   fs.writeFileSync(path.join(GENERATED_DIR, 'dungeons.json'), JSON.stringify(index, null, 2), 'utf8')
-  console.log(`\n${index.length} donjons écrits dans ${path.relative(process.cwd(), GENERATED_DIR)}`)
+  console.log(`\n${index.length} dungeons written to ${path.relative(process.cwd(), GENERATED_DIR)}`)
 }
 
 main()

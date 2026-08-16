@@ -13,7 +13,7 @@ import {
   type Point,
 } from './geometry'
 
-/** Aire signée (lacet). Positive = sens horaire dans un repère écran (Y vers le bas). */
+/** Shoelace signed area. Positive means clockwise in a screen frame (Y pointing down). */
 const signedArea = (pts: Point[]) =>
   pts.reduce((sum, a, i) => {
     const b = pts[(i + 1) % pts.length]
@@ -27,32 +27,32 @@ const centroid = (pts: Point[]): Point => ({
   y: pts.reduce((s, p) => s + p.y, 0) / pts.length,
 })
 
-describe('Échelle et repère', () => {
-  it('applique un facteur unique : la carte a le rapport d\'aspect du repère MDT', () => {
+describe('Scale and frame', () => {
+  it("applies a single factor: the map has the MDT frame's aspect ratio", () => {
     expect(MAP_WIDTH / MDT_COORD_WIDTH).toBeCloseTo(MAP_HEIGHT / MDT_COORD_HEIGHT, 10)
     expect(MAP_SCALE).toBeCloseTo(MAP_WIDTH / MDT_COORD_WIDTH, 10)
   })
 
-  it('place l\'origine MDT au coin haut-gauche de l\'image', () => {
+  it("puts MDT's origin at the top-left of the image", () => {
     const { x, y } = toPixels(0, 0)
-    // Y vaut -0 (la négation de 0), indistinguable de 0 au rendu comme en arithmétique.
+    // Y comes out as -0, the negation of 0, indistinguishable from 0 in rendering and maths.
     expect(x).toBeCloseTo(0, 9)
     expect(y).toBeCloseTo(0, 9)
   })
 
-  it('retourne l\'axe Y : les positions de mobs sont négatives en MDT, positives à l\'écran', () => {
+  it('flips the Y axis: mob positions are negative in MDT, positive on screen', () => {
     expect(toPixels(0, -560).y).toBeCloseTo(MAP_HEIGHT, 6)
-    // Une coordonnée Y positive sortirait de l'image par le haut — c'est bien un cas anormal.
+    // A positive Y would fall off the top of the image — that is genuinely an abnormal case.
     expect(toPixels(0, 100).y).toBeLessThan(0)
   })
 
-  it('fait tomber le coin bas-droit du repère MDT sur le coin de l\'image', () => {
+  it("lands the MDT frame's bottom-right corner on the image corner", () => {
     const { x, y } = toPixels(MDT_COORD_WIDTH, -MDT_COORD_HEIGHT)
     expect(x).toBeCloseTo(MAP_WIDTH, 6)
     expect(y).toBeCloseTo(MAP_HEIGHT, 6)
   })
 
-  it('toMdtCoords est l\'inverse exact de toPixels', () => {
+  it('toMdtCoords is the exact inverse of toPixels', () => {
     for (const [x, y] of [
       [0, 0],
       [123.5, -456.25],
@@ -68,7 +68,7 @@ describe('Échelle et repère', () => {
 })
 
 describe('convexHull', () => {
-  it('renvoie tel quel un ensemble qui ne peut pas former d\'enveloppe', () => {
+  it('hands back a set that cannot form a hull unchanged', () => {
     expect(convexHull([])).toEqual([])
     expect(convexHull([{ x: 1, y: 2 }])).toEqual([{ x: 1, y: 2 }])
     expect(convexHull([{ x: 1, y: 2 }, { x: 3, y: 4 }])).toEqual([
@@ -77,7 +77,7 @@ describe('convexHull', () => {
     ])
   })
 
-  it('écarte les points intérieurs', () => {
+  it('drops interior points', () => {
     const square = [
       { x: 0, y: 0 },
       { x: 10, y: 0 },
@@ -89,10 +89,10 @@ describe('convexHull', () => {
     expect(hull).toEqual(expect.arrayContaining(square))
   })
 
-  it('écarte les points alignés sur une arête', () => {
+  it('drops points lying flat on an edge', () => {
     const hull = convexHull([
       { x: 0, y: 0 },
-      { x: 5, y: 0 }, // au milieu de l'arête du haut
+      { x: 5, y: 0 }, // halfway along the top edge
       { x: 10, y: 0 },
       { x: 10, y: 10 },
       { x: 0, y: 10 },
@@ -101,7 +101,7 @@ describe('convexHull', () => {
     expect(hull).not.toContainEqual({ x: 5, y: 0 })
   })
 
-  it('parcourt les sommets dans le sens horaire à l\'écran', () => {
+  it('walks the vertices clockwise on screen', () => {
     expect(signedArea(convexHull([
       { x: 0, y: 0 },
       { x: 10, y: 0 },
@@ -109,7 +109,7 @@ describe('convexHull', () => {
       { x: 0, y: 10 },
     ]))).toBeGreaterThan(0)
 
-    // L'ordre d'entrée ne doit pas influer sur l'orientation de sortie.
+    // Input order must not influence the output orientation.
     expect(signedArea(convexHull([
       { x: 0, y: 10 },
       { x: 10, y: 10 },
@@ -118,7 +118,7 @@ describe('convexHull', () => {
     ]))).toBeGreaterThan(0)
   })
 
-  it('ne modifie pas le tableau reçu', () => {
+  it('does not mutate the array it is given', () => {
     const input = [
       { x: 10, y: 10 },
       { x: 0, y: 0 },
@@ -139,11 +139,11 @@ describe('expandPolygon', () => {
     { x: 0, y: 10 },
   ]
 
-  it('laisse un polygone vide intact', () => {
+  it('leaves an empty polygon alone', () => {
     expect(expandPolygon([], 26)).toEqual([])
   })
 
-  it('éloigne chaque sommet du centre de exactement `padding`', () => {
+  it('pushes each vertex exactly `padding` further from the centre', () => {
     const c = centroid(square)
     const grown = expandPolygon(square, 4)
     square.forEach((p, i) => {
@@ -151,20 +151,20 @@ describe('expandPolygon', () => {
     })
   })
 
-  it('conserve le centre d\'une figure symétrique', () => {
+  it('keeps the centre of a symmetric shape', () => {
     const grown = expandPolygon(square, 26)
     expect(centroid(grown).x).toBeCloseTo(centroid(square).x, 9)
     expect(centroid(grown).y).toBeCloseTo(centroid(square).y, 9)
   })
 
-  it('ne produit pas de NaN quand un sommet est confondu avec le centre', () => {
-    // Un pack d'un seul clone : le sommet EST le centre, la direction est indéfinie.
+  it('produces no NaN when a vertex sits on the centre', () => {
+    // A pack of a single clone: the vertex IS the centre, so the direction is undefined.
     const grown = expandPolygon([{ x: 7, y: -3 }], 26)
     expect(grown[0].x).toBeCloseTo(7, 9)
     expect(grown[0].y).toBeCloseTo(-3, 9)
   })
 
-  it('ne modifie pas le tableau reçu', () => {
+  it('does not mutate the array it is given', () => {
     const copy = structuredClone(square)
     expandPolygon(square, 26)
     expect(square).toEqual(copy)
@@ -172,21 +172,21 @@ describe('expandPolygon', () => {
 })
 
 describe('roundedPolygonPath', () => {
-  it('renvoie une chaîne vide sans sommet', () => {
+  it('returns an empty string with no vertex', () => {
     expect(roundedPolygonPath([])).toBe('')
   })
 
-  it('dessine un cercle autour d\'un sommet isolé', () => {
+  it('draws a circle around a lone vertex', () => {
     expect(roundedPolygonPath([{ x: 5, y: 7 }])).toBe(
       'M 5 7 m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0',
     )
   })
 
-  it('dessine un segment entre deux sommets', () => {
+  it('draws a segment between two vertices', () => {
     expect(roundedPolygonPath([{ x: 1, y: 2 }, { x: 3, y: 4 }])).toBe('M 1 2 L 3 4')
   })
 
-  it('produit un chemin fermé, une courbe par sommet', () => {
+  it('produces a closed path with one curve per vertex', () => {
     const pts: Point[] = [
       { x: 0, y: 0 },
       { x: 10, y: 0 },
@@ -199,8 +199,8 @@ describe('roundedPolygonPath', () => {
     expect(d.match(/Q /g)).toHaveLength(pts.length)
   })
 
-  it('démarre au milieu de la dernière arête, pour que la boucle se referme sans angle', () => {
-    // Dernière arête : (0,10) -> (0,0), milieu (0,5).
+  it('starts halfway along the last edge, so the loop closes without a corner', () => {
+    // Last edge: (0,10) -> (0,0), midpoint (0,5).
     const d = roundedPolygonPath([
       { x: 0, y: 0 },
       { x: 10, y: 0 },
