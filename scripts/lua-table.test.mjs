@@ -156,18 +156,28 @@ describe('Expressions we do not reduce', () => {
     expect(expr.parts[2]).toBe(BS + 'Textures')
   })
 
-  it('KNOWN DEFECT: a bare identifier changes shape with surrounding whitespace', () => {
-    // Without a trailing space the `identifier` field is set and `raw` is clean; with one,
-    // skipTrivia() has already advanced past it, so `identifier` stays undefined and `raw`
-    // carries the space. unwrap() in extract-mdt.mjs falls through to `raw`, so the second
-    // form yields "addonName " with a trailing space.
-    //
-    // No generated value is affected today (checked: zero trailing-space strings in
-    // src/data/generated). Pinned here so the inconsistency is visible; update this test
-    // when it is fixed.
-    expect(parse('{addonName}').get(1).identifier).toBe('addonName')
-    expect(parse('{ addonName }').get(1).identifier).toBeUndefined()
-    expect(parse('{ addonName }').get(1).raw).toBe('addonName ')
+  it('gives a bare identifier the same shape whatever the surrounding whitespace', () => {
+    // The parser looks past whitespace for a `[` or a `.`; when neither follows it has to
+    // give that whitespace back, otherwise `raw` carries it and the `identifier` branch is
+    // never reached. unwrap() in extract-mdt.mjs falls through to `raw`, so the difference
+    // would surface as a trailing space in the generated data.
+    for (const src of ['{addonName}', '{ addonName }', '{ addonName , 1 }', '{addonName,1}']) {
+      const expr = parse(src).get(1)
+      expect(expr.identifier, src).toBe('addonName')
+      expect(expr.raw, src).toBe('addonName')
+    }
+  })
+
+  it('leaves no trailing whitespace on any captured expression', () => {
+    expect(parse('{ L["Name"] }').get(1).raw).toBe('L["Name"]')
+    expect(parse('{ MDT.someField }').get(1).raw).toBe('MDT.someField')
+  })
+
+  it('still reads a concatenation that follows whitespace', () => {
+    // Giving the trivia back must not hide the `..` from parseValue.
+    const expr = parse("{ addonName .. 'suffix' }").get(1)
+    expect(expr.parts).toHaveLength(2)
+    expect(expr.parts[1]).toBe('suffix')
   })
 })
 

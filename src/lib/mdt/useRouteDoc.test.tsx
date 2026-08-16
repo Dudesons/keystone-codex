@@ -39,7 +39,7 @@ describe('Initial state', () => {
     const { result } = mount()
     expect(result.current.collab.status).toBe('off')
     expect(result.current.collab.room).toBeNull()
-    expect(result.current.collab.identity).toMatch(/^Joueur-\d{4}$/)
+    expect(result.current.collab.identity).toMatch(/^Player-\d{4}$/)
   })
 })
 

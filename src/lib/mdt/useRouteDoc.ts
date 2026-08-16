@@ -311,12 +311,19 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   return { route, actions, collab, joinRoom, leaveRoom }
 }
 
-/** A stable, readable name, remembered across sessions. */
+/**
+ * A stable, readable name, remembered across sessions.
+ *
+ * Not translated, for the same reason as `DEFAULT_ROUTE_NAME`: this name is replicated to
+ * Y.js peers, so two teammates on different locales must see the same string for the same
+ * person. Names already in `localStorage` are kept as they are — renaming someone mid-season
+ * would be worse than the inconsistency.
+ */
 function identityName(): string {
   const key = 'midnight-codex:identity'
   const existing = localStorage.getItem(key)
   if (existing) return existing
-  const name = `Joueur-${Math.floor(1000 + Math.random() * 9000)}`
+  const name = `Player-${Math.floor(1000 + Math.random() * 9000)}`
   localStorage.setItem(key, name)
   return name
 }

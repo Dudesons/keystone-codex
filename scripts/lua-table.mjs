@@ -123,6 +123,11 @@ class Parser {
       const startExpr = this.pos - m[0].length
       let literal = null
       for (;;) {
+        // Remember where the expression really ended: skipTrivia() looks past whitespace for
+        // a `[` or a `.`, and if neither follows we have to give that whitespace back.
+        // Otherwise `{ addonName }` and `{addonName}` parse to different shapes — trailing
+        // space in `raw`, and the `identifier` branch below never reached.
+        const beforeTrivia = this.pos
         this.skipTrivia()
         if (this.src[this.pos] === '[') {
           this.pos++
@@ -137,6 +142,7 @@ class Parser {
           if (!id) throw this.error('expected an identifier after "."')
           this.pos += id[0].length
         } else {
+          this.pos = beforeTrivia
           break
         }
       }
