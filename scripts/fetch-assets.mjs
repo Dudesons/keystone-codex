@@ -14,6 +14,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { GENERATED_DIR, PUBLIC_DIR, SPELL_LOCALES } from './config.mjs'
+import { buildSpellText, parseTooltip } from './wowhead-tooltip.mjs'
 
 const FORCE = process.env.FORCE === '1'
 const CONCURRENCY = 8
@@ -57,84 +58,20 @@ async function fetchRetry(url, init, attempts = 3) {
   throw lastErr
 }
 
-const stripTags = (html) =>
-  html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .trim()
-
-/**
- * The tooltip's header lines, name excluded.
- * Structure: a first table holding `name<br/>[range<br/>]cast time`, then a `<div class="q">`
- * carrying the description.
- */
-function tooltipLines(html) {
-  const header = /<table>.*?<td>(.*?)<\/td>/s.exec(html)
-  if (!header) return []
-  return stripTags(header[1]).split('\n').map((l) => l.trim()).filter(Boolean).slice(1)
-}
-
-function tooltipDescription(html) {
-  const desc = /<div class="q[0-9]?">(.*?)<\/div>/s.exec(html)
-  return desc ? stripTags(desc[1]) : undefined
-}
-
-/**
- * Assigns a meaning to each header line — `range` or `castTime` — based on English.
- *
- * These patterns only match English, and that is deliberate: rather than maintaining one
- * regex set per language ("Portée illimitée", "3 s d'incantation"…), we classify **once** on
- * the base language and apply the same positional mapping to the other locales. Wowhead
- * renders the same lines in the same order whatever the language.
- */
-function classifyLines(lines) {
-  const layout = {}
-  lines.forEach((line, i) => {
-    if (/range$/i.test(line)) layout[i] = 'range'
-    else if (/cast$/i.test(line) || /^instant$/i.test(line) || /channel/i.test(line)) {
-      layout[i] = 'castTime'
-    }
-  })
-  return layout
-}
-
-function buildText(tooltip, layout) {
-  const text = { name: tooltip.name }
-  for (const [index, field] of Object.entries(layout)) {
-    const value = tooltip.lines[Number(index)]
-    if (value) text[field] = value
-  }
-  if (tooltip.description) text.description = tooltip.description
-  return text
-}
-
 async function fetchTooltip(id, wowheadLocale) {
   const res = await fetchRetry(
     `https://nether.wowhead.com/tooltip/spell/${id}?dataEnv=1&locale=${wowheadLocale}`,
   )
   if (!res) return null
-  const json = await res.json()
-  if (!json?.name) return null
-  const html = json.tooltip || ''
-  return {
-    name: json.name,
-    icon: json.icon,
-    lines: tooltipLines(html),
-    description: tooltipDescription(html),
-  }
+  return parseTooltip(await res.json())
 }
 
 /**
  * One spell in every configured language.
  *
- * `id` and `icon` are language-independent and stay at the top; the rest goes under
- * `text.<language>`. A missing locale is not an error: the app falls back to the base
- * language, which Wowhead forces anyway for recent spells.
+ * The base language is fetched first and on its own: without it there is nothing to build,
+ * and no point spending a request per remaining locale. The merging itself lives in
+ * wowhead-tooltip.mjs, where it is tested against captured responses.
  */
 async function fetchSpell(id) {
   const [baseLocale, ...others] = SPELL_LOCALES
@@ -142,29 +79,12 @@ async function fetchSpell(id) {
   const base = await fetchTooltip(id, baseLocale.wowhead)
   if (!base) return { id, missing: true }
 
-  const layout = classifyLines(base.lines)
-  const text = { [baseLocale.lang]: buildText(base, layout) }
-  const warnings = []
-
+  const entries = [{ lang: baseLocale.lang, tooltip: base }]
   for (const { lang, wowhead } of others) {
-    const tooltip = await fetchTooltip(id, wowhead)
-    if (!tooltip) {
-      warnings.push(`${id}: no ${lang} tooltip`)
-      continue
-    }
-    // Positional mapping only holds if both tooltips have the same shape. On a mismatch we
-    // do not guess: name and description are enough, the app tolerates the rest missing.
-    if (tooltip.lines.length !== base.lines.length) {
-      warnings.push(
-        `${id}: ${lang} header has ${tooltip.lines.length} lines against ${base.lines.length} in ${baseLocale.lang}, cast time and range omitted`,
-      )
-      text[lang] = { name: tooltip.name, ...(tooltip.description && { description: tooltip.description }) }
-      continue
-    }
-    text[lang] = buildText(tooltip, layout)
+    entries.push({ lang, tooltip: await fetchTooltip(id, wowhead) })
   }
 
-  return { id, icon: base.icon, text, warnings }
+  return { id, ...buildSpellText(id, entries) }
 }
 
 async function downloadTo(url, dest) {

@@ -167,19 +167,21 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-459 tests, all green. No mocks anywhere: the tests read the real generated data, the real
+483 tests, all green. No mocks anywhere: the tests read the real generated data, the real
 `content/*.md` through `import.meta.glob`, and real committed artefacts for anything that
 would otherwise need the network or a WoW install.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
-| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table` and `scripts/mdt-dungeon` |
+| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon` and `scripts/wowhead-tooltip` |
 | Integration | Vitest + jsdom | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
 | End-to-end | — | **None.** No browser runner is installed |
 
 **Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`,
-`main.tsx`, `scripts/fetch-assets` and `scripts/scaffold-content`. The first two are
-exercised by every component test through `renderEn` / `renderFr`.
+`main.tsx` and `scripts/scaffold-content`. The first two are exercised by every component
+test through `renderEn` / `renderFr`. What remains in `fetch-assets.mjs` after the parsing
+moved out — `fetchRetry`, `pool`, `downloadTo` — is generic plumbing; standing up a local
+server to test it would cost more than it proves.
 
 ### Testing what needs a WoW install or the network
 
@@ -192,6 +194,7 @@ artefact:
 | --- | --- | --- |
 | `src/lib/mdt/__fixtures__/real-export.txt` | the MDT string codec | the only proof the game accepts what we produce |
 | `scripts/__fixtures__/AltarOfFangs.lua` | `mdt-dungeon.mjs` | a hand-written sample would only contain the cases we already thought of |
+| `scripts/__fixtures__/wowhead/*.json` | `wowhead-tooltip.mjs` | `classifyLines` rests on Wowhead ordering its lines identically across languages — HTML we wrote would satisfy that claim by construction |
 
 A fake would test our own idea of the input, which is exactly the failure mode the Test
 Quality rules name. Capturing a real response costs the same effort and tests the real thing.
