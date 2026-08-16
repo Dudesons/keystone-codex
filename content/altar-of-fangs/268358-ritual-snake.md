@@ -5,7 +5,7 @@ count: 0   # auto — forces per unit
 
 # TO FILL IN: low | medium | high | lethal
 threat:
-role: caster
+role: add
 
 spells:
   - id: 1300885

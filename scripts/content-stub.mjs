@@ -44,7 +44,7 @@ export function buildMobStub(enemy, spells) {
   lines.push('')
   lines.push('# TO FILL IN: low | medium | high | lethal')
   lines.push('threat:')
-  lines.push('# TO FILL IN: caster | melee | patrol | miniboss')
+  lines.push('# TO FILL IN: caster | melee | patrol | miniboss | add')
   lines.push('role:')
 
   if (enemy.cc.length) {

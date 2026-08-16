@@ -71,6 +71,7 @@ export const en = {
   'role.melee': 'Melee',
   'role.patrol': 'Patrol',
   'role.miniboss': 'Miniboss',
+  'role.add': 'Encounter add',
 
   // Spell tags
   'tag.kick': 'KICK',

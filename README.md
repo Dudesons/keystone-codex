@@ -25,7 +25,7 @@ hand.
 ---
 npcId: 270306
 threat: high              # low | medium | high | lethal
-role: melee               # caster | melee | patrol | miniboss
+role: melee               # caster | melee | patrol | miniboss | add
 spells:
   - id: 1306911
     tag: tank             # kick | dodge | dispel | tank | soak | ignore

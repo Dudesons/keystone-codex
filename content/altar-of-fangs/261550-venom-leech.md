@@ -3,8 +3,7 @@ npcId: 261550
 name: "Venom Leech"   # auto
 count: 1   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
+threat: low
 role: melee
 
 spells:

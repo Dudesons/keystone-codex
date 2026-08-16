@@ -72,6 +72,7 @@ export const fr: Dictionary = {
   'role.melee': 'Mêlée',
   'role.patrol': 'Patrouille',
   'role.miniboss': 'Miniboss',
+  'role.add': 'Add de rencontre',
 
   // Spell tags
   'tag.kick': 'KICK',

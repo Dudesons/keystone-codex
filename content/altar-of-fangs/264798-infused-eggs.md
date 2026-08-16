@@ -4,7 +4,7 @@ name: "Infused Eggs"   # auto
 count: 0   # auto — forces per unit
 
 threat: low
-role: melee
+role: add
 
 spells:
   - id: 1293059

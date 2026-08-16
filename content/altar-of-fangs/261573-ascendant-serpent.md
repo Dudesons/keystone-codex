@@ -3,8 +3,7 @@ npcId: 261573
 name: "Ascendant Serpent"   # auto
 count: 30   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
+threat: high
 role: miniboss
 
 spells:

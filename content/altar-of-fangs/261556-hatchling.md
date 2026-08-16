@@ -3,9 +3,8 @@ npcId: 261556
 name: "Hatchling"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-role: melee
+threat: low
+role: add
 
 spells:
   - id: 1221063
