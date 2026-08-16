@@ -7,8 +7,7 @@ threat: medium
 role: melee
 
 spells:
-  # MDT does not flag this as interruptible — it declares it dispellable as poison. If it is
-  # in fact kickable in game, change the tag: MDT's data is not exhaustive.
+  # Not interruptible — confirmed in game. Dispel is the only answer.
   - id: 1294845
     name: "Corrosive Fangs"   # auto
     # 3 sec cast · dispel: poison

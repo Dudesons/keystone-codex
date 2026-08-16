@@ -18,7 +18,7 @@ spells:
     note: "Simple animation de pose du totem."
 
   - id: 1221063
-    note: "Orbes de saison : non pris, ils donnent aux mobs +5% dégâts et -10% dégâts subis, cumulable. Pris par les joueurs, ils donnent +2% hâte et vitesse."
+    note: "Affixe sous-12, change chaque semaine. Ce n'est pas un trait de ce mob."
 
 trap: "Immunisé à tous les CC : aucun stun, aucune peur ne le retiendra. Si vous comptiez le kiter ou l'enchaîner, ça ne marche pas — il faut le burst."
 ---

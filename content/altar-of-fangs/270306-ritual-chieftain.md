@@ -37,8 +37,8 @@ spells:
   - id: 1221063
     name: "Xal'atath's Gift"   # auto
     # Instant
-    tag: soak
-    note: "Seasonal orbs: left alone they give mobs +5% damage and -10% damage taken, stacking. Picked up by players, they give +2% haste and speed."
+    tag: ignore
+    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 trap: "Immune to every CC: no stun, no fear will hold it. If you were counting on kiting or chain-controlling it, that does not work — you have to burst it."
 ---
