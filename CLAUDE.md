@@ -167,23 +167,29 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-333 tests, all green. No mocks anywhere: the tests read the real generated data and the real
+348 tests, all green. No mocks anywhere: the tests read the real generated data and the real
 `content/*.md` through `import.meta.glob`.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
 | Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `scripts/tile-layout` and `scripts/lua-table` |
-| Integration | Vitest + jsdom | Codex components (`Badges`, `MobCard`, `CodexPanel`) and the home page, mounted against the real dungeon pool |
+| Integration | Vitest + jsdom | The codex components (`Badges`, `MobCard`, `CodexPanel`), the home page, and `DungeonPage` — which mounts the map and both side panels together, against the real dungeon pool |
 | End-to-end | — | **None.** No browser runner is installed |
 
-**Not covered yet:** `components/map/DungeonMap.tsx`, `components/route/RoutePanel.tsx`,
-`routes/DungeonPage.tsx`, `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, and the
-extraction scripts (`extract-mdt`, `fetch-assets`, `scaffold-content`).
+**Not covered directly:** `components/map/DungeonMap.tsx`,
+`components/route/RoutePanel.tsx`, `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`,
+and the extraction scripts (`extract-mdt`, `fetch-assets`, `scaffold-content`). The first two
+are mounted by the `DungeonPage` tests, so they are exercised but not pinned.
 
 Component tests carry the `// @vitest-environment jsdom` pragma at the top of the file — the
 default environment stays `node` so the `lib/` suite stays fast. Testing Library runs without
 `globals: true`, so every component file must declare its own `afterEach(cleanup)`; without
 it, renders pile up in the document and `screen` queries start matching several elements.
+
+jsdom implements neither `Element.prototype.scrollIntoView` nor `ResizeObserver`, and the
+codex panel and the map respectively need them. Stub both in the test file that mounts them,
+as `CodexPanel.test.tsx` and `DungeonPage.test.tsx` do. They are environment gaps, not
+behaviour worth simulating: jsdom lays everything out at zero anyway.
 
 Mount components through `src/test/render.tsx` (`renderEn` / `renderFr`) rather than Testing
 Library's bare `render`: components need a `LocaleProvider`, and an explicit locale is what
