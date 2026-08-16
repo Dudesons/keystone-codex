@@ -1,101 +1,99 @@
 ---
 name: i18n
-description: Comment keystone-codex parle deux langues — dictionnaires typés, détection de la langue, contenu de content/ suffixé par locale, et libellés de sorts localisés depuis Wowhead. À lire avant de toucher à src/lib/i18n/, d'ajouter une chaîne d'UI, de traduire une fiche de content/, ou d'ajouter une langue.
+description: How keystone-codex speaks two languages — typed dictionaries, language detection, locale-suffixed content under content/, and spell labels localized from Wowhead. Read before touching src/lib/i18n/, adding a UI string, translating a content/ entry, or adding a language.
 ---
 
-# Internationalisation
+# Internationalization
 
-L'app parle anglais par défaut et français quand le navigateur le demande. Trois systèmes
-distincts s'en partagent la charge, et **on ne les confond pas** :
+The app speaks English by default, and French when the browser asks for it. Three separate
+systems share the load, and **they must not be confused**:
 
-| | Chrome de l'UI | Contenu rédigé | Termes de jeu |
+| | UI chrome | Written content | Game terms |
 | --- | --- | --- | --- |
-| Quoi | Boutons, titres, légendes, messages | Menaces, pièges, notes de sorts, prose | Noms de mobs, noms et descriptions de sorts |
-| Où | `src/lib/i18n/en.ts` et `fr.ts` | `content/<donjon>/*.md` et `*.fr.md` | `src/data/generated/` |
-| Qui l'écrit | Toi, à la main | RwlRwlRwlRwl, à la main | **Le pipeline** — MDT et Wowhead |
-| Quand | À la compilation | À la compilation (Vite glob) | `npm run fetch:assets` |
+| What | Buttons, headings, legends, messages | Threats, traps, spell notes, prose | Mob names, spell names and descriptions |
+| Where | `src/lib/i18n/en.ts` and `fr.ts` | `content/<dungeon>/*.md` and `*.fr.md` | `src/data/generated/` |
+| Who writes it | You, by hand | RwlRwlRwlRwl, by hand | **The pipeline** — MDT and Wowhead |
+| When | At build time | At build time (Vite glob) | `npm run fetch:assets` |
 
-**La règle qui compte : aucun terme de jeu ne se traduit à la main.** Écrire `'Démembrer'`
-dans `fr.ts` est un bug, pas une traduction — ce nom vient de Wowhead et se met à jour tout
-seul au patch suivant.
+**The rule that matters: no game term is ever translated by hand.** Writing `'Démembrer'` into
+`fr.ts` is a bug, not a translation — that name comes from Wowhead and updates itself on the
+next patch.
 
 ---
 
-## 1. Le chrome de l'UI (`src/lib/i18n/`)
+## 1. UI chrome (`src/lib/i18n/`)
 
-| Fichier | Rôle |
+| File | Role |
 | --- | --- |
 | [locales.ts](../../../src/lib/i18n/locales.ts) | `LOCALES`, `Locale`, `DEFAULT_LOCALE`, `isLocale` |
-| [en.ts](../../../src/lib/i18n/en.ts) | Dictionnaire de référence |
-| [fr.ts](../../../src/lib/i18n/fr.ts) | Traduction, typée contre l'anglais |
-| [detect.ts](../../../src/lib/i18n/detect.ts) | `resolveLocale` — fonction pure |
+| [en.ts](../../../src/lib/i18n/en.ts) | The reference dictionary |
+| [fr.ts](../../../src/lib/i18n/fr.ts) | The translation, typed against English |
+| [detect.ts](../../../src/lib/i18n/detect.ts) | `resolveLocale` — a pure function |
 | [format.ts](../../../src/lib/i18n/format.ts) | `translate`, `pluralize`, `formatNumber`, `formatPercent` |
 | [context.tsx](../../../src/lib/i18n/context.tsx) | `LocaleProvider`, `useI18n` |
 
-### La complétude est un invariant de compilation, pas un test
+### Completeness is a compile-time invariant, not a test
 
-`fr.ts` est déclaré `Dictionary`, c'est-à-dire `Record<keyof typeof en, string>`. Une clé
-manquante **ou en trop** fait échouer `tsc -b`. C'est la raison pour laquelle il n'y a pas de
-dépendance i18n externe ici : une librairie ne détecte ça qu'à l'exécution.
+`fr.ts` is declared as `Dictionary`, that is `Record<keyof typeof en, string>`. A missing key
+**or an extra one** fails `tsc -b`. That is why there is no external i18n dependency here: a
+library would only catch this at runtime.
 
-**N'écris pas de test qui compare les jeux de clés** : il dupliquerait le compilateur.
+**Do not write a test comparing the key sets** — it would duplicate the compiler.
 
-### Ajouter une chaîne
+### Adding a string
 
-1. Une entrée dans `en.ts`, une dans `fr.ts`. Clés en `domaine.chose`.
-2. Dans le composant : `const { t } = useI18n()` puis `t('domaine.chose')`.
-3. Paramètres : `t('mob.pull', { n: 3 })` remplace les `{n}`. Un placeholder inconnu est
-   laissé visible plutôt que vidé — un `{oops}` à l'écran désigne le coupable.
+1. One entry in `en.ts`, one in `fr.ts`. Keys read `domain.thing`.
+2. In the component: `const { t } = useI18n()`, then `t('domain.thing')`.
+3. Parameters: `t('mob.pull', { n: 3 })` substitutes `{n}`. An unknown placeholder is left
+   visible rather than blanked — a `{oops}` on screen names its own culprit.
 
-### Pluriels : `key.one` et `key.other`
+### Plurals: `key.one` and `key.other`
 
-`plural('common.units', n)` choisit via `Intl.PluralRules`. Ce n'est pas de la
-sur-ingénierie pour deux langues : **l'anglais et le français divergent à zéro** (« 0 units »
-contre « 0 unité »). `n` est disponible comme placeholder sans qu'on le passe.
+`plural('common.units', n)` picks through `Intl.PluralRules`. This is not over-engineering for
+two languages: **English and French diverge at zero** ("0 units" against "0 unité"). `n` is
+available as a placeholder without passing it.
 
-Le type `PluralKey` n'accepte que les bases qui ont *à la fois* `.one` et `.other`.
+The `PluralKey` type only accepts bases that have *both* `.one` and `.other`.
 
-### Nombres et pourcentages
+### Numbers and percentages
 
-Passe par `formatPercent` / `formatNumber` du contexte, jamais par `toFixed()` : le français
-écrit `82,5 %`, pas `82.5%`. `formatPercent` prend une valeur **de 0 à 100**, comme
-`routeStats` la produit.
+Go through the context's `formatPercent` / `formatNumber`, never `toFixed()`: French writes
+`82,5 %`, not `82.5%`. `formatPercent` takes a value **from 0 to 100**, as `routeStats`
+produces it.
 
-### Ce qui n'est pas du chrome et ne se traduit pas
+### What is not chrome and does not get translated
 
-- **`DEFAULT_ROUTE_NAME`** dans [useRouteDoc.ts](../../../src/lib/mdt/useRouteDoc.ts) —
-  `'New route'`. C'est de la **donnée** : sérialisée dans la string MDT, persistée en
-  `localStorage`, répliquée aux pairs Y.js. La traduire ferait voir deux noms différents à
-  deux coéquipiers.
-- **Les erreurs de diagnostic du codec** (`'CBOR: truncated string'`) restent en anglais dans
-  le code et remontent telles quelles. Qui en voit une ouvre un ticket, il n'ajuste pas son
-  copier-coller.
-- **Les quatre erreurs adressées à l'utilisateur** sont l'exception : elles passent par
-  [`MdtUserError`](../../../src/lib/mdt/errors.ts), qui porte un `code` et des `params`, et
-  `RoutePanel` les traduit via les clés `mdtError.*`. Les tests assertent le **code**, jamais
-  la phrase.
+- **`DEFAULT_ROUTE_NAME`** in [useRouteDoc.ts](../../../src/lib/mdt/useRouteDoc.ts) —
+  `'New route'`. It is **data**: serialized into the MDT string, persisted to `localStorage`,
+  replicated to Y.js peers. Translating it would show two teammates two different names.
+- **Codec diagnostics** (`'CBOR: truncated string'`) stay in English in the code and surface
+  as-is. Whoever sees one is filing a ticket, not adjusting their paste.
+- **The four user-facing errors** are the exception: they go through
+  [`MdtUserError`](../../../src/lib/mdt/errors.ts), which carries a `code` and `params`, and
+  `RoutePanel` translates them through the `mdtError.*` keys. Tests assert the **code**, never
+  the sentence.
 
 ---
 
-## 2. Le contenu rédigé (`content/`)
+## 2. Written content (`content/`)
 
-### Suffixe, pas dossier
+### Suffix, not folder
 
-`134251-seneschal-mbara.md` porte la langue de base ; `134251-seneschal-mbara.fr.md` la
-traduction. Les deux dans le **même dossier**, ce qui rend visible d'un coup d'œil ce qui est
-traduit — un arbre `content/fr/` parallèle demanderait un diff, et la traduction sera
-toujours partielle ici. Ça laisse aussi
-[scaffold-content.mjs](../../../scripts/scaffold-content.mjs) intact : un stub par mob.
+`134251-seneschal-mbara.md` carries the base language; `134251-seneschal-mbara.fr.md` carries
+the translation. Both in the **same folder**, which makes it visible at a glance what is
+translated — a parallel `content/fr/` tree would need a diff, and translation here will always
+be partial. It also leaves [scaffold-content.mjs](../../../scripts/scaffold-content.mjs)
+untouched: one stub per mob.
 
-Le découpage du chemin teste le suffixe contre `LOCALES`, **pas** contre « deux lettres
-quelconques » : un slug de mob peut légitimement finir par un segment de deux lettres.
+Path splitting tests the suffix against `LOCALES`, **not** against "any two letters": a mob
+slug can legitimately end in a two-letter segment.
 
-### Fusion champ par champ, pas remplacement
+### Field-by-field merge, not replacement
 
-Une traduction se superpose à la base ; les `spells` fusionnent par `id`. Concrètement :
+A translation layers over the base; `spells` merge by `id`. Concretely:
 
 ```yaml
-# 270306-ritual-chieftain.md — la base porte les jugements
+# 270306-ritual-chieftain.md — the base carries the judgements
 threat: high
 role: melee
 spells:
@@ -104,39 +102,39 @@ spells:
     prio: 1
     note: "581k physical on the current target."
 
-# 270306-ritual-chieftain.fr.md — la traduction ne porte que du texte
+# 270306-ritual-chieftain.fr.md — the translation carries text only
 spells:
   - id: 1306911
     note: "581k physique sur la cible actuelle."
 ```
 
-**`threat`, `role`, `tag` et `prio` ne se répètent pas dans la traduction.** Ce sont des
-jugements, pas de la langue : les dupliquer serait la garantie qu'ils divergent un jour. Un
-champ absent de la traduction retombe sur la base ; une fiche sans `.fr.md` du tout s'affiche
-en base, ce qui préserve l'invariant « un mob sans fiche reste affiché ».
+**`threat`, `role`, `tag` and `prio` are not repeated in the translation.** They are
+judgements, not language: duplicating them guarantees they drift apart eventually. A field
+absent from the translation falls back to the base; an entry with no `.fr.md` at all renders
+from the base, which preserves the "a mob with no entry still renders" invariant.
 
-[270306-ritual-chieftain](../../../content/altar-of-fangs/270306-ritual-chieftain.md) et son
-`.fr.md` sont la paire de référence, et servent de fixture aux tests de
+[270306-ritual-chieftain](../../../content/altar-of-fangs/270306-ritual-chieftain.md) and its
+`.fr.md` are the reference pair, and serve as the fixture for
 [content.test.ts](../../../src/lib/content.test.ts).
 
-### La locale se propage en paramètre
+### The locale travels as a parameter
 
-`getMobContent`, `getDungeonContent`, `contentProgress`, `getIndicators` et `kickList`
-prennent tous une `locale` et **l'incluent dans leur clé de cache**. Ce n'est pas cosmétique :
-`hasTrap` se calcule depuis le contenu fusionné, donc un piège rédigé dans une seule langue
-change réellement les pastilles.
+`getMobContent`, `getDungeonContent`, `contentProgress`, `getIndicators` and `kickList` all
+take a `locale` and **include it in their cache key**. That is not cosmetic: `hasTrap` is
+computed from the merged content, so a trap written in only one language genuinely changes the
+badges.
 
-Paramètre explicite plutôt qu'une « locale courante » de module : une variable mutable
-rendrait les caches non déterministes et les tests dépendants de l'ordre d'exécution.
+An explicit parameter rather than a module-level "current locale": a mutable variable would
+make the caches non-deterministic and the tests order-dependent.
 
-`contentProgress` compte ce que le lecteur **voit**, retombée comprise — la barre mesure la
-lisibilité, pas l'avancement de la traduction.
+`contentProgress` counts what the reader **sees**, fallback included — the bar measures
+readability, not translation progress.
 
 ---
 
-## 3. Les libellés de sorts (`scripts/fetch-assets.mjs`)
+## 3. Spell labels (`scripts/fetch-assets.mjs`)
 
-### Le mapping de locale Wowhead est vérifié, pas documenté
+### The Wowhead locale mapping is probed, not documented
 
 ```js
 // scripts/config.mjs
@@ -146,30 +144,30 @@ export const SPELL_LOCALES = [
 ]
 ```
 
-`0` → anglais et `2` → français ont été établis **par sonde** sur
-`nether.wowhead.com/tooltip/spell/<id>?dataEnv=1&locale=<n>`, pas lus dans une doc. Wowhead
-ne publie pas cette table.
+`0` → English and `2` → French were established **by probing**
+`nether.wowhead.com/tooltip/spell/<id>?dataEnv=1&locale=<n>`, not read from documentation.
+Wowhead does not publish that table.
 
-**Sonde avant d'ajouter une langue. Ne la devine pas.** Une sonde, c'est un `curl` et un coup
-d'œil au champ `name`.
+**Probe before adding a language. Do not guess it.** A probe is one `curl` and a look at the
+`name` field.
 
-### `parseTooltip` classe par position, pas par regex multilingue
+### `parseTooltip` classifies by position, not by multilingual regex
 
-Le tooltip rend `nom / [portée] / [incantation]`. Les motifs qui reconnaissent ces lignes
-(`/range$/i`, `/cast$/i`) ne matchent **que l'anglais** : le français rend « Portée
-illimitée » et « 3 s d'incantation ».
+The tooltip renders `name / [range] / [cast time]`. The patterns recognizing those lines
+(`/range$/i`, `/cast$/i`) match **English only**: French renders "Portée illimitée" and
+"3 s d'incantation".
 
-Plutôt que d'entretenir un jeu de regex par langue, `classifyLines()` classe **une fois** sur
-la langue de base, et les autres locales appliquent le même mapping **par index**. Wowhead
-rend les mêmes lignes dans le même ordre quelle que soit la langue — vérifié sur les 875
-sorts du pool, zéro écart.
+Rather than maintaining one regex set per language, `classifyLines()` classifies **once** on
+the base language, and the other locales apply the same mapping **by index**. Wowhead renders
+the same lines in the same order regardless of language — verified across all 875 spells in
+the pool, zero divergence.
 
-Si les nombres de lignes diffèrent, le script **ne devine pas** : il garde nom et description,
-laisse `castTime`/`range` vides et émet un avertissement. L'app tolère déjà leur absence.
+When line counts differ, the script **does not guess**: it keeps name and description, leaves
+`castTime`/`range` empty, and warns. The app already tolerates their absence.
 
-### Forme de `spells.json`
+### Shape of `spells.json`
 
-`id` et `icon` ne dépendent pas de la langue et restent en tête ; le reste va dans `text` :
+`id` and `icon` are language-independent and stay at the top; the rest moves under `text`:
 
 ```json
 "1306911": {
@@ -182,36 +180,36 @@ laisse `castTime`/`range` vides et émet un avertissement. L'app tolère déjà 
 }
 ```
 
-`getSpell(id, locale)` retombe sur `DEFAULT_LOCALE` si la locale manque : Wowhead ne traduit
-pas tout, et un sort récent sort en anglais d'abord. Ce n'est pas une erreur, c'est le
-chemin normal.
+`getSpell(id, locale)` falls back to `DEFAULT_LOCALE` when a locale is missing: Wowhead does
+not translate everything, and a recent spell ships in English first. That is not an error, it
+is the normal path.
 
-**Ajouter une langue à `SPELL_LOCALES` demande un `FORCE=1 npm run fetch:assets`** : le cache
-ne considère à refaire que les entrées sans bloc `text`, il ne sait pas qu'une locale
-secondaire manque.
+**Adding a language to `SPELL_LOCALES` requires `FORCE=1 npm run fetch:assets`**: the cache
+only considers entries without a `text` block as needing work — it cannot tell that a
+secondary locale is missing.
 
-### Liens Wowhead
+### Wowhead links
 
-`wowheadUrl(spellId, locale)` dans [data.ts](../../../src/lib/data.ts). L'anglais est servi à
-la **racine** du domaine et ne prend pas de préfixe, les autres langues si — d'où le cas
-particulier plutôt qu'une interpolation uniforme.
+`wowheadUrl(spellId, locale)` in [data.ts](../../../src/lib/data.ts). English is served at the
+domain **root** and takes no prefix, other languages do — hence the special case rather than a
+uniform interpolation.
 
 ---
 
-## 4. Tester
+## 4. Testing
 
-Un composant qui affiche du texte lit le contexte : un `render()` nu lève. Passe par
-[src/test/render.tsx](../../../src/test/render.tsx) — `renderEn` / `renderFr` — ce qui force
-chaque test à dire dans quelle langue il assertionne. Un `wrapper` fourni par l'appelant
-(un routeur) est **imbriqué** dans le provider, pas écrasé.
+A component that displays text reads the context: a bare `render()` throws. Go through
+[src/test/render.tsx](../../../src/test/render.tsx) — `renderEn` / `renderFr` — which forces
+every test to state which language it is asserting in. A caller-supplied `wrapper` (a router)
+is **nested inside** the provider, not overwritten.
 
-`resolveLocale` et les fonctions de `format.ts` sont pures : teste-les directement, sans DOM.
+`resolveLocale` and the functions in `format.ts` are pure: test them directly, without a DOM.
 
-## Checklist avant de committer
+## Checklist before committing
 
-1. `npm run typecheck` — c'est lui qui prouve que `fr.ts` couvre exactement `en.ts`.
+1. `npm run typecheck` — this is what proves `fr.ts` covers exactly `en.ts`.
 2. `npm test`.
-3. Ouvrir l'app **dans les deux langues** : le sélecteur est dans l'en-tête de l'accueil et
-   de la page de donjon. Vérifier qu'il ne reste pas de chaîne en dur.
-4. Si `SPELL_LOCALES` ou `fetch-assets.mjs` a changé : relancer `npm run fetch:assets` et
-   **committer `spells.json`** — la CI ne lance aucun script d'extraction.
+3. Open the app **in both languages**: the switcher sits in the header of the home page and of
+   each dungeon page. Check no hardcoded string is left.
+4. If `SPELL_LOCALES` or `fetch-assets.mjs` changed: re-run `npm run fetch:assets` and
+   **commit `spells.json`** — CI runs no extraction script.

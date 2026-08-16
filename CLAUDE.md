@@ -163,40 +163,62 @@ Before implementing new functionality:
 
 - NO EXCEPTIONS POLICY: Under no circumstances should you mark any test type as "not applicable". Every project, regardless of size or complexity, MUST have unit tests, integration tests, AND end-to-end tests. If you believe a test type doesn't apply, you need the human to say exactly "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME"
 
-### État actuel du dépôt
+### Where the repository actually stands
 
-La règle ci-dessus est la cible, pas la réalité d'aujourd'hui. Ce qui existe :
+The rule above is the target, not today's reality. What exists:
 
-235 tests, tous verts. Aucun mock : les tests lisent les vraies données générées et les vrais
-`content/*.md` via `import.meta.glob`.
+287 tests, all green. No mocks anywhere: the tests read the real generated data and the real
+`content/*.md` through `import.meta.glob`.
 
-| Type | Runner | Couverture réelle |
+| Type | Runner | Actual coverage |
 | --- | --- | --- |
-| Unitaire | Vitest (`npm test`) | **Tout `src/lib/`** : `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data` |
-| Intégration | Vitest + jsdom | Composants du codex (`Badges`, `MobCard`, `CodexPanel`) et page d'accueil, montés sur les données réelles du pool |
-| End-to-end | — | **Aucun.** Aucun runner navigateur n'est installé |
+| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `scripts/tile-layout` |
+| Integration | Vitest + jsdom | Codex components (`Badges`, `MobCard`, `CodexPanel`) and the home page, mounted against the real dungeon pool |
+| End-to-end | — | **None.** No browser runner is installed |
 
-**Non couvert à ce jour** : `components/map/DungeonMap.tsx`, `components/route/RoutePanel.tsx`,
-`routes/DungeonPage.tsx`, `App.tsx`, `main.tsx`.
+**Not covered yet:** `components/map/DungeonMap.tsx`, `components/route/RoutePanel.tsx`,
+`routes/DungeonPage.tsx`, `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, and the
+extraction scripts (`extract-mdt`, `fetch-assets`, `scaffold-content`, `lua-table`).
 
-Les tests de composants portent le pragma `// @vitest-environment jsdom` en tête de fichier —
-l'environnement par défaut reste `node`, pour que la suite de `lib/` reste rapide. Testing
-Library tourne sans `globals: true`, donc chaque fichier de composant doit déclarer lui-même
-`afterEach(cleanup)`, sans quoi les rendus s'accumulent dans le document.
+Component tests carry the `// @vitest-environment jsdom` pragma at the top of the file — the
+default environment stays `node` so the `lib/` suite stays fast. Testing Library runs without
+`globals: true`, so every component file must declare its own `afterEach(cleanup)`; without
+it, renders pile up in the document and `screen` queries start matching several elements.
 
-**Ce que ça implique concrètement :** quand tu modifies une zone non couverte, tu écris le
-test manquant dans le cadre de la tâche — c'est le mécanisme de rattrapage, pas un extra.
-Choisir un runner E2E (Playwright ou autre) est une décision à prendre avec RwlRwlRwlRwl,
-pas à trancher seul au détour d'un ticket.
+Mount components through `src/test/render.tsx` (`renderEn` / `renderFr`) rather than Testing
+Library's bare `render`: components need a `LocaleProvider`, and an explicit locale is what
+makes the assertion readable.
+
+**What this means in practice:** when you touch an uncovered area, you write the missing test
+as part of the task — that is the catch-up mechanism, not an extra. Picking an E2E runner
+(Playwright or otherwise) is a decision to make with RwlRwlRwlRwl, not one to settle alone in
+passing.
 
 ## Test-Driven Development
 
 FOR EVERY NEW FEATURE OR BUGFIX, YOU MUST follow Test Driven Development.
-Pour la méthodologie complète, utilise la skill `superpowers:test-driven-development`.
+For the full methodology, use the `superpowers:test-driven-development` skill.
 
 ---
 
 # Git & Version Control
+
+## Language
+
+**Write in English**: commit messages, code comments, developer-facing error strings, this
+file, and the skills under `.claude/skills/`. The repository is public and may take
+contributions from people who do not read French.
+
+The first five commits are in French. They predate this rule and are already published —
+leave them alone.
+
+Two things are deliberately not English-only: the codex content under `content/**.md` and the
+user interface. Both are translated through the i18n layer, per locale, rather than written
+in a single language.
+
+Commit style, taken from the existing history: imperative mood, no `feat:` / `fix:` prefix, a
+subject line saying what the commit does to the repository. The body explains **why**, not
+what — the diff already says what.
 
 ## The Golden Rule
 
@@ -331,49 +353,49 @@ See skills: `superpowers:brainstorming`, `superpowers:writing-plans`, `superpowe
 
 # Repository Overview
 
-**keystone-codex** est une application web statique (React 19 + Vite + Tailwind 4, TypeScript)
-qui sert de codex et de carte interactive pour les donjons Mythique+ de World of Warcraft.
-Elle affiche les packs de mobs d'un donjon sur sa carte, une fiche par mob, et un éditeur de
-route capable d'importer/exporter des strings Mythic Dungeon Tools (MDT), à plusieurs via Y.js
-en WebRTC. Déployée sur GitHub Pages, routage en hash, chemins d'assets relatifs.
+**keystone-codex** is a static web app (React 19 + Vite + Tailwind 4, TypeScript) that serves
+as a codex and interactive map for World of Warcraft Mythic+ dungeons. It draws a dungeon's
+mob packs on its map, gives every mob an entry, and provides a route editor that imports and
+exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js on WebRTC. Deployed to
+GitHub Pages: hash routing, relative asset paths.
 
-## Où vivent les choses
+## Where things live
 
-| Chemin | Rôle | Édition |
+| Path | Role | Edited |
 | --- | --- | --- |
-| `content/<donjon>/*.md` | **Le contenu rédigé** : menace, rôle, notes de sorts, pièges. Un fichier par mob, frontmatter YAML + prose. | À la main |
-| `src/data/generated/*.json` | Mobs, clones, packs, forces, sorts — extraits de MDT. | **Généré, jamais à la main** |
-| `public/maps/` | Cartes WebP assemblées depuis les tuiles MDT. | **Généré** |
-| `scripts/*.mjs` | Chaîne d'extraction (`npm run data`) : lit l'installation WoW locale, écrit les fichiers versionnés. | À la main |
-| `src/lib/mdt/` | Codec des strings MDT (CBOR + deflate brut) et document Y.js de la route. | À la main |
-| `src/components/`, `src/routes/` | UI React. | À la main |
+| `content/<dungeon>/*.md` | **The written content**: threat, role, spell notes, traps. One file per mob, YAML frontmatter plus prose. A `.fr.md` sibling holds the French version. | By hand |
+| `src/data/generated/*.json` | Mobs, clones, packs, forces, spells — extracted from MDT. | **Generated, never by hand** |
+| `public/maps/` | WebP maps assembled from MDT tiles. | **Generated** |
+| `scripts/*.mjs` | Extraction chain (`npm run data`): reads the local WoW install, writes the versioned files. | By hand |
+| `src/lib/mdt/` | MDT string codec (CBOR + raw deflate) and the route's Y.js document. | By hand |
+| `src/lib/i18n/` | Interface strings, language detection, formatting. | By hand |
+| `src/components/`, `src/routes/` | React UI. | By hand |
 
-## Invariants à ne pas casser
+## Invariants not to break
 
-- **L'app ne lit jamais `D:\jeux` à l'exécution.** Les scripts d'extraction lisent
-  l'installation WoW, l'app ne lit que les fichiers versionnés. C'est ce qui la rend
-  partageable et déployable.
-- **Rien n'est codé en dur pour une extension.** Changer de saison = éditer
-  `SEASON_DUNGEONS` dans `scripts/config.mjs` puis `npm run data`.
-- **Un mob sans fiche `.md` reste affiché** avec ses seules données MDT. Le codex se remplit
-  progressivement et ne doit jamais casser l'app par un contenu manquant.
-- **`npm run scaffold` n'écrase jamais un fichier existant.**
-- **La CI ne lance aucun script d'extraction** (pas de WoW sur le runner). Après un
-  `npm run data` local, il faut committer les données générées.
-- **Le déploiement est manuel** (`Actions → Deploy → Run workflow`), jamais automatique.
+- **The app never reads `D:\jeux` at runtime.** The extraction scripts read the WoW install;
+  the app only ever reads versioned files. That is what makes it shareable and deployable.
+- **Nothing is hardcoded for one expansion.** Changing season means editing `SEASON_DUNGEONS`
+  in `scripts/config.mjs`, then running `npm run data`.
+- **A mob with no `.md` entry still renders**, with its MDT data alone. The codex fills in
+  gradually and must never break the app over missing content.
+- **`npm run scaffold` never overwrites an existing file.**
+- **CI runs no extraction script** (there is no WoW on the runner). After a local
+  `npm run data`, the generated files have to be committed for the live site to change.
+- **Deployment is manual** (`Actions → Deploy → Run workflow`), never automatic.
 
-## Commandes
+## Commands
 
-| Commande | Rôle |
+| Command | Role |
 | --- | --- |
-| `npm run dev` | Serveur de dev Vite (rechargement à chaud, y compris sur les `.md` de `content/`) |
+| `npm run dev` | Vite dev server (hot reload, including on `content/` markdown) |
 | `npm run typecheck` | `tsc -b` |
-| `npm test` | Vitest — codec MDT contre les vecteurs RFC 8949 et une fixture réelle |
-| `npm run build` | `tsc -b && vite build` → `dist/` statique (~6 Mo) |
-| `npm run data` | Chaîne complète : `extract` → `build:maps` → `fetch:assets` → `scaffold` |
+| `npm test` | Vitest — MDT codec against RFC 8949 vectors and a real in-game fixture |
+| `npm run build` | `tsc -b && vite build` → static `dist/` (~6 MB) |
+| `npm run data` | Full chain: `extract` → `build:maps` → `fetch:assets` → `scaffold` |
 
-Le détail utilisateur (format des fiches, lecture de la carte, routes, déploiement) est dans
-[README.md](README.md) — ne pas le dupliquer ici.
+User-facing detail — entry format, how to read the map, routes, deployment — lives in
+[README.md](README.md). Do not duplicate it here.
 
 
 
@@ -423,18 +445,17 @@ These habits keep commands auto-approvable and avoid blocked anti-patterns:
 
 # Skills Reference
 
-Le répertoire `.claude/skills/` contient des guides de documentation (pas des commandes
-exécutables). **Lis ces fichiers directement** avec l'outil Read avant de toucher au domaine
-concerné :
+`.claude/skills/` holds documentation guides, not executable commands. **Read these files
+directly** with the Read tool before touching the area they cover:
 
-| Skill | Lire avant de… |
+| Skill | Read before… |
 | --- | --- |
-| [`mdt-pipeline`](.claude/skills/mdt-pipeline/SKILL.md) | toucher au codec MDT (`src/lib/mdt/`), aux scripts d'extraction (`scripts/`), aux données générées ou à la fixture de test |
-| [`i18n`](.claude/skills/i18n/SKILL.md) | ajouter une chaîne d'UI, traduire une fiche de `content/`, toucher à `src/lib/i18n/` ou aux libellés de sorts, ajouter une langue |
+| [`mdt-pipeline`](.claude/skills/mdt-pipeline/SKILL.md) | touching the MDT codec (`src/lib/mdt/`), the extraction scripts (`scripts/`), the generated data, or the test fixture |
+| [`i18n`](.claude/skills/i18n/SKILL.md) | adding a UI string, translating a `content/` entry, touching `src/lib/i18n/` or the spell labels, adding a language |
 
-Tout le reste (TDD, plans, revue de code, brainstorming) vient des plugins — voir
-`superpowers:*` et `mattpocock-skills`. N'ajoute une skill repo que quand un domaine est
-à la fois spécifique à keystone-codex et trop long pour tenir dans CLAUDE.md.
+Everything else — TDD, plans, code review, brainstorming — comes from plugins; see
+`superpowers:*` and `mattpocock-skills`. Only add a repo skill when an area is both specific
+to keystone-codex and too long to fit in CLAUDE.md.
 
 ---
 

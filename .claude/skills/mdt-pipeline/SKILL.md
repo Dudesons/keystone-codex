@@ -1,153 +1,158 @@
 ---
 name: mdt-pipeline
-description: Comment keystone-codex lit Mythic Dungeon Tools — extraction des .lua vers du JSON versionné, et codec des strings de partage (CBOR + deflate brut). À lire avant de toucher à src/lib/mdt/, scripts/, src/data/generated/ ou à la fixture d'export réel.
+description: How keystone-codex reads Mythic Dungeon Tools — extracting the .lua files into versioned JSON, and the share-string codec (CBOR + raw deflate). Read before touching src/lib/mdt/, scripts/, src/data/generated/ or the real-export fixture.
 ---
 
-# Pipeline MDT
+# MDT pipeline
 
-Deux ponts distincts existent entre keystone-codex et Mythic Dungeon Tools. Ne les confonds
-pas : ils n'ont ni le même moment d'exécution, ni les mêmes contraintes.
+Two distinct bridges connect keystone-codex to Mythic Dungeon Tools. Do not confuse them:
+they run at different times and are held to different constraints.
 
-| | Extraction | Codec de string |
+| | Extraction | String codec |
 | --- | --- | --- |
-| Quand | Hors ligne, à la main (`npm run data`) | À l'exécution, dans le navigateur |
-| Entrée | `MythicDungeonTools/<Extension>/*.lua` | String `!~MDT2~…` collée par l'utilisateur |
-| Sortie | `src/data/generated/*.json`, `public/maps/` | Table Lua en mémoire, puis route |
+| When | Offline, on demand (`npm run data`) | At runtime, in the browser |
+| Input | `MythicDungeonTools/<Expansion>/*.lua` | A `!~MDT2~…` string pasted by the user |
+| Output | `src/data/generated/*.json`, `public/maps/` | An in-memory Lua table, then a route |
 | Code | `scripts/*.mjs` | `src/lib/mdt/` |
-| Contrainte dure | L'app ne lit **jamais** l'installation WoW à l'exécution | Fidélité **octet à octet** avec le sérialiseur du jeu |
+| Hard constraint | The app **never** reads the WoW install at runtime | **Byte-for-byte** fidelity with the game's serializer |
 
 ---
 
 ## 1. Extraction (`scripts/`, `npm run data`)
 
-`npm run data` enchaîne quatre scripts, dans cet ordre et pour une raison :
+`npm run data` chains four scripts, in this order and for a reason:
 
-| Script | Entrée → sortie |
+| Script | Input → output |
 | --- | --- |
-| `extract` — [extract-mdt.mjs](../../../scripts/extract-mdt.mjs) | `Midnight/*.lua` → `src/data/generated/*.json` (mobs, clones, packs, forces, sorts) |
-| `build:maps` — [build-maps.mjs](../../../scripts/build-maps.mjs) | 150 tuiles PNG (15×10 de 128 px) → une WebP 1920×1280 par donjon |
-| `fetch:assets` — [fetch-assets.mjs](../../../scripts/fetch-assets.mjs) | IDs de sorts issus de l'extraction → noms, icônes, descriptions (Wowhead) ; portraits |
-| `scaffold` — [scaffold-content.mjs](../../../scripts/scaffold-content.mjs) | liste des mobs → fiches `content/<donjon>/*.md` manquantes |
+| `extract` — [extract-mdt.mjs](../../../scripts/extract-mdt.mjs) | `Midnight/*.lua` → `src/data/generated/*.json` (mobs, clones, packs, forces, spells) |
+| `build:maps` — [build-maps.mjs](../../../scripts/build-maps.mjs) | 150 PNG tiles (15×10 of 128 px) → one 1920×1280 WebP per dungeon |
+| `fetch:assets` — [fetch-assets.mjs](../../../scripts/fetch-assets.mjs) | Spell IDs from the extraction → names, icons, descriptions (Wowhead), per locale; mob portraits |
+| `scaffold` — [scaffold-content.mjs](../../../scripts/scaffold-content.mjs) | The mob list → missing `content/<dungeon>/*.md` entries |
 
-`fetch:assets` et `scaffold` consomment ce que `extract` a produit : les relancer seuls après
-avoir modifié l'extraction est légitime, l'inverse ne l'est pas.
+`fetch:assets` and `scaffold` consume what `extract` produced. Re-running them alone after
+changing the extraction is legitimate; the reverse is not.
 
-### Configuration : [scripts/config.mjs](../../../scripts/config.mjs)
+### Configuration: [scripts/config.mjs](../../../scripts/config.mjs)
 
-C'est le **seul** fichier à éditer pour changer de saison ou de machine.
+The **only** file to edit when changing season or machine.
 
-- `MDT_PATH` — racine de l'addon, surchargeable par variable d'environnement. Défaut :
+- `MDT_PATH` — the addon root, overridable by environment variable. Defaults to
   `D:\jeux\World of Warcraft\_retail_\Interface\AddOns\MythicDungeonTools`.
-- `MDT_EXPANSION` — sous-dossier de l'extension. Défaut : `Midnight`.
-- `SEASON_DUNGEONS` — les noms de fichiers `.lua` du pool courant. **Tout le reste** (index de
-  donjon, total de forces, `mapID`) est lu dans ces fichiers ; rien d'autre n'est codé en dur.
-- `MDT_GEOMETRY` — l'espace de coordonnées de MDT (840×560, `MainFrame.lua`) et la géométrie
-  des tuiles. Si une carte s'affiche décalée, c'est ici, pas dans le composant React.
+- `MDT_EXPANSION` — the expansion subfolder. Defaults to `Midnight`.
+- `SEASON_DUNGEONS` — the `.lua` filenames of the current pool. **Everything else** — dungeon
+  index, total forces, `mapID` — is read from those files; nothing else is hardcoded.
+- `MDT_GEOMETRY` — MDT's coordinate space (840×560, from `MainFrame.lua`) and the tile grid.
+  If a map renders offset, the cause is here, not in the React component.
+- `SPELL_LOCALES` — the languages spell labels are fetched in. See the `i18n` skill before
+  adding one: the Wowhead locale codes were established by probing, not by documentation.
 
-### Le piège des index sparses
+### The sparse-index trap
 
-**Les index de mobs et de clones de MDT sont troués et doivent le rester.** Supprimer un mob
-dans MDT laisse un trou (`clones = { [8] = …, [13] = … }`), et ces index sont exactement ce
-que les routes référencent. Les renuméroter casserait silencieusement toutes les routes
-existantes, importées comme sauvegardées.
+**MDT's mob and clone indices have holes, and must keep them.** Deleting a mob in MDT leaves
+a gap (`clones = { [8] = …, [13] = … }`), and those indices are exactly what routes
+reference. Renumbering them would silently break every existing route, imported or saved.
 
-`intEntries()` dans `extract-mdt.mjs` trie sans jamais recompacter. Si tu ajoutes un traitement
-qui itère sur les mobs, itère sur les clés, pas sur une position dans un tableau.
+`intEntries()` in `extract-mdt.mjs` sorts without ever compacting. If you add a pass that
+iterates over mobs, iterate over keys, not over array positions.
 
-### Écrire du code d'extraction
+The map-tile arithmetic lives in [tile-layout.mjs](../../../scripts/tile-layout.mjs), split
+out of `build-maps.mjs` so it can be tested without a WoW install — the same reasoning: a
+one-index slip offsets an entire map without failing a build.
 
-Le parseur Lua maison est [lua-table.mjs](../../../scripts/lua-table.mjs) : `parseAssignment`
-puis `toPlain`. Les valeurs venues de `L["X"]` arrivent enveloppées dans un `LuaExpr` qui porte
-son littéral — `unwrap()` les déplie. N'ajoute pas de dépendance à un parseur Lua tiers sans en
-parler : le fichier existant est calibré sur ce que MDT écrit réellement.
+### Writing extraction code
 
-`readDungeonSource()` lève une erreur explicite si le `.lua` est introuvable, avec le chemin
-complet et un rappel des variables d'environnement. Garde ce niveau de diagnostic : ce script
-tourne sur la machine de quelqu'un qui n'a pas le code sous les yeux.
+The hand-rolled Lua parser is [lua-table.mjs](../../../scripts/lua-table.mjs):
+`parseAssignment`, then `toPlain`. Values coming from `L["X"]` arrive wrapped in a `LuaExpr`
+carrying their literal — `unwrap()` unfolds them. Do not pull in a third-party Lua parser
+without discussing it: the existing file is calibrated on what MDT actually writes.
+
+`readDungeonSource()` throws an explicit error when a `.lua` file is missing, with the full
+path and a reminder of the environment variables. Keep that level of diagnostic: this script
+runs on someone's machine without the code in front of them.
 
 ---
 
-## 2. Codec des strings (`src/lib/mdt/`)
+## 2. The string codec (`src/lib/mdt/`)
 
-### Deux formats en lecture, un seul en écriture
+### Two formats read, one written
 
-[string.ts](../../../src/lib/mdt/string.ts) lit les deux formats de `Transmission.lua` :
+[string.ts](../../../src/lib/mdt/string.ts) reads both formats from `Transmission.lua`:
 
-- **MDT2** (actuel) : `!~MDT2~` + Base64 standard + deflate + CBOR ;
-- **legacy** : `!` + encodage 6 bits de LibDeflate + deflate + AceSerializer rev 1.
+- **MDT2** (current): `!~MDT2~` + standard Base64 + deflate + CBOR;
+- **legacy**: `!` + LibDeflate's 6-bit encoding + deflate + AceSerializer rev 1.
 
-Le legacy est en lecture seule et le reste : beaucoup de routes publiées sur Wago sont encore
-à ce format. On écrit **toujours** en MDT2, ce que le jeu produit aujourd'hui.
+Legacy stays read-only and will remain so: many routes published on Wago are still in that
+format. We **always** write MDT2, which is what the game produces today.
 
-### Les trois particularités du sérialiseur du jeu
+### Three quirks of the game's serializer
 
-Découvertes via un export réel, corrigées, et à ne surtout pas « simplifier » :
+Found through a real export, fixed, and not to be "simplified" away:
 
-1. **Chaînes en CBOR major 2, pas major 3.** Lua n'a que des chaînes d'octets, donc
-   `C_EncodingUtil.SerializeCBOR` émet des *byte strings*. Un décodeur qui suppose major 3
-   rend un `Uint8Array` là où une clé de table est attendue.
-2. **Deflate brut**, sans en-tête zlib — `Enum.CompressionMethod.Deflate` n'en pose pas.
-   `inflateAuto()` tente le brut d'abord et retombe sur zlib, et `DecodedMdt.deflate` mémorise
-   la variante observée pour ré-encoder à l'identique.
-3. **Une table vide part en tableau vide (`0x80`)**, pas en map vide (`0xa0`).
+1. **Strings are CBOR major 2, not major 3.** Lua only has byte strings, so
+   `C_EncodingUtil.SerializeCBOR` emits *byte strings*. A decoder assuming major 3 hands back
+   a `Uint8Array` where a table key was expected.
+2. **Raw deflate**, with no zlib header — `Enum.CompressionMethod.Deflate` writes none.
+   `inflateAuto()` tries raw first and falls back to zlib, and `DecodedMdt.deflate` records
+   which variant was seen so the string can be re-encoded identically.
+3. **An empty table serializes as an empty array (`0x80`)**, not an empty map (`0xa0`).
 
-### La règle tableau/map de [cbor.ts](../../../src/lib/mdt/cbor.ts)
+### The array/map rule in [cbor.ts](../../../src/lib/mdt/cbor.ts)
 
-Une table Lua est une `Map` dont les clés entières restent **1-based**, comme en Lua. Un
-tableau CBOR se décode en `Map {1:…, 2:…}` et se ré-encode en tableau **si et seulement si**
-ses clés sont `1..n` contiguës. C'est l'inverse exact, et c'est ce qui rend le round-trip
-stable. Le CBOR est réimplémenté à la main plutôt que pris sur étagère précisément pour
-garder ce contrôle — ne remplace pas ce module par une librairie.
+A Lua table is a `Map` whose integer keys stay **1-based**, exactly as in Lua. A CBOR array
+decodes to `Map {1:…, 2:…}` and re-encodes as an array **if and only if** its keys are a
+contiguous `1..n`. That is the exact inverse, and it is what makes the round trip stable. The
+CBOR layer is hand-written rather than taken off the shelf precisely to keep that control —
+do not replace this module with a library.
 
-### Ne jamais perdre ce qu'on ne sait pas éditer
+### Never lose what we cannot edit
 
-Un preset MDT porte des dessins, des notes, des offsets de faille, des assignations. On ne
-sait éditer que `value.pulls`. [route.ts](../../../src/lib/mdt/route.ts) conserve donc la
-table Lua d'origine dans `Route.source` et `routeToLua()` repart de cette table : ré-exporter
-une route importée la rend au jeu intacte.
+An MDT preset carries drawings, notes, rift offsets, assignments. We only know how to edit
+`value.pulls`. [route.ts](../../../src/lib/mdt/route.ts) therefore keeps the original Lua
+table in `Route.source`, and `routeToLua()` starts from that table: re-exporting an imported
+route hands it back to the game intact.
 
-**Toute évolution du modèle de route doit préserver cette propriété.** Si tu ajoutes un champ,
-écris-le dans la copie de la table source, ne reconstruis pas la table depuis zéro.
+**Any change to the route model must preserve that property.** If you add a field, write it
+into the copy of the source table; do not rebuild the table from scratch.
 
-C'est aussi pour ça que le `localStorage` stocke la route **encodée en string MDT** plutôt
-qu'en JSON maison : le format porte déjà tout.
+That is also why `localStorage` stores the route **encoded as an MDT string** rather than as
+bespoke JSON: the format already carries everything.
 
 ---
 
 ## 3. Tests (`npm test`)
 
-[codec.test.ts](../../../src/lib/mdt/codec.test.ts) valide sur deux axes :
+[codec.test.ts](../../../src/lib/mdt/codec.test.ts) validates along two axes:
 
-- les vecteurs de l'**annexe A de la RFC 8949** — conformité CBOR ;
-- une **route réellement exportée du jeu**, `__fixtures__/real-export.txt` — compatibilité
-  in-game. C'est la seule chose qui prouve qu'une string produite ici sera acceptée par WoW.
+- the vectors from **RFC 8949 appendix A** — CBOR conformance;
+- a **route actually exported from the game**, `__fixtures__/real-export.txt` — in-game
+  compatibility. It is the only thing proving a string produced here will be accepted by WoW.
 
-Le test compare le **CBOR décompressé**, pas la string finale : deux compresseurs deflate
-corrects produisent des flux différents pour la même entrée, et le jeu décompresse les deux.
-L'invariant qui compte est que les octets sérialisés coïncident.
+The test compares the **decompressed CBOR**, not the final string: two correct deflate
+implementations produce different streams for the same input, and the game decompresses both.
+The invariant that matters is that the serialized bytes match.
 
-### Ne rends pas le test circulaire
+### Do not make the test circular
 
-Le nom de la route dans la fixture a été anonymisé **chirurgicalement** par
-[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs) : seuls les octets du champ
-`text` ont été réécrits, 958 des 982 octets d'origine sont ceux que le jeu a émis.
+The route name in the fixture was anonymized **surgically** by
+[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs): only the bytes of the
+`text` field were rewritten, and 958 of the original 982 bytes are the ones the game emitted.
 
-Décoder puis ré-encoder la fixture entière avec notre propre encodeur comparerait notre code à
-lui-même et ne prouverait plus rien. Si tu dois retoucher la fixture, patche sur place.
+Decoding and re-encoding the whole fixture with our own encoder would compare our code to
+itself and prove nothing. If you must touch the fixture, patch it in place.
 
-Les tests de fixture sont **ignorés si le fichier est absent**, donc le dépôt reste testable
-sans lui. Pour la renouveler après un patch du jeu : exporte une route depuis MDT, remplace le
-contenu de `real-export.txt`, ré-anonymise. Voir
+Fixture tests are **skipped when the file is absent**, so the repository stays testable
+without it. To refresh it after a game patch: export a route from MDT, replace the contents
+of `real-export.txt`, re-anonymize. See
 [__fixtures__/README.md](../../../src/lib/mdt/__fixtures__/README.md).
 
 ---
 
-## Checklist avant de committer une modification du pipeline
+## Checklist before committing a pipeline change
 
-1. `npm test` → verte, y compris les tests de fixture (vérifie qu'ils ne sont pas *skipped*).
+1. `npm test` — green, fixture tests included (check they are not reported as *skipped*).
 2. `npm run typecheck`.
-3. Si `src/data/generated/` ou `public/maps/` a changé : **committer le résultat**. La CI ne
-   lance aucun script d'extraction — il n'y a pas de WoW sur le runner — donc le site en ligne
-   ne bouge que si les fichiers générés sont versionnés.
-4. Si le codec a changé : réimporter une route réelle en jeu avant de considérer que ça marche.
-   Les tests prouvent la sérialisation, pas l'acceptation par le client.
+3. If `src/data/generated/` or `public/maps/` changed: **commit the result**. CI runs no
+   extraction script — there is no WoW on the runner — so the live site only moves when the
+   generated files are versioned.
+4. If the codec changed: re-import a real route in game before calling it done. The tests
+   prove serialization, not acceptance by the client.
