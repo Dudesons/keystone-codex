@@ -1,15 +1,32 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
+const ADDON_SUFFIX = path.join('Interface', 'AddOns', 'MythicDungeonTools')
+
 /**
- * Root of the MDT addon. Overridable through the MDT_PATH environment variable, which helps
- * when WoW lives elsewhere or when regenerating from another machine.
+ * Where WoW might be, in the order we look.
+ *
+ * No single machine's layout should be the repository's only truth: a contributor with a
+ * standard install needs no configuration, and MDT_PATH remains the escape hatch for
+ * everyone else. Add a candidate rather than editing one — the list costs nothing to probe.
+ */
+export const MDT_CANDIDATES = [
+  path.join('D:', 'jeux', 'World of Warcraft', '_retail_', ADDON_SUFFIX),
+  path.join('C:', 'Program Files (x86)', 'World of Warcraft', '_retail_', ADDON_SUFFIX),
+  path.join('C:', 'Program Files', 'World of Warcraft', '_retail_', ADDON_SUFFIX),
+  path.join('/Applications', 'World of Warcraft', '_retail_', ADDON_SUFFIX),
+]
+
+/**
+ * Root of the MDT addon. MDT_PATH overrides everything; otherwise the first candidate that
+ * exists wins. When none does, we keep the standard Windows path so the "not found" error
+ * names somewhere plausible rather than somewhere personal.
  */
 export const MDT_PATH =
-  process.env.MDT_PATH ||
-  'D:\\jeux\\World of Warcraft\\_retail_\\Interface\\AddOns\\MythicDungeonTools'
+  process.env.MDT_PATH || MDT_CANDIDATES.find((p) => fs.existsSync(p)) || MDT_CANDIDATES[1]
 
 /** Folder holding the current expansion's dungeon data, inside MDT. */
 export const MDT_EXPANSION = process.env.MDT_EXPANSION || 'Midnight'

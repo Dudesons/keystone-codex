@@ -167,18 +167,42 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-427 tests, all green. No mocks anywhere: the tests read the real generated data and the real
-`content/*.md` through `import.meta.glob`.
+459 tests, all green. No mocks anywhere: the tests read the real generated data, the real
+`content/*.md` through `import.meta.glob`, and real committed artefacts for anything that
+would otherwise need the network or a WoW install.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
-| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout` and `scripts/lua-table` |
+| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table` and `scripts/mdt-dungeon` |
 | Integration | Vitest + jsdom | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
 | End-to-end | — | **None.** No browser runner is installed |
 
 **Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`,
-`main.tsx`, and the extraction scripts (`extract-mdt`, `fetch-assets`, `scaffold-content`).
-The first two are exercised by every component test through `renderEn` / `renderFr`.
+`main.tsx`, `scripts/fetch-assets` and `scripts/scaffold-content`. The first two are
+exercised by every component test through `renderEn` / `renderFr`.
+
+### Testing what needs a WoW install or the network
+
+**CI runs no extraction script** and has no WoW, so no test may depend on either. When a
+script needs something the runner cannot reach, commit a **real artefact** rather than
+writing a fake, and split the pure logic out of the script so it can be pointed at that
+artefact:
+
+| Fixture | Feeds | Why real |
+| --- | --- | --- |
+| `src/lib/mdt/__fixtures__/real-export.txt` | the MDT string codec | the only proof the game accepts what we produce |
+| `scripts/__fixtures__/AltarOfFangs.lua` | `mdt-dungeon.mjs` | a hand-written sample would only contain the cases we already thought of |
+
+A fake would test our own idea of the input, which is exactly the failure mode the Test
+Quality rules name. Capturing a real response costs the same effort and tests the real thing.
+
+`scripts/extract-mdt.mjs`, `scripts/build-maps.mjs` and `scripts/fetch-assets.mjs` all run
+`main()` at import, so importing one runs the whole job. Pure logic has to move to its own
+module — `mdt-dungeon.mjs`, `tile-layout.mjs` — before it can be tested at all.
+
+`MDT_PATH` resolves from the environment first, then from `MDT_CANDIDATES` in
+`scripts/config.mjs`. Add a candidate rather than editing one: no single machine's layout
+should be the repository's only truth.
 
 `RoutePanel` owns no route state — it calls `actions`. Its tests pass a recorder in place of
 the real actions and assert on the calls. That is not a mock of behaviour under test: the

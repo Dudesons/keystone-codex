@@ -77,10 +77,25 @@ describe('Blips', () => {
     expect(Math.max(...radii)).toBeGreaterThan(14)
   })
 
-  it('draws the patrol path of clones that have one', () => {
+  it('draws no patrol path in a dungeon that has none', () => {
     const { container } = mount()
-    const patrols = lookup.dungeon.enemies.flatMap((e) => e.clones.filter((c) => c.patrol?.length))
-    expect(container.querySelectorAll('polyline')).toHaveLength(patrols.length)
+    expect(container.querySelectorAll('polyline')).toHaveLength(0)
+  })
+
+  it('draws the patrol path of clones that have one', () => {
+    // The whole season pool holds exactly one patrolling clone, in Temple of Sethraliss.
+    // Asserting against Altar of Fangs would pass on zero and prove nothing.
+    const temple = getLookup('temple-of-sethraliss')!
+    const patrols = temple.dungeon.enemies.flatMap((e) => e.clones.filter((c) => c.patrol?.length))
+    expect(patrols.length).toBeGreaterThan(0)
+
+    const { container } = renderEn(<DungeonMap slug="temple-of-sethraliss" lookup={temple} />)
+    const drawn = container.querySelectorAll('polyline')
+    expect(drawn).toHaveLength(patrols.length)
+    // The line starts at the clone and threads its waypoints, so it has one point more.
+    expect(drawn[0].getAttribute('points')!.trim().split(/\s+/)).toHaveLength(
+      patrols[0].patrol!.length + 1,
+    )
   })
 })
 
