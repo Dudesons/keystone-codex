@@ -1,0 +1,90 @@
+[
+  {
+    "slug": "altar-of-fangs",
+    "englishName": "Altar of Fangs",
+    "mdtIndex": 164,
+    "mapID": 588,
+    "totalCount": 817,
+    "bosses": 3,
+    "mobCount": 21,
+    "packCount": 46,
+    "textureFolder": "AltarOfFangs"
+  },
+  {
+    "slug": "murder-row",
+    "englishName": "Murder Row",
+    "mdtIndex": 160,
+    "mapID": 587,
+    "totalCount": 690,
+    "bosses": 5,
+    "mobCount": 41,
+    "packCount": 56,
+    "textureFolder": "MurderRow"
+  },
+  {
+    "slug": "den-of-nalorakk",
+    "englishName": "Den of Nalorakk",
+    "mdtIndex": 161,
+    "mapID": 586,
+    "totalCount": 729,
+    "bosses": 4,
+    "mobCount": 32,
+    "packCount": 74,
+    "textureFolder": "DenOfNalorakk"
+  },
+  {
+    "slug": "the-blinding-vale",
+    "englishName": "The Blinding Vale",
+    "mdtIndex": 162,
+    "mapID": 584,
+    "totalCount": 655,
+    "bosses": 6,
+    "mobCount": 26,
+    "packCount": 82,
+    "textureFolder": "TheBlindingVale"
+  },
+  {
+    "slug": "voidscar-arena",
+    "englishName": "Voidscar Arena",
+    "mdtIndex": 163,
+    "mapID": 585,
+    "totalCount": 738,
+    "bosses": 3,
+    "mobCount": 32,
+    "packCount": 62,
+    "textureFolder": "VoidscarArena"
+  },
+  {
+    "slug": "kings-rest",
+    "englishName": "King's Rest",
+    "mdtIndex": 17,
+    "mapID": 249,
+    "totalCount": 608,
+    "bosses": 6,
+    "mobCount": 39,
+    "packCount": 25,
+    "textureFolder": "KingsRest"
+  },
+  {
+    "slug": "temple-of-sethraliss",
+    "englishName": "Temple of Sethraliss",
+    "mdtIndex": 20,
+    "mapID": 250,
+    "totalCount": 649,
+    "bosses": 5,
+    "mobCount": 45,
+    "packCount": 42,
+    "textureFolder": "TempleOfSethraliss"
+  },
+  {
+    "slug": "ruby-life-pools",
+    "englishName": "Ruby Life Pools",
+    "mdtIndex": 42,
+    "mapID": 399,
+    "totalCount": 553,
+    "bosses": 4,
+    "mobCount": 24,
+    "packCount": 35,
+    "textureFolder": "RubyLifePools"
+  }
+]

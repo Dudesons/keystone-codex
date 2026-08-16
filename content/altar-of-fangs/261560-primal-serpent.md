@@ -1,0 +1,35 @@
+---
+npcId: 261560
+name: "Primal Serpent"   # auto
+count: 7   # auto — forces par unité
+
+# À REMPLIR : low | medium | high | lethal
+threat:
+# À REMPLIR : caster | melee | patrol | miniboss
+role:
+
+spells:
+  - id: 1221063
+    name: "Xal'atath's Gift"   # auto
+    # Instant
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1294557
+    name: "Piercing Hiss"   # auto
+    # 4 sec cast
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1306381
+    name: "Fetid Spit"   # auto
+    # 2.5 sec cast · 40 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+
+# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.
+trap:
+---
+
+<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->

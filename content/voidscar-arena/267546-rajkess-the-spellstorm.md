@@ -1,0 +1,71 @@
+---
+npcId: 267546
+name: "Raj'kess the Spellstorm"   # auto
+count: 40   # auto — forces par unité
+
+# À REMPLIR : low | medium | high | lethal
+threat:
+# À REMPLIR : caster | melee | patrol | miniboss
+role:
+
+spells:
+  - id: 1298902
+    name: "Proof of Mastery"   # auto
+    # Instant · Unlimited range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1299240
+    name: "Raging Typhoon"   # auto
+    # 100 yd range3 sec cast
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1299244
+    name: "Raging Typhoon"   # auto
+    # Instant · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1299257
+    name: "Crashing Wave"   # auto
+    # Instant · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1299270
+    name: "Thundering Storm"   # auto
+    # 3 sec cast · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1299273
+    name: "Thundering Storm"   # auto
+    # Instant · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1311712
+    name: "Lightning Strike"   # auto
+    # Instant · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1311747
+    name: "Orb of Disruption"   # auto
+    # 2 sec cast
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1311754
+    name: "Forked Lightning"   # auto
+    # 2.5 sec cast · 100 yd range
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+
+# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.
+trap:
+---
+
+<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->

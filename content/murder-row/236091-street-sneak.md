@@ -1,0 +1,41 @@
+---
+npcId: 236091
+name: "Street Sneak"   # auto
+count: 3   # auto — forces par unité
+
+# À REMPLIR : low | medium | high | lethal
+threat:
+# À REMPLIR : caster | melee | patrol | miniboss
+role:
+
+spells:
+  - id: 1216284
+    name: "Stealth"   # auto
+    # Instant
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1216589
+    name: "Heartstop Poison"   # auto
+    # 1.5 sec cast
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1216590
+    name: "Heartstop Poison"   # auto
+    # Instant · 100 yd range · dispel: poison
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+  - id: 1221063
+    name: "Xal'atath's Gift"   # auto
+    # Instant
+    # tag : kick | dodge | dispel | tank | soak | ignore
+    tag: todo
+    note:
+
+# Le piège : la phrase qui évite le wipe. Laisser vide si le mob est sans danger.
+trap:
+---
+
+<!-- Prose libre : positionnement, ordre de focus, cooldowns. -->
