@@ -176,8 +176,18 @@ Produces a static `dist/` of about 6 MB. Asset paths are relative and routing is
 so the site works just as well at the root of a domain as in a subpath like
 `/keystone-codex/`, with no server-side URL rewriting.
 
-## Sources
+## Licence and sources
 
-Mob data, maps and positions extracted from
+keystone-codex is under the **GNU General Public License, version 2** — see
+[LICENSE](LICENSE). That is MDT's licence, and this project redistributes MDT material:
+mob data, clones, packs and forces are extracted from its dungeon files, and one of them is
+committed verbatim as a test fixture.
+
+Mob data, maps and positions come from
 [Mythic Dungeon Tools](https://github.com/Nnoggie/MythicDungeonTools). Spell names, icons and
-descriptions via Wowhead.
+descriptions come via Wowhead.
+
+Maps, icons, portraits and spell text are World of Warcraft material and belong to Blizzard
+Entertainment; no licence granted here applies to them. This project is neither affiliated
+with nor endorsed by Blizzard Entertainment. [NOTICE.md](NOTICE.md) says which file comes
+from where.

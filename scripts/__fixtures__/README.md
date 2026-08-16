@@ -2,6 +2,11 @@
 
 `AltarOfFangs.lua` is one of Mythic Dungeon Tools' dungeon files, committed **verbatim**.
 
+> **Licence.** This file is not ours. It comes from
+> [Mythic Dungeon Tools](https://github.com/Nnoggie/MythicDungeonTools) and is under
+> **GPL-2.0**, like the rest of that addon — which is why keystone-codex is GPL-2.0 too.
+> See [NOTICE.md](../../NOTICE.md). Do not edit it: it is only useful unmodified.
+
 ## Why it is here
 
 The extraction chain reads the local WoW install. CI has none, and a contributor may not have
