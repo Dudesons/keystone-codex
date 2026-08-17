@@ -527,7 +527,7 @@ describe('Identity', () => {
     act(() => result.current.setIdentity('Rwl'))
     act(() => result.current.joinRoom('AAAAAA', 'host'))
     expect(result.current.collab.peers.map((p) => p.name)).toEqual(['Rwl'])
-    expect(result.current.collab.peers[0].isSelf).toBe(true)
+    expect(self(result.current.collab.peers).isSelf).toBe(true)
     unmount()
   })
 
@@ -588,7 +588,7 @@ describe('Sync and cursors', () => {
     const { result, unmount } = mount()
     act(() => result.current.joinRoom('ZZZZZZ', 'host'))
     act(() => result.current.setCursor({ x: 100, y: 200 }))
-    expect(result.current.collab.peers[0].cursor).toEqual({ x: 100, y: 200 })
+    expect(self(result.current.collab.peers).cursor).toEqual({ x: 100, y: 200 })
     unmount()
   })
 
@@ -600,9 +600,9 @@ describe('Sync and cursors', () => {
       act(() => result.current.setCursor({ x: 1, y: 1 }))
       for (let i = 2; i <= 40; i++) act(() => result.current.setCursor({ x: i, y: i }))
 
-      expect(result.current.collab.peers[0].cursor).toEqual({ x: 1, y: 1 })
+      expect(self(result.current.collab.peers).cursor).toEqual({ x: 1, y: 1 })
       act(() => void vi.advanceTimersByTime(60))
-      expect(result.current.collab.peers[0].cursor).toEqual({ x: 40, y: 40 })
+      expect(self(result.current.collab.peers).cursor).toEqual({ x: 40, y: 40 })
       unmount()
     } finally {
       vi.useRealTimers()
@@ -614,7 +614,7 @@ describe('Sync and cursors', () => {
     act(() => result.current.joinRoom('ZZZZZZ', 'host'))
     act(() => result.current.setCursor({ x: 100, y: 200 }))
     act(() => result.current.setCursor(null))
-    expect(result.current.collab.peers[0].cursor).toBeUndefined()
+    expect(self(result.current.collab.peers).cursor).toBeUndefined()
     unmount()
   })
 
