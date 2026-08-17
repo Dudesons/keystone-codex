@@ -40,3 +40,52 @@ test('a join link carries the sub-path, and opens the invitation in another brow
   await expect(guestPage.getByRole('button', { name: `Join room ${room}` })).toBeVisible()
   await guest.close()
 })
+
+test('two viewports of different sizes agree where a cursor points', async ({ browser }) => {
+  const room = roomCode()
+
+  // Different sizes on purpose: identical viewports would pass even if the map-space conversion
+  // were skipped entirely, because the container coordinates would already match.
+  const wide = await newParticipant(browser, { width: 1440, height: 900 })
+  const narrow = await newParticipant(browser, { width: 1024, height: 768 })
+  const a = await wide.newPage()
+  const b = await narrow.newPage()
+
+  const slug = await firstDungeonSlug(a)
+  await acceptInvitation(a, slug, room, 'Mover')
+  await acceptInvitation(b, slug, room, 'Watcher')
+
+  await expect(a.getByText('2 connected')).toBeVisible()
+
+  // Fit the whole map in both, so the landmark is on screen in each. A blip scrolled out of view
+  // still has a bounding box, and hovering that box would move the mouse outside the map entirely —
+  // no cursor would ever be sent, and the failure would look like a relay problem.
+  await a.getByRole('button', { name: 'Fit' }).click()
+  await b.getByRole('button', { name: 'Fit' }).click()
+
+  // A landmark both pages can find: the same clone, wherever each page's layout puts it.
+  const landmark = await a.locator('[data-clone]').first().getAttribute('data-clone')
+  const inA = await a.locator(`[data-clone="${landmark}"]`).boundingBox()
+  expect(inA).not.toBeNull()
+  await a.mouse.move(inA!.x + inA!.width / 2, inA!.y + inA!.height / 2)
+
+  const inB = await b.locator(`[data-clone="${landmark}"]`).boundingBox()
+  expect(inB).not.toBeNull()
+  const target = { x: inB!.x + inB!.width / 2, y: inB!.y + inB!.height / 2 }
+
+  // The cursor is throttled on the way out, so poll rather than sleep. The arrow is translated by
+  // its own top-left, and its tip sits at roughly (1,1) of a 14×20 viewBox.
+  await expect
+    .poll(
+      async () => {
+        const box = await b.locator('[data-peer-cursor]').first().boundingBox()
+        if (!box) return Number.POSITIVE_INFINITY
+        return Math.hypot(box.x - target.x, box.y - target.y)
+      },
+      { message: "the peer cursor never reached the landmark's position in the other viewport", timeout: 15_000 },
+    )
+    .toBeLessThan(8)
+
+  await wide.close()
+  await narrow.close()
+})
