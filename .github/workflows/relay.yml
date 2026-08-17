@@ -1,0 +1,29 @@
+name: Relay
+
+# Manual trigger only, like Deploy. The relay changes about once a year, and nothing here
+# deploys itself.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy the relay to Cloudflare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # The relay's own tests run in workerd, so they need no network and no account.
+      - name: Test the relay
+        run: npm test -- --project relay
+
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: relay
