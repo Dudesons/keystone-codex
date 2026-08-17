@@ -28,7 +28,10 @@ export default defineConfig({
       // answers 200 before any upgrade handling, which is exactly what a readiness probe needs.
       command: 'npx wrangler dev --config relay/wrangler.toml --port 8787',
       url: RELAY,
-      reuseExistingServer: !process.env.CI,
+      // Never reused: a listener already on this port belongs to some other checkout or shell,
+      // not to this worktree's `relay/src/index.js`. A suite that bound to it anyway would test
+      // a stranger's code and call it passing.
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {
@@ -36,7 +39,11 @@ export default defineConfig({
       // one string is the only difference between this bundle and the deployed one.
       command: 'npm run build && npm run preview:e2e',
       url: APP,
-      reuseExistingServer: !process.env.CI,
+      // Never reused: the build is inside this command. Reusing a server already on the port
+      // would skip that build entirely and serve whatever `dist/` happens to be sitting there —
+      // silently defeating every scenario that deliberately breaks a source file and expects the
+      // suite to see it fail.
+      reuseExistingServer: false,
       timeout: 180_000,
       env: { VITE_COLLAB_URL: 'ws://localhost:8787' },
     },
