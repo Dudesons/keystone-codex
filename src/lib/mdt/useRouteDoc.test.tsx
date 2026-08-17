@@ -667,45 +667,49 @@ describe('An idle session pauses itself', () => {
 
   it('pauses five minutes after the tab is hidden', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE1', 'host'))
     expect(result.current.collab.status).not.toBe('paused')
 
     act(() => setVisibility('hidden'))
     act(() => void vi.advanceTimersByTime(5 * 60_000))
     expect(result.current.collab.status).toBe('paused')
+    unmount()
   })
 
   it('does not pause a hidden tab before those five minutes are up', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE2', 'host'))
     act(() => setVisibility('hidden'))
     act(() => void vi.advanceTimersByTime(4 * 60_000))
     expect(result.current.collab.status).not.toBe('paused')
+    unmount()
   })
 
   it('pauses a visible tab nobody has touched for fifteen minutes', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE3', 'host'))
     act(() => void vi.advanceTimersByTime(15 * 60_000))
     expect(result.current.collab.status).toBe('paused')
+    unmount()
   })
 
   it('starts the clock over on any sign of life', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE4', 'host'))
     act(() => void vi.advanceTimersByTime(14 * 60_000))
     act(() => void document.dispatchEvent(new Event('pointermove')))
     act(() => void vi.advanceTimersByTime(14 * 60_000))
     expect(result.current.collab.status).not.toBe('paused')
+    unmount()
   })
 
   it('comes back on request, on a new socket', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE5', 'host'))
     const opened = SilentSocket.instances.length
     act(() => setVisibility('hidden'))
@@ -716,24 +720,44 @@ describe('An idle session pauses itself', () => {
     expect(result.current.collab.status).not.toBe('paused')
     expect(result.current.collab.room).toBe('PAUSE5')
     expect(SilentSocket.instances.length).toBeGreaterThan(opened)
+    unmount()
   })
 
   it('keeps the room and the document, because a pause is not a departure', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE6', 'host'))
     act(() => result.current.actions.setName('Week 12'))
     act(() => setVisibility('hidden'))
     act(() => void vi.advanceTimersByTime(5 * 60_000))
     expect(result.current.collab.room).toBe('PAUSE6')
     expect(result.current.route.name).toBe('Week 12')
+    unmount()
   })
 
   it('leaves a session that was never opened alone', () => {
     vi.useFakeTimers()
-    const { result } = mount()
+    const { result, unmount } = mount()
     act(() => setVisibility('hidden'))
     act(() => void vi.advanceTimersByTime(30 * 60_000))
     expect(result.current.collab.status).toBe('off')
+    unmount()
+  })
+
+  it('does not let a stale update overwrite a settled pause', () => {
+    // `provider.disconnect()` sets `wsconnected` false and fires `status` synchronously, before
+    // `pauseSession`'s own `setCollab` runs — so that trailing write, not the guard alone, is
+    // what usually wins. This drives an `update()` well after the pause has settled, with no
+    // corrective write behind it, to prove the guard in `update` is what holds the line.
+    vi.useFakeTimers()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('PAUSE7', 'host'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+
+    act(() => result.current.setIdentity('Rwl'))
+    expect(result.current.collab.status).toBe('paused')
+    unmount()
   })
 })
