@@ -169,12 +169,13 @@ deflate, and an empty table becomes an empty array (`0x80`).
 
 ## Continuous integration and deployment
 
-Two separate workflows:
+Three separate workflows:
 
 | Workflow | Trigger | Role |
 | --- | --- | --- |
 | [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build |
 | [Deploy](.github/workflows/deploy.yml) | **manual**, by a maintainer | types, tests, build, tag, publish to Pages |
+| [Relay](.github/workflows/relay.yml) | **manual**, by a maintainer | tests, publish to Cloudflare Workers |
 
 Going live is a deliberate gesture: nothing ships automatically. From the *Actions* tab →
 *Deploy* → *Run workflow*, you pick the branch or tag to publish.
