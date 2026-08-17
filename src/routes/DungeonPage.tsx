@@ -11,7 +11,7 @@ import { cloneKey, getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
-import { convexHull, expandPolygon, toPixels } from '../lib/geometry'
+import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
 import type { CloneRef } from '../lib/types'
@@ -108,7 +108,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         .map((e) => toPixels(e!.clone.x, e!.clone.y))
       if (!points.length) return []
 
-      const hull = expandPolygon(convexHull(points), 34)
+      const hull = expandPolygon(convexHull(points), PULL_OUTLINE_PADDING)
       return [
         {
           index,

@@ -54,6 +54,18 @@ export function convexHull(points: Point[]): Point[] {
   return [...build(sorted), ...build([...sorted].reverse())]
 }
 
+/**
+ * How far a pull's outline is pushed clear of the positions it was drawn around.
+ *
+ * A position is drawn as a portrait, not as a point, so the outline has to clear the disc rather
+ * than its centre: the widest an ordinary blip gets is 26.6 px. The push is radial from the
+ * hull's centre, which is rarely the direction the outline runs in, and a rounded corner takes
+ * back up to half its radius. A vertex therefore keeps well under half of this number, and the
+ * loss grows with how elongated the pull is: 58 is what it takes for the tightest corner of a
+ * pull spanning the map to still clear a portrait.
+ */
+export const PULL_OUTLINE_PADDING = 58
+
 /** Pushes a polygon's vertices `padding` px out from its centre, for a legible outline. */
 export function expandPolygon(points: Point[], padding: number): Point[] {
   if (!points.length) return points

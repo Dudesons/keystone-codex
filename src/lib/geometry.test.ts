@@ -8,6 +8,7 @@ import {
   MAP_WIDTH,
   MDT_COORD_HEIGHT,
   MDT_COORD_WIDTH,
+  PULL_OUTLINE_PADDING,
   convexHull,
   expandPolygon,
   roundedPolygonPath,
@@ -15,6 +16,7 @@ import {
   toPixels,
   type Point,
 } from './geometry'
+import { blipRadius } from '../components/map/viewport'
 
 /** Shoelace signed area. Positive means clockwise in a screen frame (Y pointing down). */
 const signedArea = (pts: Point[]) =>
@@ -266,8 +268,13 @@ const encloses = (poly: Point[], p: Point) => {
   return hit
 }
 
+/** How far `p` sits from the nearest point of a flattened outline. */
+const clearance = (poly: Point[], p: Point) =>
+  Math.min(...poly.map((q) => Math.hypot(q.x - p.x, q.y - p.y)))
+
 describe('An outline encloses every mob it was drawn around', () => {
-  const outlineOf = (mobs: Point[]) => flatten(roundedPolygonPath(expandPolygon(convexHull(mobs), 34)))
+  const outlineOf = (mobs: Point[]) =>
+    flatten(roundedPolygonPath(expandPolygon(convexHull(mobs), PULL_OUTLINE_PADDING)))
 
   it('holds for a compact group', () => {
     const mobs: Point[] = [
@@ -291,6 +298,24 @@ describe('An outline encloses every mob it was drawn around', () => {
     ]
     const outline = outlineOf(mobs)
     for (const mob of mobs) expect(encloses(outline, mob), `${mob.x},${mob.y}`).toBe(true)
+  })
+
+  it('leaves the portraits room, not only their centres', () => {
+    // A pull drawn around a mob's position has to clear the disc drawn at it, or the line runs
+    // across the portrait. The widest an ordinary blip gets is `blipRadius` at its scale cap.
+    const widestBlip = blipRadius({ scale: 1.9 })
+    const mobs: Point[] = [
+      { x: 180, y: 120 },
+      { x: 230, y: 100 },
+      { x: 205, y: 165 },
+      { x: 1180, y: 70 },
+      { x: 1230, y: 95 },
+      { x: 1700, y: 620 },
+    ]
+    const outline = outlineOf(mobs)
+    for (const mob of mobs) {
+      expect(clearance(outline, mob), `${mob.x},${mob.y}`).toBeGreaterThan(widestBlip)
+    }
   })
 
   it('holds for a pull strung out in a line, the sharpest corners there are', () => {
