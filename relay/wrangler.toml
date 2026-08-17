@@ -1,6 +1,9 @@
 name = "keystone-relay"
 main = "src/index.js"
-compatibility_date = "2026-08-11"
+# The installed workerd supports no later date than this and falls back to it on every run, so
+# pinning it here is what makes the tests exercise the runtime a deploy actually runs under.
+# Raising it means upgrading wrangler, which the pinned test pool forbids.
+compatibility_date = "2026-03-10"
 
 [[durable_objects.bindings]]
 name = "ROOM"
