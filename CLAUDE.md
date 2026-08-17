@@ -167,9 +167,9 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-634 tests, all green, run as two Vitest projects (`npm test` runs both): `app` — 624 tests in
-node and jsdom — and `relay` — 10 tests in workerd, via `@cloudflare/vitest-pool-workers` — which
-needs neither network nor a Cloudflare account. No mocks anywhere: the tests read the real
+The suite is green, and runs as two Vitest projects (`npm test` runs both): `app`, in node and
+jsdom, and `relay`, in workerd via `@cloudflare/vitest-pool-workers` — which needs neither
+network nor a Cloudflare account. No mocks anywhere: the tests read the real
 generated data, the real `content/*.md` through `import.meta.glob`, and real committed artefacts
 for anything that would otherwise need the network or a WoW install.
 

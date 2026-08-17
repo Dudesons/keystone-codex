@@ -14,6 +14,8 @@ spells:
     prio: 1
     note: "Melee attacks strike twice. This is the tank buster of the pull."
 
+  # Of the five ids MDT lists for Paralyzing Shots, this is the only one carrying a dispel
+  # type. The others are the same ability without one, and are left unannotated.
   - id: 1294569
     name: "Paralyzing Shots"   # auto
     # dispel: magic · Instant · 100 yd range
@@ -21,29 +23,17 @@ spells:
     prio: 1
     note: "135k on impact, then 48k every second for 20 sec, and each tick takes another 10% movement speed. Dispellable as magic."
 
-  - id: 1294567
-    name: "Paralyzing Shots"   # auto
-    # 3 sec cast · 100 yd range
-    tag: dispel
-
-  - id: 1294568
-    name: "Paralyzing Shots"   # auto
-    # Instant · 100 yd range
-    tag: dispel
-
-  - id: 1294570
-    name: "Paralyzing Shots"   # auto
-    # Instant · 100 yd range
-    tag: dispel
-
-  - id: 1307269
-    name: "Paralyzing Shots"   # auto
-    # Instant · 100 yd range
-    tag: dispel
-
+  # MDT attaches Toxic Breath to the mob under two ids, and either can be the one that fires.
+  # Both carry the note so the frontal is briefed whichever one the group sees.
   - id: 1306668
     name: "Toxic Breath"   # auto
-    tag: dodge
+    tag: frontal
+    note: "Frontal, 68k Nature every half second to anyone standing in it."
+
+  - id: 1306669
+    name: "Toxic Breath"   # auto
+    # Instant
+    tag: frontal
     note: "Frontal, 68k Nature every half second to anyone standing in it."
 
   - id: 1306669
