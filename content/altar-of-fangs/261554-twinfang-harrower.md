@@ -7,22 +7,30 @@ threat: medium
 role: miniboss
 
 spells:
-  - id: 1306381
+  - id: 1294572
     name: "Duostrike"   # auto
     # Instant
     tag: tank
     prio: 1
     note: "Melee attacks strike twice. This is the tank buster of the pull."
 
-  - id: 1306356
+  - id: 1294567
     name: "Paralyzing Shots"   # auto
     # 3 sec cast
     tag: dispel
     note: "135k on impact, then 48k every second for 20 sec, and it impairs movement. Dispellable as magic; a Freedom clears it too."
 
-  - id: 1306372
+  # MDT attaches Toxic Breath to the mob under two ids, and either can be the one that fires.
+  # Both carry the note so the frontal is briefed whichever one the group sees.
+  - id: 1306668
     name: "Toxic Breath"   # auto
-    tag: dodge
+    tag: frontal
+    note: "Frontal, 68k Nature every half second to anyone standing in it."
+
+  - id: 1306669
+    name: "Toxic Breath"   # auto
+    # Instant
+    tag: frontal
     note: "Frontal, 68k Nature every half second to anyone standing in it."
 
   - id: 1221063

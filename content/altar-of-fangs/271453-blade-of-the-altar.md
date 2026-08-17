@@ -7,7 +7,7 @@ threat: low
 role: melee
 
 spells:
-  - id: 1310015
+  - id: 1308518
     name: "Laced Edge"   # auto
     # Instant
     tag: ignore

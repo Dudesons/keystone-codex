@@ -7,14 +7,14 @@ threat: high
 role: caster
 
 spells:
-  - id: 1306465
+  - id: 1294557
     name: "Piercing Hiss"   # auto
     # 4 sec cast
     tag: kick
     prio: 1
     note: "135k physical, ignores armour, and -30% haste for 6 sec. The haste debuff stacks — that is what makes a 4 second cast worth an interrupt."
 
-  - id: 1306490
+  - id: 1306381
     name: "Fetid Spit"   # auto
     # 2.5 sec cast
     tag: ignore
