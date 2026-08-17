@@ -8,8 +8,19 @@ export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
   test: {
-    // A git worktree may sit under .claude/; its copies of every test file would otherwise
-    // run beside the real ones, against a frozen checkout.
-    exclude: [...configDefaults.exclude, '.claude/**'],
+    projects: [
+      {
+        // The application suite, unchanged: node by default, jsdom where a file asks for it.
+        extends: true,
+        test: {
+          name: 'app',
+          // A git worktree may sit under .claude/; its copies of every test file would
+          // otherwise run beside the real ones, against a frozen checkout. `relay/` is
+          // excluded here because it belongs to the project below, which runs in workerd.
+          exclude: [...configDefaults.exclude, '.claude/**', 'relay/**'],
+        },
+      },
+      './relay/vitest.config.ts',
+    ],
   },
 })
