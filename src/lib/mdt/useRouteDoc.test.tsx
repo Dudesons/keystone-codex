@@ -760,4 +760,42 @@ describe('An idle session pauses itself', () => {
     expect(result.current.collab.status).toBe('paused')
     unmount()
   })
+
+  it('gives the local route back when leaving a paused guest session', () => {
+    // Mirrors the setup `describe('The stashed local route', …)` uses for its own leave test:
+    // a local route on file before a guest joins someone else's room, which stashes it. Decision
+    // 5 promises that a pause does not change this — "a pause is not a departure" — but every
+    // other pause test here joins as `'host'`, where there is no stash at all to give back.
+    vi.useFakeTimers()
+    const route = emptyRoute(SLUG, MDT_INDEX)
+    route.name = 'My own route'
+    localStorage.setItem(storageKey, encodeMdtString(routeToLua(route)))
+
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('PAUSE8', 'guest'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+
+    act(() => result.current.leaveRoom())
+    expect(result.current.route.name).toBe('My own route')
+    unmount()
+  })
+
+  it('re-arms its own clock on resume, so a second idle stretch pauses again', () => {
+    vi.useFakeTimers()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('PAUSE9', 'host'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+
+    act(() => result.current.resumeRoom())
+    expect(result.current.collab.status).not.toBe('paused')
+
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+    unmount()
+  })
 })
