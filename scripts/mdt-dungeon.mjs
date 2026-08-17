@@ -10,7 +10,7 @@
  */
 
 import { LuaExpr, parseAssignment, toPlain } from './lua-table.mjs'
-import { slugify } from './config.mjs'
+import { AFFIX_SPELLS, slugify } from './config.mjs'
 
 /** The crowd control MDT lists in `characteristics`, in the codex display order. */
 export const CC_ORDER = [
@@ -61,15 +61,19 @@ export function extractTextureFolder(dungeonMaps) {
 
 export function normaliseSpells(spells) {
   if (!spells || typeof spells !== 'object') return []
-  return Object.entries(spells).map(([id, flags]) => {
-    const dispel = DISPEL_FLAGS.filter((f) => flags?.[f] === true)
-    return {
-      id: Number(id),
-      // MDT only sets `interruptible` when it is relevant; its absence is not a denial.
-      interruptible: flags?.interruptible === true ? true : undefined,
-      dispel: dispel.length ? dispel : undefined,
-    }
-  })
+  return Object.entries(spells)
+    // The seasonal affix is not a trait of the mob it happens to be recorded on — see
+    // AFFIX_SPELLS. Dropped here so no re-extraction can put it back.
+    .filter(([id]) => !AFFIX_SPELLS.includes(Number(id)))
+    .map(([id, flags]) => {
+      const dispel = DISPEL_FLAGS.filter((f) => flags?.[f] === true)
+      return {
+        id: Number(id),
+        // MDT only sets `interruptible` when it is relevant; its absence is not a denial.
+        interruptible: flags?.interruptible === true ? true : undefined,
+        dispel: dispel.length ? dispel : undefined,
+      }
+    })
 }
 
 export function normaliseCharacteristics(characteristics, onWarn = console.warn) {

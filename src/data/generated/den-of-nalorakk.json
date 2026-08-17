@@ -22,9 +22,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1238687
     },
     {
@@ -101,9 +98,6 @@
    "creatureType": "Humanoid",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1241214,
      "interruptible": true
@@ -229,9 +223,6 @@
    "creatureType": "Humanoid",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1241217
     },
@@ -422,9 +413,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1238053,
      "dispel": [
       "enrage"
@@ -562,9 +550,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1309947
     },
     {
@@ -593,9 +578,6 @@
    "creatureType": "Beast",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1241226
     },
@@ -748,9 +730,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1296518
     },
     {
@@ -843,9 +822,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1309919,
      "interruptible": true
     }
@@ -921,9 +897,6 @@
    "creatureType": "Elemental",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1239860,
      "dispel": [
@@ -1008,9 +981,6 @@
    "creatureType": "Undead",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1240280
     },
@@ -1105,9 +1075,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1246687,
      "interruptible": true
     },
@@ -1166,9 +1133,6 @@
    "creatureType": "Beast",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1246957
     },
@@ -1434,9 +1398,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1232012
     },
     {
@@ -1507,9 +1468,6 @@
    "creatureType": "Beast",
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1238439,
      "dispel": [
@@ -1916,9 +1874,6 @@
    "cc": [],
    "spells": [
     {
-     "id": 1221063
-    },
-    {
      "id": 1238801,
      "dispel": [
       "curse"
@@ -1992,9 +1947,6 @@
    "instanceID": 1311,
    "cc": [],
    "spells": [
-    {
-     "id": 1221063
-    },
     {
      "id": 1242860
     },

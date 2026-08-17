@@ -4,6 +4,7 @@
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { AFFIX_SPELLS } from './config.mjs'
 import { LuaExpr } from './lua-table.mjs'
 import {
   CC_ORDER,
@@ -192,6 +193,18 @@ describe('Helpers', () => {
     ])
     expect(normaliseSpells({ 42: {} })).toEqual([{ id: 42, interruptible: undefined, dispel: undefined }])
     expect(normaliseSpells(undefined)).toEqual([])
+  })
+
+  it('normaliseSpells drops the affix spells MDT hangs on the mobs that happen to carry them', () => {
+    expect(normaliseSpells({ 1221063: {}, 42: {} })).toEqual([
+      { id: 42, interruptible: undefined, dispel: undefined },
+    ])
+  })
+
+  it('leaves no affix spell in the real fixture, which carries eleven of them', () => {
+    expect(source).toContain('1221063')
+    const carriers = dungeon.enemies.filter((e) => e.spells.some((s) => AFFIX_SPELLS.includes(s.id)))
+    expect(carriers).toEqual([])
   })
 
   it('normaliseCharacteristics warns about a crowd control it does not know', () => {

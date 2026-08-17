@@ -4021,22 +4021,6 @@
    }
   }
  },
- "1221063": {
-  "id": 1221063,
-  "icon": "spell_shadow_shadowembrace",
-  "text": {
-   "en": {
-    "name": "Xal'atath's Gift",
-    "castTime": "Instant",
-    "description": "Xal'atath rains down orbs of cosmic energy that attempt to grant nearby creatures Xal'atath's Gift, increasing their damage done by 5% and reducing their damage taken by 10% for 20 sec. This effect stacks.\n\nIf players disrupt these orbs they claim the power for themselves increasing their Haste and Movement speed by 2% for 30 sec. This effect stacks."
-   },
-   "fr": {
-    "name": "Cadeau de Xal’atath",
-    "castTime": "Instantanée",
-    "description": "Xal’atath fait pleuvoir des orbes d’énergie cosmique qui tentent de renforcer les créatures proches avec Cadeau de Xal’atath, ce qui augmente de 5 % les dégâts infligés et réduit de 10 % les dégâts subis pendant 20 s. Cet effet est cumulable.\n\nSi les personnages-joueurs déstabilisent ces orbes, ils s’approprient ce pouvoir, augmentant leur Hâte et leur vitesse de déplacement de 2 % pendant 30 s. Cet effet est cumulable."
-   }
-  }
- },
  "1222100": {
   "id": 1222100,
   "icon": "ability_mount_voidelfstridermount",

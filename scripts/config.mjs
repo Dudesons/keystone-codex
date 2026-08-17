@@ -51,6 +51,20 @@ export const SEASON_DUNGEONS = [
 ]
 
 /**
+ * Spells that belong to the seasonal affix rather than to any mob.
+ *
+ * MDT hangs these on whichever mobs it happened to record them on — `1221063` sits on 44 mobs
+ * across three dungeons and on none at all in the other five, which is a record of when each
+ * file was captured, not a property of the creatures. Left in, they claim a mob does something
+ * it does not, and they change every week the affix rotates.
+ *
+ * Dropped at extraction, in `normaliseSpells`, so a re-run cannot reintroduce them.
+ */
+export const AFFIX_SPELLS = [
+  1221063, // Xal'atath's Gift
+]
+
+/**
  * Languages we fetch spell labels for, and their locale code on nether.wowhead.com.
  *
  * These codes were **established by probing**, not read from documentation: `0` returns
