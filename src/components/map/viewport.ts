@@ -87,3 +87,18 @@ export function badgeArc(count: number, centre: Point, radius: number): BadgePla
     }
   })
 }
+
+/**
+ * Container pixels to map pixels, and back.
+ *
+ * A peer's cursor travels in map coordinates. Sending screen pixels would put their arrow on
+ * a different mob than ours the moment our zoom levels differ — an error that does not look
+ * like a bug, only like a colleague pointing badly.
+ */
+export function toMapPoint(t: Transform, p: Point): Point {
+  return { x: (p.x - t.tx) / t.scale, y: (p.y - t.ty) / t.scale }
+}
+
+export function toContainerPoint(t: Transform, p: Point): Point {
+  return { x: p.x * t.scale + t.tx, y: p.y * t.scale + t.ty }
+}

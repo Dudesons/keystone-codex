@@ -11,6 +11,8 @@ import {
   badgeArc,
   blipRadius,
   fitTransform,
+  toContainerPoint,
+  toMapPoint,
   zoomAt,
   type Transform,
 } from './viewport'
@@ -164,5 +166,38 @@ describe('badgeArc', () => {
   it('never shrinks a badge below a legible size', () => {
     expect(badgeArc(1, centre, 2)[0].r).toBe(6)
     expect(badgeArc(1, centre, 40)[0].r).toBeCloseTo(40 * 0.42, 9)
+  })
+})
+
+describe('toMapPoint and toContainerPoint', () => {
+  const transforms: Transform[] = [
+    { scale: 1, tx: 0, ty: 0 },
+    { scale: 0.5, tx: 120, ty: -40 },
+    { scale: 3.25, tx: -900, ty: 615 },
+  ]
+
+  it('reads the top-left of an untransformed map as the origin', () => {
+    expect(toMapPoint({ scale: 1, tx: 0, ty: 0 }, { x: 0, y: 0 })).toEqual({ x: 0, y: 0 })
+  })
+
+  it('undoes the translation before the scale', () => {
+    expect(toMapPoint({ scale: 2, tx: 100, ty: 50 }, { x: 300, y: 250 })).toEqual({ x: 100, y: 100 })
+  })
+
+  it('places a map point back where the container draws it', () => {
+    expect(toContainerPoint({ scale: 2, tx: 100, ty: 50 }, { x: 100, y: 100 })).toEqual({
+      x: 300,
+      y: 250,
+    })
+  })
+
+  it('round-trips at every transform, which is what keeps two zoom levels agreeing', () => {
+    for (const t of transforms) {
+      for (const p of [{ x: 0, y: 0 }, { x: 640, y: 480 }, { x: 1919, y: 1279 }]) {
+        const back = toMapPoint(t, toContainerPoint(t, p))
+        expect(back.x).toBeCloseTo(p.x, 9)
+        expect(back.y).toBeCloseTo(p.y, 9)
+      }
+    }
   })
 })
