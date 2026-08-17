@@ -70,10 +70,6 @@ const lookup = getLookup(SLUG)!
 const at = (path: string) => (
   <MemoryRouter initialEntries={[path]}>
     <Routes>
-      {/* Bare `/d/:slug` no longer exists in the app's own route table (that address is
-          the briefing now), but the unknown-dungeon test below still asks for it directly —
-          the lookup failure it exercises does not depend on which segment count reached it. */}
-      <Route path="/d/:slug" element={<DungeonPage />} />
       <Route path="/d/:slug/map" element={<DungeonPage />} />
       <Route path="/d/:slug/map/mob/:npcId" element={<DungeonPage />} />
       <Route path="/" element={<p>home</p>} />
@@ -83,13 +79,13 @@ const at = (path: string) => (
 
 describe('Unknown dungeon', () => {
   it('says so instead of crashing, and offers a way home', () => {
-    renderEn(at('/d/no-such-dungeon'))
+    renderEn(at('/d/no-such-dungeon/map'))
     expect(screen.getByText('Unknown dungeon.')).toBeDefined()
     expect(screen.getByText('Back to home')).toBeDefined()
   })
 
   it('mounts neither map nor panel', () => {
-    const { container } = renderEn(at('/d/no-such-dungeon'))
+    const { container } = renderEn(at('/d/no-such-dungeon/map'))
     expect(container.querySelector('svg')).toBeNull()
     expect(container.querySelector('article')).toBeNull()
   })
