@@ -20,6 +20,7 @@ export default defineConfig({
     baseURL: APP,
     // `localhost`, not `127.0.0.1`: the preview server binds IPv6 only.
     trace: 'on-first-retry',
+    permissions: ['clipboard-read', 'clipboard-write'],
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
