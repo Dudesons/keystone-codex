@@ -22,6 +22,9 @@ export const CC_ORDER = [
 /** Dispel types MDT sets as flags on spells. */
 export const DISPEL_FLAGS = ['magic', 'curse', 'disease', 'poison', 'bleed', 'enrage']
 
+/** The POI types the map knows how to draw. An unfamiliar one is kept, and reported. */
+export const POI_TYPES = ['genericItem', 'dungeonEntrance']
+
 /**
  * Returns a Lua table's integer-keyed entries, sorted numerically.
  *
@@ -100,6 +103,23 @@ export function normaliseClones(clones) {
 }
 
 /**
+ * Flattens `mapPOIs`, which MDT indexes by sublevel and then by POI.
+ *
+ * The sublevel lives in the outer key rather than in the entry, so it is carried down: a POI
+ * that lost it could not be matched against the floor being drawn. Reading the entries as one
+ * flat list — the old shape — silently stored the sublevel's whole table as a single POI.
+ */
+export function normalisePois(mapPOIs, onWarn = console.warn) {
+  return intEntries(mapPOIs).flatMap(([sublevel, list]) =>
+    intEntries(list).map(([, poi]) => {
+      const type = unwrap(poi.type)
+      if (!POI_TYPES.includes(type)) onWarn(`  ! unknown POI type, add it to POI_TYPES: ${type}`)
+      return { ...poi, type, sublevel }
+    }),
+  )
+}
+
+/**
  * Parses one dungeon out of its `.lua` source.
  *
  * `file` is the MDT filename: it names the dungeon when `mapInfo.englishName` is missing, and
@@ -155,7 +175,7 @@ export function parseDungeon(src, file, onWarn = console.warn) {
     totalCount: totalCount.normal ?? 0,
     sublevelCount,
     enemies,
-    pois: intEntries(pois).map(([, poi]) => poi),
+    pois: normalisePois(pois, onWarn),
   }
 }
 

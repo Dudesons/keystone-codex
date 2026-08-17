@@ -2749,112 +2749,121 @@
  ],
  "pois": [
   {
-   "1": {
-    "type": "dungeonEntrance",
-    "x": 779.77130254431,
-    "y": -509.595640162,
-    "sizeMult": 1.5
+   "type": "dungeonEntrance",
+   "x": 779.77130254431,
+   "y": -509.595640162,
+   "sizeMult": 1.5,
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 679.39639902037,
+   "y": -424.870189594,
+   "info": {
+    "texture": 236999,
+    "spellId": 1223570,
+    "size": 15
    },
-   "2": {
-    "type": "genericItem",
-    "x": 679.39639902037,
-    "y": -424.870189594,
-    "info": {
-     "texture": 236999,
-     "spellId": 1223570,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 505.61695608532,
+   "y": -387.2334648551,
+   "info": {
+    "texture": 1003586,
+    "spellId": 1270638,
+    "size": 10
    },
-   "3": {
-    "type": "genericItem",
-    "x": 505.61695608532,
-    "y": -387.2334648551,
-    "info": {
-     "texture": 1003586,
-     "spellId": 1270638,
-     "size": 10
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 643.15357254173,
+   "y": -516.87104180165,
+   "info": {
+    "texture": 1003586,
+    "spellId": 1270638,
+    "size": 10
    },
-   "4": {
-    "type": "genericItem",
-    "x": 643.15357254173,
-    "y": -516.87104180165,
-    "info": {
-     "texture": 1003586,
-     "spellId": 1270638,
-     "size": 10
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 700.30558383593,
+   "y": -291.05080561746,
+   "info": {
+    "texture": 331438,
+    "spellId": 1217960,
+    "size": 15
    },
-   "5": {
-    "type": "genericItem",
-    "x": 700.30558383593,
-    "y": -291.05080561746,
-    "info": {
-     "texture": 331438,
-     "spellId": 1217960,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 561.37503170287,
+   "y": -442.99160283332,
+   "info": {
+    "texture": 1003586,
+    "spellId": 1270638,
+    "size": 10
    },
-   "6": {
-    "type": "genericItem",
-    "x": 561.37503170287,
-    "y": -442.99160283332,
-    "info": {
-     "texture": 1003586,
-     "spellId": 1270638,
-     "size": 10
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 700.30558383593,
+   "y": -246.90900198964,
+   "info": {
+    "texture": 1394959,
+    "spellId": 1223537,
+    "size": 15
    },
-   "7": {
-    "type": "genericItem",
-    "x": 700.30558383593,
-    "y": -246.90900198964,
-    "info": {
-     "texture": 1394959,
-     "spellId": 1223537,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 269.5167128871,
+   "y": -376.8470350715,
+   "info": {
+    "texture": 4620673,
+    "spellId": 1223133,
+    "size": 15
    },
-   "8": {
-    "type": "genericItem",
-    "x": 269.5167128871,
-    "y": -376.8470350715,
-    "info": {
-     "texture": 4620673,
-     "spellId": 1223133,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 329.69351763166,
+   "y": -399.87010735725,
+   "info": {
+    "texture": 4620673,
+    "spellId": 1223133,
+    "size": 15
    },
-   "9": {
-    "type": "genericItem",
-    "x": 329.69351763166,
-    "y": -399.87010735725,
-    "info": {
-     "texture": 4620673,
-     "spellId": 1223133,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 295.49705550539,
+   "y": -333.8557617639,
+   "info": {
+    "texture": 4620673,
+    "spellId": 1223133,
+    "size": 15
    },
-   "10": {
-    "type": "genericItem",
-    "x": 295.49705550539,
-    "y": -333.8557617639,
-    "info": {
-     "texture": 4620673,
-     "spellId": 1223133,
-     "size": 15
-    }
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 753.27583798869,
+   "y": -418.82973514374,
+   "info": {
+    "texture": 1120423,
+    "spellId": 1223607,
+    "size": 15
    },
-   "11": {
-    "type": "genericItem",
-    "x": 753.27583798869,
-    "y": -418.82973514374,
-    "info": {
-     "texture": 1120423,
-     "spellId": 1223607,
-     "size": 15
-    }
-   }
+   "sublevel": 1
   }
  ]
 }

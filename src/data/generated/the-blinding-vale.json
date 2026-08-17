@@ -2786,22 +2786,22 @@
  ],
  "pois": [
   {
-   "1": {
-    "type": "dungeonEntrance",
-    "x": 18.072239513564,
-    "y": -344.48592404747,
-    "sizeMult": 1.5
+   "type": "dungeonEntrance",
+   "x": 18.072239513564,
+   "y": -344.48592404747,
+   "sizeMult": 1.5,
+   "sublevel": 1
+  },
+  {
+   "type": "genericItem",
+   "x": 327.64270277788,
+   "y": -211.08243309064,
+   "info": {
+    "texture": 348567,
+    "spellId": 1265942,
+    "size": 15
    },
-   "2": {
-    "type": "genericItem",
-    "x": 327.64270277788,
-    "y": -211.08243309064,
-    "info": {
-     "texture": 348567,
-     "spellId": 1265942,
-     "size": 15
-    }
-   }
+   "sublevel": 1
   }
  ]
 }

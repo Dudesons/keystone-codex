@@ -44,6 +44,24 @@ export interface Enemy {
   clones: Clone[]
 }
 
+/**
+ * A point of interest MDT draws on the map: a usable item, a dungeon entrance.
+ *
+ * `sublevel` comes from the key `mapPOIs` nests the entry under, not from the entry itself.
+ * `type` stays a `string` rather than a union of the values seen today: the extraction passes
+ * an unfamiliar type through on purpose, and a union would make that unrepresentable.
+ */
+export interface Poi {
+  type: string
+  x: number
+  y: number
+  sublevel: number
+  /** Entrances draw larger than their nominal size. */
+  sizeMult?: number
+  /** Items only: `texture` is a Blizzard file id, useless to us; `spellId` is not. */
+  info?: { texture: number; spellId: number; size: number }
+}
+
 export interface Dungeon {
   slug: string
   file: string
@@ -56,7 +74,7 @@ export interface Dungeon {
   totalCount: number
   sublevelCount: number
   enemies: Enemy[]
-  pois: unknown[]
+  pois: Poi[]
 }
 
 export interface DungeonSummary {
