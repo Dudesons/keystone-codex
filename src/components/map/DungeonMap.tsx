@@ -247,6 +247,7 @@ export default function DungeonMap({
                 <Blip
                   key={key}
                   slug={slug}
+                  cloneId={key}
                   enemy={enemy}
                   x={toPixels(clone.x, clone.y).x}
                   y={toPixels(clone.x, clone.y).y}
@@ -328,6 +329,7 @@ function PackOutline({ pack, active, hovered }: { pack: Pack; active: boolean; h
 
 interface BlipProps {
   slug: string
+  cloneId: string
   enemy: Enemy
   x: number
   y: number
@@ -343,6 +345,7 @@ interface BlipProps {
 
 function Blip({
   slug,
+  cloneId,
   enemy,
   x,
   y,
@@ -371,6 +374,7 @@ function Blip({
 
   return (
     <g
+      data-clone={cloneId}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onClick}

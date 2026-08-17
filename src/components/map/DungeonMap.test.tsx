@@ -496,3 +496,13 @@ describe('Peer cursors', () => {
     expect(el.style.transform).toBe('translate(328.125px, 156.25px)')
   })
 })
+
+describe('Landmarks', () => {
+  it('labels every blip with its clone key, so a landmark can be found', () => {
+    const { container } = mount()
+    const found = container.querySelectorAll('[data-clone]')
+    expect(found.length).toBeGreaterThan(0)
+    // The key is the one the rest of the app uses for a clone: "enemyIdx:cloneIdx".
+    found.forEach((el) => expect(el.getAttribute('data-clone')).toMatch(/^\d+:\d+$/))
+  })
+})
