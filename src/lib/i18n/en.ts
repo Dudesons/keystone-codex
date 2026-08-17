@@ -151,7 +151,7 @@ export const en = {
   'collab.name': 'Your name',
   'collab.namePlaceholder': 'Name',
   'collab.hint':
-    'The route syncs live through a relay. Joining leaves your local route behind and takes the room’s.',
+    'The route syncs live through a relay. Joining sets your local route aside and gives it back when you leave.',
   'collab.relayStalled': 'The relay is not answering. Your local route is safe.',
   'collab.awaitingRoom': 'Fetching the room’s route…',
 

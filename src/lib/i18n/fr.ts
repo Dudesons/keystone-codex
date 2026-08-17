@@ -152,7 +152,7 @@ export const fr: Dictionary = {
   'collab.name': 'Ton pseudo',
   'collab.namePlaceholder': 'Pseudo',
   'collab.hint':
-    'La route est synchronisée en direct via un relais. Rejoindre laisse ta route locale de côté et prend celle du salon.',
+    'La route est synchronisée en direct via un relais. Rejoindre met ta route locale de côté et te la rend quand tu quittes.',
   'collab.relayStalled': 'Le relais ne répond pas. Ta route locale est intacte.',
   'collab.awaitingRoom': 'Récupération de la route du salon…',
 
