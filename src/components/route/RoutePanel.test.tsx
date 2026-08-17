@@ -422,6 +422,14 @@ describe('Awaiting the room’s route', () => {
     mount({ route: emptyRoute(SLUG, MDT_INDEX), collab: connected('host', false) })
     expect(screen.queryByText(/fetching the room/i)).toBeNull()
   })
+
+  it('goes quiet when a guest loses the relay over a route it already holds', () => {
+    // `y-websocket` resets `synced` when the socket drops, so a mid-session outage would
+    // otherwise announce a fetch above the route already on screen. What is coming then is a
+    // reconnection, and the notice on the map is what says so.
+    mount({ route: routeWith(2), collab: connected('guest', false) })
+    expect(screen.queryByText(/fetching the room/i)).toBeNull()
+  })
 })
 
 describe('Choosing a name', () => {

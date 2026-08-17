@@ -77,6 +77,9 @@ export default function RoutePanel({
 
   const stats = routeStats(route, lookup)
 
+  /** Whether anything has been pulled yet — a route with no clones is nothing to show. */
+  const hasRoute = route.pulls.some((pull) => pull.clones.length > 0)
+
   /** Distinct mobs in a pull, with their unit count. */
   const pullMobs = useMemo(() => {
     return route.pulls.map((pull) => {
@@ -170,7 +173,7 @@ export default function RoutePanel({
         </div>
       </section>
 
-      {collab.mode === 'guest' && !collab.synced && (
+      {collab.mode === 'guest' && !collab.synced && !hasRoute && (
         <p className="rounded border border-ink-700 bg-ink-850 px-3 py-2 text-xs text-ink-400">
           {t('collab.awaitingRoom')}
         </p>
