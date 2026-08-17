@@ -194,7 +194,7 @@ Four separate workflows:
 
 | Workflow | Trigger | Role |
 | --- | --- | --- |
-| [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build, end-to-end |
+| [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build (end-to-end runs independently) |
 | [Deploy](.github/workflows/deploy.yml) | **manual**, by a maintainer | end-to-end, types, tests, build, tag, publish to Pages |
 | [Relay](.github/workflows/relay.yml) | **manual**, by a maintainer | tests, publish to Cloudflare Workers |
 | [End-to-end](.github/workflows/e2e.yml) | called by CI and by Deploy, or dispatched by hand | the Chromium suite against a real build and a local relay |
