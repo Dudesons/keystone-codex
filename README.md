@@ -159,6 +159,11 @@ left them. A *Return to the room* button in the route panel picks the connection
 
 ## Tests
 
+| Command | Role |
+| --- | --- |
+| `npm test` | Unit and integration tests (Vitest) — fast, no browser, nothing to start first |
+| `npm run test:e2e` | The same app and relay, exercised in a real Chromium browser (Playwright) |
+
 ```bash
 npm test
 ```
@@ -171,6 +176,15 @@ the format.
 Three quirks of the game's serializer, discovered through this fixture and documented in the
 code: strings go out as CBOR major 2 (Lua only has byte strings), the compression is **raw**
 deflate, and an empty table becomes an empty array (`0x80`).
+
+```bash
+npx playwright install chromium   # once, before the first run
+npm run test:e2e
+```
+
+Starts a local relay and serves the real production build itself, so nothing else needs to be
+running first, and drives a real two-browser join through a session — the same "Edit together"
+flow described above.
 
 ## Continuous integration and deployment
 
