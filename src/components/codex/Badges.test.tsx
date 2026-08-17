@@ -60,6 +60,7 @@ describe('TagBadge', () => {
   it('shows the action expected of the player', () => {
     const expected: Partial<Record<SpellTag, string>> = {
       kick: 'KICK',
+      frontal: 'FRONTAL',
       dodge: 'DODGE',
       dispel: 'DISPEL',
       tank: 'TANK',
@@ -74,13 +75,15 @@ describe('TagBadge', () => {
   })
 
   it('translates the tags that have a French equivalent', () => {
-    // `kick`, `tank`, `soak` and `dispel` stay as they are: that is the in-game jargon,
-    // French-speaking players included.
+    // `kick`, `frontal`, `tank`, `soak` and `dispel` stay as they are: that is the in-game
+    // jargon, French-speaking players included.
     expect(renderFr(<TagBadge tag="dodge" />).container.textContent).toBe('ESQUIVE')
     cleanup()
     expect(renderFr(<TagBadge tag="ignore" />).container.textContent).toBe('IGNORER')
     cleanup()
     expect(renderFr(<TagBadge tag="kick" />).container.textContent).toBe('KICK')
+    cleanup()
+    expect(renderFr(<TagBadge tag="frontal" />).container.textContent).toBe('FRONTAL')
   })
 
   it('appends the priority when one is declared', () => {

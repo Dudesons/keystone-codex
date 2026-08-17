@@ -169,6 +169,18 @@ describe('Indicator pips', () => {
     const { container } = mount()
     expect(titled(container, 'Tank buster')).toBe(expected)
   })
+
+  it('draws a frontal pip only where a written card declares one', () => {
+    // Same footing as the tank buster: MDT records no cone, so only a card can raise it.
+    // Derived from the content for the same reason — the codex fills in over time.
+    const declaresFrontal = (id: number) =>
+      getMobContent(SLUG, id)?.spells?.some((s) => s.tag === 'frontal') === true
+    const expected = clonesWhere((e) => declaresFrontal(e.id))
+
+    expect(expected).toBeGreaterThan(0)
+    const { container } = mount()
+    expect(titled(container, 'Frontal')).toBe(expected)
+  })
 })
 
 describe('Pack outlines', () => {
@@ -416,6 +428,7 @@ describe('Heads-up display', () => {
     fireEvent.click(screen.getByText('Legend'))
     expect(container.textContent).toContain('PIPS')
     expect(container.textContent).toContain('Spell to interrupt (from MDT)')
+    expect(container.textContent).toContain('Frontal cone (declared in the card)')
     expect(container.textContent).toContain('Threat not assessed')
 
     fireEvent.click(screen.getByText('Legend'))

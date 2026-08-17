@@ -19,12 +19,25 @@ const lookup = getLookup(SLUG)!
 /** Ritual Chieftain: threat "high", a trap, and spells tagged kick / tank / dodge. */
 const chieftain = lookup.dungeon.enemies.find((e) => e.id === 270_306)!
 const boss = lookup.dungeon.enemies.find((e) => e.isBoss)!
+
+/** Ula'tek's Chosen: two interrupts, a frontal, two dodges, a dispel — pins TAG_ORDER. */
+const chosen = lookup.dungeon.enemies.find((e) => e.id === 263_109)!
 const withoutCc = lookup.dungeon.enemies.find((e) => e.cc.length === 0)!
 
+const pool = dungeonList.flatMap((d) =>
+  (getDungeon(d.slug)?.enemies ?? []).map((enemy) => ({ slug: d.slug, enemy })),
+)
+
 /** No mob in altar-of-fangs declares any CC, so look across the whole pool. */
-const withCc = dungeonList
-  .flatMap((d) => (getDungeon(d.slug)?.enemies ?? []).map((enemy) => ({ slug: d.slug, enemy })))
-  .find(({ enemy }) => enemy.cc.length > 0)!
+const withCc = pool.find(({ enemy }) => enemy.cc.length > 0)!
+
+/**
+ * A mob with an empty CC list inside a dungeon MDT *did* fill in — the only case where the
+ * empty list carries a meaning of its own. Derived here rather than through `hasCcData`, so
+ * the fixture does not rest on the flag it is meant to exercise.
+ */
+const dungeonHasCc = (slug: string) => (getDungeon(slug)?.enemies ?? []).some((e) => e.cc.length > 0)
+const immune = pool.find(({ slug, enemy }) => enemy.cc.length === 0 && dungeonHasCc(slug))!
 
 /** A synthetic mob of the real type: covers cases the pool data does not contain. */
 const unknown: Enemy = {
@@ -104,7 +117,7 @@ describe('The trap', () => {
   it('puts the written trap up front', () => {
     renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.getByText('THE TRAP')).toBeDefined()
-    // Narrow pattern: "Immune to every CC" also opens the no-CC fallback line.
+    // Matches a fragment from the middle: the prose opens on the words of `mob.ccImmune`.
     expect(screen.getByText(/no stun, no fear/)).toBeDefined()
   })
 
@@ -128,9 +141,25 @@ describe('Applicable crowd control', () => {
     expect(container.textContent).toContain(withCc.enemy.cc[0])
   })
 
-  it('says outright that a mob with no CC is immune', () => {
-    renderEn(<MobCard slug={SLUG} enemy={withoutCc} />)
+  it('says outright that a mob with no CC is immune, when its dungeon has CC data', () => {
+    renderEn(<MobCard slug={immune.slug} enemy={immune.enemy} />)
     expect(screen.getByText('Immune to every CC listed by MDT.')).toBeDefined()
+  })
+
+  it('claims no immunity for a dungeon MDT never filled in', () => {
+    renderEn(<MobCard slug={SLUG} enemy={withoutCc} />)
+    expect(screen.queryByText('Immune to every CC listed by MDT.')).toBeNull()
+    expect(screen.getByText('MDT has no CC data for this dungeon.')).toBeDefined()
+  })
+
+  it('says the same in French', () => {
+    renderFr(<MobCard slug={SLUG} enemy={withoutCc} />)
+    expect(screen.getByText('MDT n’a pas de données de CC pour ce donjon.')).toBeDefined()
+  })
+
+  it('treats a dungeon it knows nothing about as missing data, not as immunity', () => {
+    renderEn(<MobCard slug="dungeon-without-content" enemy={unknown} />)
+    expect(screen.getByText('MDT has no CC data for this dungeon.')).toBeDefined()
   })
 
   it('hides the section in compact mode', () => {
@@ -146,6 +175,23 @@ describe('Spells', () => {
     // Ritual Chieftain's notes: "87k" on the spell to kick, "581k" on the tank buster.
     expect(text.indexOf('87k')).toBeGreaterThan(-1)
     expect(text.indexOf('87k')).toBeLessThan(text.indexOf('581k'))
+  })
+
+  /** Spell ids in the order the card lists them. Names repeat here, hrefs do not. */
+  const renderedIds = (enemy: typeof chosen) => {
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={enemy} />)
+    return [...container.querySelectorAll<HTMLAnchorElement>('a[href*="spell="]')].map(
+      (a) => Number(a.getAttribute('href')!.match(/spell=(\d+)/)![1]),
+    )
+  }
+
+  it('ranks a frontal below the interrupts and above the rest', () => {
+    const ids = renderedIds(chosen)
+    const at = (id: number) => ids.indexOf(id)
+    // A tag absent from TAG_ORDER would indexOf to -1 and sort above everything.
+    expect(at(1_306_852)).toBeGreaterThan(at(1_307_567))
+    expect(at(1_306_852)).toBeGreaterThan(at(1_289_416))
+    expect(at(1_306_852)).toBeLessThan(at(1_307_571))
   })
 
   it('links every spell to Wowhead', () => {

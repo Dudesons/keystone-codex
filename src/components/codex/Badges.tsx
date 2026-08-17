@@ -23,6 +23,7 @@ export function ThreatBadge({ threat }: { threat?: Threat }) {
 
 const TAG_STYLE: Record<SpellTag, string> = {
   kick: 'bg-tag-kick/20 text-tag-kick border-tag-kick/50',
+  frontal: 'bg-tag-frontal/20 text-tag-frontal border-tag-frontal/50',
   dodge: 'bg-tag-dodge/20 text-tag-dodge border-tag-dodge/50',
   dispel: 'bg-tag-dispel/20 text-tag-dispel border-tag-dispel/50',
   tank: 'bg-tag-tank/20 text-tag-tank border-tag-tank/50',

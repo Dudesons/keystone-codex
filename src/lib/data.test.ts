@@ -120,6 +120,27 @@ describe('getLookup', () => {
   })
 })
 
+describe('CC coverage', () => {
+  const hasSome = (slug: string) => (getDungeon(slug)?.enemies ?? []).some((e) => e.cc.length > 0)
+  const filled = dungeonList.filter((d) => hasSome(d.slug))
+  const blank = dungeonList.filter((d) => !hasSome(d.slug))
+
+  it('the pool holds both cases: dungeons MDT filled in and dungeons it left blank', () => {
+    expect(filled.length).toBeGreaterThan(0)
+    expect(blank.length).toBeGreaterThan(0)
+  })
+
+  it('reports data when at least one mob declares CC', () => {
+    for (const d of filled) expect(getLookup(d.slug)!.hasCcData, d.slug).toBe(true)
+  })
+
+  /** No mob declaring anything means MDT never filled the dungeon in, not that every mob
+   *  in it resists every form of control. */
+  it('reports none when no mob declares any CC', () => {
+    for (const d of blank) expect(getLookup(d.slug)!.hasCcData, d.slug).toBe(false)
+  })
+})
+
 describe('Sparse clone indices', () => {
   /**
    * Deleting a clone in MDT leaves a hole, and that index is exactly what routes reference:
