@@ -6,3 +6,6 @@ dist
 # Artefacts de compilation TypeScript
 *.tsbuildinfo
 .idea/
+
+# Local miniflare/durable-object state left behind by wrangler
+relay/.wrangler/
