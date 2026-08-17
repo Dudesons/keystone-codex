@@ -8,8 +8,10 @@ import { getLookup } from './data'
 /**
  * Two landmarks, both real:
  *
- * - Twinfang Harrower (Altar of Fangs) carries five `Paralyzing Shots` ids, of which exactly
- *   one is `prio: 1` — the case that shows the filter runs before deduplication.
+ * - Twinfang Harrower (Altar of Fangs) carries five spell entries under three names —
+ *   `Duostrike`, `Paralyzing Shots`, and `Toxic Breath` under three ids — of which only
+ *   `Duostrike` and `Paralyzing Shots` are `prio: 1`. It is the case that shows a row
+ *   carrying every one of the mob's prio-1 spells while the filter drops the rest.
  * - Agitated Voidscythe (Voidscar Arena) carries `Rip and Slice` under two ids, 1311778
  *   tagged `tank` and 1233472 tagged `dodge` — the only kind of case where deduplication
  *   changes anything, and it must merge the tags rather than pick one.
