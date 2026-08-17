@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
 import { cloneKey, getLookup, mapUrl } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
@@ -350,6 +350,31 @@ describe('Reporting the pointer', () => {
     expect(() =>
       fireEvent.pointerMove(surface, { clientX: 5, clientY: 5, pointerId: 1 }),
     ).not.toThrow()
+  })
+
+  it('does not force a layout read on every move when nobody is listening', () => {
+    // `getBoundingClientRect` forces the browser to flush layout — worth avoiding on the
+    // hottest path there is, `pointermove`, for the common case of a solo player with no
+    // `onCursorMove` to feed.
+    const { container } = renderEn(<DungeonMap slug={SLUG} lookup={lookup} />)
+    const surface = container.querySelector('.map-surface')!
+    const spy = vi.spyOn(surface, 'getBoundingClientRect')
+    fireEvent.pointerMove(surface, { clientX: 5, clientY: 5, pointerId: 1 })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('clears the cursor when the pointer is cancelled, not just when it leaves', () => {
+    // A touch gesture interrupted by the browser fires `pointercancel`, not `pointerleave` —
+    // without this, a peer keeps seeing a parked arrow until the mouse happens to cross the
+    // container edge.
+    const moves: (Point | null)[] = []
+    const { container } = renderEn(
+      <DungeonMap slug={SLUG} lookup={lookup} onCursorMove={(p) => moves.push(p)} />,
+    )
+    const surface = container.querySelector('.map-surface')!
+    fireEvent.pointerMove(surface, { clientX: 200, clientY: 150, pointerId: 1 })
+    fireEvent.pointerCancel(surface, { pointerId: 1 })
+    expect(moves.at(-1)).toBeNull()
   })
 })
 

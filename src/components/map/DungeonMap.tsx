@@ -112,9 +112,12 @@ export default function DungeonMap({
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
-    const el = e.currentTarget as HTMLElement
-    const rect = el.getBoundingClientRect()
-    onCursorMove?.(toMapPoint(transform, { x: e.clientX - rect.left, y: e.clientY - rect.top }))
+    // `getBoundingClientRect` forces the browser to flush layout — worth skipping on this,
+    // the hottest path there is, when nobody has asked for the cursor at all.
+    if (onCursorMove) {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      onCursorMove(toMapPoint(transform, { x: e.clientX - rect.left, y: e.clientY - rect.top }))
+    }
 
     const d = drag.current
     if (!d) return
@@ -137,6 +140,14 @@ export default function DungeonMap({
     setPanning(false)
   }
 
+  const onPointerCancel = (e: React.PointerEvent) => {
+    endDrag(e)
+    // A cancelled gesture (a touch interrupted by the browser, say) fires no `pointerleave`:
+    // without this, a peer keeps seeing a parked arrow until the pointer happens to cross the
+    // container edge some other way.
+    onCursorMove?.(null)
+  }
+
   const handleCloneClick = (ref: CloneRef, e: React.MouseEvent) => {
     if (drag.current?.moved) return
     e.stopPropagation()
@@ -153,7 +164,7 @@ export default function DungeonMap({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
-      onPointerCancel={endDrag}
+      onPointerCancel={onPointerCancel}
       onPointerLeave={() => onCursorMove?.(null)}
     >
       <div
