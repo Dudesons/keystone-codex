@@ -410,8 +410,12 @@ function CollabSection({
           </button>
           <button
             onClick={async () => {
-              await navigator.clipboard.writeText(sessionLink(slug, collab.room ?? ''))
-              onMessage({ kind: 'ok', text: t('route.linkCopied') })
+              try {
+                await navigator.clipboard.writeText(sessionLink(slug, collab.room ?? ''))
+                onMessage({ kind: 'ok', text: t('route.linkCopied') })
+              } catch (err) {
+                onMessage({ kind: 'error', text: errorText(err, t) })
+              }
             }}
             className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
           >

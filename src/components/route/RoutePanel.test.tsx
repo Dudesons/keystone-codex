@@ -543,4 +543,28 @@ describe('An invitation carried by a link', () => {
     mount({ collab: connected })
     expect(screen.getByRole('button', { name: /copy the link/i })).toBeDefined()
   })
+
+  it('reports a refused clipboard write instead of leaving it an unhandled rejection', async () => {
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText: async () => {
+          throw new Error('denied')
+        },
+      },
+    })
+    const connected: CollabState = {
+      status: 'connected',
+      room: 'ABC123',
+      peers: peersOf(1),
+      identity: 'Player-1234',
+      synced: true,
+      mode: 'guest',
+    }
+
+    mount({ collab: connected })
+    fireEvent.click(screen.getByRole('button', { name: /copy the link/i }))
+    await screen.findByText('denied')
+
+    vi.unstubAllGlobals()
+  })
 })
