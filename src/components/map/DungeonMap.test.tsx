@@ -312,12 +312,24 @@ describe('Reporting the pointer', () => {
       <DungeonMap slug={SLUG} lookup={lookup} onCursorMove={(p) => moves.push(p)} />,
     )
     const surface = container.querySelector('.map-surface')!
+
+    // jsdom never lays anything out, so `fit` would otherwise divide by a zero-sized
+    // container. Giving it a known, non-square size makes the transform's translation
+    // non-trivial too: against the map's fixed 1920x1280, a 2000x1000 container is
+    // height-constrained, so scale = 1000 / 1280 = 0.78125, tx = (2000 - 1920*0.78125) / 2
+    // = 250, ty = 0. The "Fit" button re-reads the container's size through the same `fit`
+    // that runs on mount, so clicking it after stubbing the size is what applies it.
+    Object.defineProperty(surface, 'clientWidth', { configurable: true, value: 2000 })
+    Object.defineProperty(surface, 'clientHeight', { configurable: true, value: 1000 })
+    fireEvent.click(screen.getByTitle('Fit'))
+
     fireEvent.pointerMove(surface, { clientX: 200, clientY: 150, pointerId: 1 })
 
-    // jsdom lays everything out at zero, so the container's rect is the origin and the
-    // transform is the whole of the arithmetic under test.
-    expect(moves.at(-1)).not.toBeNull()
-    expect(moves.at(-1)).toHaveProperty('x')
+    // toMapPoint inverts that transform: x = (200 - 250) / 0.78125 = -64,
+    // y = (150 - 0) / 0.78125 = 192. Screen pixels would report {200, 150}; using
+    // toContainerPoint in place of toMapPoint would report {406.25, 117.1875}. Neither
+    // matches, so either mistake fails this assertion.
+    expect(moves.at(-1)).toEqual({ x: -64, y: 192 })
   })
 
   it('reports nothing once the pointer has left', () => {
