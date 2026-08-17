@@ -253,12 +253,22 @@ run them under node, where `page`, `browser` and the rest of Playwright's fixtur
 — the same reason `relay/**` is already excluded there.
 
 Every scenario was watched failing before it was made to pass — the standard a new scenario is
-expected to meet, not a boast. Two of this suite's own assumptions were wrong under exactly that
-check: a hand-made `browser.newContext()` inherits no base URL or clipboard permission from the
-config's `use` block (hence `e2e/urls.ts` and the `newParticipant()` helper), and Playwright
-matches an accessible name as a case-insensitive substring by default, so
+expected to meet, not a boast. One of this suite's own assumptions was wrong under exactly that
+check: Playwright matches an accessible name as a case-insensitive substring by default, so
 `getByRole('button', { name: 'Route' })` also matched "Open a session with this route" and
 failed strict mode — `exact: true` was needed on that locator.
+
+A second thing needed correcting, but no failing test caught it — it was an assumption, not a
+lesson: `e2e/urls.ts` and `e2e/fixtures.ts` used to claim a hand-made `browser.newContext()`
+inherits nothing from the config's `use` block. It inherits every key the call does not set
+itself, including the runner's own default `locale: 'en-US'` — which is the only reason every
+English locator in this suite ever passed, since the app resolves its interface language from
+`navigator.languages` (`src/lib/i18n/context.tsx`) and French is a supported locale. A hand-made
+context is worth thinking about rather than assuming either way, so `playwright.config.ts` now
+pins `locale: 'en-US'` explicitly instead of leaning on an implicit default nobody had written
+down. `newParticipant()` still sets the base URL and the clipboard permissions itself, which
+stays deliberate: it keeps the helper readable on its own terms rather than requiring the
+config's defaults to be held in mind.
 
 **The suite's own output is not pristine, and that is recorded rather than hidden.** On some
 runs with two or more tests that open a collaboration session, the relay prints a line partway

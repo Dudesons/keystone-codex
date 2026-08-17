@@ -7,9 +7,10 @@ import { APP } from './urls'
 /**
  * A second participant's browser.
  *
- * `browser.newContext()` inherits nothing from the config's `use` block, so the base URL and the
- * clipboard permissions have to be handed over here. Without the base URL, every `page.goto('./')`
- * in a hand-made context fails on a relative URL with no origin.
+ * `browser.newContext()` does inherit the config's `use` block for any key the call omits, so the
+ * base URL and the clipboard permissions would reach a hand-made context either way. They are
+ * still passed here, deliberately: this helper should read correctly on its own terms, without
+ * requiring the reader to hold the config's defaults in mind.
  */
 export function newParticipant(browser: Browser, viewport?: ViewportSize) {
   return browser.newContext({

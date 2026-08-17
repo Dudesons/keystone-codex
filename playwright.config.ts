@@ -17,10 +17,12 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
-    baseURL: APP,
     // `localhost`, not `127.0.0.1`: the preview server binds IPv6 only.
+    baseURL: APP,
     trace: 'on-first-retry',
     permissions: ['clipboard-read', 'clipboard-write'],
+    // The app picks its language from `navigator.languages` (`src/lib/i18n/context.tsx`), and this suite's locators are English.
+    locale: 'en-US',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [

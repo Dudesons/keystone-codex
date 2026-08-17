@@ -7,8 +7,9 @@ export const RELAY = 'http://localhost:8787'
 /**
  * The app, served by `vite preview` under the deployed sub-path.
  *
- * A context created by hand with `browser.newContext()` inherits **nothing** from the config's
- * `use` block — not this base URL, not the clipboard permissions — which is why the fixtures pass
- * them explicitly and why this constant cannot simply live in the config.
+ * A context created by hand with `browser.newContext()` does inherit the config's `use` block —
+ * for every key the call does not set itself — but `newParticipant` in `fixtures.ts` sets the
+ * base URL and the clipboard permissions explicitly anyway, so the helper reads correctly on its
+ * own, without requiring the reader to know what the runner fills in behind it.
  */
 export const APP = 'http://localhost:4173/keystone-codex/'
