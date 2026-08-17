@@ -52,7 +52,7 @@ const peersOf = (n: number): Peer[] =>
     isSelf: i === 0,
   }))
 
-const offline: CollabState = { status: 'off', room: null, peers: [], identity: 'Player-1234' }
+const offline: CollabState = { status: 'off', room: null, peers: [], identity: 'Player-1234', synced: false }
 
 const routeWith = (packCount: number): Route => ({
   ...emptyRoute(SLUG, MDT_INDEX, 'Test route'),
@@ -331,6 +331,7 @@ describe('Collaborative session', () => {
       room: 'AB3K9Z',
       peers: peersOf(3),
       identity: 'Player-1234',
+      synced: true,
     }
     const { container } = mount({ collab: connected })
     const section = within(container.querySelector('.border-threat-low\\/40') as HTMLElement)
@@ -342,7 +343,7 @@ describe('Collaborative session', () => {
 
   it('says it is connecting before the peers answer', () => {
     const { container } = mount({
-      collab: { status: 'connecting', room: 'AB3K9Z', peers: [], identity: 'Player-1234' },
+      collab: { status: 'connecting', room: 'AB3K9Z', peers: [], identity: 'Player-1234', synced: false },
     })
     expect(container.textContent).toContain('connecting…')
   })
@@ -350,7 +351,7 @@ describe('Collaborative session', () => {
   it('leaves the session', () => {
     let left = false
     mount({
-      collab: { status: 'connected', room: 'AB3K9Z', peers: peersOf(2), identity: 'Player-1234' },
+      collab: { status: 'connected', room: 'AB3K9Z', peers: peersOf(2), identity: 'Player-1234', synced: true },
       onLeaveRoom: () => {
         left = true
       },
