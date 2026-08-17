@@ -59,24 +59,38 @@ most. Four blocks, in this order:
 3. **Traps** — every `trap:` sentence, two columns.
 4. **Bosses** — one card each.
 
-### 3. The table shows non-boss `prio: 1` spells, deduplicated by name
+### 3. One row per mob, not per spell
 
-Per dungeon there are between 20 (Altar of Fangs) and 68 (Murder Row, Temple of Sethraliss)
-spells at `prio: 1`. method.gg's table has seven rows. Three cuts bring the two together
-without anyone curating a list by hand:
+**A row is a mob.** Its name, its threat pip, and every `prio: 1` spell it carries as a chip
+on that same line — icon, name, tag. Bosses are excluded: they have their own block, and their
+spells are a fight rather than a pull.
 
-- **Bosses are excluded** — they have their own block, and their spells are a fight, not a
-  pull.
-- **Rows are deduplicated by resolved spell name, within one mob.** This bites hard: Twinfang
-  Harrower carries *Paralyzing Shots* five times (ids 1294567, 1294568, 1294569, 1294570,
-  1307269 — one spell, five ids). One row, holding every id.
-- **Sorted by danger** — `threat` descending (`lethal > high > medium > low > unset`), then
-  mob name, then spell name, compared locale-aware.
+This is a measurement, not a preference. Counting the real content four ways, rows per dungeon:
 
-A threat-based cut was considered and rejected: too many cards have no `threat` yet, so it
-would silently hide mobs rather than rank them.
+| Rule | Altar | Nalorakk | King's Rest | Murder Row | Ruby | Sethraliss | Blinding Vale | Voidscar |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| One row per spell | 14 | 36 | 44 | 45 | 26 | **52** | 29 | 47 |
+| **One row per mob** | 12 | 26 | 29 | 30 | 19 | 29 | 19 | 27 |
+| Threat cut, per spell | 9 | 13 | 28 | 23 | 13 | 23 | 9 | 22 |
+| Threat cut, per mob | 7 | 9 | 17 | 13 | 8 | 11 | 5 | 9 |
 
-Each row carries what MDT already knows — `interruptible`, `dispel` — alongside the
+One row per spell puts two screens of table in Temple of Sethraliss alone. The threat cut is
+shorter still, but it was measured too: **2 to 11 mobs per dungeon carry no `threat` yet**, and
+they would vanish without anyone able to tell whether they are harmless or merely unjudged. One
+row per mob discards nothing and halves the worst case. It is also what method.gg's own table
+is, visually — their seven rows are seven mobs.
+
+Sorted by danger: `threat` descending (`lethal > high > medium > low > unset`), then mob name,
+locale-aware.
+
+**Deduplication by resolved spell name stays, and is worth nothing.** Two ids of one spell on
+one mob must not produce two chips, so the rule is right — but measured across the whole codex
+it merges 293 rows into 290. Three. The earlier claim that it was the mechanism keeping the
+table short was wrong: on Twinfang Harrower only one of the five *Paralyzing Shots* ids carries
+`prio: 1`, so the filter removes the other four before deduplication ever sees them. It is a
+correctness rule, not a volume control, and nothing should be built on it.
+
+Each chip carries what MDT already knows — `interruptible`, `dispel` — alongside the
 hand-written `tag`, exactly as the codex badges do. A spell absent from `spells.json` falls
 back to `#id`, as `kickList` already does.
 
@@ -87,8 +101,16 @@ back to `#id`, as `kickList` already does.
 is right most of the time — Altar of Fangs yields Rav'i → The Writhing Coil → Zul'jan, which
 is the order method.gg's own sidebar shows.
 
-It is wrong for King's Rest: the Council of Tribes (Aka'ali 269808, Zanazal 269810, Kula
-269811) is the first encounter and carries indices 34–36, so `mdtIdx` puts it last.
+It is wrong for King's Rest. The order `mdtIdx` yields there is The Golden Serpent (6) →
+Mchimba the Embalmer (18) → **King Dazar (25)** → Aka'ali the Conqueror (34) → Zanazal the
+Wise (35) → Kula the Butcher (36). King Dazar is the dungeon's final boss and lands third: the
+three Council of Tribes NPCs were reintroduced with new ids in the 269xxx range, so they sort
+after everything that predates them. Whatever the true order is, `mdtIdx` is not it.
+
+The correct sequence has to be declared, and it is a game fact rather than a repository one —
+**RwlRwlRwlRwl confirms it before it is written.** The implementation plan carries the BfA
+order (Golden Serpent → Mchimba → Council of Tribes → King Dazar) as the value to confirm, not
+as a value to trust.
 
 So: order by `mdtIdx`, unless `_dungeon.md` declares `bosses: [npcId, npcId, …]`, which wins.
 Nothing has to be written for the page to work; one line makes King's Rest correct.
@@ -108,8 +130,8 @@ getHighlights(slug: string, locale: Locale): DungeonHighlights
 ```
 
 ```ts
+/** One chip on a mob's row. Several ids can carry one name; the chip is the name. */
 interface HighlightSpell {
-  /** Every id carrying this name on this mob. A row is a spell, not an id. */
   ids: number[]
   name: string
   icon: string
@@ -119,34 +141,40 @@ interface HighlightSpell {
   dispel: string[]
   /** The first non-empty note among the merged ids. */
   note?: string
+}
+
+/** A row of the table, and equally a card of the boss block — the shape is the same. */
+interface HighlightMob {
   npcId: number
-  mobName: string
+  name: string
+  displayId?: number
   threat?: Threat
+  role?: string
+  /** The `trap:` sentence, already through `inlineMarkdown`. Carried for the boss cards. */
+  trapHtml?: string
+  spells: HighlightSpell[]
 }
 
 interface HighlightTrap {
   npcId: number
   mobName: string
   threat?: Threat
-  /** Already through `inlineMarkdown`. */
   html: string
 }
 
-interface HighlightBoss {
-  npcId: number
-  name: string
-  displayId?: number
-  threat?: Threat
-  trapHtml?: string
-  spells: HighlightSpell[]
-}
-
 interface DungeonHighlights {
-  spells: HighlightSpell[]
+  /** Non-boss mobs holding at least one `prio: 1` spell, most dangerous first. */
+  mobs: HighlightMob[]
+  /** Non-boss mobs holding a `trap:` sentence — a different population from `mobs`. */
   traps: HighlightTrap[]
-  bosses: HighlightBoss[]
+  /** Every boss, in the declared or the `mdtIdx` order. */
+  bosses: HighlightMob[]
 }
 ```
+
+`mobs` and `traps` are two different populations, not two views of one: a mob can carry a trap
+with no `prio: 1` spell, and the reverse. Deriving one from the other in the components would
+put the selection rule in the view, which is the thing this module exists to hold.
 
 Memoised **per locale**, like `indicators.ts` — deduplication keys on the resolved spell
 name, which is not the same string in English and in French, and neither is the sort order.
@@ -164,7 +192,7 @@ is empty-tolerant by construction, and grows as the codex is written.
 
 | Component | Renders |
 | --- | --- |
-| `SpellTable` | icon · spell name (Wowhead link) · tag badges · mob name, right-aligned. The row links into the mob's codex entry. |
+| `MobTable` | one row per mob: name and threat pip on the left, its `prio: 1` spells as chips (icon · name with a Wowhead link · tag badge) on the right. The mob name links into its codex entry. |
 | `TrapList` | two columns; mob name in bold, threat pip, the sentence. |
 | `BossStrip` | one card per boss: portrait, name, its trap, its `prio: 1` spells. |
 
@@ -193,7 +221,7 @@ Written first, in this order.
 
 | File | Runner | Covers |
 | --- | --- | --- |
-| `src/lib/highlights.test.ts` | node | the five *Paralyzing Shots* ids collapse to one row; bosses absent from the table; threat ordering; `bosses:` override honoured; a mob with no card contributes nothing; `en` and `fr` genuinely differ |
+| `src/lib/highlights.test.ts` | node | a row is a mob and carries every one of its `prio: 1` spells; two ids of one name make one chip; bosses absent from the table; threat ordering; `bosses:` override honoured; a mob with no card contributes nothing; `en` and `fr` genuinely differ |
 | `src/lib/content.test.ts` | node | `bosses:` parses, and merges like `timer` |
 | `src/components/highlights/*.test.tsx` | jsdom | each block renders against the real Altar of Fangs pool, in both locales |
 | `src/routes/HighlightsPage.test.tsx` | jsdom | the four blocks assemble against a real dungeon; an unknown slug behaves as today |
