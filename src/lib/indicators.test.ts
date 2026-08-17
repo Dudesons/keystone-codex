@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Enemy } from './types'
 import { dungeonList, getDungeon, getLookup } from './data'
-import { getIndicators, kickList } from './indicators'
+import { frontalList, getIndicators, kickList } from './indicators'
 
 /**
  * `getIndicators` memoizes under the key `<slug>/<enemy.id>`, with no invalidation. Every
@@ -159,6 +159,36 @@ describe('getIndicators — mob with a written entry', () => {
     const prios = list.map((s) => s.prio ?? 99)
     for (let k = 1; k < prios.length; k++) expect(prios[k]).toBeGreaterThanOrEqual(prios[k - 1])
     expect(list[0].prio).toBe(1)
+  })
+})
+
+/**
+ * `frontal` is the one tag MDT has no field for and the prose had to carry instead: Toxic
+ * Surge's note opened on the word "Frontal" before the tag existed. Ula'tek's Chosen is
+ * trash rather than a boss, which is what makes it the reference case — the briefing this
+ * feeds is read while routing.
+ */
+describe('getIndicators — frontals', () => {
+  const REAL_SLUG = 'altar-of-fangs'
+  const byId = getLookup(REAL_SLUG)!.enemyById
+  const chosen = byId.get(263_109)!
+  const TOXIC_SURGE = 1_306_852
+
+  it('raises the frontal from `tag: frontal`, which MDT cannot supply', () => {
+    expect(getIndicators(REAL_SLUG, chosen).frontalSpells).toEqual([TOXIC_SURGE])
+  })
+
+  it('leaves the list empty for a mob with no frontal written', () => {
+    // The Chieftain carries `tag: dodge`, which is a different instruction.
+    expect(getIndicators(REAL_SLUG, byId.get(270_306)!).frontalSpells).toEqual([])
+  })
+
+  it('names the frontals, for the pull briefing to print', () => {
+    expect(frontalList(REAL_SLUG, chosen).map((s) => s.name)).toEqual(['Toxic Surge'])
+  })
+
+  it('keeps a frontal out of the list to interrupt', () => {
+    expect(kickList(REAL_SLUG, chosen).map((s) => s.id)).not.toContain(TOXIC_SURGE)
   })
 })
 

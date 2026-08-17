@@ -221,6 +221,28 @@ describe('Pull briefing', () => {
     expect(container.textContent).not.toContain('▾ Hide')
   })
 
+  /**
+   * A pull holding Ula'tek's Chosen, whose Toxic Surge is the repo's `tag: frontal`. A frontal
+   * is positional and the whole group has to react to it, which is why it earns briefing space
+   * where `dodge` and `soak` do not.
+   */
+  const frontalRoute: Route = {
+    ...emptyRoute(SLUG, MDT_INDEX, 'Frontal route'),
+    pulls: [{ color: nextColor(0), clones: [{ enemyIdx: 8, cloneIdx: 1 }] }],
+  }
+
+  it('names the frontals of a pull', () => {
+    const { container } = mount({ route: frontalRoute })
+    fireEvent.click(screen.getAllByText('▸ Briefing')[0])
+    expect(container.textContent).toContain('frontal: Toxic Surge')
+  })
+
+  it('leaves the frontal line out when the pull has none', () => {
+    const { container } = mount()
+    fireEvent.click(screen.getAllByText('▸ Briefing')[0])
+    expect(container.textContent).not.toContain('frontal:')
+  })
+
   it('focuses the mob when a briefing line is clicked', () => {
     const focused: number[] = []
     const { container } = mount({ onFocusMob: (id: number) => focused.push(id) })

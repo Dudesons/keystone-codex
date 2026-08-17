@@ -3,13 +3,18 @@
 
 import type { Enemy } from '../../lib/types'
 import { getLookup, getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
-import { getMobContent, isRole, type SpellNote } from '../../lib/content'
+import { getMobContent, isRole, type SpellNote, type SpellTag } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
 
-/** Display order: whatever demands an immediate reaction comes first. */
-const TAG_ORDER = ['kick', 'dispel', 'tank', 'dodge', 'soak', 'todo', 'ignore']
+/**
+ * Display order: whatever demands an immediate reaction comes first.
+ *
+ * Typed `SpellTag[]` so the compiler names a tag left out of this list. Absent from it, a tag
+ * would `indexOf` to -1 and sort silently above everything else.
+ */
+const TAG_ORDER: SpellTag[] = ['kick', 'frontal', 'dispel', 'tank', 'dodge', 'soak', 'todo', 'ignore']
 
 interface Props {
   slug: string

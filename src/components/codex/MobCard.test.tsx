@@ -19,6 +19,9 @@ const lookup = getLookup(SLUG)!
 /** Ritual Chieftain: threat "high", a trap, and spells tagged kick / tank / dodge. */
 const chieftain = lookup.dungeon.enemies.find((e) => e.id === 270_306)!
 const boss = lookup.dungeon.enemies.find((e) => e.isBoss)!
+
+/** Ula'tek's Chosen: two interrupts, a frontal, two dodges, a dispel — pins TAG_ORDER. */
+const chosen = lookup.dungeon.enemies.find((e) => e.id === 263_109)!
 const withoutCc = lookup.dungeon.enemies.find((e) => e.cc.length === 0)!
 
 const pool = dungeonList.flatMap((d) =>
@@ -172,6 +175,23 @@ describe('Spells', () => {
     // Ritual Chieftain's notes: "87k" on the spell to kick, "581k" on the tank buster.
     expect(text.indexOf('87k')).toBeGreaterThan(-1)
     expect(text.indexOf('87k')).toBeLessThan(text.indexOf('581k'))
+  })
+
+  /** Spell ids in the order the card lists them. Names repeat here, hrefs do not. */
+  const renderedIds = (enemy: typeof chosen) => {
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={enemy} />)
+    return [...container.querySelectorAll<HTMLAnchorElement>('a[href*="spell="]')].map(
+      (a) => Number(a.getAttribute('href')!.match(/spell=(\d+)/)![1]),
+    )
+  }
+
+  it('ranks a frontal below the interrupts and above the rest', () => {
+    const ids = renderedIds(chosen)
+    const at = (id: number) => ids.indexOf(id)
+    // A tag absent from TAG_ORDER would indexOf to -1 and sort above everything.
+    expect(at(1_306_852)).toBeGreaterThan(at(1_307_567))
+    expect(at(1_306_852)).toBeGreaterThan(at(1_289_416))
+    expect(at(1_306_852)).toBeLessThan(at(1_307_571))
   })
 
   it('links every spell to Wowhead', () => {
