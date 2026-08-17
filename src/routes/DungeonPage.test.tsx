@@ -282,7 +282,10 @@ describe('A session that pauses itself', () => {
   it('does not cry outage when the session paused itself', () => {
     // Fake timers from the start: RelayNotice's own grace period runs on the same clock as
     // the pause threshold below, and a real setTimeout scheduled before switching clocks
-    // would never fire within this test.
+    // would never fire within this test. The intermediate assertion just below depends on
+    // it — if this call moves past that point, the grace timer arms on the real clock,
+    // never fires, and that assertion fails immediately instead of passing for the wrong
+    // reason.
     vi.useFakeTimers()
     try {
       renderEn(at(`/d/${SLUG}?room=AWAY01`))
@@ -292,7 +295,15 @@ describe('A session that pauses itself', () => {
       fireEvent.click(screen.getByRole('button', { name: /join room away01/i }))
       expect(screen.getByText('Leave')).toBeDefined()
 
-      // Walk away from the tab for longer than the hidden-tab pause threshold.
+      // SilentSocket never opens, so the session is genuinely unsynced here: this is the
+      // real outage case, and the notice must speak up once RelayNotice's own grace period
+      // has passed. Pinning this half is what makes the silence asserted below meaningful.
+      act(() => void vi.advanceTimersByTime(5000))
+      expect(screen.getByText(/not answering/i)).toBeDefined()
+
+      // Walk away from the tab for longer than the hidden-tab pause threshold. The extra
+      // 5000ms is headroom past the threshold, not sized for a timer of its own — the grace
+      // timer above already fired earlier in this test.
       Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
       document.dispatchEvent(new Event('visibilitychange'))
       act(() => void vi.advanceTimersByTime(5 * 60_000 + 5000))
