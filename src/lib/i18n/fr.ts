@@ -100,6 +100,8 @@ export const fr: Dictionary = {
   'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
+  'map.item': 'objet utilisable',
+  'map.dungeonEntrance': 'Entrée du donjon',
   'legend.pips': 'PASTILLES',
   'legend.ring': 'ANNEAU',
   'legend.kick': 'Sort à interrompre (source MDT)',

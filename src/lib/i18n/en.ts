@@ -99,6 +99,8 @@ export const en = {
   'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
+  'map.item': 'usable item',
+  'map.dungeonEntrance': 'Dungeon entrance',
   'legend.pips': 'PIPS',
   'legend.ring': 'RING',
   'legend.kick': 'Spell to interrupt (from MDT)',

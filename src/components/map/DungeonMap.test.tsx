@@ -506,3 +506,10 @@ describe('Landmarks', () => {
     found.forEach((el) => expect(el.getAttribute('data-clone')).toMatch(/^\d+:\d+$/))
   })
 })
+
+describe('Points of interest', () => {
+  it('draws the dungeon items whether or not a route exists', () => {
+    renderEn(<DungeonMap slug="murder-row" lookup={getLookup('murder-row')!} />)
+    expect(screen.getAllByTestId(/^poi-/).length).toBeGreaterThan(0)
+  })
+})

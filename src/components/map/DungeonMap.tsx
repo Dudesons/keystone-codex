@@ -10,6 +10,7 @@ import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
 import PeerCursors from './PeerCursors'
+import PoiLayer, { PoiTooltip } from './PoiLayer'
 import {
   BUTTON_STEP,
   WHEEL_STEP,
@@ -71,6 +72,7 @@ export default function DungeonMap({
   const [panning, setPanning] = useState(false)
   const [hoverPack, setHoverPack] = useState<number | null>(null)
   const [hoverClone, setHoverClone] = useState<string | null>(null)
+  const [hoverPoi, setHoverPoi] = useState<number | null>(null)
   const [showLegend, setShowLegend] = useState(false)
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
@@ -197,6 +199,8 @@ export default function DungeonMap({
             </clipPath>
           </defs>
 
+          <PoiLayer pois={lookup.dungeon.pois} onHover={setHoverPoi} />
+
           {showPackOutlines &&
             [...lookup.packs.values()].map((pack) => (
               <PackOutline
@@ -308,6 +312,9 @@ export default function DungeonMap({
 
       {showLegend && <Legend />}
       {hoverClone && <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />}
+      {hoverClone == null && hoverPoi != null && lookup.dungeon.pois[hoverPoi] && (
+        <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
+      )}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
       {notice}
     </div>
