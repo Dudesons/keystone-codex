@@ -15,6 +15,11 @@ import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
  * jsdom would dial the real relay, which no test may depend on. Replacing the socket leaves
  * the whole session lifecycle — join, leave, rejoin — running for real, and that lifecycle is
  * exactly where the bugs were.
+ *
+ * The provider also reaches other tabs of the same origin through `BroadcastChannel`, and does
+ * not appear to leave that channel synchronously on `destroy()`. Two `describe` blocks that
+ * join the same room code therefore risk a stale peer from one bleeding into the other, even
+ * with `unmount()` called — so keep room codes unique across `describe` blocks in this file.
  */
 class SilentSocket {
   static readonly CONNECTING = 0
@@ -410,6 +415,26 @@ describe('The stashed local route', () => {
     saveLocalRoute()
     const { result, unmount } = mount()
     act(() => result.current.joinRoom('GGGGGG', 'host'))
+    expect(localStorage.getItem(stashKey)).toBeNull()
+    unmount()
+  })
+
+  it('does not let an undecodable stash destroy the route already on file', () => {
+    saveLocalRoute()
+    localStorage.setItem(stashKey, 'corrupted content')
+
+    const { result } = mount()
+    // The stash is validated before it is committed: a corrupt one must not overwrite the
+    // route already sitting under the ordinary key, and must not survive to the next mount.
+    expect(result.current.route.name).toBe('My own route')
+    expect(localStorage.getItem(stashKey)).toBeNull()
+  })
+
+  it('does not throw when leaving with an undecodable stash, and still clears it', () => {
+    const { result, unmount } = mount()
+    localStorage.setItem(stashKey, 'corrupted content')
+
+    expect(() => act(() => result.current.leaveRoom())).not.toThrow()
     expect(localStorage.getItem(stashKey)).toBeNull()
     unmount()
   })

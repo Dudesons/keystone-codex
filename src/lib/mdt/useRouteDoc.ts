@@ -150,19 +150,31 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     const fresh = new Y.Doc()
 
     // A stash left behind means a session was interrupted rather than left. Closing a tab
-    // counts as leaving, so the route goes back before anything else reads storage.
+    // counts as leaving, so the route goes back before anything else reads storage. It is
+    // validated before it is committed, the same order `leaveRoom` uses: an undecodable
+    // stash is not a route waiting, and must not overwrite whatever the ordinary key holds.
+    // Either way it is cleared, so it cannot come back on a later mount.
     const stashed = localStorage.getItem(stashKey(slug))
+    let restoredFromStash = false
     if (stashed) {
-      localStorage.setItem(storageKey(slug), stashed)
+      try {
+        seed(fresh, luaToRoute(decodeMdtString(stashed).table), stashed)
+        localStorage.setItem(storageKey(slug), stashed)
+        restoredFromStash = true
+      } catch {
+        // Corrupt: nothing to restore, and the route already on file must survive it.
+      }
       localStorage.removeItem(stashKey(slug))
     }
 
-    const saved = localStorage.getItem(storageKey(slug))
-    if (saved) {
-      try {
-        seed(fresh, luaToRoute(decodeMdtString(saved).table), saved)
-      } catch {
-        localStorage.removeItem(storageKey(slug))
+    if (!restoredFromStash) {
+      const saved = localStorage.getItem(storageKey(slug))
+      if (saved) {
+        try {
+          seed(fresh, luaToRoute(decodeMdtString(saved).table), saved)
+        } catch {
+          localStorage.removeItem(storageKey(slug))
+        }
       }
     }
     return fresh
