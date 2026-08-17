@@ -795,8 +795,14 @@ Expected: 5 passed.
 
 - [ ] **Step 3: prove it fails when the stash is dropped**
 
-In `src/lib/mdt/useRouteDoc.ts`, temporarily make the stash write a no-op — find the
-`localStorage.setItem(stashKey(slug), …)` call and comment it out.
+In `src/lib/mdt/useRouteDoc.ts`, temporarily corrupt the stash: find the
+`localStorage.setItem(stashKey(slug), …)` call and write `'not-a-route'` in place of the real value.
+Keep the call — commenting it out leaves its argument unused, and `noUnusedLocals` would fail the build
+before a browser opened, which proves the type system objects to that edit and nothing about whether this
+test's assertion discriminates.
+
+Expected: the restore finds an undecodable stash, swallows it, and falls back to a default route — so the
+assertion fails with `Received: "New route"` against the expected `"LOCAL DRAFT"`.
 
 ```bash
 npm run test:e2e
