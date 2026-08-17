@@ -762,17 +762,22 @@ test('a local route is set aside on joining and given back on leaving', async ({
   await page.goto(`./#/d/${slug}`)
   await page.getByRole('button', { name: 'Route', exact: true }).click()
   await page.getByPlaceholder('Route name').fill('LOCAL DRAFT')
+  // A fresh route already starts on one empty pull (`emptyRoute`, pinned by route.test.ts), so one
+  // click makes two. Two is also what makes the last assertion mean something: a count of one would
+  // match a default route just as well as a restored draft.
   await page.getByRole('button', { name: '+ Pull' }).click()
-  await expect(page.getByText('PULLS · 1')).toBeVisible()
+  await expect(page.getByText('PULLS · 2')).toBeVisible()
 
   await acceptInvitation(page, slug, room, 'Guest')
 
-  // The room is empty, so its route replaces the draft. Losing this is losing someone's work.
+  // The room is empty, so its own fresh route replaces the draft — name cleared, one pull again.
+  // Losing this is losing someone's work.
   await expect(page.getByPlaceholder('Route name')).not.toHaveValue('LOCAL DRAFT')
+  await expect(page.getByText('PULLS · 1')).toBeVisible()
 
   await page.getByRole('button', { name: 'Leave' }).click()
   await expect(page.getByPlaceholder('Route name')).toHaveValue('LOCAL DRAFT')
-  await expect(page.getByText('PULLS · 1')).toBeVisible()
+  await expect(page.getByText('PULLS · 2')).toBeVisible()
 })
 ```
 
