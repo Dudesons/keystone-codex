@@ -135,10 +135,32 @@ export class Room {
   }
 }
 
+/**
+ * Who may open a socket.
+ *
+ * Not access control on rooms — whoever has the six-letter code still joins, which is the
+ * design's intent. This keeps another website from spending our free quota, and browsers always
+ * send an `Origin`. A request without one is not a website, and gets nothing.
+ *
+ * Both development ports appear: 5173 is `npm run dev`, 4173 is `vite preview`, which is what an
+ * end-to-end harness serves `dist/` on.
+ */
+const ALLOWED_ORIGINS = new Set([
+  'https://dudesons.github.io',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+])
+
 export default {
   async fetch(request, env) {
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('keystone relay', { status: 200 })
+    }
+    const origin = request.headers.get('Origin')
+    if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+      return new Response('unknown origin', { status: 403 })
     }
     // The client appends the room name to the URL, and rooms are namespaced by dungeon.
     const room = decodeURIComponent(new URL(request.url).pathname.slice(1)) || 'default'

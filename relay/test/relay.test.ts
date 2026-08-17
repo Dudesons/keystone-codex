@@ -95,3 +95,27 @@ describe('Presence in a room', () => {
     }
   })
 })
+
+describe('Who the relay answers', () => {
+  const upgrade = (origin?: string) =>
+    SELF.fetch('https://relay.test/some-room', {
+      headers: origin ? { Upgrade: 'websocket', Origin: origin } : { Upgrade: 'websocket' },
+    })
+
+  it('accepts the deployed site', async () => {
+    expect((await upgrade('https://dudesons.github.io')).status).toBe(101)
+  })
+
+  it('accepts a development server, both spellings of localhost', async () => {
+    expect((await upgrade('http://localhost:5173')).status).toBe(101)
+    expect((await upgrade('http://127.0.0.1:4173')).status).toBe(101)
+  })
+
+  it('refuses another website, so our quota stays ours', async () => {
+    expect((await upgrade('https://elsewhere.example')).status).toBe(403)
+  })
+
+  it('refuses a request with no origin at all', async () => {
+    expect((await upgrade()).status).toBe(403)
+  })
+})
