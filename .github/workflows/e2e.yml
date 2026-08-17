@@ -1,0 +1,41 @@
+name: End-to-end
+
+# Called by CI and by Deploy rather than triggered on its own, so there is one definition of what
+# an end-to-end run is. Manual dispatch stays available for when only this needs checking.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Scenarios in a real browser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # Chromium only: the app targets people running WoW on a desktop, and a second engine doubles
+      # the cost for a risk nobody has reported.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Playwright starts both servers itself: a local wrangler dev needing no Cloudflare account,
+      # and the real build served on its deployed path shape.
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

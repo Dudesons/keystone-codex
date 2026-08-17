@@ -10,6 +10,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview",
+    "preview:e2e": "vite preview --base=/keystone-codex/ --port 4173 --strictPort",
+    "test:e2e": "playwright test",
     "extract": "node scripts/extract-mdt.mjs",
     "build:maps": "node scripts/build-maps.mjs",
     "fetch:assets": "node scripts/fetch-assets.mjs",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.12.21",
+    "@playwright/test": "1.62.1",
     "@tailwindcss/vite": "^4.0.6",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.13.1",

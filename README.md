@@ -159,6 +159,11 @@ left them. A *Return to the room* button in the route panel picks the connection
 
 ## Tests
 
+| Command | Role |
+| --- | --- |
+| `npm test` | Unit and integration tests (Vitest) — fast, no browser, nothing to start first |
+| `npm run test:e2e` | The same app and relay, exercised in a real Chromium browser (Playwright) |
+
 ```bash
 npm test
 ```
@@ -172,22 +177,41 @@ Three quirks of the game's serializer, discovered through this fixture and docum
 code: strings go out as CBOR major 2 (Lua only has byte strings), the compression is **raw**
 deflate, and an empty table becomes an empty array (`0x80`).
 
+```bash
+npx playwright install chromium   # once, before the first run — add --with-deps on Linux, as CI does
+npm run test:e2e
+```
+
+Starts a local relay and serves the real production build itself, so nothing else needs to be
+running first, and drives a real two-browser join through a session — the same "Edit together"
+flow described above. Ports 4173 and 8787 need to be free: reusing a server already listening on
+either is deliberately disabled, so a leftover process there fails the run rather than being
+silently reused.
+
 ## Continuous integration and deployment
 
-Three separate workflows:
+Four separate workflows:
 
 | Workflow | Trigger | Role |
 | --- | --- | --- |
-| [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build |
-| [Deploy](.github/workflows/deploy.yml) | **manual**, by a maintainer | types, tests, build, tag, publish to Pages |
+| [CI](.github/workflows/ci.yml) | pull requests, push to `main` | types, tests, build (end-to-end runs independently) |
+| [Deploy](.github/workflows/deploy.yml) | **manual**, by a maintainer | end-to-end, types, tests, build, tag, publish to Pages |
 | [Relay](.github/workflows/relay.yml) | **manual**, by a maintainer | tests, publish to Cloudflare Workers |
+| [End-to-end](.github/workflows/e2e.yml) | called by CI and by Deploy, or dispatched by hand | the Chromium suite against a real build and a local relay |
+
+`e2e.yml` is the one definition both CI and Deploy call (`workflow_call`), so there is a single
+place that says what an end-to-end run is; manual dispatch stays available for checking it on its
+own.
 
 Going live is a deliberate gesture: nothing ships automatically. From the *Actions* tab →
 *Deploy* → *Run workflow*, you pick the branch or tag to publish.
 
-The deployment replays the types and the tests rather than relying on CI. Being manual, it
-can target any ref — including a commit CI has never seen — so it cannot inherit any
-guarantee. One minute of checking in exchange for not being able to publish a broken build.
+The deployment replays the types and the tests rather than relying on CI, and before the build
+step can even start, the same Chromium suite CI runs has to pass — a failure there stops the
+build from starting rather than being caught afterward. Being manual, it can target any ref —
+including a commit CI has never seen — so it cannot inherit any guarantee. What used to be a
+minute of checking is now a browser run first and that minute after, in exchange for not being
+able to publish a broken build.
 
 Every publication lays down a `vYYYY.MM.DD-<run number>` tag, so you can tell at a glance
 which commit is online. The name can be overridden at launch, and tagging can be turned off.

@@ -6,11 +6,11 @@ bundle, served on a sub-path, in a real browser, talking to a real relay over a 
 
 ## Why this exists
 
-The repository has 639 green tests and, until now, no end-to-end test at all — `CLAUDE.md` says so
+The repository has 631 green tests and, until now, no end-to-end test at all — `CLAUDE.md` says so
 plainly. The argument for closing that gap is not coverage arithmetic; it is one concrete class of
 bug.
 
-The relay's origin allowlist could name the wrong host and every one of the 639 tests would still
+The relay's origin allowlist could name the wrong host and every one of the 631 tests would still
 pass, because the relay's own tests choose the `Origin` header they send. During the relay work that
 guarantee was checked by reasoning about `git remote -v` and reading a string by eye. Nothing in the
 suite could have caught a wrong entry. The same holds for the join link's shape on a GitHub Pages
@@ -18,7 +18,12 @@ sub-path, and for the composition of the map's coordinate transforms with real l
 tests that pass by construction, because the test supplies the very value production gets from the
 browser.
 
-A browser suite that mirrored the existing 639 tests would be a maintenance tax for nothing. This
+What follows closes that gap only for the origin a local harness can reach — `http://localhost:4173`.
+A typo in the deployed host's own entry (`https://dudesons.github.io` in `relay/src/index.js`) would
+still ship green through everything below: a browser cannot forge an `Origin`, so a local harness has
+no way to send that one, and it stays something checked by eye rather than by this suite.
+
+A browser suite that mirrored the existing 631 tests would be a maintenance tax for nothing. This
 one is deliberately small, and every scenario earns its place by being unprovable without a browser.
 
 ## Out of scope
@@ -218,6 +223,9 @@ locator would silently match nothing.
 
 ## Cost, stated plainly
 
-Roughly 130 MB of Chromium in CI (cached between runs), one to two minutes added per CI run, and a
-devDependency locally. Four tests is the whole suite; if it grows past what those four guarantees
-need, that growth needs its own argument.
+Roughly 130 MB of Chromium in CI, downloaded fresh every run rather than cached — the
+implementation plan departs from this design on that point deliberately: `npx playwright install
+--with-deps chromium` takes roughly 30–40 s on a GitHub runner, and an `actions/cache` entry keyed
+wrongly silently caches nothing while looking like it works, a worse failure than the 40 s it
+saves — one to two minutes added per CI run, and a devDependency locally. Four tests is the whole
+suite; if it grows past what those four guarantees need, that growth needs its own argument.

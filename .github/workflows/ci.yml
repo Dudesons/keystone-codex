@@ -41,3 +41,7 @@ jobs:
       # Building on pull requests too, to catch what the typecheck lets through.
       - name: Build
         run: npm run build
+
+  e2e:
+    name: End-to-end
+    uses: ./.github/workflows/e2e.yml

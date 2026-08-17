@@ -9,3 +9,7 @@ dist
 
 # Local miniflare/durable-object state left behind by wrangler
 relay/.wrangler/
+
+# Playwright
+playwright-report/
+test-results/

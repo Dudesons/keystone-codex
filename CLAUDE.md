@@ -165,20 +165,32 @@ Before implementing new functionality:
 
 ### Where the repository actually stands
 
-The rule above is the target, not today's reality. What exists:
+The rule above is closer to today's reality than it was: unit, integration and relay coverage
+existed already, and end-to-end now does too. What exists:
 
-The suite is green, and runs as two Vitest projects (`npm test` runs both): `app`, in node and
-jsdom, and `relay`, in workerd via `@cloudflare/vitest-pool-workers` — which needs neither
-network nor a Cloudflare account. No mocks anywhere: the tests read the real
-generated data, the real `content/*.md` through `import.meta.glob`, and real committed artefacts
-for anything that would otherwise need the network or a WoW install.
+All green, run as two Vitest projects (`npm test` runs both, and its own output is the current
+count — quoted arithmetic here would only go stale): `app`, node and jsdom, and `relay`, in
+workerd via `@cloudflare/vitest-pool-workers` — which needs neither network nor a Cloudflare
+account. No mocks anywhere: the tests read the real generated data, the real `content/*.md`
+through `import.meta.glob`, and real committed artefacts for anything that would otherwise need
+the network or a WoW install.
+
+Separately, `npm run test:e2e` runs the scenarios in the table below in a real Chromium browser
+through Playwright, plus one smoke test that only proves the harness itself loads the build.
+`npm test` deliberately does not run them — a checkout with no browser installed still gets a
+clean, fast `npm test`; `npm run test:e2e` is the separate door for the slower suite that needs
+Chromium. Playwright starts both servers itself: a local `wrangler dev` running the real relay,
+and `vite preview --base=/keystone-codex/` serving the real production build under
+`/keystone-codex/`, the same sub-path the site is deployed at — so the suite needs neither the
+network nor a Cloudflare account, and a share link that dropped that sub-path would fail here
+exactly as it would in production.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
 | Unit | Vitest, `app` project (node) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon`, `scripts/wowhead-tooltip` and `scripts/content-stub` |
 | Integration | Vitest, `app` project (jsdom) | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
 | Relay | Vitest, `relay` project (workerd) | The Cloudflare Worker in `relay/`: room lifecycle and the origin allowlist, run inside the same runtime a deploy actually uses |
-| End-to-end | — | **None.** No browser runner is installed |
+| End-to-end | Playwright, Chromium (`npm run test:e2e`) | Scenarios in a real browser: a real browser socket, carrying a real `Origin`, is accepted by the real relay and presence comes back (the deployed host's entry in `relay/src/index.js`'s `ALLOWED_ORIGINS` cannot be exercised from this local harness, and stays verified by eye); a join link carrying the deployed sub-path into a second browser; two viewports agreeing on where a shared cursor points; a local route set aside on joining and handed back on leaving — plus one smoke test that only proves the harness loads the build |
 
 **Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`
 and `main.tsx`. The first two are exercised by every component test through `renderEn` /
@@ -230,9 +242,55 @@ Library's bare `render`: components need a `LocaleProvider`, and an explicit loc
 makes the assertion readable.
 
 **What this means in practice:** when you touch an uncovered area, you write the missing test
-as part of the task — that is the catch-up mechanism, not an extra. Picking an E2E runner
-(Playwright or otherwise) is a decision to make with RwlRwlRwlRwl, not one to settle alone in
-passing.
+as part of the task — that is the catch-up mechanism, not an extra. The E2E runner decision has
+since been made — Playwright — and its suite is documented next.
+
+### The end-to-end suite
+
+`e2e/session.spec.ts` and `e2e/smoke.spec.ts` run under Playwright, not Vitest. `e2e/**` is
+excluded from the `app` project in `vite.config.ts` on purpose: Vitest's default `include`
+(`**/*.{test,spec}.?(c|m)[jt]s?(x)`) would otherwise collect the Playwright specs too and try to
+run them under node, where `page`, `browser` and the rest of Playwright's fixtures do not exist
+— the same reason `relay/**` is already excluded there.
+
+Every scenario was watched failing before it was made to pass — the standard a new scenario is
+expected to meet, not a boast. One of this suite's own assumptions was wrong under exactly that
+check: Playwright matches an accessible name as a case-insensitive substring by default, so
+`getByRole('button', { name: 'Route' })` also matched "Open a session with this route" and
+failed strict mode — `exact: true` was needed on that locator.
+
+A second thing needed correcting, but no failing test caught it — it was an assumption, not a
+lesson: `e2e/urls.ts` and `e2e/fixtures.ts` used to claim a hand-made `browser.newContext()`
+inherits nothing from the config's `use` block. It inherits every key the call does not set
+itself, including the runner's own default `locale: 'en-US'` — which is the only reason every
+English locator in this suite ever passed, since the app resolves its interface language from
+`navigator.languages` (`src/lib/i18n/context.tsx`) and French is a supported locale. A hand-made
+context is worth thinking about rather than assuming either way, so `playwright.config.ts` now
+pins `locale: 'en-US'` explicitly instead of leaning on an implicit default nobody had written
+down. `newParticipant()` still sets the base URL and the clipboard permissions itself, which
+stays deliberate: it keeps the helper readable on its own terms rather than requiring the
+config's defaults to be held in mind.
+
+**The suite's own output is not pristine, and that is recorded rather than hidden.** On some
+runs with two or more tests that open a collaboration session, the relay prints a line partway
+through the run — not at shutdown — that reads roughly:
+
+```
+[WebServer] X [ERROR] Uncaught Error: internal error; reference = <id>
+```
+
+It is **absent from most runs** — the full suite ran clean four times in a row — and has not
+been reproduced on demand, so its absence is not a sign the line was fixed or this paragraph
+gone stale. When it does show up, every test around it still passes, and it coincides with a
+browser context closing — a socket closing abruptly, exactly like a real tab being closed. It
+has not been diagnosed: it lives in `relay/src/index.js`, outside the plan that added this
+suite, and is recorded here as an open question, not an explained one. Seeing it (when it
+happens) requires redirecting the run's output to a file (`npm run test:e2e > out.txt`);
+piping it into `grep` or `tail` can lose it.
+
+**Not covered by this suite:** the five-minute idle pause. Browsers throttle a hidden tab's
+timers, which would make that timing unreliable to assert on in a real one; it stays a jsdom
+test with fake timers, in `useRouteDoc.test.tsx`.
 
 ## Test-Driven Development
 
