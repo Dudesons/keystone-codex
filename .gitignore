@@ -13,3 +13,7 @@ relay/.wrangler/
 # Playwright
 playwright-report/
 test-results/
+
+# Agent scratch: linked worktrees, and the per-plan execution ledger
+.claude/worktrees/
+.superpowers/
