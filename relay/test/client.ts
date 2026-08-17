@@ -16,10 +16,17 @@ export interface Client {
   awareness: awarenessProtocol.Awareness
   socket: WebSocket
   close(): void
+  /**
+   * Opens a fresh socket for the same participant: the same `doc` and `awareness`, so the Yjs
+   * client id is unchanged. This is what "Return to the room" does on a paused session — a new
+   * socket, not a new participant — and a fresh `connect()` cannot stand in for it, since that
+   * would hand out a new client id and prove nothing about a return.
+   */
+  reconnect(): Promise<void>
 }
 
-/** Opens a socket on `room` and wires just enough protocol to sync and to be present. */
-export async function connect(room: string): Promise<Client> {
+/** Opens a socket on `room`, the plumbing shared by a first connection and a reconnection. */
+async function open(room: string): Promise<WebSocket> {
   const response = await SELF.fetch(`https://relay.test/${room}`, {
     headers: { Upgrade: 'websocket', Origin: 'http://localhost:5173' },
   })
@@ -27,11 +34,12 @@ export async function connect(room: string): Promise<Client> {
   if (!socket) throw new Error(`no websocket in the response (status ${response.status})`)
   socket.accept()
   socket.binaryType = 'arraybuffer'
+  return socket
+}
 
-  const doc = new Y.Doc()
-  const awareness = new awarenessProtocol.Awareness(doc)
-
-  socket.addEventListener('message', (event) => {
+/** Wires one socket to a doc and an awareness, both ways, and returns how to stop. */
+function wire(socket: WebSocket, doc: Y.Doc, awareness: awarenessProtocol.Awareness): () => void {
+  const onMessage = (event: MessageEvent) => {
     if (!(event.data instanceof ArrayBuffer)) {
       throw new Error(`expected bytes, got ${event.data?.constructor?.name}`)
     }
@@ -53,18 +61,20 @@ export async function connect(room: string): Promise<Client> {
         )
         break
     }
-  })
+  }
+  socket.addEventListener('message', onMessage)
 
   // `origin === socket` marks what arrived from the relay: echoing it back would loop.
-  doc.on('update', (update, origin) => {
+  const onDocUpdate = (update: Uint8Array, origin: unknown) => {
     if (origin === socket) return
     const encoder = encoding.createEncoder()
     encoding.writeVarUint(encoder, MESSAGE_SYNC)
     syncProtocol.writeUpdate(encoder, update)
     socket.send(encoding.toUint8Array(encoder))
-  })
+  }
+  doc.on('update', onDocUpdate)
 
-  awareness.on('update', (
+  const onAwarenessUpdate = (
     { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
     origin: unknown,
   ) => {
@@ -77,9 +87,50 @@ export async function connect(room: string): Promise<Client> {
       awarenessProtocol.encodeAwarenessUpdate(awareness, changed),
     )
     socket.send(encoding.toUint8Array(encoder))
-  })
+  }
+  awareness.on('update', onAwarenessUpdate)
 
-  return { doc, awareness, socket, close: () => socket.close() }
+  // Mirrors `y-websocket`'s own `onopen`: a socket that opens onto an awareness that already
+  // carries a local state — true only on reconnect, since `connect` always starts from an empty
+  // one — must announce it again. Nothing else will: the `update` event above only fires for a
+  // state that changes, and reconnecting changes nothing about it.
+  if (awareness.getLocalState() !== null) {
+    const encoder = encoding.createEncoder()
+    encoding.writeVarUint(encoder, MESSAGE_AWARENESS)
+    encoding.writeVarUint8Array(
+      encoder,
+      awarenessProtocol.encodeAwarenessUpdate(awareness, [doc.clientID]),
+    )
+    socket.send(encoding.toUint8Array(encoder))
+  }
+
+  return () => {
+    socket.removeEventListener('message', onMessage)
+    doc.off('update', onDocUpdate)
+    awareness.off('update', onAwarenessUpdate)
+  }
+}
+
+/** Opens a socket on `room` and wires just enough protocol to sync and to be present. */
+export async function connect(room: string): Promise<Client> {
+  const doc = new Y.Doc()
+  const awareness = new awarenessProtocol.Awareness(doc)
+  const socket = await open(room)
+  let unwire = wire(socket, doc, awareness)
+
+  const client: Client = {
+    doc,
+    awareness,
+    socket,
+    close: () => socket.close(),
+    reconnect: async () => {
+      unwire()
+      const next = await open(room)
+      client.socket = next
+      unwire = wire(next, doc, awareness)
+    },
+  }
+  return client
 }
 
 /** Waits for something the relay has to bring about, and names it when it never happens. */

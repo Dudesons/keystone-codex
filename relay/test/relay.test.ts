@@ -74,6 +74,27 @@ describe('Presence in a room', () => {
     }
   })
 
+  it('sees a client again once it reconnects, name intact', async () => {
+    const a = await connect('presence-returns')
+    const b = await connect('presence-returns')
+    try {
+      a.awareness.setLocalStateField('user', { name: 'RwlRwl' })
+      const seen = () =>
+        [...b.awareness.getStates().values()].filter((s) => s.user?.name === 'RwlRwl')
+      await until(() => seen().length === 1, 'A’s presence to reach B')
+
+      a.close()
+      await until(() => seen().length === 0, 'A’s presence to be withdrawn')
+
+      await a.reconnect()
+      await until(() => seen().length === 1, 'A’s presence to reach B again after reconnecting')
+      expect(seen()[0].user.name).toBe('RwlRwl')
+    } finally {
+      a.close()
+      b.close()
+    }
+  })
+
   it('withdraws only the departing socket’s presence, leaving the others untouched', async () => {
     const a = await connect('presence-departure-is-scoped')
     const b = await connect('presence-departure-is-scoped')
