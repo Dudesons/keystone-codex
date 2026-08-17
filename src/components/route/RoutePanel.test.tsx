@@ -453,6 +453,16 @@ describe('Awaiting the room’s route', () => {
     mount({ route: routeWith(2), collab: connected('guest', false) })
     expect(screen.queryByText(/fetching the room/i)).toBeNull()
   })
+
+  it('stays quiet during a pause, even for a guest with nothing pulled yet', () => {
+    // A pause also sets `synced: false`, because the socket really is closed — but a pause is
+    // a decision, not a failure, and there is nothing in flight to report.
+    mount({
+      route: emptyRoute(SLUG, MDT_INDEX),
+      collab: { ...connected('guest', false), status: 'paused' },
+    })
+    expect(screen.queryByText(/fetching the room/i)).toBeNull()
+  })
 })
 
 describe('Choosing a name', () => {

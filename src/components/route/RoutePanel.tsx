@@ -175,7 +175,9 @@ export default function RoutePanel({
         </div>
       </section>
 
-      {collab.mode === 'guest' && !collab.synced && !hasRoute && (
+      {/* A pause is a decision, not a failure: "fetching the route" would be a lie while the
+          socket is closed on purpose. */}
+      {collab.status !== 'paused' && collab.mode === 'guest' && !collab.synced && !hasRoute && (
         <p className="rounded border border-ink-700 bg-ink-850 px-3 py-2 text-xs text-ink-400">
           {t('collab.awaitingRoom')}
         </p>
