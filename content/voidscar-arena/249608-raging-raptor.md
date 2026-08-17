@@ -3,21 +3,23 @@ npcId: 249608
 name: "Raging Raptor"   # auto
 count: 5   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+threat: low
+role: melee
 
 spells:
   - id: 1249661
     name: "Feral Rage"   # auto
-    # 1 sec cast · 30 yd range · dispel: enrage
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: enrage · 1 sec cast · 30 yd range
+    tag: dispel
+    prio: 1
+    note: "+20% melee haste to every ally within 30 yd. Its only ability — so this mob is a buff on legs."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "It does nothing but enrage its neighbours. Soothe it and there is nothing left."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+One unit at 5 forces with a single ability, and that ability is
+[the dungeon's shared enrage](#/d/voidscar-arena/mob/243988).
+
+There is nothing else here: no cast to interrupt, no ground to avoid, no debuff to clear. A
+soothe removes its entire contribution to the fight.

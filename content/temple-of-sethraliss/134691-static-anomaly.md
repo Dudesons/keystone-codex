@@ -3,28 +3,28 @@ npcId: 134691
 name: "Static Anomaly"   # auto
 count: 5   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
-# Applicable CC (auto, from MDT): Taunt
+threat: low
+role: melee
 
 spells:
   - id: 264763
     name: "Spark Step"   # auto
     # Instant · Unlimited range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    prio: 1
+    note: "Zaps to a player's location, hitting everyone within 5 yd for 78k. It teleports — the tank cannot hold it in place."
   - id: 1310693
     name: "Static Shocks"   # auto
     # Instant · Unlimited range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: tank
+    note: "Extra Nature damage on its melee swings."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Spark Step teleports it onto a player. It does not stay tanked — spread so its arrival only catches one person."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Six units at 5 forces each. **Spark Step** is the whole card: it teleports to a chosen player
+and hits everything within 5 yards for 78k.
+
+Because it relocates itself, tanking it does not keep it away from the group — spreading does.
+Only **Taunt** applies, so there is no controlling it either.

@@ -3,21 +3,24 @@ npcId: 272246
 name: "Trained Felhunter"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# The zero-force variant, with no health recorded in MDT.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: add
 
 spells:
   - id: 1293101
     name: "Shadow Bite"   # auto
     # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: tank
+    note: "39k extra Shadow on melee swings — the only ability MDT gives it."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+A second MDT entry for the Trained Felhunter, worth no forces and recorded with **0 health**,
+carrying one of the two Shadow Bite spells the
+[trash version](#/d/murder-row/mob/235261) has.
+
+The missing health figure suggests a placeholder or a scripted spawn rather than a mob anyone
+fights. It has a card because MDT places it.

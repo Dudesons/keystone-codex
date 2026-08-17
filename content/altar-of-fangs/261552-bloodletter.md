@@ -13,11 +13,6 @@ spells:
     tag: dodge
     note: "Its melee swings leave pools on the ground. Nothing to react to, just do not stand in them."
 
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:

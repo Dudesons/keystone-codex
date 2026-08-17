@@ -3,21 +3,24 @@ npcId: 235841
 name: "Selenar Sunshy"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# Part of the Illicit Rain sequence. Worth no forces.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: add
 
 spells:
   - id: 1216074
     name: "Spill Zone"   # auto
     # Instant · Unlimited range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    prio: 1
+    note: "-70% movement speed for anyone standing in the mess. No damage — but the largest slow in the pool."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "A 70% slow is a 70% slow, even in a role-play sequence. Clean it or walk around it."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Part of the [Illicit Rain](#/d/murder-row/mob/263940) sequence, and the one flavour NPC with a
+real mechanical effect attached.
+
+**Spill Zone** slows by **70%** — the harshest movement penalty anywhere in the season's data —
+and the tooltip's own commentary is *"Gross!"*. Clearing it is the **Cleaner** role's job.

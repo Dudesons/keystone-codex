@@ -26,11 +26,6 @@ spells:
     # Instant
     tag: tank
 
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Corrosive Fangs leaves +20% damage taken for 20 sec, and Rattle ignores armour. The two together turn a survivable pull into a dead tank — clear the debuff rather than trying to heal through it."

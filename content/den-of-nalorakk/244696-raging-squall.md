@@ -3,27 +3,31 @@ npcId: 244696
 name: "Raging Squall"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# Created by the Sentinel of Winter, and worth no forces.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: add
 
 spells:
   - id: 1235638
     name: "Raging Squall"   # auto
     # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    prio: 1
+    note: "339k where it forms, then it wanders for 90 seconds, hitting for 145k and knocking players back. It is terrain, not a target."
   - id: 1235641
     name: "Raging Squall"   # auto
     # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "They do not expire quickly and they do not stay still. By the third cast the arena has several drifting through it — track them, or get knocked into the blizzard."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+The [Sentinel of Winter](#/d/den-of-nalorakk/mob/244100)'s wandering hazard, and the reason her
+fight gets harder rather than staying level.
+
+Ninety seconds is longer than her cast cycle, so they accumulate. Each one hits for 145k and
+knocks players back — into Blizzard's Wrath at the edge, or out of the eye of a Frozen Tempest,
+both of which cost more than the squall itself.
+
+There is nothing to do about them except know where they are.

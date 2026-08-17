@@ -7,11 +7,6 @@ threat: low
 role: add
 
 spells:
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
   - id: 1310666
     name: "Toxic Atrophy"   # auto
     # 4 sec cast

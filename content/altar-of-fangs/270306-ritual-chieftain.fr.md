@@ -17,10 +17,8 @@ spells:
   - id: 1306844
     note: "Simple animation de pose du totem."
 
-  - id: 1221063
-    note: "Affixe sous-12, change chaque semaine. Ce n'est pas un trait de ce mob."
 
-trap: "Immunisé à tous les CC : aucun stun, aucune peur ne le retiendra. Si vous comptiez le kiter ou l'enchaîner, ça ne marche pas — il faut le burst."
+trap: "**Blood Sacrifice** absorbe les 180k de soins suivants, et **Dismember** frappe pour 581k. Laisser passer l'absorption juste avant le buster est la séquence qui tue le tank."
 ---
 
 Deux sorts à 3 secondes d'incantation qui se répondent : **Dismember** frappe le tank pour 581k,

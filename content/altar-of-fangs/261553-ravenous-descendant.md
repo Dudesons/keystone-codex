@@ -3,15 +3,10 @@ npcId: 261553
 name: "Ravenous Descendant"   # auto
 count: 5   # auto — forces per unit
 
-threat: high
+threat: medium
 role: melee
 
 spells:
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
   - id: 1306308
     name: "Ravenous"   # auto

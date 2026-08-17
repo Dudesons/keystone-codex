@@ -3,22 +3,25 @@ npcId: 137485
 name: "Bloodsworn Assassin"   # auto
 count: 7   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
-# Applicable CC (auto, from MDT): Stun, Slow, Disorient, Taunt
+threat: low
+role: melee
 
 spells:
   - id: 1297781
     name: "Sudden Rupture"   # auto
-    # Instant · 30 yd range · dispel: bleed
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: bleed · Instant · 30 yd range
+    tag: dispel
+    prio: 1
+    note: "24k a second for 18 seconds and a 10% slow. Long rather than large — a bleed, so the magic dispel does not touch it."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Four units at 7 forces each, with one instant ability.
+
+**Sudden Rupture** is an eighteen-second bleed at 24k a second — around 435k over its life,
+delivered slowly enough that it reads as background damage rather than a mechanic. On a long
+pull with several assassins, those overlap.
+
+MDT lists Stun, Slow and Disorient as applicable.

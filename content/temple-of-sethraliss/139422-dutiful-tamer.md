@@ -3,27 +3,31 @@ npcId: 139422
 name: "Dutiful Tamer"   # auto
 count: 7   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
-# Applicable CC (auto, from MDT): Taunt
+threat: low
+role: caster
 
 spells:
+  - id: 1292990
+    name: "Swarming Krolusks"   # auto
+    tag: dodge
+    prio: 1
+    note: "Summons Krolusk kin. Method rates it the important one — free bodies on top of whatever else is pulled."
   - id: 1291399
     name: "Serrated Charge"   # auto
     # Instant · 60 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1292990
-    name: "Swarming Krolusks"   # auto
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dispel
+    prio: 2
+    note: "58k plus 39k a second for 6 sec. The dungeon's shared bleed."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+A single unit at 7 forces. Both its abilities are shared with the
+[Sand-Sworn Rider](#/d/temple-of-sethraliss/mob/134629): the
+[Swarming Krolusk](#/d/temple-of-sethraliss/mob/264785) summon and the Serrated Charge bleed.
+
+The summon is the reason to kill it rather than leave it — the Krolusks it brings are worth no
+forces at all, so they are pure added time.
+
+Only **Taunt** applies.

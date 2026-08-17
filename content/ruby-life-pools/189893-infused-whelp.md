@@ -3,21 +3,23 @@ npcId: 189893
 name: "Infused Whelp"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# The encounter variant, immune to every CC MDT lists. Worth no forces.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: add
 
 spells:
   - id: 1305234
     name: "Cold Claws"   # auto
-    # Instant · Unlimited range · dispel: magic
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: magic · Instant · Unlimited range
+    tag: dispel
+    prio: 1
+    note: "Every melee swing adds an application, and at 20 the target is Frozen Solid."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Same counter as the other whelp, but this one takes no crowd control at all — the dispel is the only lever."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+The second MDT entry for the Infused Whelp, distinguished from
+[the first](#/d/ruby-life-pools/mob/187894) by being immune to every crowd control listed.
+
+Same ability, same counter to twenty, one fewer way of dealing with it.

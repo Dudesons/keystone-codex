@@ -3,28 +3,30 @@ npcId: 197509
 name: "Primal Thundercloud"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# Summoned by the Tempest Channeler and by High Channeler Ryvati, and worth no forces.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
-# Applicable CC (auto, from MDT): Stun, Incapacitate, Silence, Fear, Root, Slow, Knock, Grip, Disorient, Banish, Mind Control, Sleep Walk, Taunt
+role: add
 
 spells:
   - id: 391031
     name: "Stormcloud Barrier"   # auto
-    # Instant · dispel: magic
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: magic · Instant
+    tag: dispel
+    prio: 1
+    note: "An absorb worth 85% of its health. Dispelling it kills the cloud outright — the fastest way to clear a wave of them."
   - id: 392399
     name: "Stormcloud Detonation"   # auto
     # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dodge
+    note: "It charges the nearest player and dies for 39k within 4 yd. Small hit, but it lands wherever the group is standing."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Do not damage the barrier down — dispel it. 85% of its health disappears with one global."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Worth no forces, so killing them is pure overhead: the point is to spend as little as possible
+doing it.
+
+**Stormcloud Barrier** is why. It absorbs 85% of the cloud's health, and it carries a magic
+dispel type — one dispel removes the shield and the cloud with it. A group that hits them
+instead is chewing through five times the health for the same result.

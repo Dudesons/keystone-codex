@@ -3,7 +3,7 @@ npcId: 261557
 name: "High Evolutionist"   # auto
 count: 7   # auto — forces per unit
 
-threat: high
+threat: medium
 role: caster
 
 spells:
@@ -50,11 +50,6 @@ spells:
     tag: ignore
     note: "The mob being stunned, not something it does to you."
 
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Stop Evolve with crowd control, not with an interrupt. Left to finish, it has healed itself 30% and walks away with a 250k shield — the pull simply stops dying."

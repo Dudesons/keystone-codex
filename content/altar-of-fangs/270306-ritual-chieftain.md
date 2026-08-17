@@ -6,7 +6,7 @@ count: 25   # auto — forces per unit
 threat: high
 role: melee
 
-# Applicable CC (auto, from MDT): none — immune, it has to be killed with damage.
+# MDT carries no CC list for any Midnight dungeon yet, so nothing can be said here either way.
 
 spells:
   - id: 1306911
@@ -34,13 +34,8 @@ spells:
     tag: ignore
     note: "Just the totem-planting animation."
 
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
-trap: "Immune to every CC: no stun, no fear will hold it. If you were counting on kiting or chain-controlling it, that does not work — you have to burst it."
+trap: "**Blood Sacrifice** absorbs the next 180k of healing, and **Dismember** hits for 581k. Letting the absorb land just before the buster is the sequence that kills the tank."
 ---
 
 Two 3-second casts that answer each other: **Dismember** hits the tank for 581k, and **Blood

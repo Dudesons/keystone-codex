@@ -7,17 +7,12 @@ threat: low
 role: melee
 
 spells:
-  - id: 1310015
+  - id: 1308518
     name: "Laced Edge"   # auto
-    # Instant
+    # Instant · 60 yd range
     tag: ignore
     note: "Teleports behind a player and slashes. The tooltip's damage figure is unscaled and not worth quoting."
 
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    tag: ignore
-    note: "Sub-12 affix, rotated weekly. Not a trait of this mob."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:

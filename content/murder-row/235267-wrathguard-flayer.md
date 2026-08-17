@@ -3,39 +3,36 @@ npcId: 235267
 name: "Wrathguard Flayer"   # auto
 count: 5   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+threat: low
+role: melee
 
 spells:
   - id: 1214922
     name: "Fel Rage"   # auto
-    # 3.5 sec cast · dispel: enrage
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
-  - id: 1221063
-    name: "Xal'atath's Gift"   # auto
-    # Instant
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: enrage · 3.5 sec cast
+    tag: kick
+    prio: 1
+    note: "-60% damage taken and immunity to crowd control, for a full minute. Kickable *and* an enrage — two chances to stop it, and missing both stalls the pull."
   - id: 1295426
     name: "Flay"   # auto
     # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dispel
+    prio: 2
+    note: "Charges a player for 58k plus a 3-second bleed."
   - id: 1295427
     name: "Flay"   # auto
     # Instant · 100 yd range
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    tag: dispel
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Fel Rage makes it take 60% less damage and immune to CC for a minute. Kick it, or soothe it — a minute is longer than the pull was meant to last."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+Thirteen units at 5 forces each, and a cast that is worth far more than the mob is.
+
+**Fel Rage** is a defensive dressed as an enrage: 60% damage reduction *and* crowd-control
+immunity, for **one minute**. Against a 5-force body that is absurd, and it is why a pull with
+several Flayers can grind to a halt.
+
+The good news is that MDT flags it both **interruptible** and **enrage** — so the kick is the
+first answer and a soothe is the second. Groups have to miss twice for it to matter.

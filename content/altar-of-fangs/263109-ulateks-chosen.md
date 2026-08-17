@@ -3,7 +3,7 @@ npcId: 263109
 name: "Ula'tek's Chosen"   # auto
 count: 25   # auto — forces per unit
 
-threat: high
+threat: medium
 role: caster
 
 spells:

@@ -3,28 +3,35 @@ npcId: 137484
 name: "King A'akul"   # auto
 count: 25   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
-threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
-# Applicable CC (auto, from MDT): Taunt
+threat: medium
+role: miniboss
 
 spells:
   - id: 1297918
     name: "Mortal Bleed"   # auto
-    # 100 yd range2.5 sec cast · dispel: bleed
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: bleed · 2.5 sec cast · 100 yd range
+    tag: dispel
+    prio: 1
+    note: "48k a second for 18 sec and -20% healing received. A bleed, and it is also what arms Blood Drain."
   - id: 1297970
     name: "Blood Drain"   # auto
-    # 60 yd range2.5 sec cast
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # 2.5 sec cast · 60 yd range
+    tag: dodge
+    prio: 1
+    note: "165k to any bleeding enemy. Clear the bleed and this cast has nothing to feed on."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Blood Drain only hits players who are bleeding. Dispelling Mortal Bleed is not just damage removed — it takes the follow-up away entirely."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+One unit at 25 forces, and a two-card trick that the dispeller controls.
+
+**Mortal Bleed** does two things: 18 seconds of bleed and **-20% healing received**, which is
+the part a healer notices. **Blood Drain** then deals 165k *to any bleeding enemies* — a
+conditional, not a party-wide.
+
+So the dispel does double duty here. Clearing the bleed removes the damage-over-time, restores
+the healing, and disarms the next cast. There are not many abilities in the pool where one
+global does that much.
+
+Only **Taunt** applies.

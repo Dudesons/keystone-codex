@@ -3,21 +3,24 @@ npcId: 138493
 name: "Minion of Zul"   # auto
 count: 0   # auto — forces per unit
 
-# TO FILL IN: low | medium | high | lethal
+# The Shadow of Zul's variant, immune to every CC MDT lists. Worth no forces.
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss
-role:
+role: add
 
 spells:
   - id: 269935
     name: "Bound by Shadow"   # auto
-    # Instant · dispel: magic
-    # tag: kick | dodge | dispel | tank | soak | ignore
-    tag: todo
-    note:
+    # dispel: magic · Instant
+    tag: dispel
+    prio: 1
+    note: "A 123k absorb and +20% damage — and removing it kills the target outright. Same interaction as the trash variant."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
-trap:
+trap: "Dispelling Bound by Shadow kills it. In an encounter, that is the fastest add clear available."
 ---
 
-<!-- Free prose: positioning, focus order, cooldowns. -->
+The second MDT entry for the Minion of Zul, distinguished from
+[the trash version](#/d/kings-rest/mob/133943) by being immune to every crowd control listed,
+and by having a single placement rather than thirteen.
+
+Same ability, same trick: **Bound by Shadow** kills the minion when it is dispelled.
