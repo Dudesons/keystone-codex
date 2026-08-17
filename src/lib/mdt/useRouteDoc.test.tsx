@@ -526,6 +526,22 @@ describe('Sync and cursors', () => {
     expect(result.current.collab.peers[0].cursor).toBeUndefined()
     unmount()
   })
+
+  it('leaves no timer running when unmounted with no session ever open', () => {
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      // The first call always writes at once (nothing to throttle against yet); the second
+      // lands inside the throttle window and is what schedules the trailing timer — with no
+      // session open at all, let alone one for `closeSession` to have torn down.
+      act(() => result.current.setCursor({ x: 1, y: 1 }))
+      act(() => result.current.setCursor({ x: 2, y: 2 }))
+      unmount()
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('roomName', () => {

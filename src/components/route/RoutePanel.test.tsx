@@ -326,6 +326,9 @@ describe('Collaborative session', () => {
   })
 
   it('shows the room, the peer count and the identity once connected', () => {
+    // `status` and `synced` are independent — a connected socket that hasn't synced is the
+    // very state this task's `synced` field exists to name. This fixture just isn't that case:
+    // it stands for the ordinary run of a session that reached the room and heard back.
     const connected: CollabState = {
       status: 'connected',
       room: 'AB3K9Z',

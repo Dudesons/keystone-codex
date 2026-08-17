@@ -216,6 +216,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   })
 
   const closeSession = useCallback(() => {
+    // A throttled write outlives neither the session it was queued for nor, if none was ever
+    // open, the component itself: `setCursor` schedules this timer regardless of `sessionRef`,
+    // so its cleanup cannot sit behind a guard on `sessionRef` being set.
+    if (cursorRef.current.timer != null) {
+      clearTimeout(cursorRef.current.timer)
+      cursorRef.current.timer = null
+    }
+    cursorRef.current.pending = null
+
     const open = sessionRef.current
     if (!open) return
     // Unsubscribe before destroying. Tearing a provider down emits one last awareness change,
@@ -224,14 +233,6 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     open.detach()
     open.provider.destroy()
     sessionRef.current = null
-
-    // A throttled write belongs to the session that scheduled it. One still pending when that
-    // session closes must not land on whatever session opens next.
-    if (cursorRef.current.timer != null) {
-      clearTimeout(cursorRef.current.timer)
-      cursorRef.current.timer = null
-    }
-    cursorRef.current.pending = null
   }, [])
 
   useEffect(() => () => closeSession(), [closeSession])
