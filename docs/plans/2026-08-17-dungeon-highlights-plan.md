@@ -39,6 +39,11 @@ so both pages share it. No new generated data, no network, no new runtime depend
   End every commit message with:
   `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
 - Run one test file with `npx vitest run <path>`; the whole suite with `npm test`.
+- **`npm test` is no longer the whole story.** `npm run test:e2e` runs the Playwright suite in
+  a real Chromium, starting its own `vite preview` and `wrangler dev`; `e2e/**` is excluded
+  from the Vitest projects. CI gates on both, so a green `npm test` alone is not evidence that
+  Task 5 is done. Reading its failures requires redirecting to a file
+  (`npm run test:e2e > out.txt`) — see the note at the end of `CLAUDE.md`.
 
 ---
 
@@ -963,6 +968,8 @@ After this task the app is navigable end to end, with the three content blocks s
 - Modify: `src/components/route/RoutePanel.test.tsx:554-560`
 - Modify: `src/routes/DungeonPage.tsx:170,261,282` (the `navigate` calls)
 - Modify: `src/routes/DungeonPage.test.tsx:70-79` (the router table)
+- Modify: `e2e/fixtures.ts:58,70` and `e2e/session.spec.ts:38,102` (the Playwright suite hard-codes
+  the address this task moves)
 
 **Interfaces:**
 - Consumes: `DungeonHeader` (Task 4), `getHighlights` (Tasks 2–3), `getLookup`.
@@ -1189,7 +1196,49 @@ grep -n '/d/\${SLUG}\|/d/altar-of-fangs' src/routes/DungeonPage.test.tsx | grep 
 
 Expected: no output. Any line that comes back is one the sweep missed.
 
-- [ ] **Step 8: Run the affected files**
+- [ ] **Step 8: Move the four addresses the Playwright suite hard-codes**
+
+The end-to-end suite drives the real build in a real browser, so it holds the same addresses the
+code does. Four sites, all of them the map:
+
+In `e2e/fixtures.ts`, in `openSession` (line 58):
+
+```ts
+  await page.goto(`./#/d/${slug}/map`)
+```
+
+In `e2e/fixtures.ts`, in `acceptInvitation` (line 70):
+
+```ts
+  await page.goto(`./#/d/${slug}/map?room=${room}`)
+```
+
+In `e2e/session.spec.ts`, the share-link assertion (line 38):
+
+```ts
+  expect(link).toMatch(new RegExp(`^${reEscape(APP)}#/d/${slug}/map\\?room=[A-HJ-NP-Z2-9]{6}$`))
+```
+
+In `e2e/session.spec.ts`, the local-route scenario (line 102):
+
+```ts
+  await page.goto(`./#/d/${slug}/map`)
+```
+
+**Leave two sites alone.** `firstDungeonSlug` (`e2e/fixtures.ts:36-40`) and the smoke test
+(`e2e/smoke.spec.ts:16`) both read the dungeon link off the home page, which still points at
+`#/d/<slug>` — now the briefing. `firstDungeonSlug` only extracts the slug from it, so it keeps
+working, and the smoke test asserts the link exists, not where it leads.
+
+Check nothing was missed:
+
+```bash
+grep -rn '#/d/' e2e/ | grep -v '/map' | grep -v 'href\*='
+```
+
+Expected: only the `firstDungeonSlug` regex line, which matches on `#\/d\/` to parse a slug.
+
+- [ ] **Step 9: Run the affected unit and integration files**
 
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH" && npx vitest run src/routes/HighlightsPage.test.tsx src/routes/DungeonPage.test.tsx src/components/route/RoutePanel.test.tsx
@@ -1197,22 +1246,36 @@ export PATH="/c/Program Files/nodejs:$PATH" && npx vitest run src/routes/Highlig
 
 Expected: PASS.
 
-- [ ] **Step 9: Run everything**
+- [ ] **Step 10: Run everything, including the browser suite**
 
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH" && npm test && npm run typecheck
 ```
 
-- [ ] **Step 10: Commit**
+```bash
+export PATH="/c/Program Files/nodejs:$PATH" && npm run test:e2e > e2e-out.txt 2>&1; tail -40 e2e-out.txt
+```
+
+Expected: all scenarios pass. This is the task that moves the addresses, so this is the task
+where the end-to-end suite is the evidence — do not skip it and do not report Task 5 complete on
+`npm test` alone. Delete `e2e-out.txt` afterwards by overwriting it with the Write tool (`rm` is
+denied), or leave it: `.gitignore` may already cover it — check before committing.
+
+If Playwright reports its browsers are not installed, stop and tell RwlRwlRwlRwl rather than
+running an install command on their machine.
+
+- [ ] **Step 11: Commit**
 
 ```bash
-git add src/routes/HighlightsPage.tsx src/routes/HighlightsPage.test.tsx src/App.tsx src/routes/DungeonPage.tsx src/routes/DungeonPage.test.tsx src/components/route/RoutePanel.tsx src/components/route/RoutePanel.test.tsx src/lib/i18n/en.ts src/lib/i18n/fr.ts
+git add src/routes/HighlightsPage.tsx src/routes/HighlightsPage.test.tsx src/App.tsx src/routes/DungeonPage.tsx src/routes/DungeonPage.test.tsx src/components/route/RoutePanel.tsx src/components/route/RoutePanel.test.tsx src/lib/i18n/en.ts src/lib/i18n/fr.ts e2e/fixtures.ts e2e/session.spec.ts
 ```
 
 ```bash
 git commit -m "Land on a dungeon's briefing, and move the map under it" -m "Clicking a dungeon opened the map and the codex, which answers \"where is everything\" before anyone has asked \"what kills us here\". The briefing takes the landing address and the map moves to /d/:slug/map.
 
-No redirect is written for the old addresses: the app has no users, and a compatibility layer nobody can ever prove is unused would outlive the reason it was added. sessionLink is the exception and had to move with them — it is the one place the code itself hands out an address, so leaving it stale would break sessions created after this change, not only before it." -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+No redirect is written for the old addresses: the app has no users, and a compatibility layer nobody can ever prove is unused would outlive the reason it was added. sessionLink is the exception and had to move with them — it is the one place the code itself hands out an address, so leaving it stale would break sessions created after this change, not only before it.
+
+The Playwright suite moves too, at the four sites that name the map. The two that read the dungeon link off the home page stay as they are: that link still points at /d/:slug, which is now the briefing, and neither of them cares where it leads." -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -1826,15 +1889,19 @@ The order comes from the derivation, which falls back to mdtIdx and takes the de
 
 ## Verification, after Task 8
 
-Browser verification of this project is unavailable: `.claude/launch.json` sets
-`runtimeExecutable: "npm"` and `preview_start` does not inherit the PATH prefix, so it fails
-with `Command not found: npm`. **Do not hardcode a machine's node path into the committed
-`launch.json`.** Verify through the suite instead, and say plainly that the page was not opened
-in a browser.
-
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH" && npm test && npm run typecheck && npm run build
 ```
+
+```bash
+export PATH="/c/Program Files/nodejs:$PATH" && npm run test:e2e > e2e-out.txt 2>&1; tail -40 e2e-out.txt
+```
+
+The Browser pane is still no help here — `.claude/launch.json` sets
+`runtimeExecutable: "npm"` and `preview_start` does not inherit the PATH prefix, so it fails
+with `Command not found: npm`. **Do not hardcode a machine's node path into the committed
+`launch.json`.** Playwright is the door to a real browser on this project; use it, and say
+plainly that nobody has *looked* at the page.
 
 RwlRwlRwlRwl runs `npm run dev` to look at it. What is worth their eyes and no test's:
 
