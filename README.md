@@ -112,18 +112,51 @@ network provider to it. Changes go through intent operations ("add this pack to 
 rather than a wholesale replacement, which lets two people edit different pulls without
 overwriting each other.
 
-*Open a session* generates a six-character code to read out on Discord; *Join* leaves the
-local route behind and takes the room's — a guest starts from an empty document, so that
-nothing of its own can be arbitrated against what the room already holds.
+The "Edit together" box asks for your name first — it stays empty until you type one, and
+*Open a session* / *Join* stay disabled until it is filled in. Once set, it is remembered for
+next time, but you can still change it mid-session; everyone else sees the update without a
+reconnect. The name travels as typed, in whichever language you wrote it.
 
-Sessions meet on a WebSocket relay, `wss://demos.yjs.dev/ws` by default. That is the weak
-point of the setup: it is someone else's demo server, kept here because every public
-signaling server the earlier WebRTC transport relied on has gone dark. It can be changed
-without touching the code, and hosting the relay yourself is the durable answer:
+*Open a session* generates a six-character code, shown next to a link
+(`…#/d/<dungeon>?room=<code>`) that carries the same room — read the code out on Discord, or
+just paste the link. *Join* takes either. Opening a link by itself connects nothing: it loads
+the dungeon in route mode and shows a card asking whether to join, so nobody is pulled into a
+session by clicking a link someone else posted; reloading that link asks again rather than
+reconnecting on its own.
+
+Joining sets your local route aside rather than replacing it — you pick it back up on leaving
+the room, or the next time you open the dungeon if you closed the tab first. Moving from one
+room to another leaves it exactly where it was. A host has nothing set aside: its document
+*is* the room, there and after everyone else leaves.
+
+Every participant's cursor is drawn on the map, as an arrow and a name pill; yours is not
+drawn a second time. Positions are shared in the map's own coordinates, so two people zoomed
+in differently still point at the same mob.
+
+Sessions meet on a WebSocket relay, chosen with `VITE_COLLAB_URL`. The default,
+`wss://demos.yjs.dev/ws`, **was decommissioned on 2026-08-17**: it still answers plain HTTPS
+requests but refuses the WebSocket upgrade, so collaboration does not work against it as
+shipped. For local development, put your own relay's address in `.env.local` (already
+ignored by git):
 
 ```bash
-VITE_COLLAB_URL=wss://my-server npm run build
+VITE_COLLAB_URL=ws://localhost:1234
 ```
+
+and run one with:
+
+```bash
+npx -y y-websocket@2.1.0
+```
+
+Pin that version — `y-websocket@3.1.0` is client-only and ships no server binary, so a plain
+`npx y-websocket` fails with "could not determine executable to run". Where a relay should
+live for everyone else, rather than on your own machine, is not decided yet.
+
+While a join is waiting on the relay, the panel says so instead of showing an empty route; if
+five seconds pass with no answer, a notice appears on the map saying the relay is not
+answering and that your local route is safe, with a button to leave. It clears itself if the
+sync lands late.
 
 ## Tests
 
