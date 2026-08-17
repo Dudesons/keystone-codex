@@ -4,17 +4,26 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as encoding from 'lib0/encoding'
+import * as syncProtocol from 'y-protocols/sync'
+import { Awareness } from 'y-protocols/awareness'
+import { messageSync } from 'y-websocket'
+import * as Y from 'yjs'
 import { cloneKey, getLookup } from '../data'
+import type { Peer } from '../collab/presence'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
 import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
 
 /**
- * A socket that never opens.
+ * A socket that never opens on its own.
  *
  * jsdom would dial the real relay, which no test may depend on. Replacing the socket leaves
  * the whole session lifecycle — join, leave, rejoin — running for real, and that lifecycle is
- * exactly where the bugs were.
+ * exactly where the bugs were. Every instance is recorded: a test that needs the relay to
+ * answer can reach into the socket the provider actually created and drive its
+ * `onopen`/`onmessage` by hand, so the response is processed by the library's own message
+ * handling rather than by setting `provider.synced` directly.
  *
  * The provider also reaches other tabs of the same origin through `BroadcastChannel`, and does
  * not appear to leave that channel synchronously on `destroy()`. Two `describe` blocks that
@@ -30,18 +39,34 @@ class SilentSocket {
   readonly OPEN = 1
   readonly CLOSING = 2
   readonly CLOSED = 3
+  static instances: SilentSocket[] = []
   readyState = 0
   binaryType = 'blob'
   onopen: (() => void) | null = null
   onclose: (() => void) | null = null
   onerror: (() => void) | null = null
-  onmessage: ((event: unknown) => void) | null = null
-  constructor(readonly url: string) {}
+  onmessage: ((event: { data: Uint8Array }) => void) | null = null
+  constructor(readonly url: string) {
+    SilentSocket.instances.push(this)
+  }
   send() {}
   close() {
     this.readyState = this.CLOSED
     this.onclose?.()
   }
+}
+
+/**
+ * The frame a relay sends back once it has caught a client up: the outer `messageSync`
+ * envelope `y-websocket` reads first, wrapping the `y-protocols/sync` reply that flips
+ * `provider.synced` to `true`. Built with the same primitives the provider itself uses, from
+ * an unrelated empty document — its content is irrelevant, only its message type is under test.
+ */
+function relaySyncStep2(): Uint8Array {
+  const encoder = encoding.createEncoder()
+  encoding.writeVarUint(encoder, messageSync)
+  syncProtocol.writeSyncStep2(encoder, new Y.Doc())
+  return encoding.toUint8Array(encoder)
 }
 
 beforeAll(() => {
@@ -63,6 +88,13 @@ const keysOf = (clones: { enemyIdx: number; cloneIdx: number }[]) =>
   clones.map((c) => cloneKey(c.enemyIdx, c.cloneIdx)).sort()
 
 const firstPullKeys = (route: Route) => keysOf(route.pulls[0].clones)
+
+/**
+ * `readPeers` sorts by client id, which is random, so "self" is never reliably the first
+ * entry once a room holds more than one participant — only tests that stay solo can get away
+ * with `peers[0]`.
+ */
+const self = (peers: Peer[]) => peers.find((p) => p.isSelf)!
 
 /** A genuine MDT string, produced by the repo's own codec from a real route. */
 function mdtString(pulls: Route['pulls'], name = 'Imported route'): string {
@@ -358,6 +390,20 @@ describe('Sessions', () => {
     unmount()
   })
 
+  it('destroys the awareness instance when a session ends, not just the socket', () => {
+    // `WebsocketProvider.destroy()` clears its own timers but not its `Awareness`'s — that
+    // object runs a ~3s heartbeat interval of its own (`y-protocols/awareness.js`) that
+    // outlives the provider unless something destroys it too.
+    const destroySpy = vi.spyOn(Awareness.prototype, 'destroy')
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+    act(() => result.current.leaveRoom())
+
+    expect(destroySpy).toHaveBeenCalled()
+    destroySpy.mockRestore()
+    unmount()
+  })
+
   it('rejoins the room it just left', () => {
     const { result, unmount } = mount()
     act(() => result.current.joinRoom('ABCDEF', 'host'))
@@ -503,10 +549,38 @@ describe('Sync and cursors', () => {
     unmount()
   })
 
+  it('marks the session synced once the relay answers with the room state', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ZZZZZZ', 'guest'))
+    expect(result.current.collab.synced).toBe(false)
+
+    // Drive the socket the provider actually created, the way a relay would: open the
+    // connection, then answer with a sync step 2 frame. `provider.synced` only flips through
+    // this exact message being decoded — see `y-websocket/src/y-websocket.js:44` — so there is
+    // no shortcut that does not also exercise that decoding.
+    //
+    // The open and the answer are driven in separate `act()` calls on purpose: coalesced into
+    // one, React would only read `provider.synced` once, at the end of the batch — by which
+    // time the answer has already landed — and the assertion would pass whether or not the
+    // provider's `sync` event is even wired up. Committing the "open, not yet synced" state
+    // first is what forces the later flip to come from that event.
+    const socket = SilentSocket.instances.at(-1)!
+    act(() => {
+      socket.readyState = SilentSocket.OPEN
+      socket.onopen?.()
+    })
+    expect(result.current.collab.status).toBe('connected')
+    expect(result.current.collab.synced).toBe(false)
+
+    act(() => socket.onmessage?.({ data: relaySyncStep2() }))
+    expect(result.current.collab.synced).toBe(true)
+    unmount()
+  })
+
   it('reports no cursor before anyone has moved', () => {
     const { result, unmount } = mount()
     act(() => result.current.joinRoom('ZZZZZZ', 'host'))
-    expect(result.current.collab.peers[0].cursor).toBeUndefined()
+    expect(self(result.current.collab.peers).cursor).toBeUndefined()
     unmount()
   })
 

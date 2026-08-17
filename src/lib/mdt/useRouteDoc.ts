@@ -241,6 +241,9 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     // room and no provider behind it, which is a session you can neither leave nor rejoin.
     open.detach()
     open.provider.destroy()
+    // `provider.destroy()` clears its own timers but leaves its `Awareness` running: that
+    // object keeps a ~3s heartbeat interval of its own until destroyed separately.
+    open.provider.awareness.destroy()
     sessionRef.current = null
   }, [])
 
