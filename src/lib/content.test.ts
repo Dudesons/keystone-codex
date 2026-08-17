@@ -1,9 +1,9 @@
 // ABOUTME: Tests the loading and merging of content/**.md against the real files.
-// ABOUTME: Covers a written entry, an untouched stub, the bilingual pair, and the fallback.
+// ABOUTME: Covers a written entry, a stub, the bilingual pair, the fallback, and annotated ids.
 
 import { describe, expect, it } from 'vitest'
 import { ROLES, contentProgress, getDungeonContent, getMobContent, isRole } from './content'
-import { dungeonList, getDungeon } from './data'
+import { dungeonList, getDungeon, getLookup } from './data'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
@@ -181,6 +181,52 @@ describe('Falling back to the base language', () => {
 
   it('fabricates nothing for a mob with no file at all', () => {
     expect(getMobContent(SLUG, NO_ENTRY, 'fr')).toBeUndefined()
+  })
+})
+
+/**
+ * Every annotated spell id must be one MDT attaches to that mob.
+ *
+ * `getIndicators` and `MobCard` both iterate `enemy.spells` and look each id up among the
+ * notes, never the reverse. An annotation whose id is absent from that list therefore renders
+ * nowhere at all — no row, no note, no tag, no priority. It is not a degraded display but
+ * silent dead content, and nothing else in the suite would notice it.
+ *
+ * This sweep can only go red because of a commit in this repository: `src/data/generated/` is
+ * versioned and CI runs no extraction, so the spell lists never move on their own. Either an
+ * entry names an id the data does not carry, or a `npm run data` refresh moved a spell out
+ * from under a written note. Both are for a human to resolve, and this is when to say so.
+ *
+ * It deliberately does not require the converse: a spell MDT lists and nobody annotated is
+ * the normal state of an unwritten codex, and it still renders from the MDT data alone.
+ */
+describe('Annotated spell ids', () => {
+  // Keyed by dungeon, mob and id, so a note a translation inherits from its base is reported
+  // once rather than once per language.
+  const orphans = new Map<string, string>()
+
+  for (const summary of dungeonList) {
+    const lookup = getLookup(summary.slug)
+    if (!lookup) continue
+    for (const enemy of lookup.dungeon.enemies) {
+      const known = new Set(enemy.spells.map((s) => s.id))
+      // Both locales: a translation can carry a note the base never had, and merging is by id.
+      for (const locale of ['en', 'fr'] as const) {
+        for (const note of getMobContent(summary.slug, enemy.id, locale)?.spells ?? []) {
+          if (known.has(Number(note.id))) continue
+          orphans.set(
+            `${summary.slug}/${enemy.id}/${note.id}`,
+            `content/${summary.slug}/${enemy.id}-* annotates ${note.id}` +
+              ` (tag: ${note.tag ?? 'none'}), which MDT does not list for ${enemy.name}.` +
+              ` It lists: ${[...known].join(', ')}`,
+          )
+        }
+      }
+    }
+  }
+
+  it('are all spells MDT attaches to that mob, so every note reaches the card', () => {
+    expect([...orphans.values()]).toEqual([])
   })
 })
 
