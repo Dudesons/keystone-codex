@@ -10,6 +10,13 @@ export default defineWorkersProject({
     poolOptions: {
       workers: {
         wrangler: { configPath: './wrangler.toml' },
+        // Cloudflare's Vitest integration documents WebSockets with Durable Objects as
+        // unsupported under per-file storage isolation (it crashes the runner trying to tear
+        // down a Durable Object's storage while a socket is still open). `singleWorker` and
+        // `isolatedStorage: false` together are the documented workaround: one worker, storage
+        // shared across tests. Do not "tidy" these away — the relay's tests open real sockets.
+        singleWorker: true,
+        isolatedStorage: false,
       },
     },
   },
