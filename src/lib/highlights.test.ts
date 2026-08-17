@@ -72,3 +72,51 @@ describe('getHighlights mobs', () => {
     expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [] })
   })
 })
+
+describe('getHighlights traps', () => {
+  it('collects the written trap sentences, rendered as inline HTML', () => {
+    const traps = getHighlights(ALTAR).traps
+    expect(traps.length).toBeGreaterThan(0)
+    const twinfang = traps.find((t) => t.npcId === TWINFANG)!
+    expect(twinfang.mobName).toBe('Twinfang Harrower')
+    expect(twinfang.html).toContain('Duostrike')
+    // Inline markdown: emphasis becomes a tag, and no <p> wrapper fights the layout.
+    expect(twinfang.html).not.toContain('<p>')
+  })
+
+  it('leaves the bosses out: their trap is on their own card', () => {
+    const bossIds = new Set(
+      getLookup(ALTAR)!.dungeon.enemies.filter((e) => e.isBoss).map((e) => e.id),
+    )
+    for (const trap of getHighlights(ALTAR).traps) expect(bossIds.has(trap.npcId)).toBe(false)
+  })
+
+  it('puts the most dangerous first', () => {
+    const rank = { lethal: 0, high: 1, medium: 2, low: 3 } as Record<string, number>
+    const ranks = getHighlights(ALTAR).traps.map((t) => (t.threat ? rank[t.threat] : 4))
+    expect([...ranks].sort((a, b) => a - b)).toEqual(ranks)
+  })
+})
+
+describe('getHighlights bosses', () => {
+  it('follows mdtIdx where no order is declared', () => {
+    expect(getHighlights(ALTAR).bosses.map((b) => b.name)).toEqual([
+      "Rav'i",
+      'The Writhing Coil',
+      "Zul'jan",
+    ])
+  })
+
+  it('follows the declared order where there is one', () => {
+    // King's Rest declares it because mdtIdx puts King Dazar, its last boss, third.
+    expect(getHighlights('kings-rest').bosses.map((b) => b.npcId)).toEqual([
+      135322, 134993, 269808, 269810, 269811, 136160,
+    ])
+  })
+
+  it('gives each boss its trap and its own prio-1 spells', () => {
+    const ravi = getHighlights(ALTAR).bosses.find((b) => b.npcId === 259445)!
+    expect(ravi.spells.length).toBeGreaterThan(0)
+    expect(ravi.displayId).toBeTypeOf('number')
+  })
+})

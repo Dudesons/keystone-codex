@@ -15,7 +15,7 @@
 
 import type { Enemy } from './types'
 import { getLookup, getSpell } from './data'
-import { getMobContent, type SpellTag, type Threat } from './content'
+import { getDungeonContent, getMobContent, inlineMarkdown, type SpellTag, type Threat } from './content'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 
 /** One chip on a mob's row. Several ids can carry one name; the chip is the name. */
@@ -110,6 +110,20 @@ function chipsOf(slug: string, enemy: Enemy, locale: Locale): HighlightSpell[] {
   return [...byName.values()]
 }
 
+/**
+ * Boss order.
+ *
+ * `encounterID` groups nothing usable — the three bosses of Altar of Fangs all report 2880 —
+ * so `mdtIdx` is the fallback, and a dungeon that knows better says so in `_dungeon.md`.
+ * Ids the declaration does not mention keep their `mdtIdx` place at the end, so a partial or
+ * stale list degrades to the fallback instead of hiding a boss.
+ */
+function orderBosses(bosses: HighlightMob[], byIdx: number[], declared?: number[]): HighlightMob[] {
+  const position = new Map(byIdx.map((id, i) => [id, i]))
+  if (declared) declared.forEach((id, i) => position.set(id, i - declared.length))
+  return [...bosses].sort((a, b) => (position.get(a.npcId) ?? 0) - (position.get(b.npcId) ?? 0))
+}
+
 const EMPTY: DungeonHighlights = { mobs: [], traps: [], bosses: [] }
 
 // Keyed by locale, like `indicators.ts`: the chip names, and therefore the alphabetical
@@ -128,27 +142,61 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
   }
 
   const mobs: HighlightMob[] = []
+  const traps: HighlightTrap[] = []
+  const bosses: HighlightMob[] = []
+  const bossOrder: number[] = []
 
   // `enemyById` is already unique per NPC: the same mob appears several times in
   // `dungeon.enemies` as variants, and the codex writes it one card, not one per variant.
   for (const enemy of lookup.enemyById.values()) {
-    if (enemy.isBoss) continue
-    const spells = chipsOf(slug, enemy, locale)
-    if (!spells.length) continue
     const content = getMobContent(slug, enemy.id, locale)
-    mobs.push({
-      npcId: enemy.id,
-      name: enemy.name,
-      displayId: enemy.displayId,
-      threat: content?.threat,
-      role: content?.role,
-      spells,
-    })
+    const spells = chipsOf(slug, enemy, locale)
+
+    if (enemy.isBoss) {
+      bossOrder.push(enemy.id)
+      bosses.push({
+        npcId: enemy.id,
+        name: enemy.name,
+        displayId: enemy.displayId,
+        threat: content?.threat,
+        role: content?.role,
+        trapHtml: inlineMarkdown(content?.trap) || undefined,
+        spells,
+      })
+      continue
+    }
+
+    if (spells.length) {
+      mobs.push({
+        npcId: enemy.id,
+        name: enemy.name,
+        displayId: enemy.displayId,
+        threat: content?.threat,
+        role: content?.role,
+        spells,
+      })
+    }
+
+    if (content?.trap) {
+      traps.push({
+        npcId: enemy.id,
+        mobName: enemy.name,
+        threat: content.threat,
+        html: inlineMarkdown(content.trap),
+      })
+    }
   }
 
   mobs.sort((a, b) => rankOf(a.threat) - rankOf(b.threat) || a.name.localeCompare(b.name, locale))
+  traps.sort(
+    (a, b) => rankOf(a.threat) - rankOf(b.threat) || a.mobName.localeCompare(b.mobName, locale),
+  )
 
-  const highlights: DungeonHighlights = { mobs, traps: [], bosses: [] }
+  const highlights: DungeonHighlights = {
+    mobs,
+    traps,
+    bosses: orderBosses(bosses, bossOrder, getDungeonContent(slug, locale)?.bosses),
+  }
   cache.set(key, highlights)
   return highlights
 }
