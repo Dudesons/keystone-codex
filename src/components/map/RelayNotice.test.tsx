@@ -32,6 +32,20 @@ describe('RelayNotice', () => {
     }
   })
 
+  it('clears itself once a late sync lands, the way y-websocket catches up on its own', () => {
+    vi.useFakeTimers()
+    try {
+      const { rerender } = renderEn(<RelayNotice stalled onLeave={() => {}} />)
+      act(() => void vi.advanceTimersByTime(5000))
+      expect(screen.getByText(/not answering/i)).toBeDefined()
+
+      rerender(<RelayNotice stalled={false} onLeave={() => {}} />)
+      expect(screen.queryByText(/not answering/i)).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('says nothing at all while the session is healthy', () => {
     vi.useFakeTimers()
     try {
