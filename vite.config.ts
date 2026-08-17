@@ -17,7 +17,7 @@ export default defineConfig({
           // A git worktree may sit under .claude/; its copies of every test file would
           // otherwise run beside the real ones, against a frozen checkout. `relay/` is
           // excluded here because it belongs to the project below, which runs in workerd.
-          exclude: [...configDefaults.exclude, '.claude/**', 'relay/**'],
+          exclude: [...configDefaults.exclude, '.claude/**', 'relay/**', 'e2e/**'],
         },
       },
       './relay/vitest.config.ts',
