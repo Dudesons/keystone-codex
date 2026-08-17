@@ -149,7 +149,6 @@ export default function DungeonMap({
   }
 
   const handleCloneClick = (ref: CloneRef, e: React.MouseEvent) => {
-    if (drag.current?.moved) return
     e.stopPropagation()
     onCloneClick?.(ref, e.ctrlKey || e.metaKey)
   }
