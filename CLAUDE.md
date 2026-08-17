@@ -260,20 +260,22 @@ matches an accessible name as a case-insensitive substring by default, so
 `getByRole('button', { name: 'Route' })` also matched "Open a session with this route" and
 failed strict mode — `exact: true` was needed on that locator.
 
-**The suite's own output is not pristine, and that is recorded rather than hidden.** A run with
-two or more tests that open a collaboration session prints a line from the relay partway
+**The suite's own output is not pristine, and that is recorded rather than hidden.** On some
+runs with two or more tests that open a collaboration session, the relay prints a line partway
 through the run — not at shutdown — that reads roughly:
 
 ```
 [WebServer] X [ERROR] Uncaught Error: internal error; reference = <id>
 ```
 
-It appears between tests while every one of them still passes, and it coincides with a browser
-context closing — a socket closing abruptly, exactly like a real tab being closed. It has not
-been diagnosed: it lives in `relay/src/index.js`, outside the plan that added this suite, and is
-recorded here as an open question, not an explained one. A run with zero or one session-opening
-test stays clean. Seeing the line requires redirecting the run's output to a file
-(`npm run test:e2e > out.txt`); piping it into `grep` or `tail` can lose it.
+It is **absent from most runs** — the full suite ran clean four times in a row — and has not
+been reproduced on demand, so its absence is not a sign the line was fixed or this paragraph
+gone stale. When it does show up, every test around it still passes, and it coincides with a
+browser context closing — a socket closing abruptly, exactly like a real tab being closed. It
+has not been diagnosed: it lives in `relay/src/index.js`, outside the plan that added this
+suite, and is recorded here as an open question, not an explained one. Seeing it (when it
+happens) requires redirecting the run's output to a file (`npm run test:e2e > out.txt`);
+piping it into `grep` or `tail` can lose it.
 
 **Not covered by this suite:** the five-minute idle pause. Browsers throttle a hidden tab's
 timers, which would make that timing unreliable to assert on in a real one; it stays a jsdom
