@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cloneKey, getLookup } from '../data'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
@@ -474,6 +474,56 @@ describe('Identity', () => {
     act(() => result.current.joinRoom('AAAAAA', 'host'))
     act(() => result.current.setIdentity('RwlRwl'))
     expect(result.current.collab.peers.map((p) => p.name)).toEqual(['RwlRwl'])
+    unmount()
+  })
+})
+
+describe('Sync and cursors', () => {
+  it('does not claim to be synced before the room has answered', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ZZZZZZ', 'guest'))
+    expect(result.current.collab.synced).toBe(false)
+    unmount()
+  })
+
+  it('reports no cursor before anyone has moved', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ZZZZZZ', 'host'))
+    expect(result.current.collab.peers[0].cursor).toBeUndefined()
+    unmount()
+  })
+
+  it('shares the first move at once', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ZZZZZZ', 'host'))
+    act(() => result.current.setCursor({ x: 100, y: 200 }))
+    expect(result.current.collab.peers[0].cursor).toEqual({ x: 100, y: 200 })
+    unmount()
+  })
+
+  it('holds back a flood of moves, then sends the last one', () => {
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      act(() => result.current.joinRoom('ZZZZZZ', 'host'))
+      act(() => result.current.setCursor({ x: 1, y: 1 }))
+      for (let i = 2; i <= 40; i++) act(() => result.current.setCursor({ x: i, y: i }))
+
+      expect(result.current.collab.peers[0].cursor).toEqual({ x: 1, y: 1 })
+      act(() => void vi.advanceTimersByTime(60))
+      expect(result.current.collab.peers[0].cursor).toEqual({ x: 40, y: 40 })
+      unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('drops the cursor at once when the pointer leaves the map', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ZZZZZZ', 'host'))
+    act(() => result.current.setCursor({ x: 100, y: 200 }))
+    act(() => result.current.setCursor(null))
+    expect(result.current.collab.peers[0].cursor).toBeUndefined()
     unmount()
   })
 })

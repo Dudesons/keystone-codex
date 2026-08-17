@@ -16,6 +16,7 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import type { CloneRef } from '../types'
 import { cloneKey } from '../data'
+import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
@@ -48,6 +49,14 @@ const stashKey = (slug: string) => `${storageKey(slug)}:stashed`
 export const roomName = (slug: string, code: string) => `midnight-codex:${slug}:${code}`
 
 export type CollabStatus = 'off' | 'connecting' | 'connected'
+
+/**
+ * How often a cursor is allowed on the wire.
+ *
+ * A pointer fires sixty times a second. Twenty is already past what an eye resolves in a
+ * moving arrow, and the other forty would be a relay's bandwidth spent on nothing.
+ */
+const CURSOR_INTERVAL_MS = 50
 
 interface PullShape {
   color: string
@@ -137,6 +146,8 @@ export interface CollabState {
   /** Participants, yourself included. */
   peers: Peer[]
   identity: string | null
+  /** Whether the provider has received the room's state at least once, not merely opened a socket. */
+  synced: boolean
 }
 
 /**
@@ -194,7 +205,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     room: null,
     peers: [],
     identity: storedIdentity(),
+    synced: false,
   }))
+
+  /** Throttles cursor writes: at most one every `CURSOR_INTERVAL_MS`, always the latest. */
+  const cursorRef = useRef<{ last: number; pending: Point | null; timer: ReturnType<typeof setTimeout> | null }>({
+    last: 0,
+    pending: null,
+    timer: null,
+  })
 
   const closeSession = useCallback(() => {
     const open = sessionRef.current
@@ -205,6 +224,14 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     open.detach()
     open.provider.destroy()
     sessionRef.current = null
+
+    // A throttled write belongs to the session that scheduled it. One still pending when that
+    // session closes must not land on whatever session opens next.
+    if (cursorRef.current.timer != null) {
+      clearTimeout(cursorRef.current.timer)
+      cursorRef.current.timer = null
+    }
+    cursorRef.current.pending = null
   }, [])
 
   useEffect(() => () => closeSession(), [closeSession])
@@ -354,20 +381,23 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           // The socket, not an intention. The previous reading was true as soon as a room
           // existed, so a session whose relay never answered still called itself connected.
           status: provider.wsconnected ? 'connected' : 'connecting',
+          synced: provider.synced,
           peers: readPeers(provider.awareness.getStates(), provider.awareness.clientID),
         }))
 
       provider.awareness.on('change', update)
       provider.on('status', update)
+      provider.on('sync', update)
       sessionRef.current = {
         provider,
         detach: () => {
           provider.awareness.off('change', update)
           provider.off('status', update)
+          provider.off('sync', update)
         },
       }
 
-      setCollab((c) => ({ ...c, status: 'connecting', room }))
+      setCollab((c) => ({ ...c, status: 'connecting', room, synced: false }))
       update()
     },
     [doc, slug, collab.identity, collab.status, closeSession],
@@ -387,8 +417,42 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       }
       localStorage.removeItem(stashKey(slug))
     }
-    setCollab((c) => ({ ...c, status: 'off', room: null, peers: [] }))
+    setCollab((c) => ({ ...c, status: 'off', room: null, peers: [], synced: false }))
   }, [closeSession, slug])
+
+  const setCursor = useCallback((point: Point | null) => {
+    const state = cursorRef.current
+    const write = (value: Point | null) => {
+      // Read the provider at the moment of writing, never through a closure: a throttled write
+      // can land after the session it belonged to was torn down.
+      sessionRef.current?.provider.awareness.setLocalStateField('cursor', value)
+    }
+
+    // Leaving the map is not throttled. A cursor that lingers where its owner no longer is says
+    // something false, and says it for as long as nobody moves.
+    if (point === null) {
+      state.pending = null
+      write(null)
+      return
+    }
+
+    const wait = CURSOR_INTERVAL_MS - (Date.now() - state.last)
+    if (wait <= 0) {
+      state.last = Date.now()
+      write(point)
+      return
+    }
+
+    state.pending = point
+    if (state.timer == null) {
+      state.timer = setTimeout(() => {
+        state.timer = null
+        state.last = Date.now()
+        if (state.pending) write(state.pending)
+        state.pending = null
+      }, wait)
+    }
+  }, [])
 
   const setIdentity = useCallback((name: string) => {
     const trimmed = name.trim()
@@ -397,7 +461,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     sessionRef.current?.provider.awareness.setLocalStateField('user', { name: trimmed })
   }, [])
 
-  return { route, actions, collab, joinRoom, leaveRoom, setIdentity }
+  return { route, actions, collab, joinRoom, leaveRoom, setIdentity, setCursor }
 }
 
 const IDENTITY_KEY = 'midnight-codex:identity'
