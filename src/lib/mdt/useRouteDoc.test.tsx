@@ -782,7 +782,7 @@ describe('An idle session pauses itself', () => {
     unmount()
   })
 
-  it('re-arms its own clock on resume, so a second idle stretch pauses again', () => {
+  it('re-arms its own idle timer on resume, so a second idle stretch pauses again', () => {
     vi.useFakeTimers()
     const { result, unmount } = mount()
     act(() => result.current.joinRoom('PAUSE9', 'host'))

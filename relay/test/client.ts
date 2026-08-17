@@ -122,7 +122,13 @@ export async function connect(room: string): Promise<Client> {
     doc,
     awareness,
     socket,
-    close: () => socket.close(),
+    // Reads `client.socket` rather than closing over the `socket` this function captured at
+    // `connect()` time: `reconnect()` below only ever reassigns `client.socket`, so a `close()`
+    // closed over that separate binding would keep closing the original, already-dead socket
+    // after every reconnect — a no-op — while the live one it replaced stayed open. `client`
+    // itself is stable; only its `socket` property changes, so reading it here at call time is
+    // the one place that can't drift out of sync with `reconnect()`.
+    close: () => client.socket.close(),
     reconnect: async () => {
       unwire()
       /**
