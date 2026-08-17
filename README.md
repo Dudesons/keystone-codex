@@ -119,10 +119,11 @@ reconnect. The name travels as typed, in whichever language you wrote it.
 
 *Open a session* generates a six-character code, shown next to a link
 (`…#/d/<dungeon>?room=<code>`) that carries the same room — read the code out on Discord, or
-just paste the link. *Join* takes either. Opening a link by itself connects nothing: it loads
-the dungeon in route mode and shows a card asking whether to join, so nobody is pulled into a
-session by clicking a link someone else posted; reloading that link asks again rather than
-reconnecting on its own.
+send the link itself. The code field under *Join* only takes the code: it is six characters
+wide and pasting a whole link there just truncates. A link is meant to be opened directly, and
+opening it by itself connects nothing: it loads the dungeon in route mode and shows a card
+asking whether to join, so nobody is pulled into a session by clicking a link someone else
+posted; reloading that link asks again rather than reconnecting on its own.
 
 Joining sets your local route aside rather than replacing it — you pick it back up on leaving
 the room, or the next time you open the dungeon if you closed the tab first. Moving from one
@@ -153,10 +154,10 @@ Pin that version — `y-websocket@3.1.0` is client-only and ships no server bina
 `npx y-websocket` fails with "could not determine executable to run". Where a relay should
 live for everyone else, rather than on your own machine, is not decided yet.
 
-While a join is waiting on the relay, the panel says so instead of showing an empty route; if
-five seconds pass with no answer, a notice appears on the map saying the relay is not
-answering and that your local route is safe, with a button to leave. It clears itself if the
-sync lands late.
+While a join is waiting on the relay, the panel says so alongside the empty pull it seeds in
+the meantime, rather than leaving that empty route to speak for itself; if five seconds pass
+with no answer, a notice appears on the map saying the relay is not answering and that your
+local route is safe, with a button to leave. It clears itself if the sync lands late.
 
 ## Tests
 
