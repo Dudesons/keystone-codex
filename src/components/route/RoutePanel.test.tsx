@@ -52,7 +52,14 @@ const peersOf = (n: number): Peer[] =>
     isSelf: i === 0,
   }))
 
-const offline: CollabState = { status: 'off', room: null, peers: [], identity: 'Player-1234', synced: false }
+const offline: CollabState = {
+  status: 'off',
+  room: null,
+  peers: [],
+  identity: 'Player-1234',
+  synced: false,
+  mode: null,
+}
 
 const routeWith = (packCount: number): Route => ({
   ...emptyRoute(SLUG, MDT_INDEX, 'Test route'),
@@ -339,6 +346,7 @@ describe('Collaborative session', () => {
       peers: peersOf(3),
       identity: 'Player-1234',
       synced: true,
+      mode: 'guest',
     }
     const { container } = mount({ collab: connected })
     const section = within(container.querySelector('.border-threat-low\\/40') as HTMLElement)
@@ -350,7 +358,14 @@ describe('Collaborative session', () => {
 
   it('says it is connecting before the peers answer', () => {
     const { container } = mount({
-      collab: { status: 'connecting', room: 'AB3K9Z', peers: [], identity: 'Player-1234', synced: false },
+      collab: {
+        status: 'connecting',
+        room: 'AB3K9Z',
+        peers: [],
+        identity: 'Player-1234',
+        synced: false,
+        mode: 'guest',
+      },
     })
     expect(container.textContent).toContain('connecting…')
   })
@@ -358,7 +373,14 @@ describe('Collaborative session', () => {
   it('leaves the session', () => {
     let left = false
     mount({
-      collab: { status: 'connected', room: 'AB3K9Z', peers: peersOf(2), identity: 'Player-1234', synced: true },
+      collab: {
+        status: 'connected',
+        room: 'AB3K9Z',
+        peers: peersOf(2),
+        identity: 'Player-1234',
+        synced: true,
+        mode: 'guest',
+      },
       onLeaveRoom: () => {
         left = true
       },
@@ -369,31 +391,35 @@ describe('Collaborative session', () => {
 })
 
 describe('Awaiting the room’s route', () => {
-  // `connected` here stands for a guest whose document has joined the room but not yet
-  // received anything: an empty route (nothing has arrived) mounted with `synced: false`
-  // (the provider hasn't caught up). That pairing is exactly the ambiguity this task removes.
-  const connected = (synced: boolean): CollabState => ({
+  // A guest whose document has joined the room but not yet received anything: an empty route
+  // (nothing has arrived) mounted with `synced: false` (the provider hasn't caught up). That
+  // pairing is exactly the ambiguity this task removes — but only for a guest. A host's
+  // document already is the room's, so the same pairing on a host must never read as the same
+  // ambiguity, however empty its route happens to be.
+  const connected = (mode: 'host' | 'guest', synced: boolean): CollabState => ({
     status: 'connected',
     room: 'AB3K9Z',
     peers: peersOf(2),
     identity: 'Player-1234',
     synced,
+    mode,
   })
 
-  it('says the room’s route is on its way rather than showing an empty one', () => {
-    mount({ route: emptyRoute(SLUG, MDT_INDEX), collab: connected(false) })
+  it('tells a guest the room’s route is on its way rather than showing an empty one', () => {
+    mount({ route: emptyRoute(SLUG, MDT_INDEX), collab: connected('guest', false) })
     expect(screen.getByText(/fetching the room/i)).toBeDefined()
   })
 
   it('shows the route once it has arrived', () => {
-    mount({ route: routeWith(2), collab: connected(true) })
+    mount({ route: routeWith(2), collab: connected('guest', true) })
     expect(screen.queryByText(/fetching the room/i)).toBeNull()
   })
 
-  it('does not tell a host holding its own route that one is coming', () => {
-    // A host's document already is the room's — it never waits on a peer to fill it in, so
-    // an empty `synced` briefly staying false must not be read as the same ambiguity.
-    mount({ route: routeWith(2), collab: connected(false) })
+  it('does not tell a host holding its own empty route that one is coming', () => {
+    // The real distinction is `mode`, not how many clones the route happens to hold: a host
+    // with nothing pulled yet — a normal way to start a session — must not be told a route is
+    // on its way, because there is nothing to fetch. Its document is the room.
+    mount({ route: emptyRoute(SLUG, MDT_INDEX), collab: connected('host', false) })
     expect(screen.queryByText(/fetching the room/i)).toBeNull()
   })
 })
@@ -425,6 +451,7 @@ describe('Choosing a name', () => {
       peers: peersOf(1),
       identity: 'Rwl',
       synced: true,
+      mode: 'host',
     }
     mount({ collab: connected })
     expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('Rwl')
@@ -511,6 +538,7 @@ describe('An invitation carried by a link', () => {
       peers: peersOf(1),
       identity: 'Player-1234',
       synced: true,
+      mode: 'guest',
     }
     mount({ collab: connected })
     expect(screen.getByRole('button', { name: /copy the link/i })).toBeDefined()

@@ -148,6 +148,14 @@ export interface CollabState {
   identity: string | null
   /** Whether the provider has received the room's state at least once, not merely opened a socket. */
   synced: boolean
+  /**
+   * Whether this session opened the room or joined someone else's; `null` outside a session.
+   *
+   * A host's document already is the room's, so it never waits on anyone to fill it in — the
+   * distinction the "fetching the room's route" notice needs, since a route with no clones
+   * yet is otherwise indistinguishable from one that simply hasn't arrived.
+   */
+  mode: 'host' | 'guest' | null
 }
 
 /**
@@ -206,6 +214,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     peers: [],
     identity: storedIdentity(),
     synced: false,
+    mode: null,
   }))
 
   /** Throttles cursor writes: at most one every `CURSOR_INTERVAL_MS`, always the latest. */
@@ -398,7 +407,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
         },
       }
 
-      setCollab((c) => ({ ...c, status: 'connecting', room, synced: false }))
+      setCollab((c) => ({ ...c, status: 'connecting', room, synced: false, mode }))
       update()
     },
     [doc, slug, collab.identity, collab.status, closeSession],
@@ -418,7 +427,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       }
       localStorage.removeItem(stashKey(slug))
     }
-    setCollab((c) => ({ ...c, status: 'off', room: null, peers: [], synced: false }))
+    setCollab((c) => ({ ...c, status: 'off', room: null, peers: [], synced: false, mode: null }))
   }, [closeSession, slug])
 
   const setCursor = useCallback((point: Point | null) => {
