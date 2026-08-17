@@ -40,7 +40,12 @@ export type Role = (typeof ROLES)[number]
 export function isRole(value: unknown): value is Role {
   return typeof value === 'string' && (ROLES as readonly string[]).includes(value)
 }
-export type SpellTag = 'kick' | 'dodge' | 'dispel' | 'tank' | 'soak' | 'ignore' | 'todo'
+/**
+ * `frontal` is narrower than `dodge` on purpose: a cone you leave by not standing in front,
+ * rather than something on the floor to walk out of. It is the only one of these the pull
+ * briefing prints, so the distinction decides what a router reads.
+ */
+export type SpellTag = 'kick' | 'frontal' | 'dodge' | 'dispel' | 'tank' | 'soak' | 'ignore' | 'todo'
 
 export interface SpellNote {
   id: number

@@ -64,6 +64,15 @@ export interface DungeonLookup {
   /** Lone clones (`g` null), each pulled on its own. */
   loners: CloneRef[]
   enemyById: Map<number, Enemy>
+  /**
+   * Whether MDT declares any CC at all for this dungeon.
+   *
+   * A mob's empty `cc` list is ambiguous on its own: it reads the same whether MDT knows the
+   * mob resists everything or simply has nothing on file. The dungeon settles it — MDT fills
+   * CC in per dungeon, so a pool where not one mob declares anything is an unfilled dungeon,
+   * not a pool of universally immune mobs.
+   */
+  hasCcData: boolean
 }
 
 const lookupCache = new Map<string, DungeonLookup>()
@@ -118,7 +127,15 @@ export function getLookup(slug: string): DungeonLookup | undefined {
     })
   }
 
-  const lookup: DungeonLookup = { dungeon, enemyByIdx, enemyById, cloneByKey, packs, loners }
+  const lookup: DungeonLookup = {
+    dungeon,
+    enemyByIdx,
+    enemyById,
+    cloneByKey,
+    packs,
+    loners,
+    hasCcData: dungeon.enemies.some((e) => e.cc.length > 0),
+  }
   lookupCache.set(slug, lookup)
   return lookup
 }

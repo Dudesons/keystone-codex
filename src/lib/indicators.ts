@@ -21,6 +21,11 @@ export interface MobIndicators {
   /** At least one spell to interrupt. */
   kick: boolean
   kickSpells: number[]
+  /**
+   * Spells tagged `frontal`: a cone to leave rather than a patch of floor to walk out of.
+   * Declared by hand, like the tank buster — MDT has no field for it.
+   */
+  frontalSpells: number[]
   /** Dispel types present on its spells (magic, curse, enrage…). */
   dispel: string[]
   /** Big hit on the tank — declared via `tag: tank` in the frontmatter. */
@@ -61,12 +66,14 @@ export function getIndicators(
   const notes = new Map((content?.spells ?? []).map((s) => [Number(s.id), s]))
 
   const kickSpells: number[] = []
+  const frontalSpells: number[] = []
   const dispel = new Set<string>()
 
   for (const spell of enemy.spells) {
     const note = notes.get(spell.id)
     // MDT marks interruptibility explicitly; a manual annotation wins over it.
     if (spell.interruptible || note?.tag === 'kick') kickSpells.push(spell.id)
+    if (note?.tag === 'frontal') frontalSpells.push(spell.id)
     for (const d of spell.dispel ?? []) dispel.add(d)
     // Sits alongside MDT's own dispel types (magic, curse, enrage), which are English data:
     // this marker stays a plain value rather than a translation key, for consistency.
@@ -85,6 +92,7 @@ export function getIndicators(
     threat,
     kick: kickSpells.length > 0,
     kickSpells,
+    frontalSpells,
     dispel: [...dispel],
     tankBuster,
     priority,
@@ -96,24 +104,46 @@ export function getIndicators(
   return indicators
 }
 
+/** One line of a pull briefing: a named spell, and the priority the entry declared for it. */
+export interface BriefingSpell {
+  id: number
+  name: string
+  prio?: number
+}
+
 /**
- * Spells to interrupt, sorted by declared priority then by name — for the pull briefing.
+ * Names a set of spell ids and sorts them by declared priority then by name.
  *
  * `locale` picks the spell names and drives the alphabetical tie-break, which is not the same
  * order from one language to the next.
  */
-export function kickList(
+function briefingList(
+  ids: number[],
   slug: string,
   enemy: Enemy,
-  locale: Locale = DEFAULT_LOCALE,
-): { id: number; name: string; prio?: number }[] {
+  locale: Locale,
+): BriefingSpell[] {
   const content = getMobContent(slug, enemy.id, locale)
   const notes = new Map((content?.spells ?? []).map((s) => [Number(s.id), s]))
-  return getIndicators(slug, enemy, locale)
-    .kickSpells.map((id) => ({
+  return ids
+    .map((id) => ({
       id,
       name: getSpell(id, locale)?.name ?? `#${id}`,
       prio: notes.get(id)?.prio,
     }))
     .sort((a, b) => (a.prio ?? 99) - (b.prio ?? 99) || a.name.localeCompare(b.name, locale))
+}
+
+/** Spells to interrupt — for the pull briefing. */
+export function kickList(slug: string, enemy: Enemy, locale: Locale = DEFAULT_LOCALE): BriefingSpell[] {
+  return briefingList(getIndicators(slug, enemy, locale).kickSpells, slug, enemy, locale)
+}
+
+/** Frontal cones to step out of — for the pull briefing. */
+export function frontalList(
+  slug: string,
+  enemy: Enemy,
+  locale: Locale = DEFAULT_LOCALE,
+): BriefingSpell[] {
+  return briefingList(getIndicators(slug, enemy, locale).frontalSpells, slug, enemy, locale)
 }

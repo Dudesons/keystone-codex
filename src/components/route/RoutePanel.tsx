@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { cloneKey } from '../../lib/data'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
-import { getIndicators, kickList } from '../../lib/indicators'
+import { frontalList, getIndicators, kickList } from '../../lib/indicators'
 import { encodeMdtString } from '../../lib/mdt/string'
 import { MdtUserError } from '../../lib/mdt/errors'
 import { routeStats, routeToLua, toCssColor, type Route } from '../../lib/mdt/route'
@@ -342,6 +342,9 @@ function PullMobLine({
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
   const kicks = kickList(slug, enemy, locale)
+  // Only frontals reach the briefing. `dodge` and `soak` stay in the codex: `dodge` is used
+  // across the entries for anything worth noticing, so printing it here would bury the rest.
+  const frontals = frontalList(slug, enemy, locale)
   const trap = getMobContent(slug, enemy.id, locale)?.trap
 
   return (
@@ -359,6 +362,11 @@ function PullMobLine({
       {kicks.length > 0 && (
         <div className="text-[11px] text-tag-kick">
           {t('route.kickList', { spells: kicks.map((k) => k.name).join(', ') })}
+        </div>
+      )}
+      {frontals.length > 0 && (
+        <div className="text-[11px] text-tag-frontal">
+          {t('route.frontalList', { spells: frontals.map((f) => f.name).join(', ') })}
         </div>
       )}
       {trap && (

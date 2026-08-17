@@ -58,6 +58,7 @@ export const en = {
   'mob.trap': 'THE TRAP',
   'mob.ccApplicable': 'APPLICABLE CC',
   'mob.ccImmune': 'Immune to every CC listed by MDT.',
+  'mob.ccUnknown': 'MDT has no CC data for this dungeon.',
   'mob.unknownSpell': 'Spell {id}',
 
   // Threat levels — the ring on the map, the badge on the card
@@ -75,6 +76,7 @@ export const en = {
 
   // Spell tags
   'tag.kick': 'KICK',
+  'tag.frontal': 'FRONTAL',
   'tag.dodge': 'DODGE',
   'tag.dispel': 'DISPEL',
   'tag.tank': 'TANK',
@@ -94,11 +96,13 @@ export const en = {
   'map.tankBuster': 'tank buster',
   'map.trapDocumented': 'documented trap',
   'map.badgeKick': 'To interrupt',
+  'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
   'legend.pips': 'PIPS',
   'legend.ring': 'RING',
   'legend.kick': 'Spell to interrupt (from MDT)',
+  'legend.frontal': 'Frontal cone (declared in the card)',
   'legend.tank': 'Tank buster (declared in the card)',
   'legend.dispel': 'Dispellable spell (from MDT)',
   'legend.ring.lethal': 'Lethal threat',
@@ -127,6 +131,7 @@ export const en = {
   'route.clear': 'Clear',
   'route.prio': 'PRIO',
   'route.kickList': 'kick: {spells}',
+  'route.frontalList': 'frontal: {spells}',
   'route.copied': 'MDT string copied. Paste it into MDT in game (Import).',
   'route.codeCopied': 'Session code copied.',
   'route.linkCopied': 'Session link copied.',

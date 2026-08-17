@@ -24,7 +24,7 @@ spells:
   - id: 1306852
     name: "Toxic Surge"   # auto
     # 2 sec cast · Unlimited range
-    tag: dodge
+    tag: frontal
     note: "Frontal. Triggers Toxic Beam, which hits anyone caught for 339k Nature."
 
   - id: 1306853

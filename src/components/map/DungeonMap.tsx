@@ -363,6 +363,8 @@ function Blip({
   // Indicator pips, laid out in an arc above the portrait.
   const badges: { color: string; glyph: string; title: string }[] = []
   if (ind.kick) badges.push({ color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
+  if (ind.frontalSpells.length)
+    badges.push({ color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
   if (ind.tankBuster) badges.push({ color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
   if (ind.dispel.length) badges.push({ color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
   const placements = badgeArc(badges.length, { x, y }, r)
@@ -490,6 +492,7 @@ function Legend() {
   const { t } = useI18n()
   const rows: [string, string, string][] = [
     ['#d64550', 'K', t('legend.kick')],
+    ['#cf6fa0', 'F', t('legend.frontal')],
     ['#4a90c2', 'T', t('legend.tank')],
     ['#7f6fd0', 'D', t('legend.dispel')],
   ]

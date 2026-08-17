@@ -59,6 +59,7 @@ export const fr: Dictionary = {
   'mob.trap': 'LE PIÈGE',
   'mob.ccApplicable': 'CC APPLICABLES',
   'mob.ccImmune': 'Immunisé à tous les CC listés par MDT.',
+  'mob.ccUnknown': 'MDT n’a pas de données de CC pour ce donjon.',
   'mob.unknownSpell': 'Sort {id}',
 
   // Threat levels — the ring on the map, the badge on the card
@@ -76,6 +77,7 @@ export const fr: Dictionary = {
 
   // Spell tags
   'tag.kick': 'KICK',
+  'tag.frontal': 'FRONTAL',
   'tag.dodge': 'ESQUIVE',
   'tag.dispel': 'DISPEL',
   'tag.tank': 'TANK',
@@ -95,11 +97,13 @@ export const fr: Dictionary = {
   'map.tankBuster': 'tank buster',
   'map.trapDocumented': 'piège documenté',
   'map.badgeKick': 'À interrompre',
+  'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
   'legend.pips': 'PASTILLES',
   'legend.ring': 'ANNEAU',
   'legend.kick': 'Sort à interrompre (source MDT)',
+  'legend.frontal': 'Cône frontal (déclaré dans la fiche)',
   'legend.tank': 'Tank buster (déclaré dans la fiche)',
   'legend.dispel': 'Sort dissipable (source MDT)',
   'legend.ring.lethal': 'Menace létale',
@@ -128,6 +132,7 @@ export const fr: Dictionary = {
   'route.clear': 'Vider',
   'route.prio': 'PRIO',
   'route.kickList': 'kick : {spells}',
+  'route.frontalList': 'frontal : {spells}',
   'route.copied': 'String MDT copiée. Colle-la dans MDT en jeu (Import).',
   'route.codeCopied': 'Code de session copié.',
   'route.linkCopied': 'Lien de session copié.',
