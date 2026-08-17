@@ -2,7 +2,7 @@
 // ABOUTME: Spells are ordered by what needs an immediate reaction, then by declared priority.
 
 import type { Enemy } from '../../lib/types'
-import { getLookup, getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
+import { getLookup, getNpcLabel, getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
 import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
@@ -40,6 +40,7 @@ export default function MobCard({
   const { t, plural, locale } = useI18n()
   const content = getMobContent(slug, enemy.id, locale)
   const ind = getIndicators(slug, enemy, locale)
+  const label = getNpcLabel(enemy, locale)
   const notes = new Map<number, SpellNote>((content?.spells ?? []).map((s) => [Number(s.id), s]))
   // An unknown dungeon is one more dungeon we hold no CC for: absent data never reads as immunity.
   const hasCcData = getLookup(slug)?.hasCcData ?? false
@@ -93,7 +94,7 @@ export default function MobCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h3 className="font-semibold text-ink-100">{enemy.name}</h3>
+            <h3 className="font-semibold text-ink-100">{label.name}</h3>
             {enemy.isBoss && <span className="text-xs font-semibold text-gold-400">{t('mob.boss')}</span>}
             <ThreatBadge threat={content?.threat} />
             {ind.kick && <Pill color="#d64550">{t('tag.kick')}</Pill>}
@@ -107,7 +108,7 @@ export default function MobCard({
           <div className="mt-0.5 text-xs text-ink-400">
             {enemy.count > 0 ? plural('common.forces', enemy.count) : t('common.noForce')} ·{' '}
             {plural('common.units', enemy.clones.length)}
-            {enemy.creatureType ? ` · ${enemy.creatureType}` : ''}
+            {label.type ? ` · ${label.type}` : ''}
             {/* A role outside the known vocabulary is shown as written: a hand-typed entry
                 must never surface a raw translation key. */}
             {content?.role

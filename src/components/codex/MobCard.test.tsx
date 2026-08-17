@@ -65,6 +65,18 @@ describe('Header', () => {
     expect(screen.getByText(chieftain.name)).toBeDefined()
   })
 
+  it('names the mob in the reader’s language, and its creature type with it', () => {
+    const { container } = renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(screen.getByText('Chef du rituel')).toBeDefined()
+    expect(container.textContent).toContain('Humanoïde')
+  })
+
+  it("falls back to MDT's name for a mob the label pipeline never resolved", () => {
+    // The invariant holds in every language: an id Wowhead has no answer for still renders.
+    renderFr(<MobCard slug={SLUG} enemy={unknown} />)
+    expect(screen.getByText(unknown.name)).toBeDefined()
+  })
+
   it('flags bosses', () => {
     renderEn(<MobCard slug={SLUG} enemy={boss} />)
     expect(screen.getByText('BOSS')).toBeDefined()

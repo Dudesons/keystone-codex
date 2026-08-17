@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
-import { cloneKey } from '../../lib/data'
+import { cloneKey, getNpcLabel } from '../../lib/data'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { frontalList, getIndicators, kickList } from '../../lib/indicators'
 import { encodeMdtString } from '../../lib/mdt/string'
@@ -72,7 +72,7 @@ export default function RoutePanel({
   onSetIdentity,
   pendingRoom,
 }: Props) {
-  const { t, plural, formatPercent } = useI18n()
+  const { t, plural, formatPercent, locale } = useI18n()
   const [importText, setImportText] = useState('')
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [expanded, setExpanded] = useState<number | null>(null)
@@ -217,7 +217,7 @@ export default function RoutePanel({
                   </span>
                   <span className="flex-1 truncate text-xs text-ink-300">
                     {mobs.length
-                      ? mobs.map((m) => `${m.n}× ${m.enemy.name}`).join(', ')
+                      ? mobs.map((m) => `${m.n}× ${getNpcLabel(m.enemy, locale).name}`).join(', ')
                       : t('route.emptyPull')}
                   </span>
                   <span className="shrink-0 text-[11px] text-ink-400 tabular-nums">
@@ -354,7 +354,7 @@ function PullMobLine({
     >
       <div className="flex items-center gap-1.5">
         <span className="text-xs text-ink-100">
-          {n}× {enemy.name}
+          {n}× {getNpcLabel(enemy, locale).name}
         </span>
         {ind.tankBuster && <span className="text-[9px] font-bold text-tag-tank">{t('tag.tank')}</span>}
         {ind.priority && <span className="text-[9px] font-bold text-gold-400">{t('route.prio')}</span>}

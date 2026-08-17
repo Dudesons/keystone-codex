@@ -1,6 +1,6 @@
 ---
 name: i18n
-description: How keystone-codex speaks two languages — typed dictionaries, language detection, locale-suffixed content under content/, and spell labels localized from Wowhead. Read before touching src/lib/i18n/, adding a UI string, translating a content/ entry, or adding a language.
+description: How keystone-codex speaks two languages — typed dictionaries, language detection, locale-suffixed content under content/, and spell and creature labels localized from Wowhead. Read before touching src/lib/i18n/, adding a UI string, translating a content/ entry, or adding a language.
 ---
 
 # Internationalization
@@ -149,7 +149,12 @@ readability, not translation progress.
 
 ---
 
-## 3. Spell labels (`scripts/fetch-assets.mjs`)
+## 3. Spell and creature labels (`scripts/fetch-assets.mjs`)
+
+Two passes, one shape: `tooltip/spell/<id>` fills `spells.json`, `tooltip/npc/<id>` fills
+`npcs.json`, both keyed by id with a `text` block per locale. The parsing for both lives in
+[wowhead-tooltip.mjs](../../../scripts/wowhead-tooltip.mjs), pure and pointed at captured
+responses in `scripts/__fixtures__/wowhead/`.
 
 ### The Wowhead locale mapping is probed, not documented
 
@@ -204,6 +209,35 @@ is the normal path.
 **Adding a language to `WOWHEAD_LOCALES` requires `FORCE=1 npm run fetch:assets`**: the cache
 only considers entries without a `text` block as needing work — it cannot tell that a
 secondary locale is missing.
+
+### Creature labels work the same way, with two differences
+
+`npcs.json` holds `{ id, text: { <locale>: { name, type? } } }` — no icon, since a mob's
+artwork is its `displayId` portrait and does not depend on language.
+
+**MDT stays the authority on the English name.** It is the identity every `content/` file,
+spell note and test is keyed on, so Wowhead's English is spent *checking* it: a disagreement
+means a wrong id, and renaming the mob on that basis would be invisible — it would simply
+start displaying another creature. Two real disagreements exist today, reported on every run:
+`135761` ("Disruption Totem" / "Thundering Totem") and `263181` ("Egg Marker" / "Egg"). Both
+were confirmed as the right id by the spells they carry.
+
+**The classification line is found by index, not by "the line under the name".** A creature's
+header runs to four further rows — a title above, then `[Level n ]Type (Classification)`, then
+its family and its reaction — and which are present varies per creature. Only their order is
+stable across languages, so `classifyNpcLines()` decides once on English exactly as
+`classifyLines()` does. French renders `Niveau 82 - 90 Humanoïde (Standard)`: the
+classification is parenthesised and the level prefix ends at its last digit **or question
+mark** (`Level ??`), which is why neither needs a rule per language.
+
+Wowhead also runs some of those rows together with no newline between them, so the lines are
+read out of the markup rather than out of the whitespace. `README.md` in the fixtures folder
+says which capture pins which of these.
+
+`getNpcLabel(enemy, locale)` in [data.ts](../../../src/lib/data.ts) is what the UI calls, and
+its two fields fall back to different places: the **name** to MDT's, the **type** to Wowhead's
+English and then MDT's `creatureType` — Wowhead files some creatures under no type at all, and
+an English "Totem" in a French card beats an empty space.
 
 ### Wowhead links
 

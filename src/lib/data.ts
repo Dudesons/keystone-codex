@@ -8,10 +8,22 @@
  * loading states in the UI for a negligible cost.
  */
 
-import type { Clone, CloneRef, Dungeon, DungeonSummary, Enemy, Pack, Spell, SpellEntry } from './types'
+import type {
+  Clone,
+  CloneRef,
+  Dungeon,
+  DungeonSummary,
+  Enemy,
+  NpcEntry,
+  NpcText,
+  Pack,
+  Spell,
+  SpellEntry,
+} from './types'
 import { convexHull, expandPolygon, toPixels } from './geometry'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 import dungeonIndex from '../data/generated/dungeons.json'
+import npcData from '../data/generated/npcs.json'
 import spellData from '../data/generated/spells.json'
 
 const modules = import.meta.glob<Dungeon>('../data/generated/*.json', {
@@ -28,6 +40,7 @@ const dungeons = new Map<string, Dungeon>(
 
 export const dungeonList = dungeonIndex as DungeonSummary[]
 const spells = spellData as unknown as Record<string, SpellEntry>
+const npcs = npcData as unknown as Record<string, NpcEntry>
 
 export function getDungeon(slug: string): Dungeon | undefined {
   return dungeons.get(slug)
@@ -45,6 +58,31 @@ export function getSpell(id: number, locale: Locale = DEFAULT_LOCALE): Spell | u
   const text = entry.text[locale] ?? entry.text[DEFAULT_LOCALE]
   if (!text) return undefined
   return { id: entry.id, icon: entry.icon, ...text }
+}
+
+/**
+ * MDT's placeholder for a creature it files under no type. Not a type, and not a word to put
+ * in front of a French reader — it is dropped rather than translated.
+ */
+const MDT_NO_TYPE = 'Not specified'
+
+/**
+ * A mob's name and creature type in the requested language.
+ *
+ * Both fall back rather than leaving a hole, and they fall back to different things because
+ * they come from different places. The **name** is MDT's in English by construction, so an id
+ * Wowhead never answered for still has one — which is what keeps "a mob with no entry still
+ * renders" true here as well. The **type** prefers Wowhead's, since MDT's is a capture that
+ * has drifted in places, and drops back to MDT's for the creatures Wowhead files under none:
+ * an English "Totem" in a French card beats an empty space.
+ */
+export function getNpcLabel(enemy: Enemy, locale: Locale = DEFAULT_LOCALE): NpcText {
+  const text = npcs[String(enemy.id)]?.text
+  const mdtType = enemy.creatureType === MDT_NO_TYPE ? undefined : enemy.creatureType
+  return {
+    name: text?.[locale]?.name ?? enemy.name,
+    type: text?.[locale]?.type ?? text?.[DEFAULT_LOCALE]?.type ?? mdtType,
+  }
 }
 
 /** Stable key of a clone within a dungeon. */
