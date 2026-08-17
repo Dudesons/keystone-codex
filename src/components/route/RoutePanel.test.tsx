@@ -552,19 +552,21 @@ describe('An invitation carried by a link', () => {
         },
       },
     })
-    const connected: CollabState = {
-      status: 'connected',
-      room: 'ABC123',
-      peers: peersOf(1),
-      identity: 'Player-1234',
-      synced: true,
-      mode: 'guest',
+    try {
+      const connected: CollabState = {
+        status: 'connected',
+        room: 'ABC123',
+        peers: peersOf(1),
+        identity: 'Player-1234',
+        synced: true,
+        mode: 'guest',
+      }
+
+      mount({ collab: connected })
+      fireEvent.click(screen.getByRole('button', { name: /copy the link/i }))
+      await screen.findByText('denied')
+    } finally {
+      vi.unstubAllGlobals()
     }
-
-    mount({ collab: connected })
-    fireEvent.click(screen.getByRole('button', { name: /copy the link/i }))
-    await screen.findByText('denied')
-
-    vi.unstubAllGlobals()
   })
 })

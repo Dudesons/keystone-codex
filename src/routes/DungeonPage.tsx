@@ -46,12 +46,14 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
 
   // The room a join link carries. `?room=` stays in the URL after arrival, so a reload offers
   // the invitation again rather than reconnecting silently — but leaving the session it led to
-  // must not offer it right back to the person who just escaped it. `declined` is that
-  // distinction: component state, so it resets on the reload the URL is there to support, and
-  // sticks for as long as the tab stays on this room.
+  // must not offer it right back to the person who just escaped it. `declined` holds the
+  // specific code just left, not a flag: a flag would keep suppressing every *other* room a
+  // later link might carry, for as long as the tab stayed mounted. Component state, so a
+  // reload (a fresh `declined`) still offers the room again.
   const [searchParams] = useSearchParams()
-  const [declined, setDeclined] = useState(false)
-  const pendingRoom = declined ? null : searchParams.get('room')
+  const [declined, setDeclined] = useState<string | null>(null)
+  const room = searchParams.get('room')
+  const pendingRoom = room && room !== declined ? room : null
 
   const [mode, setMode] = useState<Mode>(pendingRoom ? 'route' : 'codex')
 
@@ -78,9 +80,9 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.
   const handleLeaveRoom = useCallback(() => {
-    setDeclined(true)
+    setDeclined(room)
     leaveRoom()
-  }, [leaveRoom])
+  }, [leaveRoom, room])
 
   const selectedMob = npcId ? Number(npcId) : null
   const hasRoute = route.pulls.some((p) => p.clones.length > 0)

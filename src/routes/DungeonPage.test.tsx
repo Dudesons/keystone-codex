@@ -227,6 +227,40 @@ describe('Leaving a room offered by a link', () => {
     expect(screen.queryByRole('button', { name: /join room abc123/i })).toBeNull()
     expect(screen.getByRole('button', { name: /open a session/i })).toBeDefined()
   })
+
+  it('still offers a different room pasted after leaving the first one', () => {
+    // What is declined is the room just left, not "any invitation for the rest of this mount":
+    // a flag would keep suppressing every other room a later link might carry, which is the
+    // same bug fix 4 removed, resurrected by fix 5.
+    function GoToDifferentRoom() {
+      const navigate = useNavigate()
+      return <button onClick={() => navigate(`/d/${SLUG}?room=DIFFER`)}>paste another link</button>
+    }
+    const withNavigation = (
+      <MemoryRouter initialEntries={[`/d/${SLUG}?room=ABC123`]}>
+        <Routes>
+          <Route
+            path="/d/:slug"
+            element={
+              <>
+                <GoToDifferentRoom />
+                <DungeonPage />
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    renderEn(withNavigation)
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.click(screen.getByRole('button', { name: /join room abc123/i }))
+    fireEvent.click(screen.getByText('Leave'))
+    expect(screen.queryByRole('button', { name: /join room abc123/i })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'paste another link' }))
+    expect(screen.getByRole('button', { name: /join room differ/i })).toBeDefined()
+  })
 })
 
 describe('Deep link to a mob', () => {
