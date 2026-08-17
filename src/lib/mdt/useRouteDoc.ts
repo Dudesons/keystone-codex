@@ -20,6 +20,7 @@ import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
+import { luaToObjects } from './objects'
 import { readPeers, type Peer } from '../collab/presence'
 
 /**
@@ -126,12 +127,15 @@ function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route 
     })
   })
 
+  const source = decodeSource(root.get('source') as string | undefined)
+
   return {
     name: (root.get('name') as string) || DEFAULT_ROUTE_NAME,
     slug,
     mdtIndex,
     pulls: pulls.length ? pulls : [{ color: nextColor(0), clones: [] }],
-    source: decodeSource(root.get('source') as string | undefined),
+    source,
+    objects: source ? luaToObjects(source) : [],
   }
 }
 
@@ -228,6 +232,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     slug,
     mdtIndex,
     pulls: [{ color: nextColor(0), clones: [] }],
+    objects: [],
   }))
 
   /** The open session, with the means to unsubscribe from it before tearing it down. */

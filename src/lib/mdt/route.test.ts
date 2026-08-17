@@ -67,6 +67,7 @@ describe('pullIndexByClone', () => {
         { color: nextColor(0), clones: [{ enemyIdx: 1, cloneIdx: 1 }] },
         { color: nextColor(1), clones: [{ enemyIdx: 2, cloneIdx: 3 }, { enemyIdx: 2, cloneIdx: 4 }] },
       ],
+      objects: [],
     }
     const map = pullIndexByClone(route)
     expect(map.get(cloneKey(1, 1))).toBe(0)
@@ -88,6 +89,7 @@ describe('routeStats', () => {
     slug: SLUG,
     mdtIndex: MDT_INDEX,
     pulls: packs.slice(0, n).map((pack, i) => ({ color: nextColor(i), clones: pack.members })),
+    objects: [],
   })
 
   it('accumulates forces pull after pull', () => {
@@ -125,6 +127,7 @@ describe('routeStats', () => {
       slug: SLUG,
       mdtIndex: MDT_INDEX,
       pulls: [{ color: nextColor(0), clones: [{ enemyIdx: 9999, cloneIdx: 9999 }] }],
+      objects: [],
     }
     expect(routeStats(route, lookup).total).toBe(0)
   })
@@ -138,6 +141,7 @@ describe('routeStats', () => {
         const [enemyIdx, cloneIdx] = k.split(':').map(Number)
         return { enemyIdx, cloneIdx }
       }) }],
+      objects: [],
     }
     expect(routeStats(route, lookup).percent).toBeGreaterThanOrEqual(100)
   })

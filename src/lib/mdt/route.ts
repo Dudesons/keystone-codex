@@ -14,6 +14,7 @@ import type { CloneRef } from '../types'
 import { cloneKey, dungeonList, type DungeonLookup } from '../data'
 import type { LuaTable, LuaValue } from './cbor'
 import { MdtUserError } from './errors'
+import { luaToObjects, type MdtObject } from './objects'
 
 /** MDT's default palette (colorPaletteIdx 4), reused so pulls look the same as in game. */
 export const PULL_COLORS = [
@@ -37,6 +38,13 @@ export interface Route {
   uid?: string
   /** The original table, kept so nothing is lost on re-export. */
   source?: LuaTable
+  /**
+   * The notes and strokes the preset carries, read-only.
+   *
+   * Read out of `source` and never written back: `routeToLua` hands the original table over
+   * untouched, so these survive a round trip precisely because we do not rebuild them.
+   */
+  objects: MdtObject[]
 }
 
 const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
@@ -100,6 +108,7 @@ export function luaToRoute(table: LuaTable): Route {
     slug,
     mdtIndex,
     pulls,
+    objects: luaToObjects(table),
     uid: typeof uid === 'string' ? uid : undefined,
     difficulty: typeof difficulty === 'number' ? difficulty : undefined,
     source: table,
@@ -177,7 +186,7 @@ export function routeToLua(route: Route): LuaTable {
 export const DEFAULT_ROUTE_NAME = 'New route'
 
 export function emptyRoute(slug: string, mdtIndex: number, name = DEFAULT_ROUTE_NAME): Route {
-  return { name, slug, mdtIndex, pulls: [{ color: nextColor(0), clones: [] }] }
+  return { name, slug, mdtIndex, pulls: [{ color: nextColor(0), clones: [] }], objects: [] }
 }
 
 /** Clone keys already assigned, with the pull they belong to. */
