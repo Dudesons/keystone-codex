@@ -3,7 +3,7 @@
 
 import type { Enemy } from '../../lib/types'
 import { getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
-import { getMobContent, isRole, type SpellNote } from '../../lib/content'
+import { getMobContent, inlineMarkdown, isRole, type SpellNote } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
@@ -113,7 +113,10 @@ export default function MobCard({
       {content?.trap && (
         <div className="mx-3 mb-3 rounded border-l-2 border-threat-lethal bg-threat-lethal/10 px-3 py-2">
           <div className="text-[10px] font-bold tracking-widest text-threat-lethal">{t('mob.trap')}</div>
-          <p className="mt-0.5 text-sm text-ink-100">{content.trap}</p>
+          <p
+            className="mt-0.5 text-sm text-ink-100"
+            dangerouslySetInnerHTML={{ __html: inlineMarkdown(content.trap) }}
+          />
         </div>
       )}
 
@@ -182,7 +185,9 @@ function SpellRow({
   const { t, locale } = useI18n()
   const spell = getSpell(spellId, locale)
   const name = spell?.name ?? t('mob.unknownSpell', { id: spellId })
-  const text = note?.note || (compact ? undefined : spell?.description)
+  // Our note is authored markdown; Wowhead's description is data and is shown as it came.
+  const written = inlineMarkdown(note?.note)
+  const text = written || (compact ? undefined : spell?.description)
 
   return (
     <div className="flex gap-2.5 px-3 py-2 hover:bg-ink-800/60">
@@ -215,7 +220,15 @@ function SpellRow({
           <DispelBadges dispel={dispel} />
           {spell?.castTime && <span className="text-[11px] text-ink-400">{spell.castTime}</span>}
         </div>
-        {text && <p className="mt-0.5 text-xs leading-snug text-ink-400">{text}</p>}
+        {text &&
+          (written ? (
+            <p
+              className="mt-0.5 text-xs leading-snug text-ink-400"
+              dangerouslySetInnerHTML={{ __html: written }}
+            />
+          ) : (
+            <p className="mt-0.5 text-xs leading-snug text-ink-400">{text}</p>
+          ))}
       </div>
     </div>
   )

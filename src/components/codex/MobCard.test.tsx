@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 // would pile up in the document and skew the `screen` queries.
 afterEach(cleanup)
 import type { Enemy } from '../../lib/types'
+import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
 import { renderEn, renderFr } from '../../test/render'
 import MobCard from './MobCard'
@@ -100,19 +101,37 @@ describe('Header', () => {
   })
 })
 
+/**
+ * The trap paragraph, found without depending on the label's language: it is the paragraph
+ * inside the block that carries the lethal-threat accent.
+ */
+const trapText = (container: HTMLElement) =>
+  container.querySelector('.border-threat-lethal p')?.innerHTML
+
+/** Reads markdown back as the browser would, so entity escaping does not skew a comparison. */
+const asRendered = (markdown: string) => {
+  const el = document.createElement('p')
+  el.innerHTML = inlineMarkdown(markdown)
+  return el.innerHTML
+}
+
 describe('The trap', () => {
+  // The trap sentence is judgement and gets rewritten as entries are revised, so these read
+  // the expected text out of the entry rather than hardcoding it.
   it('puts the written trap up front', () => {
-    renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.getByText('THE TRAP')).toBeDefined()
-    // Narrow pattern: "Immune to every CC" also opens the no-CC fallback line.
-    expect(screen.getByText(/no stun, no fear/)).toBeDefined()
+    const trap = getMobContent(SLUG, chieftain.id, 'en')!.trap!
+    expect(trapText(container)).toBe(asRendered(trap))
   })
 
   it('serves the trap and the notes in the chosen language', () => {
     cleanup()
-    renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
+    const french = getMobContent(SLUG, chieftain.id, 'fr')!.trap!
+    expect(french).not.toBe(getMobContent(SLUG, chieftain.id, 'en')!.trap)
+    const { container } = renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.getByText('LE PIÈGE')).toBeDefined()
-    expect(screen.getByText(/aucun stun, aucune peur/)).toBeDefined()
+    expect(trapText(container)).toBe(asRendered(french))
   })
 
   it('shows no trap block when nothing is written', () => {
@@ -142,10 +161,15 @@ describe('Applicable crowd control', () => {
 describe('Spells', () => {
   it('floats what needs an immediate reaction: kick before tank', () => {
     const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
-    const text = container.textContent!
-    // Ritual Chieftain's notes: "87k" on the spell to kick, "581k" on the tank buster.
-    expect(text.indexOf('87k')).toBeGreaterThan(-1)
-    expect(text.indexOf('87k')).toBeLessThan(text.indexOf('581k'))
+    // Read the order off the spell links rather than off the prose: the notes and the trap
+    // are rewritten as entries are revised, and they quote the same figures.
+    const ids = [...container.querySelectorAll<HTMLAnchorElement>('a[href*="wowhead.com/spell="]')]
+      .map((a) => Number(a.href.split('spell=')[1]))
+    const spells = getMobContent(SLUG, chieftain.id, 'en')!.spells!
+    const kick = spells.find((s) => s.tag === 'kick')!.id
+    const tank = spells.find((s) => s.tag === 'tank')!.id
+    expect(ids.indexOf(kick)).toBeGreaterThan(-1)
+    expect(ids.indexOf(kick)).toBeLessThan(ids.indexOf(tank))
   })
 
   it('links every spell to Wowhead', () => {
@@ -210,5 +234,28 @@ describe('Interactions', () => {
       <MobCard slug={SLUG} enemy={chieftain} onSelect={() => {}} />,
     )
     expect(with_.querySelector('header')!.className).toContain('cursor-pointer')
+  })
+})
+
+/**
+ * `trap` and a spell's `note` are authored markdown, like the prose body — a written entry
+ * should not have to choose between emphasis and rendering correctly. A spell's Wowhead
+ * description is *not* ours and stays plain text.
+ */
+describe('Markdown in the one-line fields', () => {
+  it('renders emphasis in the trap', () => {
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(trapText(container)).toContain('<strong>Blood Sacrifice</strong>')
+  })
+
+  it('renders emphasis in the trap in every language', () => {
+    cleanup()
+    const { container } = renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(trapText(container)).toContain('<strong>Blood Sacrifice</strong>')
+  })
+
+  it('leaves a Wowhead description alone: it is data, not our writing', () => {
+    const { container } = renderEn(<MobCard slug="dungeon-without-content" enemy={unknown} />)
+    expect(container.innerHTML).not.toContain('<strong>')
   })
 })

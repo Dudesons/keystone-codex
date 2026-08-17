@@ -82,6 +82,16 @@ function splitFrontmatter(raw: string): { data: Record<string, unknown>; body: s
 
 const render = (body: string) => marked.parse(body.trim(), { async: false }) as string
 
+/**
+ * Markdown for the one-line fields — `trap` and a spell's `note`.
+ *
+ * Inline rather than block: these are sentences rendered inside a paragraph the component
+ * already lays out, so a `<p>` wrapper would fight the surrounding styling. Emphasis and
+ * links work; headings and lists do not, which is the right constraint for a single sentence.
+ */
+export const inlineMarkdown = (text?: string) =>
+  text ? (marked.parseInline(text.trim(), { async: false }) as string) : ''
+
 /** `../../content/<slug>/<file>.md`, with an optional `.<locale>` before the extension. */
 const files = import.meta.glob<string>('../../content/**/*.md', {
   eager: true,

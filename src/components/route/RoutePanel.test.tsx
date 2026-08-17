@@ -540,6 +540,17 @@ describe('Choosing a name', () => {
   })
 })
 
+describe('Traps in the briefing', () => {
+  it('renders them as markdown, exactly as the codex card does', () => {
+    const { container } = mount()
+    fireEvent.click(screen.getAllByText('▸ Briefing')[0])
+    // Any pull holding a mob with a written trap will do; the emphasis is what is under test.
+    const traps = [...container.querySelectorAll('.text-threat-lethal')].map((el) => el.innerHTML)
+    expect(traps.length, 'the opened briefing lists no trap').toBeGreaterThan(0)
+    expect(traps.some((html) => html.includes('<strong>'))).toBe(true)
+  })
+})
+
 describe('sessionLink', () => {
   it('puts the room inside the hash, where a static host can still route it', () => {
     expect(sessionLink('altar-of-fangs', 'ABC123')).toBe(

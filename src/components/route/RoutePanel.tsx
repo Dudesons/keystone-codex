@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { cloneKey } from '../../lib/data'
-import { getMobContent } from '../../lib/content'
+import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { getIndicators, kickList } from '../../lib/indicators'
 import { encodeMdtString } from '../../lib/mdt/string'
 import { MdtUserError } from '../../lib/mdt/errors'
@@ -361,7 +361,11 @@ function PullMobLine({
           {t('route.kickList', { spells: kicks.map((k) => k.name).join(', ') })}
         </div>
       )}
-      {trap && <div className="text-[11px] text-threat-lethal">⚠ {trap}</div>}
+      {trap && (
+        <div className="text-[11px] text-threat-lethal">
+          ⚠ <span dangerouslySetInnerHTML={{ __html: inlineMarkdown(trap) }} />
+        </div>
+      )}
     </div>
   )
 }
