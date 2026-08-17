@@ -43,8 +43,9 @@ The **only** file to edit when changing season or machine.
   index, total forces, `mapID` — is read from those files; nothing else is hardcoded.
 - `MDT_GEOMETRY` — MDT's coordinate space (840×560, from `MainFrame.lua`) and the tile grid.
   If a map renders offset, the cause is here, not in the React component.
-- `SPELL_LOCALES` — the languages spell labels are fetched in. See the `i18n` skill before
-  adding one: the Wowhead locale codes were established by probing, not by documentation.
+- `WOWHEAD_LOCALES` — the languages spell and creature labels are fetched in. See the `i18n`
+  skill before adding one: the Wowhead locale codes were established by probing, not by
+  documentation.
 
 ### The sparse-index trap
 

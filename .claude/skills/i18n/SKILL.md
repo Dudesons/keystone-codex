@@ -155,7 +155,7 @@ readability, not translation progress.
 
 ```js
 // scripts/config.mjs
-export const SPELL_LOCALES = [
+export const WOWHEAD_LOCALES = [
   { lang: 'en', wowhead: 0 },
   { lang: 'fr', wowhead: 2 },
 ]
@@ -201,7 +201,7 @@ When line counts differ, the script **does not guess**: it keeps name and descri
 not translate everything, and a recent spell ships in English first. That is not an error, it
 is the normal path.
 
-**Adding a language to `SPELL_LOCALES` requires `FORCE=1 npm run fetch:assets`**: the cache
+**Adding a language to `WOWHEAD_LOCALES` requires `FORCE=1 npm run fetch:assets`**: the cache
 only considers entries without a `text` block as needing work — it cannot tell that a
 secondary locale is missing.
 
@@ -228,7 +228,7 @@ Read the `name` field. `Dismember` means you found English again, not German. Wa
 integers until the language matches.
 
 **2. Declare it.** One entry in `LOCALES`
-([locales.ts](../../../src/lib/i18n/locales.ts)) and one in `SPELL_LOCALES`
+([locales.ts](../../../src/lib/i18n/locales.ts)) and one in `WOWHEAD_LOCALES`
 ([config.mjs](../../../scripts/config.mjs)), with the code you just probed.
 
 **3. Write the dictionary.** Copy `fr.ts` to `<lang>.ts`, translate the values, register it in
@@ -274,5 +274,5 @@ is **nested inside** the provider, not overwritten.
 2. `npm test`.
 3. Open the app **in both languages**: the switcher sits in the header of the home page and of
    each dungeon page. Check no hardcoded string is left.
-4. If `SPELL_LOCALES` or `fetch-assets.mjs` changed: re-run `npm run fetch:assets` and
+4. If `WOWHEAD_LOCALES` or `fetch-assets.mjs` changed: re-run `npm run fetch:assets` and
    **commit `spells.json`** — CI runs no extraction script.
