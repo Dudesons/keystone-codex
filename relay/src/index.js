@@ -77,38 +77,9 @@ export class Room {
 
   drop(socket) {
     const owned = this.controlled.get(socket)
-    if (owned) {
-      // Snapshotted once: `removeAwarenessStates` below emits `update` synchronously, and our
-      // own listener (constructor, above) reacts to a removal by deleting straight out of this
-      // same `owned` set — so by the time that call returns, `owned` is already empty and looping
-      // over it again here would delete nothing.
-      const ids = [...owned]
-      // Attribute the removal to the socket itself: it is that socket's own cursor leaving, and
-      // it lets `broadcast` skip resending to a socket that is already gone.
-      awarenessProtocol.removeAwarenessStates(this.awareness, ids, socket)
-
-      /**
-       * `removeAwarenessStates` bumps a client's clock only when the id being removed equals
-       * the *awareness instance's own* id (`y-protocols/awareness.js:167-182`) — never true
-       * here, since this is the relay's own `Awareness`, not the departing participant's. Left
-       * alone, the relay would go on remembering that client's last clock forever, and
-       * `applyAwarenessUpdate` only accepts a clock strictly greater than the one it remembers
-       * (`awareness.js:256`) — so a client reconnecting with the same Yjs client id and its
-       * state otherwise unchanged would be silently rejected, invisible to the room until its
-       * own `Awareness` instance's ~15s periodic renewal happens to carry its clock past what
-       * the relay last saw. Forgetting the clock here instead removes that floor entirely: a
-       * returning participant is accepted at whatever clock it next arrives with. This is safe
-       * only because presence is ephemeral, self-renewing and last-writer-wins — there is
-       * nothing here a lower clock could wrongly overwrite, unlike the document.
-       *
-       * Order matters: `removeAwarenessStates` above reads `this.awareness.meta` itself, and so
-       * does our own `'update'` handler (constructor, above), synchronously, while building the
-       * withdrawal broadcast via `encodeAwarenessUpdate`. Both must still see the pre-removal
-       * clock, so these entries are deleted only once `removeAwarenessStates` has returned —
-       * deleting them first would make that broadcast fault on a missing entry.
-       */
-      for (const id of ids) this.awareness.meta.delete(id)
-    }
+    // Attribute the removal to the socket itself: it is that socket's own cursor leaving, and
+    // it lets `broadcast` skip resending to a socket that is already gone.
+    if (owned) awarenessProtocol.removeAwarenessStates(this.awareness, [...owned], socket)
     this.controlled.delete(socket)
     this.sockets.delete(socket)
   }
