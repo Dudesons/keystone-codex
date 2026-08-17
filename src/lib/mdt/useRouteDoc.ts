@@ -35,6 +35,15 @@ const COLLAB_URL = import.meta.env.VITE_COLLAB_URL || 'wss://demos.yjs.dev/ws'
 
 const storageKey = (slug: string) => `midnight-codex:route:${slug}`
 
+/**
+ * Where the local route waits while you are in someone else's room.
+ *
+ * The invariant: a stash exists exactly when a local route is waiting, and **every** way out
+ * of a session puts it back — leaving, and also closing the tab, which is why the initial
+ * document consults it too.
+ */
+const stashKey = (slug: string) => `${storageKey(slug)}:stashed`
+
 /** Namespaced by dungeon: the same code in two dungeons is two different rooms. */
 export const roomName = (slug: string, code: string) => `midnight-codex:${slug}:${code}`
 
@@ -139,6 +148,15 @@ export interface CollabState {
 export function useRouteDoc(slug: string, mdtIndex: number) {
   const [doc, setDoc] = useState(() => {
     const fresh = new Y.Doc()
+
+    // A stash left behind means a session was interrupted rather than left. Closing a tab
+    // counts as leaving, so the route goes back before anything else reads storage.
+    const stashed = localStorage.getItem(stashKey(slug))
+    if (stashed) {
+      localStorage.setItem(storageKey(slug), stashed)
+      localStorage.removeItem(stashKey(slug))
+    }
+
     const saved = localStorage.getItem(storageKey(slug))
     if (saved) {
       try {
@@ -299,6 +317,14 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     (room: string, mode: 'host' | 'guest') => {
       closeSession()
 
+      // Only on the way in from local editing: hopping from one room to another must not
+      // bury the route you started with under the one you are leaving. A host stashes
+      // nothing — its document is the room.
+      if (mode === 'guest' && collab.status === 'off') {
+        const local = localStorage.getItem(storageKey(slug))
+        if (local) localStorage.setItem(stashKey(slug), local)
+      }
+
       // A guest adopts the room's document; it does not push its own into it. Two documents
       // that have each set `pulls` leave that one key to be arbitrated on merge, and the
       // loser's entire route is dropped — from the host's side, the route everyone came for.
@@ -332,13 +358,25 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       setCollab((c) => ({ ...c, status: 'connecting', room }))
       update()
     },
-    [doc, slug, collab.identity, closeSession],
+    [doc, slug, collab.identity, collab.status, closeSession],
   )
 
   const leaveRoom = useCallback(() => {
     closeSession()
+    const stashed = localStorage.getItem(stashKey(slug))
+    if (stashed) {
+      const restored = new Y.Doc()
+      try {
+        seed(restored, luaToRoute(decodeMdtString(stashed).table), stashed)
+        setDoc(restored)
+        localStorage.setItem(storageKey(slug), stashed)
+      } catch {
+        // An unreadable stash must not trap anyone inside a session they want to leave.
+      }
+      localStorage.removeItem(stashKey(slug))
+    }
     setCollab((c) => ({ ...c, status: 'off', room: null, peers: [] }))
-  }, [closeSession])
+  }, [closeSession, slug])
 
   const setIdentity = useCallback((name: string) => {
     const trimmed = name.trim()

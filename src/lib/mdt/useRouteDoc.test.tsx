@@ -357,6 +357,64 @@ describe('Sessions', () => {
   })
 })
 
+describe('The stashed local route', () => {
+  const stashKey = `midnight-codex:route:${SLUG}:stashed`
+
+  /** A saved local route, in the only form the app persists: an MDT string. */
+  const saveLocalRoute = () => {
+    const route = emptyRoute(SLUG, MDT_INDEX)
+    route.name = 'My own route'
+    localStorage.setItem(storageKey, encodeMdtString(routeToLua(route)))
+  }
+
+  it('sets the local route aside when joining someone else’s room', () => {
+    saveLocalRoute()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('GGGGGG', 'guest'))
+    expect(localStorage.getItem(stashKey)).not.toBeNull()
+    unmount()
+  })
+
+  it('gives it back on leaving', () => {
+    saveLocalRoute()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('GGGGGG', 'guest'))
+    act(() => result.current.leaveRoom())
+    expect(result.current.route.name).toBe('My own route')
+    expect(localStorage.getItem(stashKey)).toBeNull()
+    unmount()
+  })
+
+  it('gives it back at startup when a tab was closed mid-session', () => {
+    saveLocalRoute()
+    const stashed = localStorage.getItem(storageKey)!
+    localStorage.setItem(stashKey, stashed)
+    localStorage.setItem(storageKey, encodeMdtString(routeToLua(emptyRoute(SLUG, MDT_INDEX))))
+
+    const { result } = mount()
+    expect(result.current.route.name).toBe('My own route')
+    expect(localStorage.getItem(stashKey)).toBeNull()
+  })
+
+  it('does not overwrite the stash when hopping from one room to another', () => {
+    saveLocalRoute()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('GGGGGG', 'guest'))
+    const afterFirstJoin = localStorage.getItem(stashKey)
+    act(() => result.current.joinRoom('HHHHHH', 'guest'))
+    expect(localStorage.getItem(stashKey)).toBe(afterFirstJoin)
+    unmount()
+  })
+
+  it('stashes nothing for a host, whose document is the room', () => {
+    saveLocalRoute()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('GGGGGG', 'host'))
+    expect(localStorage.getItem(stashKey)).toBeNull()
+    unmount()
+  })
+})
+
 describe('Identity', () => {
   it('starts with no name, so one has to be chosen', () => {
     localStorage.removeItem('midnight-codex:identity')
