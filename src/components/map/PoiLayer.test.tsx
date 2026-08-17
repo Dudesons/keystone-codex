@@ -7,7 +7,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getLookup, getSpell } from '../../lib/data'
 import type { Poi } from '../../lib/types'
-import { renderEn } from '../../test/render'
+import { renderEn, renderFr } from '../../test/render'
 import PoiLayer, { PoiTooltip } from './PoiLayer'
 
 afterEach(cleanup)
@@ -32,6 +32,16 @@ describe('PoiLayer', () => {
     expect(onHover).toHaveBeenLastCalledWith(1)
     fireEvent.mouseLeave(marker)
     expect(onHover).toHaveBeenLastCalledWith(null)
+  })
+
+  it('names the marker in the requested locale, not always English', () => {
+    const item = pois.find((p) => p.info?.spellId)!
+    const spellEn = getSpell(item.info!.spellId, 'en')!
+    const spellFr = getSpell(item.info!.spellId, 'fr')!
+    expect(spellFr.name).not.toBe(spellEn.name) // otherwise this proves nothing
+
+    const { container } = renderFr(<PoiLayer pois={[item]} onHover={() => {}} />, { wrapper: svg })
+    expect(container.querySelector('title')!.textContent).toBe(spellFr.name)
   })
 })
 

@@ -45,9 +45,14 @@ const totalClones = lookup.dungeon.enemies.reduce((n, e) => n + e.clones.length,
 const mount = (over: Partial<React.ComponentProps<typeof DungeonMap>> = {}) =>
   renderEn(<DungeonMap slug={SLUG} lookup={lookup} {...over} />)
 
-/** The <g> wrapping one clone's blip, found by the portrait or circle it draws. */
-const blips = (container: HTMLElement) =>
-  [...container.querySelectorAll('svg > g')].filter((g) => g.querySelector('circle'))
+/**
+ * The <g> wrapping one clone's blip.
+ *
+ * `Blip` alone carries `data-clone`, so filtering on that attribute (rather than "has a
+ * circle") is what keeps this from also matching a POI marker: `PoiLayer` draws its own
+ * `<g>` with its own `<circle>`, direct children of the same `<svg>`.
+ */
+const blips = (container: HTMLElement) => [...container.querySelectorAll('svg > g[data-clone]')]
 
 describe('Map surface', () => {
   it('draws the dungeon image at its natural size', () => {
@@ -511,5 +516,16 @@ describe('Points of interest', () => {
   it('draws the dungeon items whether or not a route exists', () => {
     renderEn(<DungeonMap slug="murder-row" lookup={getLookup('murder-row')!} />)
     expect(screen.getAllByTestId(/^poi-/).length).toBeGreaterThan(0)
+  })
+
+  it('keeps blips() from picking up a POI marker in a dungeon that has some', () => {
+    const murderRow = getLookup('murder-row')!
+    const murderRowClones = murderRow.dungeon.enemies.reduce((n, e) => n + e.clones.length, 0)
+    expect(murderRow.dungeon.pois.length).toBeGreaterThan(0) // otherwise this proves nothing
+
+    const { container } = renderEn(<DungeonMap slug="murder-row" lookup={murderRow} />)
+    const found = blips(container)
+    expect(found).toHaveLength(murderRowClones)
+    found.forEach((el) => expect(el.getAttribute('data-testid')).toBeNull())
   })
 })

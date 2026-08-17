@@ -18,7 +18,7 @@ export default function PoiLayer({
   pois: Poi[]
   onHover: (index: number | null) => void
 }) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   return (
     <>
       {/* Its own clip, rather than DungeonMap's `blip-clip`: a layer that depends on a
@@ -34,7 +34,7 @@ export default function PoiLayer({
       {pois.map((poi, index) => {
         const { x, y } = toPixels(poi.x, poi.y)
         const r = radiusOf(poi)
-        const spell = poi.info ? getSpell(poi.info.spellId) : undefined
+        const spell = poi.info ? getSpell(poi.info.spellId, locale) : undefined
         return (
           <g
             key={`poi-${index}`}
