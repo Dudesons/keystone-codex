@@ -369,6 +369,7 @@ describe('Collaborative session', () => {
 describe('Choosing a name', () => {
   it('refuses to open or join a session until a name is given', () => {
     mount({ collab: { ...offline, identity: null } })
+    fireEvent.change(screen.getByPlaceholderText('CODE'), { target: { value: 'AB3K9Z' } })
     expect(screen.getByRole('button', { name: /open a session/i }).closest('button')!.disabled).toBe(true)
     expect(screen.getByRole('button', { name: /^join$/i }).closest('button')!.disabled).toBe(true)
   })
@@ -395,5 +396,44 @@ describe('Choosing a name', () => {
     }
     mount({ collab: connected })
     expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('Rwl')
+  })
+
+  it('keeps the space while a multi-word name is typed one character at a time', () => {
+    // `setIdentity` (`useRouteDoc.ts`) trims on every call and the trimmed value comes
+    // straight back down as `collab.identity` — this mirrors that round trip, the same way a
+    // real session does through `useRouteDoc`, rather than a recorder that never echoes back.
+    let identity: string | null = null
+    const onSetIdentity = (name: string) => {
+      identity = name.trim()
+      rerender(renderPanel())
+    }
+    const renderPanel = () => (
+      <RoutePanel
+        slug={SLUG}
+        lookup={lookup}
+        route={routeWith(2)}
+        actions={recorder().actions}
+        currentPull={0}
+        onCurrentPullChange={() => {}}
+        hoveredPull={null}
+        onHoverPull={() => {}}
+        onFocusMob={() => {}}
+        collab={{ ...offline, identity }}
+        onJoinRoom={() => {}}
+        onLeaveRoom={() => {}}
+        onSetIdentity={onSetIdentity}
+      />
+    )
+    const { rerender } = renderEn(renderPanel())
+
+    // Each keystroke appends to the field's own current value, exactly as a real keypress
+    // would land after whatever the previous render left on screen — reusing a string tracked
+    // separately in the test would silently paper over the bug this pins.
+    const input = screen.getByLabelText(/your name/i) as HTMLInputElement
+    for (const ch of 'AB CD') {
+      fireEvent.change(input, { target: { value: input.value + ch } })
+    }
+
+    expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('AB CD')
   })
 })

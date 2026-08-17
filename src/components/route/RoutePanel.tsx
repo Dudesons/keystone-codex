@@ -1,7 +1,7 @@
 // ABOUTME: The route side panel: forces, pull list and briefings, MDT import/export, sharing.
 // ABOUTME: Owns no route state — every change goes through the actions of useRouteDoc.
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { cloneKey } from '../../lib/data'
 import { getMobContent } from '../../lib/content'
@@ -442,14 +442,29 @@ function NameField({
   onSetIdentity: (name: string) => void
   t: I18n['t']
 }) {
+  // `identity` comes back trimmed on every call (`setIdentity` normalises what gets persisted
+  // and replicated to peers), so binding the input straight to it would erase a trailing space
+  // the instant it was typed, and the next character would land against the trimmed string.
+  // This field keeps its own buffer holding exactly what was typed, and only accepts a value
+  // from outside when it isn't simply the trimmed echo of what this buffer already holds —
+  // otherwise a change from elsewhere (the stored name loading, a session reset) would never
+  // reach the field.
+  const [value, setValue] = useState(identity ?? '')
+  useEffect(() => {
+    setValue((current) => (current.trim() === (identity ?? '') ? current : identity ?? ''))
+  }, [identity])
+
   return (
     <label className="mb-2 block">
       <span className="mb-1 block text-[10px] font-bold tracking-widest text-ink-400">
         {t('collab.name')}
       </span>
       <input
-        value={identity ?? ''}
-        onChange={(e) => onSetIdentity(e.target.value)}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value)
+          onSetIdentity(e.target.value)
+        }}
         placeholder={t('collab.namePlaceholder')}
         maxLength={20}
         className="w-full rounded border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-ink-100 focus:border-gold-500 focus:outline-none"
