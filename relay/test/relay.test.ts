@@ -40,3 +40,37 @@ describe('A room', () => {
     }
   })
 })
+
+describe('Presence in a room', () => {
+  it('carries a name and a cursor to everyone else', async () => {
+    const a = await connect('presence-crosses')
+    const b = await connect('presence-crosses')
+    try {
+      a.awareness.setLocalStateField('user', { name: 'RwlRwl', cursor: { x: 12, y: 34 } })
+      const seen = () =>
+        [...b.awareness.getStates().values()].filter((s) => s.user?.name === 'RwlRwl')
+      await until(() => seen().length === 1, 'A’s presence to reach B')
+      expect(seen()[0].user.cursor).toEqual({ x: 12, y: 34 })
+    } finally {
+      a.close()
+      b.close()
+    }
+  })
+
+  it('takes a cursor away with the socket that owned it, leaving no ghost', async () => {
+    const a = await connect('presence-departs')
+    const b = await connect('presence-departs')
+    try {
+      a.awareness.setLocalStateField('user', { name: 'RwlRwl' })
+      await until(() => b.awareness.getStates().size === 2, 'B to see both participants')
+
+      a.close()
+      await until(() => b.awareness.getStates().size === 1, 'A’s presence to be withdrawn')
+      expect([...b.awareness.getStates().values()].some((s) => s.user?.name === 'RwlRwl')).toBe(
+        false,
+      )
+    } finally {
+      b.close()
+    }
+  })
+})

@@ -39,6 +39,29 @@ export class Room {
       syncProtocol.writeUpdate(encoder, update)
       this.broadcast(encoding.toUint8Array(encoder), origin)
     })
+
+    this.awareness = new awarenessProtocol.Awareness(this.doc)
+    // The relay is not a participant: it holds no cursor of its own.
+    this.awareness.setLocalState(null)
+
+    /** Which client ids each socket speaks for, so a departure takes its cursor with it. */
+    this.controlled = new Map()
+
+    this.awareness.on('update', ({ added, updated, removed }, origin) => {
+      const owned = this.controlled.get(origin)
+      if (owned) {
+        added.concat(updated).forEach((id) => owned.add(id))
+        removed.forEach((id) => owned.delete(id))
+      }
+      const changed = added.concat(updated, removed)
+      const encoder = encoding.createEncoder()
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS)
+      encoding.writeVarUint8Array(
+        encoder,
+        awarenessProtocol.encodeAwarenessUpdate(this.awareness, changed),
+      )
+      this.broadcast(encoding.toUint8Array(encoder), origin)
+    })
   }
 
   broadcast(data, except) {
@@ -53,6 +76,9 @@ export class Room {
   }
 
   drop(socket) {
+    const owned = this.controlled.get(socket)
+    if (owned) awarenessProtocol.removeAwarenessStates(this.awareness, [...owned], null)
+    this.controlled.delete(socket)
     this.sockets.delete(socket)
   }
 
@@ -62,11 +88,23 @@ export class Room {
     // Without this, workerd hands binary frames over as a Blob, and Yjs speaks bytes.
     server.binaryType = 'arraybuffer'
     this.sockets.add(server)
+    this.controlled.set(server, new Set())
 
     const sync = encoding.createEncoder()
     encoding.writeVarUint(sync, MESSAGE_SYNC)
     syncProtocol.writeSyncStep1(sync, this.doc)
     server.send(encoding.toUint8Array(sync))
+
+    const states = this.awareness.getStates()
+    if (states.size > 0) {
+      const encoder = encoding.createEncoder()
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS)
+      encoding.writeVarUint8Array(
+        encoder,
+        awarenessProtocol.encodeAwarenessUpdate(this.awareness, [...states.keys()]),
+      )
+      server.send(encoding.toUint8Array(encoder))
+    }
 
     server.addEventListener('message', (event) => {
       const decoder = decoding.createDecoder(new Uint8Array(event.data))
@@ -77,6 +115,13 @@ export class Room {
           syncProtocol.readSyncMessage(decoder, encoder, this.doc, server)
           // A bare message type and nothing after it means there was nothing to answer.
           if (encoding.length(encoder) > 1) server.send(encoding.toUint8Array(encoder))
+          break
+        case MESSAGE_AWARENESS:
+          awarenessProtocol.applyAwarenessUpdate(
+            this.awareness,
+            decoding.readVarUint8Array(decoder),
+            server,
+          )
           break
       }
     })
