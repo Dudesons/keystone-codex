@@ -25,8 +25,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  e2e:
+    name: End-to-end
+    uses: ./.github/workflows/e2e.yml
+
   build:
     name: Check, build and tag
+    needs: e2e
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.name }}
