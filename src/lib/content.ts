@@ -69,6 +69,8 @@ export interface MobContent {
 export interface DungeonContent {
   timer?: string
   summary?: string
+  /** Boss npcIds in encounter order, where `mdtIdx` gets it wrong. */
+  bosses?: number[]
   html: string
 }
 
@@ -133,6 +135,7 @@ interface RawMob {
 interface RawDungeon {
   timer?: string
   summary?: string
+  bosses?: number[]
   prose: string
 }
 
@@ -163,6 +166,7 @@ for (const [filePath, raw] of Object.entries(files)) {
     slot(dungeonFiles, slug)[locale] = {
       timer: data.timer as string | undefined,
       summary: data.summary as string | undefined,
+      bosses: npcIdList(data.bosses),
       prose,
     }
     continue
@@ -205,6 +209,17 @@ function definedOnly<T extends object>(value: T): Partial<T> {
   ) as Partial<T>
 }
 
+/**
+ * `bosses:` is hand-written YAML: an empty field parses to `null`, a typo to a string. Only a
+ * non-empty list of positive ids is worth anything downstream, so everything else becomes
+ * "not declared" rather than a half-valid array the ordering code would have to re-check.
+ */
+export function npcIdList(value: unknown): number[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const ids = value.map(Number).filter((n) => Number.isFinite(n) && n > 0)
+  return ids.length ? ids : undefined
+}
+
 function mergeMob(base?: RawMob, translation?: RawMob): MobContent | undefined {
   const source = translation ?? base
   if (!source) return undefined
@@ -236,6 +251,7 @@ function mergeDungeon(base?: RawDungeon, translation?: RawDungeon): DungeonConte
   return {
     timer: translation?.timer ?? base?.timer,
     summary: translation?.summary ?? base?.summary,
+    bosses: translation?.bosses ?? base?.bosses,
     html: render(translation?.prose || base?.prose || ''),
   }
 }

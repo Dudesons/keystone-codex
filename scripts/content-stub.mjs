@@ -87,6 +87,8 @@ export function buildDungeonStub(dungeon) {
     `timer:${timer ? ` ${timer}` : ''}`,
     '# One sentence summing the dungeon up, shown on the home page.',
     'summary:',
+    '# Boss order, only when mdtIdx gets it wrong — npcIds as the group meets them.',
+    'bosses:',
     '---',
     '',
     '## Route plan',

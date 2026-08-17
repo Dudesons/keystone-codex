@@ -152,6 +152,12 @@ describe('buildDungeonStub', () => {
     expect(stub).toContain('## Route plan')
     expect(stub).toContain('## Affixes')
   })
+
+  it('offers the boss-order override, empty', () => {
+    // Empty is the right default: mdtIdx is correct for every dungeon but one, and a
+    // pre-filled guess would be a claim the scaffold cannot make.
+    expect(buildDungeonStub(dungeon)).toMatch(/^bosses:$/m)
+  })
 })
 
 describe('scaffoldPlan', () => {
