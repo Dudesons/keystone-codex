@@ -185,8 +185,15 @@ describe('roundedPolygonPath', () => {
     )
   })
 
-  it('draws a segment between two vertices', () => {
-    expect(roundedPolygonPath([{ x: 1, y: 2 }, { x: 3, y: 4 }])).toBe('M 1 2 L 3 4')
+  it('gives a two-vertex hull a width of its own, so it encloses instead of joining', () => {
+    const d = roundedPolygonPath([{ x: 100, y: 100 }, { x: 300, y: 100 }])
+    expect(d.endsWith('Z')).toBe(true)
+
+    const outline = flatten(d)
+    const ys = outline.map((p) => p.y)
+    expect(Math.min(...ys)).toBeCloseTo(82, 0)
+    expect(Math.max(...ys)).toBeCloseTo(118, 0)
+    expect(encloses(outline, { x: 200, y: 100 })).toBe(true)
   })
 
   it('produces a closed path with one curve per vertex', () => {
@@ -211,5 +218,88 @@ describe('roundedPolygonPath', () => {
       { x: 0, y: 10 },
     ])
     expect(d.startsWith('M 0 5 ')).toBe(true)
+  })
+})
+
+/** Walks a path built by `roundedPolygonPath`, sampling its curves into a polyline. */
+const flatten = (d: string, steps = 24): Point[] => {
+  const tok = d.trim().split(/\s+/)
+  const out: Point[] = []
+  let cursor: Point = { x: 0, y: 0 }
+  for (let i = 0; i < tok.length; ) {
+    const op = tok[i++]
+    if (op === 'Z') break
+    if (op === 'M' || op === 'L') {
+      cursor = { x: Number(tok[i++]), y: Number(tok[i++]) }
+      out.push(cursor)
+      continue
+    }
+    if (op === 'Q') {
+      const c = { x: Number(tok[i++]), y: Number(tok[i++]) }
+      const end = { x: Number(tok[i++]), y: Number(tok[i++]) }
+      for (let s = 1; s <= steps; s++) {
+        const t = s / steps
+        const u = 1 - t
+        out.push({
+          x: u * u * cursor.x + 2 * u * t * c.x + t * t * end.x,
+          y: u * u * cursor.y + 2 * u * t * c.y + t * t * end.y,
+        })
+      }
+      cursor = end
+      continue
+    }
+    throw new Error(`unexpected path token: ${op}`)
+  }
+  return out
+}
+
+/** Ray casting: is `p` inside the closed polyline? */
+const encloses = (poly: Point[], p: Point) => {
+  let hit = false
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i]
+    const b = poly[j]
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      hit = !hit
+    }
+  }
+  return hit
+}
+
+describe('An outline encloses every mob it was drawn around', () => {
+  const outlineOf = (mobs: Point[]) => flatten(roundedPolygonPath(expandPolygon(convexHull(mobs), 34)))
+
+  it('holds for a compact group', () => {
+    const mobs: Point[] = [
+      { x: 300, y: 300 },
+      { x: 360, y: 310 },
+      { x: 330, y: 370 },
+      { x: 290, y: 350 },
+    ]
+    const outline = outlineOf(mobs)
+    for (const mob of mobs) expect(encloses(outline, mob), `${mob.x},${mob.y}`).toBe(true)
+  })
+
+  it('holds when one group sits far from the rest, which is what a long pull looks like', () => {
+    // Pull 7 of the Altar of Fangs: a cluster mid-map, a group up and right, one far bottom-right.
+    const mobs: Point[] = [
+      { x: 620, y: 560 },
+      { x: 660, y: 580 },
+      { x: 640, y: 610 },
+      { x: 1480, y: 340 },
+      { x: 1700, y: 900 },
+    ]
+    const outline = outlineOf(mobs)
+    for (const mob of mobs) expect(encloses(outline, mob), `${mob.x},${mob.y}`).toBe(true)
+  })
+
+  it('holds for a pull strung out in a line, the sharpest corners there are', () => {
+    const mobs: Point[] = [
+      { x: 200, y: 200 },
+      { x: 900, y: 260 },
+      { x: 1600, y: 320 },
+    ]
+    const outline = outlineOf(mobs)
+    for (const mob of mobs) expect(encloses(outline, mob), `${mob.x},${mob.y}`).toBe(true)
   })
 })
