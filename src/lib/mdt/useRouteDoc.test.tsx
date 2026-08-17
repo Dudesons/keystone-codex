@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as encoding from 'lib0/encoding'
 import * as syncProtocol from 'y-protocols/sync'
 import { Awareness } from 'y-protocols/awareness'
@@ -650,5 +650,90 @@ describe('randomRoomCode', () => {
     for (let i = 0; i < 200; i++) {
       expect(randomRoomCode()).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/)
     }
+  })
+})
+
+/** jsdom reports a visibility, but does not let a page change it. */
+const setVisibility = (state: 'visible' | 'hidden') => {
+  Object.defineProperty(document, 'visibilityState', { value: state, configurable: true })
+  document.dispatchEvent(new Event('visibilitychange'))
+}
+
+describe('An idle session pauses itself', () => {
+  afterEach(() => {
+    setVisibility('visible')
+    vi.useRealTimers()
+  })
+
+  it('pauses five minutes after the tab is hidden', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE1', 'host'))
+    expect(result.current.collab.status).not.toBe('paused')
+
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+  })
+
+  it('does not pause a hidden tab before those five minutes are up', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE2', 'host'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(4 * 60_000))
+    expect(result.current.collab.status).not.toBe('paused')
+  })
+
+  it('pauses a visible tab nobody has touched for fifteen minutes', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE3', 'host'))
+    act(() => void vi.advanceTimersByTime(15 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+  })
+
+  it('starts the clock over on any sign of life', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE4', 'host'))
+    act(() => void vi.advanceTimersByTime(14 * 60_000))
+    act(() => void document.dispatchEvent(new Event('pointermove')))
+    act(() => void vi.advanceTimersByTime(14 * 60_000))
+    expect(result.current.collab.status).not.toBe('paused')
+  })
+
+  it('comes back on request, on a new socket', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE5', 'host'))
+    const opened = SilentSocket.instances.length
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+
+    act(() => result.current.resumeRoom())
+    expect(result.current.collab.status).not.toBe('paused')
+    expect(result.current.collab.room).toBe('PAUSE5')
+    expect(SilentSocket.instances.length).toBeGreaterThan(opened)
+  })
+
+  it('keeps the room and the document, because a pause is not a departure', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => result.current.joinRoom('PAUSE6', 'host'))
+    act(() => result.current.actions.setName('Week 12'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.room).toBe('PAUSE6')
+    expect(result.current.route.name).toBe('Week 12')
+  })
+
+  it('leaves a session that was never opened alone', () => {
+    vi.useFakeTimers()
+    const { result } = mount()
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(30 * 60_000))
+    expect(result.current.collab.status).toBe('off')
   })
 })

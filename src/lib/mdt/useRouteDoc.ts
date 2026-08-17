@@ -55,7 +55,7 @@ const stashKey = (slug: string) => `${storageKey(slug)}:stashed`
 /** Namespaced by dungeon: the same code in two dungeons is two different rooms. */
 export const roomName = (slug: string, code: string) => `midnight-codex:${slug}:${code}`
 
-export type CollabStatus = 'off' | 'connecting' | 'connected'
+export type CollabStatus = 'off' | 'connecting' | 'connected' | 'paused'
 
 /**
  * How often a cursor is allowed on the wire.
@@ -64,6 +64,18 @@ export type CollabStatus = 'off' | 'connecting' | 'connected'
  * moving arrow, and the other forty would be a relay's bandwidth spent on nothing.
  */
 const CURSOR_INTERVAL_MS = 50
+
+/**
+ * How long an unattended session stays on the wire.
+ *
+ * An open socket keeps the relay's durable object loaded whether or not anyone is looking, and a
+ * forgotten tab shows the others a cursor that will never move again — a quota problem and an
+ * interface problem with one fix. Hidden is the short clock because a forgotten tab is almost
+ * always a background tab or a locked screen; visible-but-untouched is the long one, because
+ * somebody reading the map is not gone.
+ */
+const HIDDEN_PAUSE_MS = 5 * 60_000
+const IDLE_PAUSE_MS = 15 * 60_000
 
 interface PullShape {
   color: string
@@ -148,6 +160,11 @@ export interface RouteActions {
 }
 
 export interface CollabState {
+  /**
+   * `paused` is a decision, not a failure: the socket was closed because nobody was there.
+   * The room and the stash are kept, so `resumeRoom` puts the session back and `leaveRoom`
+   * still gives the local route back.
+   */
   status: CollabStatus
   room: string | null
   /** Participants, yourself included. */
@@ -255,6 +272,56 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   }, [])
 
   useEffect(() => () => closeSession(), [closeSession])
+
+  /**
+   * Read by the provider's own listeners, which would otherwise overwrite `paused` with what the
+   * socket says: closing one emits a last awareness change, and `wsconnected` is false.
+   */
+  const pausedRef = useRef(false)
+
+  const pauseSession = useCallback(() => {
+    const open = sessionRef.current
+    if (!open || pausedRef.current) return
+    pausedRef.current = true
+    // Disconnect, not destroy: the document, the room and the stash all survive a pause, and
+    // `connect()` is what makes the way back one click rather than a rejoin.
+    open.provider.disconnect()
+    setCollab((c) => ({ ...c, status: 'paused', peers: [], synced: false }))
+  }, [])
+
+  const resumeRoom = useCallback(() => {
+    const open = sessionRef.current
+    if (!open || !pausedRef.current) return
+    pausedRef.current = false
+    setCollab((c) => ({ ...c, status: 'connecting', synced: false }))
+    open.provider.connect()
+  }, [])
+
+  // The clock only runs while a session does, and only until it pauses itself.
+  const live = collab.status === 'connecting' || collab.status === 'connected'
+  useEffect(() => {
+    if (!live) return
+
+    let timer: ReturnType<typeof setTimeout> | null = null
+    const arm = () => {
+      if (timer != null) clearTimeout(timer)
+      timer = setTimeout(
+        pauseSession,
+        document.visibilityState === 'hidden' ? HIDDEN_PAUSE_MS : IDLE_PAUSE_MS,
+      )
+    }
+
+    // A hidden tab gets the short clock from the moment it hides, not from the next event it
+    // will never receive.
+    const signals = ['pointermove', 'pointerdown', 'keydown', 'visibilitychange']
+    signals.forEach((name) => document.addEventListener(name, arm))
+    arm()
+
+    return () => {
+      if (timer != null) clearTimeout(timer)
+      signals.forEach((name) => document.removeEventListener(name, arm))
+    }
+  }, [live, pauseSession])
 
   // The doc drives React state, never the other way round.
   useEffect(() => {
@@ -375,6 +442,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   const joinRoom = useCallback(
     (room: string, mode: 'host' | 'guest') => {
       closeSession()
+      pausedRef.current = false
 
       // Only on the way in from local editing: hopping from one room to another must not
       // bury the route you started with under the one you are leaving. A host stashes
@@ -400,7 +468,8 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           ...c,
           // The socket, not an intention. The previous reading was true as soon as a room
           // existed, so a session whose relay never answered still called itself connected.
-          status: provider.wsconnected ? 'connected' : 'connecting',
+          // A pause outranks both: it is why the socket is closed.
+          status: pausedRef.current ? 'paused' : provider.wsconnected ? 'connected' : 'connecting',
           synced: provider.synced,
           peers: readPeers(provider.awareness.getStates(), provider.awareness.clientID),
         }))
@@ -425,6 +494,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
 
   const leaveRoom = useCallback(() => {
     closeSession()
+    pausedRef.current = false
     const stashed = localStorage.getItem(stashKey(slug))
     if (stashed) {
       const restored = new Y.Doc()
@@ -481,7 +551,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     sessionRef.current?.provider.awareness.setLocalStateField('user', { name: trimmed })
   }, [])
 
-  return { route, actions, collab, joinRoom, leaveRoom, setIdentity, setCursor }
+  return { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor }
 }
 
 const IDENTITY_KEY = 'midnight-codex:identity'
