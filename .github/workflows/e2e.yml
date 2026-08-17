@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   e2e:
-    name: Four scenarios in a real browser
+    name: Scenarios in a real browser
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

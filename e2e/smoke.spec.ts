@@ -8,9 +8,10 @@ test('the built app loads on the deployed path shape', async ({ page }) => {
   expect(response?.status()).toBe(200)
   await expect(page).toHaveTitle(/Keystone Codex/)
 
-  // Relative asset paths are what make one build work at the root and under a sub-path alike.
   expect(page.url()).toContain('/keystone-codex/')
 
-  // The dungeon pool arrived, so the generated data is really being served.
+  // The dungeon pool arrived, so the generated data is really being served — relative asset paths
+  // are what let the same build load equally at the root and under this sub-path, and a build that
+  // lost that would fail to reach this point rather than merely fail this line.
   await expect(page.locator('a[href*="#/d/"]').first()).toBeVisible()
 })

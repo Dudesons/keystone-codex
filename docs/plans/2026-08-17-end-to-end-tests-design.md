@@ -18,6 +18,11 @@ sub-path, and for the composition of the map's coordinate transforms with real l
 tests that pass by construction, because the test supplies the very value production gets from the
 browser.
 
+What follows closes that gap only for the origin a local harness can reach — `http://localhost:4173`.
+A typo in the deployed host's own entry (`https://dudesons.github.io` in `relay/src/index.js`) would
+still ship green through everything below: a browser cannot forge an `Origin`, so a local harness has
+no way to send that one, and it stays something checked by eye rather than by this suite.
+
 A browser suite that mirrored the existing 631 tests would be a maintenance tax for nothing. This
 one is deliberately small, and every scenario earns its place by being unprovable without a browser.
 
@@ -218,6 +223,9 @@ locator would silently match nothing.
 
 ## Cost, stated plainly
 
-Roughly 130 MB of Chromium in CI (cached between runs), one to two minutes added per CI run, and a
-devDependency locally. Four tests is the whole suite; if it grows past what those four guarantees
-need, that growth needs its own argument.
+Roughly 130 MB of Chromium in CI, downloaded fresh every run rather than cached — the
+implementation plan departs from this design on that point deliberately: `npx playwright install
+--with-deps chromium` takes roughly 30–40 s on a GitHub runner, and an `actions/cache` entry keyed
+wrongly silently caches nothing while looking like it works, a worse failure than the 40 s it
+saves — one to two minutes added per CI run, and a devDependency locally. Four tests is the whole
+suite; if it grows past what those four guarantees need, that growth needs its own argument.

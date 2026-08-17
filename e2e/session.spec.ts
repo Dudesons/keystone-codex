@@ -3,6 +3,10 @@
 
 import { test, expect } from '@playwright/test'
 import { acceptInvitation, firstDungeonSlug, newParticipant, openSession, roomCode } from './fixtures'
+import { APP } from './urls'
+
+/** Escapes the characters `RegExp` gives meaning to, so a literal URL can sit inside a pattern. */
+const reEscape = (literal: string) => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 test('the relay accepts a socket from the origin it actually serves', async ({ page }) => {
   const slug = await firstDungeonSlug(page)
@@ -28,10 +32,10 @@ test('a join link carries the sub-path, and opens the invitation in another brow
 
   // Hash route, query string and GitHub Pages sub-path composing at once. Every jsdom test supplies
   // this URL itself, so none of them can catch a link that drops the sub-path. The code's alphabet
-  // is `randomRoomCode`'s: six characters, with I, O, 0 and 1 left out.
-  expect(link).toMatch(
-    new RegExp(`^http://localhost:4173/keystone-codex/#/d/${slug}\\?room=[A-HJ-NP-Z2-9]{6}$`),
-  )
+  // is `randomRoomCode`'s: six characters, with I, O, 0 and 1 left out. Built from `APP` rather than
+  // a literal, so a port change here does not leave a stale string behind — `APP` still comes from
+  // `e2e/urls.ts`, independent of the page's own `location`.
+  expect(link).toMatch(new RegExp(`^${reEscape(APP)}#/d/${slug}\\?room=[A-HJ-NP-Z2-9]{6}$`))
   const room = link.slice(link.indexOf('?room=') + '?room='.length)
 
   const guest = await newParticipant(browser)
