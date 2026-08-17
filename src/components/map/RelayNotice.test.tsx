@@ -32,6 +32,17 @@ describe('RelayNotice', () => {
     }
   })
 
+  it('is announced to a screen reader, not left for someone to stumble on visually', () => {
+    vi.useFakeTimers()
+    try {
+      renderEn(<RelayNotice stalled onLeave={() => {}} />)
+      act(() => void vi.advanceTimersByTime(5000))
+      expect(screen.getByRole('status')).toBeDefined()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('clears itself once a late sync lands, the way y-websocket catches up on its own', () => {
     vi.useFakeTimers()
     try {

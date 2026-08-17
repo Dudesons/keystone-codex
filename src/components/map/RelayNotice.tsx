@@ -31,7 +31,10 @@ export default function RelayNotice({ stalled, onLeave }: { stalled: boolean; on
   if (!speak) return null
 
   return (
-    <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded border border-threat-lethal/50 bg-ink-900/95 px-3 py-2 text-xs shadow-lg">
+    <div
+      role="status"
+      className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded border border-threat-lethal/50 bg-ink-900/95 px-3 py-2 text-xs shadow-lg"
+    >
       <span className="text-threat-lethal">⚠ {t('collab.relayStalled')}</span>
       <button
         onClick={onLeave}
