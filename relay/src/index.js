@@ -77,7 +77,9 @@ export class Room {
 
   drop(socket) {
     const owned = this.controlled.get(socket)
-    if (owned) awarenessProtocol.removeAwarenessStates(this.awareness, [...owned], null)
+    // Attribute the removal to the socket itself: it is that socket's own cursor leaving, and
+    // it lets `broadcast` skip resending to a socket that is already gone.
+    if (owned) awarenessProtocol.removeAwarenessStates(this.awareness, [...owned], socket)
     this.controlled.delete(socket)
     this.sockets.delete(socket)
   }

@@ -73,4 +73,25 @@ describe('Presence in a room', () => {
       b.close()
     }
   })
+
+  it('withdraws only the departing socket’s presence, leaving the others untouched', async () => {
+    const a = await connect('presence-departure-is-scoped')
+    const b = await connect('presence-departure-is-scoped')
+    const c = await connect('presence-departure-is-scoped')
+    try {
+      a.awareness.setLocalStateField('user', { name: 'A' })
+      b.awareness.setLocalStateField('user', { name: 'B' })
+      c.awareness.setLocalStateField('user', { name: 'C' })
+      const names = () =>
+        [...c.awareness.getStates().values()].map((s) => s.user?.name).filter(Boolean)
+      await until(() => names().length === 3, 'all three participants to be visible to C')
+
+      a.close()
+      await until(() => names().length === 2, 'A’s presence to be withdrawn from C')
+      expect(names().sort()).toEqual(['B', 'C'])
+    } finally {
+      b.close()
+      c.close()
+    }
+  })
 })
