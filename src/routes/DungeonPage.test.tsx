@@ -2,9 +2,9 @@
 // ABOUTME: Covers the header, the tab switch, and an unknown dungeon.
 
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getLookup } from '../lib/data'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
@@ -275,6 +275,36 @@ describe('Leaving a room offered by a link', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'paste another link' }))
     expect(screen.getByRole('button', { name: /join room differ/i })).toBeDefined()
+  })
+})
+
+describe('A session that pauses itself', () => {
+  it('does not cry outage when the session paused itself', () => {
+    // Fake timers from the start: RelayNotice's own grace period runs on the same clock as
+    // the pause threshold below, and a real setTimeout scheduled before switching clocks
+    // would never fire within this test.
+    vi.useFakeTimers()
+    try {
+      renderEn(at(`/d/${SLUG}?room=AWAY01`))
+
+      // A name is required before Join enables.
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+      fireEvent.click(screen.getByRole('button', { name: /join room away01/i }))
+      expect(screen.getByText('Leave')).toBeDefined()
+
+      // Walk away from the tab for longer than the hidden-tab pause threshold.
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+      act(() => void vi.advanceTimersByTime(5 * 60_000 + 5000))
+
+      // Positive proof the session actually paused, not merely that the notice is absent —
+      // the same query would also pass if the session had never opened at all.
+      expect(screen.getByText('paused — nobody was here')).toBeDefined()
+      expect(screen.queryByText(/not answering/i)).toBeNull()
+    } finally {
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      vi.useRealTimers()
+    }
   })
 })
 

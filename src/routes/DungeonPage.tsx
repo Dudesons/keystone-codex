@@ -236,7 +236,12 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             onCursorMove={collab.status === 'off' ? undefined : setCursor}
             notice={
               collab.status === 'off' ? undefined : (
-                <RelayNotice stalled={!collab.synced} onLeave={handleLeaveRoom} />
+                <RelayNotice
+                  // A pause is a decision, not a failure: "the relay is not answering" would be
+                  // a lie, and the panel already says what happened.
+                  stalled={collab.status !== 'paused' && !collab.synced}
+                  onLeave={handleLeaveRoom}
+                />
               )
             }
           />
