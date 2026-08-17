@@ -293,6 +293,20 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     const open = sessionRef.current
     if (!open || !pausedRef.current) return
     pausedRef.current = false
+    /**
+     * When this session paused, the relay — and, transitively, every other peer — marked its
+     * presence removed via `removeAwarenessStates`, which only advances a clock for the
+     * awareness instance's *own* id, never for a foreign one being removed
+     * (`y-protocols/awareness.js`). So everyone still remembers the exact clock this session
+     * held before it left, and `y-websocket` resends the local awareness state unchanged the
+     * moment a new socket opens — at that same, already-seen clock. Re-announcing at it would be
+     * silently discarded everywhere, exactly like a stale duplicate. Setting the local state
+     * again here, even to itself, is what advances that clock: the identical renewal
+     * `Awareness`'s own ~15s interval performs unprompted. Doing it before `connect()` means the
+     * resumed session is seen again at once instead of waiting on that timer.
+     */
+    const awareness = open.provider.awareness
+    if (awareness.getLocalState() !== null) awareness.setLocalState(awareness.getLocalState())
     setCollab((c) => ({ ...c, status: 'connecting', synced: false }))
     open.provider.connect()
   }, [])

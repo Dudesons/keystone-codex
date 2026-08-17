@@ -798,4 +798,27 @@ describe('An idle session pauses itself', () => {
     expect(result.current.collab.status).toBe('paused')
     unmount()
   })
+
+  it('re-announces its own presence on resume, so it is seen at once rather than after the renewal timer', () => {
+    // `removeAwarenessStates` only advances a clock for the awareness instance's own id, so
+    // every peer that saw this session pause still remembers the exact clock it held when it
+    // left. Resending that unchanged state on reconnect would be discarded everywhere as a
+    // stale duplicate — `resumeRoom` has to call `setLocalState` again to bump it, the same
+    // renewal `Awareness`'s own ~15s interval performs unprompted. There is no clock exposed
+    // through `collab`, so this pins the mechanism the way the file already does elsewhere
+    // (`destroys the awareness instance…`): spying on the `Awareness` method that is the only
+    // thing capable of advancing it.
+    vi.useFakeTimers()
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('PAUSE10', 'host'))
+    act(() => setVisibility('hidden'))
+    act(() => void vi.advanceTimersByTime(5 * 60_000))
+    expect(result.current.collab.status).toBe('paused')
+
+    const setLocalStateSpy = vi.spyOn(Awareness.prototype, 'setLocalState')
+    act(() => result.current.resumeRoom())
+    expect(setLocalStateSpy).toHaveBeenCalled()
+    setLocalStateSpy.mockRestore()
+    unmount()
+  })
 })
