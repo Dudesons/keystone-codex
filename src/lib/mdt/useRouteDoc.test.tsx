@@ -285,6 +285,23 @@ describe('Sessions', () => {
     unmount()
   })
 
+  it('records whether the session was opened or joined, and forgets it on leaving', () => {
+    // Nothing else in `collab` says whether a document already is the room's or is still
+    // waiting on one — the distinction the "fetching the room's route" notice depends on.
+    const { result, unmount } = mount()
+    expect(result.current.collab.mode).toBeNull()
+
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+    expect(result.current.collab.mode).toBe('host')
+
+    act(() => result.current.leaveRoom())
+    expect(result.current.collab.mode).toBeNull()
+
+    act(() => result.current.joinRoom('ABCDEF', 'guest'))
+    expect(result.current.collab.mode).toBe('guest')
+    unmount()
+  })
+
   it('takes its route into the room it opens', () => {
     const { result, unmount } = mount()
     act(() => result.current.actions.toggleClones(0, packA))
