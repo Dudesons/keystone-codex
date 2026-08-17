@@ -76,6 +76,9 @@ export default function RoutePanel({
   const [expanded, setExpanded] = useState<number | null>(null)
 
   const stats = routeStats(route, lookup)
+  // A route with no clones anywhere is exactly what cannot be told apart from "nothing has
+  // arrived yet" while a joined session is still waiting on the room's document.
+  const hasRoute = route.pulls.some((pull) => pull.clones.length > 0)
 
   /** Distinct mobs in a pull, with their unit count. */
   const pullMobs = useMemo(() => {
@@ -169,6 +172,12 @@ export default function RoutePanel({
           </button>
         </div>
       </section>
+
+      {collab.status !== 'off' && !collab.synced && !hasRoute && (
+        <p className="rounded border border-ink-700 bg-ink-850 px-3 py-2 text-xs text-ink-400">
+          {t('collab.awaitingRoom')}
+        </p>
+      )}
 
       <section>
         <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">

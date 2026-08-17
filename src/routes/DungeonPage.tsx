@@ -4,6 +4,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
+import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
 import { cloneKey, getLookup } from '../lib/data'
@@ -210,6 +211,11 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             showPackOutlines={mode === 'codex'}
             cursors={collab.status === 'off' ? undefined : collab.peers}
             onCursorMove={collab.status === 'off' ? undefined : setCursor}
+            notice={
+              collab.status === 'off' ? undefined : (
+                <RelayNotice stalled={!collab.synced} onLeave={leaveRoom} />
+              )
+            }
           />
         </div>
 

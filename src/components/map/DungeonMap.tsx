@@ -1,6 +1,7 @@
 // ABOUTME: The interactive map: pan and zoom, mob blips, pack and pull outlines, legend.
 // ABOUTME: Rendering only; the pan, zoom and layout arithmetic lives in viewport.ts.
 
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CloneRef, Enemy, Pack } from '../../lib/types'
 import { cloneKey, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'
@@ -47,6 +48,7 @@ interface Props {
   showPackOutlines?: boolean
   onCursorMove?: (p: Point | null) => void
   cursors?: Peer[]
+  notice?: ReactNode
 }
 
 export default function DungeonMap({
@@ -62,6 +64,7 @@ export default function DungeonMap({
   showPackOutlines = true,
   onCursorMove,
   cursors,
+  notice,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -295,6 +298,7 @@ export default function DungeonMap({
       {showLegend && <Legend />}
       {hoverClone && <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
+      {notice}
     </div>
   )
 }

@@ -152,6 +152,8 @@ export const en = {
   'collab.namePlaceholder': 'Name',
   'collab.hint':
     'The route syncs live through a relay. Joining leaves your local route behind and takes the room’s.',
+  'collab.relayStalled': 'The relay is not answering. Your local route is safe.',
+  'collab.awaitingRoom': 'Fetching the room’s route…',
 
   // MDT import errors addressed to the user. The codec's diagnostic errors stay in English
   // in the code and are surfaced as-is: whoever sees one is opening a ticket anyway.

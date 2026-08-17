@@ -368,6 +368,36 @@ describe('Collaborative session', () => {
   })
 })
 
+describe('Awaiting the room’s route', () => {
+  // `connected` here stands for a guest whose document has joined the room but not yet
+  // received anything: an empty route (nothing has arrived) mounted with `synced: false`
+  // (the provider hasn't caught up). That pairing is exactly the ambiguity this task removes.
+  const connected = (synced: boolean): CollabState => ({
+    status: 'connected',
+    room: 'AB3K9Z',
+    peers: peersOf(2),
+    identity: 'Player-1234',
+    synced,
+  })
+
+  it('says the room’s route is on its way rather than showing an empty one', () => {
+    mount({ route: emptyRoute(SLUG, MDT_INDEX), collab: connected(false) })
+    expect(screen.getByText(/fetching the room/i)).toBeDefined()
+  })
+
+  it('shows the route once it has arrived', () => {
+    mount({ route: routeWith(2), collab: connected(true) })
+    expect(screen.queryByText(/fetching the room/i)).toBeNull()
+  })
+
+  it('does not tell a host holding its own route that one is coming', () => {
+    // A host's document already is the room's — it never waits on a peer to fill it in, so
+    // an empty `synced` briefly staying false must not be read as the same ambiguity.
+    mount({ route: routeWith(2), collab: connected(false) })
+    expect(screen.queryByText(/fetching the room/i)).toBeNull()
+  })
+})
+
 describe('Choosing a name', () => {
   it('refuses to open or join a session until a name is given', () => {
     mount({ collab: { ...offline, identity: null } })

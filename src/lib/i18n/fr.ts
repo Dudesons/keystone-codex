@@ -153,6 +153,8 @@ export const fr: Dictionary = {
   'collab.namePlaceholder': 'Pseudo',
   'collab.hint':
     'La route est synchronisée en direct via un relais. Rejoindre laisse ta route locale de côté et prend celle du salon.',
+  'collab.relayStalled': 'Le relais ne répond pas. Ta route locale est intacte.',
+  'collab.awaitingRoom': 'Récupération de la route du salon…',
 
   // MDT import errors addressed to the user
   'mdtError.noValue': 'Preset MDT invalide : champ « value » absent.',
