@@ -41,7 +41,7 @@ interface Props {
  * the deployment is repeated here.
  */
 export function sessionLink(slug: string, room: string): string {
-  return `${location.origin}${location.pathname}#/d/${slug}?room=${room}`
+  return `${location.origin}${location.pathname}#/d/${slug}/map?room=${room}`
 }
 
 /**

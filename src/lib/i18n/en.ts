@@ -48,6 +48,12 @@ export const en = {
   'tab.codex': 'Codex',
   'tab.route': 'Route',
 
+  // Highlights page
+  'highlights.mobs': 'MOBS TO KNOW',
+  'highlights.traps': 'TRAPS',
+  'highlights.bosses': 'BOSSES',
+  'highlights.empty': 'Nothing has been written for this dungeon yet.',
+
   // Codex panel
   'codex.pack': 'Pack {n}',
   'codex.inThisPack': '×{n} in this pack',

@@ -49,6 +49,12 @@ export const fr: Dictionary = {
   'tab.codex': 'Codex',
   'tab.route': 'Route',
 
+  // Highlights page
+  'highlights.mobs': 'MOBS À CONNAÎTRE',
+  'highlights.traps': 'PIÈGES',
+  'highlights.bosses': 'BOSS',
+  'highlights.empty': 'Rien n’est encore écrit pour ce donjon.',
+
   // Codex panel
   'codex.pack': 'Pack {n}',
   'codex.inThisPack': '×{n} dans ce pack',

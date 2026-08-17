@@ -166,7 +166,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         setSelectedPack(entry.clone.g ?? null)
         // The panel scrolls to the clicked unit rather than leaving you to look for it.
         setFocusNpc(entry.enemy.id)
-        if (selectedMob != null) navigate(`/d/${slug}`)
+        if (selectedMob != null) navigate(`/d/${slug}/map`)
         return
       }
 
@@ -246,7 +246,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               pullByNpc={pullByNpc}
               onSelectMob={(id) => {
                 setFocusNpc(id)
-                navigate(id == null ? `/d/${slug}` : `/d/${slug}/mob/${id}`)
+                navigate(id == null ? `/d/${slug}/map` : `/d/${slug}/map/mob/${id}`)
               }}
               onHoverMob={setHoveredNpc}
               onClearSelection={() => {
@@ -267,7 +267,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               onFocusMob={(id) => {
                 setMode('codex')
                 setFocusNpc(id)
-                navigate(`/d/${slug}/mob/${id}`)
+                navigate(`/d/${slug}/map/mob/${id}`)
               }}
               collab={collab}
               onJoinRoom={joinRoom}

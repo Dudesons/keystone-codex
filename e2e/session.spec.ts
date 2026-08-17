@@ -35,7 +35,7 @@ test('a join link carries the sub-path, and opens the invitation in another brow
   // is `randomRoomCode`'s: six characters, with I, O, 0 and 1 left out. Built from `APP` rather than
   // a literal, so a port change here does not leave a stale string behind — `APP` still comes from
   // `e2e/urls.ts`, independent of the page's own `location`.
-  expect(link).toMatch(new RegExp(`^${reEscape(APP)}#/d/${slug}\\?room=[A-HJ-NP-Z2-9]{6}$`))
+  expect(link).toMatch(new RegExp(`^${reEscape(APP)}#/d/${slug}/map\\?room=[A-HJ-NP-Z2-9]{6}$`))
   const room = link.slice(link.indexOf('?room=') + '?room='.length)
 
   const guest = await newParticipant(browser)
@@ -99,7 +99,7 @@ test('a local route is set aside on joining and given back on leaving', async ({
   const room = roomCode()
 
   // A local draft, in real localStorage rather than jsdom's.
-  await page.goto(`./#/d/${slug}`)
+  await page.goto(`./#/d/${slug}/map`)
   await page.getByRole('button', { name: 'Route', exact: true }).click()
   await page.getByPlaceholder('Route name').fill('LOCAL DRAFT')
   // A fresh route already starts on one empty pull (`emptyRoute`, pinned by route.test.ts), so one

@@ -70,8 +70,12 @@ const lookup = getLookup(SLUG)!
 const at = (path: string) => (
   <MemoryRouter initialEntries={[path]}>
     <Routes>
+      {/* Bare `/d/:slug` no longer exists in the app's own route table (that address is
+          the briefing now), but the unknown-dungeon test below still asks for it directly —
+          the lookup failure it exercises does not depend on which segment count reached it. */}
       <Route path="/d/:slug" element={<DungeonPage />} />
-      <Route path="/d/:slug/mob/:npcId" element={<DungeonPage />} />
+      <Route path="/d/:slug/map" element={<DungeonPage />} />
+      <Route path="/d/:slug/map/mob/:npcId" element={<DungeonPage />} />
       <Route path="/" element={<p>home</p>} />
     </Routes>
   </MemoryRouter>
@@ -93,7 +97,7 @@ describe('Unknown dungeon', () => {
 
 describe('Header', () => {
   it('names the dungeon and sums up its forces and packs', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     const header = container.querySelector('header')!
     expect(within(header).getByText(lookup.dungeon.englishName)).toBeDefined()
     expect(header.textContent).toContain(`${lookup.dungeon.totalCount} forces`)
@@ -101,29 +105,29 @@ describe('Header', () => {
   })
 
   it('shows no timer while `_dungeon.md` leaves it empty', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     expect(container.querySelector('header')!.textContent).not.toMatch(/\d+ min/)
   })
 
   it('mentions no route until one holds clones', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     expect(container.querySelector('header')!.textContent).not.toContain('route')
   })
 
   it('shows no collaboration badge while the session is off', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     // The badge renders the room code next to the peer count.
     expect(container.querySelector('header')!.textContent).not.toMatch(/·\s*\d+$/)
   })
 
   it('carries the language switcher', () => {
-    renderEn(at(`/d/${SLUG}`))
+    renderEn(at(`/d/${SLUG}/map`))
     expect(screen.getByRole('button', { name: 'EN' })).toBeDefined()
     expect(screen.getByRole('button', { name: 'FR' })).toBeDefined()
   })
 
   it('translates the chrome without touching the dungeon name', () => {
-    renderFr(at(`/d/${SLUG}`))
+    renderFr(at(`/d/${SLUG}/map`))
     // englishName comes from MDT, not from the dictionary: it stays as extracted.
     expect(screen.getByText(lookup.dungeon.englishName)).toBeDefined()
     expect(screen.getByRole('button', { name: 'Codex' })).toBeDefined()
@@ -132,13 +136,13 @@ describe('Header', () => {
 
 describe('Codex and Route tabs', () => {
   it('opens on the codex', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     expect(screen.getByRole('heading', { name: 'BOSSES' })).toBeDefined()
     expect(container.querySelectorAll('article').length).toBeGreaterThan(0)
   })
 
   it('switches to the route panel and back', () => {
-    renderEn(at(`/d/${SLUG}`))
+    renderEn(at(`/d/${SLUG}/map`))
 
     fireEvent.click(screen.getByRole('button', { name: 'Route' }))
     expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
@@ -148,7 +152,7 @@ describe('Codex and Route tabs', () => {
   })
 
   it('keeps the map mounted across both tabs', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     expect(container.querySelector('svg')).not.toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Route' }))
@@ -158,7 +162,7 @@ describe('Codex and Route tabs', () => {
 
 describe('Arriving with an invitation link', () => {
   it('opens on the route panel and shows the invitation, not the codex', () => {
-    const { container } = renderEn(at(`/d/${SLUG}?room=ABC123`))
+    const { container } = renderEn(at(`/d/${SLUG}/map?room=ABC123`))
     expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
     expect(container.textContent).toContain('ABC123')
     expect(container.textContent).toMatch(/set aside/i)
@@ -169,14 +173,14 @@ describe('A link pasted after arrival', () => {
   /** Changes the URL without remounting `DungeonPage`, the way a hash change from a pasted link does. */
   function PasteLink() {
     const navigate = useNavigate()
-    return <button onClick={() => navigate(`/d/${SLUG}?room=TESTX`)}>paste link</button>
+    return <button onClick={() => navigate(`/d/${SLUG}/map?room=TESTX`)}>paste link</button>
   }
 
   const withPasteLink = (path: string) => (
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route
-          path="/d/:slug"
+          path="/d/:slug/map"
           element={
             <>
               <PasteLink />
@@ -189,7 +193,7 @@ describe('A link pasted after arrival', () => {
   )
 
   it('switches into route mode once the URL carries a room, with no reload', () => {
-    renderEn(withPasteLink(`/d/${SLUG}`))
+    renderEn(withPasteLink(`/d/${SLUG}/map`))
     expect(screen.getByRole('heading', { name: 'BOSSES' })).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'paste link' }))
@@ -199,7 +203,7 @@ describe('A link pasted after arrival', () => {
   })
 
   it('does not force route mode back on someone who has since chosen Codex', () => {
-    renderEn(withPasteLink(`/d/${SLUG}`))
+    renderEn(withPasteLink(`/d/${SLUG}/map`))
     fireEvent.click(screen.getByRole('button', { name: 'paste link' }))
     expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
 
@@ -212,7 +216,7 @@ describe('Pack outlines', () => {
   const outlines = (container: HTMLElement) => container.querySelectorAll('svg path').length
 
   it('are drawn in route mode too, where the panel asks you to click a pack', () => {
-    const { container } = renderEn(at(`/d/${SLUG}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map`))
     const inCodex = outlines(container)
     expect(inCodex).toBeGreaterThanOrEqual(lookup.packs.size)
 
@@ -225,7 +229,7 @@ describe('Pack outlines', () => {
 
 describe('Leaving a room offered by a link', () => {
   it('does not re-offer the room it just escaped, though a reload still would', () => {
-    renderEn(at(`/d/${SLUG}?room=ABC123`))
+    renderEn(at(`/d/${SLUG}/map?room=ABC123`))
     expect(screen.getByRole('button', { name: /join room abc123/i })).toBeDefined()
 
     // A name is required before Join enables.
@@ -249,13 +253,13 @@ describe('Leaving a room offered by a link', () => {
     // same bug fix 4 removed, resurrected by fix 5.
     function GoToDifferentRoom() {
       const navigate = useNavigate()
-      return <button onClick={() => navigate(`/d/${SLUG}?room=DIFFER`)}>paste another link</button>
+      return <button onClick={() => navigate(`/d/${SLUG}/map?room=DIFFER`)}>paste another link</button>
     }
     const withNavigation = (
-      <MemoryRouter initialEntries={[`/d/${SLUG}?room=ABC123`]}>
+      <MemoryRouter initialEntries={[`/d/${SLUG}/map?room=ABC123`]}>
         <Routes>
           <Route
-            path="/d/:slug"
+            path="/d/:slug/map"
             element={
               <>
                 <GoToDifferentRoom />
@@ -288,7 +292,7 @@ describe('A session that pauses itself', () => {
     // reason.
     vi.useFakeTimers()
     try {
-      renderEn(at(`/d/${SLUG}?room=AWAY01`))
+      renderEn(at(`/d/${SLUG}/map?room=AWAY01`))
 
       // A name is required before Join enables.
       fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
@@ -323,19 +327,19 @@ describe('Deep link to a mob', () => {
   const enemy = lookup.dungeon.enemies.find((e) => !e.isBoss)!
 
   it('opens straight on that entry, alone', () => {
-    const { container } = renderEn(at(`/d/${SLUG}/mob/${enemy.id}`))
+    const { container } = renderEn(at(`/d/${SLUG}/map/mob/${enemy.id}`))
     const aside = container.querySelector('aside')!
     expect(aside.querySelectorAll('article')).toHaveLength(1)
     expect(aside.textContent).toContain(enemy.name)
   })
 
   it('offers a way back to the full list', () => {
-    renderEn(at(`/d/${SLUG}/mob/${enemy.id}`))
+    renderEn(at(`/d/${SLUG}/map/mob/${enemy.id}`))
     expect(screen.getByText('← Back')).toBeDefined()
   })
 
   it('falls back to the list for a mob the dungeon does not have', () => {
-    renderEn(at(`/d/${SLUG}/mob/999999`))
+    renderEn(at(`/d/${SLUG}/map/mob/999999`))
     expect(screen.getByRole('heading', { name: 'BOSSES' })).toBeDefined()
   })
 })
@@ -345,11 +349,11 @@ describe('Remounting per dungeon', () => {
     // The `key={slug}` on DungeonView is what guarantees this: mob indices mean different
     // things from one dungeon to the next, so no state may survive the switch.
     const other = lookup.dungeon.slug === 'altar-of-fangs' ? 'kings-rest' : 'altar-of-fangs'
-    const { container: first } = renderEn(at(`/d/${SLUG}`))
+    const { container: first } = renderEn(at(`/d/${SLUG}/map`))
     expect(first.querySelector('h1')!.textContent).toBe(lookup.dungeon.englishName)
 
     cleanup()
-    const { container: second } = renderEn(at(`/d/${other}`))
+    const { container: second } = renderEn(at(`/d/${other}/map`))
     expect(second.querySelector('h1')!.textContent).toBe(getLookup(other)!.dungeon.englishName)
   })
 })

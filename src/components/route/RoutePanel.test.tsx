@@ -576,7 +576,7 @@ describe('Traps in the briefing', () => {
 describe('sessionLink', () => {
   it('puts the room inside the hash, where a static host can still route it', () => {
     expect(sessionLink('altar-of-fangs', 'ABC123')).toBe(
-      `${location.origin}${location.pathname}#/d/altar-of-fangs?room=ABC123`,
+      `${location.origin}${location.pathname}#/d/altar-of-fangs/map?room=ABC123`,
     )
   })
 })

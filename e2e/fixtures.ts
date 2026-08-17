@@ -55,7 +55,7 @@ export async function firstDungeonSlug(page: Page): Promise<string> {
  * class as though it were an interface.
  */
 export async function openSession(page: Page, slug: string, name: string) {
-  await page.goto(`./#/d/${slug}`)
+  await page.goto(`./#/d/${slug}/map`)
   await page.getByRole('button', { name: 'Route', exact: true }).click()
   await page.getByLabel('Your name').fill(name)
   await page.getByRole('button', { name: 'Open a session with this route' }).click()
@@ -67,7 +67,7 @@ export async function openSession(page: Page, slug: string, name: string) {
  * no tab has to be clicked here.
  */
 export async function acceptInvitation(page: Page, slug: string, room: string, name: string) {
-  await page.goto(`./#/d/${slug}?room=${room}`)
+  await page.goto(`./#/d/${slug}/map?room=${room}`)
   await page.getByLabel('Your name').fill(name)
   await page.getByRole('button', { name: `Join room ${room}` }).click()
   await expect(page.getByText('SHARED SESSION')).toBeVisible()
