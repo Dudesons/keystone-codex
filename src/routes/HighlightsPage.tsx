@@ -1,8 +1,9 @@
 // ABOUTME: A dungeon's briefing page: the shared header, the dungeon's written summary if it
-// ABOUTME: has one, and a placeholder sentence when the codex holds nothing for it at all.
+// ABOUTME: has one, its mobs table, and a placeholder sentence when the codex holds nothing at all.
 
 import { Link, useParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
+import MobTable from '../components/highlights/MobTable'
 import { getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { getHighlights } from '../lib/highlights'
@@ -39,6 +40,14 @@ export default function HighlightsPage() {
             <p className="mb-8 max-w-3xl text-sm leading-relaxed text-ink-300">
               {content.summary}
             </p>
+          )}
+          {highlights.mobs.length > 0 && (
+            <section className="mb-10">
+              <h2 className="mb-2 text-xs font-semibold tracking-[0.2em] text-gold-500">
+                {t('highlights.mobs')}
+              </h2>
+              <MobTable slug={slug} mobs={highlights.mobs} />
+            </section>
           )}
           {empty && <p className="text-sm text-ink-400">{t('highlights.empty')}</p>}
         </div>
