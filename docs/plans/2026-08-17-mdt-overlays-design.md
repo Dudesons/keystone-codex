@@ -167,7 +167,7 @@ New i18n keys go into **both** `en.ts` and `fr.ts`; `fr.ts` is typed against `en
 | Level | Covered | Against |
 | --- | --- | --- |
 | Unit (node) | `luaToObjects`: the five notes, their coordinates and text; the `shown` filter; the stable `drawLayer` sort; a malformed object skipped | `src/lib/mdt/__fixtures__/real-export.txt`, the real in-game export |
-| Unit (node) | POIs flattened with their sublevel; an unknown type kept and reported | `scripts/__fixtures__/MurderRow.lua`, copied from the addon (52 KB, against 34 for the existing fixture) — the only season dungeon carrying real POIs |
+| Unit (node) | POIs flattened with their sublevel; an unknown type kept and reported | Murder Row's `mapPOIs` assignment, copied **verbatim** into the test — the only season dungeon carrying real POIs |
 | Component (jsdom) | a stroke with its colour and width; one pin per note and its text on hover; an item icon and its tooltip | the real dungeon pool, as the existing component tests do |
 | Integration (jsdom) | strokes visible in Route mode only, items in both tabs | `DungeonPage` |
 
