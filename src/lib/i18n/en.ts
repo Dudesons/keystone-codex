@@ -43,6 +43,8 @@ export const en = {
   'dungeon.unknown': 'Unknown dungeon.',
   'dungeon.backHome': 'Back to home',
   'dungeon.route': 'route “{name}”',
+  'dungeon.toMap': 'Map',
+  'dungeon.toHighlights': 'Highlights',
   'tab.codex': 'Codex',
   'tab.route': 'Route',
 

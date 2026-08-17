@@ -3,17 +3,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import DungeonHeader from '../components/DungeonHeader'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
 import { cloneKey, getLookup } from '../lib/data'
-import { getDungeonContent } from '../lib/content'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
-import LocaleSwitcher from '../components/LocaleSwitcher'
 import type { CloneRef } from '../lib/types'
 
 type Mode = 'codex' | 'route'
@@ -41,7 +40,7 @@ export default function DungeonPage() {
 
 function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const navigate = useNavigate()
-  const { t, plural, locale } = useI18n()
+  const { t } = useI18n()
   const lookup = getLookup(slug)!
 
   // The room a join link carries. `?room=` stays in the URL after arrival, so a reload offers
@@ -178,7 +177,6 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
-  const content = getDungeonContent(slug, locale)
   const tab = (value: Mode, label: string) => (
     <button
       onClick={() => setMode(value)}
@@ -192,32 +190,22 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex shrink-0 items-center gap-4 border-b border-ink-800 px-4 py-2.5">
-        <Link to="/" className="text-sm text-ink-400 hover:text-gold-400">
-          ←
-        </Link>
-        <div className="min-w-0">
-          <h1 className="truncate font-semibold text-ink-100">{lookup.dungeon.englishName}</h1>
-          <p className="text-[11px] text-ink-400">
-            {plural('common.forces', lookup.dungeon.totalCount)} ·{' '}
-            {plural('common.packs', lookup.packs.size)}
-            {content?.timer ? ` · ${t('common.minutes', { n: content.timer })}` : ''}
-            {hasRoute && ` · ${t('dungeon.route', { name: route.name })}`}
-          </p>
+      <DungeonHeader
+        slug={slug}
+        lookup={lookup}
+        view="map"
+        note={hasRoute ? t('dungeon.route', { name: route.name }) : undefined}
+      >
+        {collab.status !== 'off' && (
+          <span className="rounded border border-threat-low/40 bg-threat-low/10 px-2 py-1 text-[11px] text-threat-low">
+            {collab.room} · {collab.peers.length}
+          </span>
+        )}
+        <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
+          {tab('codex', t('tab.codex'))}
+          {tab('route', t('tab.route'))}
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          {collab.status !== 'off' && (
-            <span className="rounded border border-threat-low/40 bg-threat-low/10 px-2 py-1 text-[11px] text-threat-low">
-              {collab.room} · {collab.peers.length}
-            </span>
-          )}
-          <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
-            {tab('codex', t('tab.codex'))}
-            {tab('route', t('tab.route'))}
-          </div>
-          <LocaleSwitcher />
-        </div>
-      </header>
+      </DungeonHeader>
 
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1">

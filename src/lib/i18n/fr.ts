@@ -44,6 +44,8 @@ export const fr: Dictionary = {
   'dungeon.unknown': 'Donjon inconnu.',
   'dungeon.backHome': 'Retour à l’accueil',
   'dungeon.route': 'route « {name} »',
+  'dungeon.toMap': 'Carte',
+  'dungeon.toHighlights': 'Highlights',
   'tab.codex': 'Codex',
   'tab.route': 'Route',
 
