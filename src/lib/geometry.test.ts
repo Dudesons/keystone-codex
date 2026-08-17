@@ -27,6 +27,21 @@ const signedArea = (pts: Point[]) =>
 
 const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y)
 
+/** Distance from `p` to the closed boundary of `poly`, edges included, not only its corners. */
+const distToBoundary = (poly: Point[], p: Point) => {
+  let best = Infinity
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]
+    const b = poly[(i + 1) % poly.length]
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const len2 = dx * dx + dy * dy
+    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2))
+    best = Math.min(best, Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y))
+  }
+  return best
+}
+
 const centroid = (pts: Point[]): Point => ({
   x: pts.reduce((s, p) => s + p.x, 0) / pts.length,
   y: pts.reduce((s, p) => s + p.y, 0) / pts.length,
@@ -148,12 +163,44 @@ describe('expandPolygon', () => {
     expect(expandPolygon([], 26)).toEqual([])
   })
 
-  it('pushes each vertex exactly `padding` further from the centre', () => {
-    const c = centroid(square)
-    const grown = expandPolygon(square, 4)
-    square.forEach((p, i) => {
-      expect(dist(grown[i], c) - dist(p, c)).toBeCloseTo(4, 9)
-    })
+  const needle: Point[] = [
+    { x: 0, y: 0 },
+    { x: 900, y: 40 },
+    { x: 20, y: 30 },
+  ]
+
+  it('keeps its distance from every position, whichever way the outline runs', () => {
+    // The distance that matters is to the outline itself, edges included. Pushing vertices away
+    // from a centre satisfies a corner-to-corner reading of this and still runs an edge straight
+    // across a position, which is what an elongated shape is made of.
+    for (const [name, shape] of [
+      ['square', square],
+      ['needle', needle],
+    ] as const) {
+      const grown = expandPolygon(shape, 26)
+      for (const p of shape) {
+        expect(distToBoundary(grown, p), `${name}: ${p.x},${p.y}`).toBeGreaterThan(26 * 0.96)
+      }
+    }
+  })
+
+  it('stands off by exactly the padding asked for, no further', () => {
+    const grown = expandPolygon(needle, 26)
+    for (const p of needle) {
+      expect(Math.min(...grown.map((g) => dist(g, p))), `${p.x},${p.y}`).toBeCloseTo(26, 6)
+    }
+  })
+
+  it('gives a two-position hull a width, so it can be enclosed rather than joined', () => {
+    const grown = expandPolygon(
+      [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+      ],
+      26,
+    )
+    expect(Math.min(...grown.map((p) => p.y))).toBeCloseTo(74, 6)
+    expect(Math.max(...grown.map((p) => p.y))).toBeCloseTo(126, 6)
   })
 
   it('keeps the centre of a symmetric shape', () => {
@@ -162,8 +209,8 @@ describe('expandPolygon', () => {
     expect(centroid(grown).y).toBeCloseTo(centroid(square).y, 9)
   })
 
-  it('produces no NaN when a vertex sits on the centre', () => {
-    // A pack of a single clone: the vertex IS the centre, so the direction is undefined.
+  it('leaves a lone position where it is', () => {
+    // A pack of a single clone has no edge to offset, and nothing to enclose but itself.
     const grown = expandPolygon([{ x: 7, y: -3 }], 26)
     expect(grown[0].x).toBeCloseTo(7, 9)
     expect(grown[0].y).toBeCloseTo(-3, 9)
@@ -187,15 +234,10 @@ describe('roundedPolygonPath', () => {
     )
   })
 
-  it('gives a two-vertex hull a width of its own, so it encloses instead of joining', () => {
-    const d = roundedPolygonPath([{ x: 100, y: 100 }, { x: 300, y: 100 }])
-    expect(d.endsWith('Z')).toBe(true)
-
-    const outline = flatten(d)
-    const ys = outline.map((p) => p.y)
-    expect(Math.min(...ys)).toBeCloseTo(82, 0)
-    expect(Math.max(...ys)).toBeCloseTo(118, 0)
-    expect(encloses(outline, { x: 200, y: 100 })).toBe(true)
+  it('draws a segment between two vertices', () => {
+    // Widening a hull that has none of its own is `expandPolygon`'s job, so by the time a path
+    // is drawn a pair is either already a shape or genuinely just a line.
+    expect(roundedPolygonPath([{ x: 1, y: 2 }, { x: 3, y: 4 }])).toBe('M 1 2 L 3 4')
   })
 
   it('produces a closed path with one curve per vertex', () => {

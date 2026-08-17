@@ -55,28 +55,61 @@ export function convexHull(points: Point[]): Point[] {
 }
 
 /**
- * How far a pull's outline is pushed clear of the positions it was drawn around.
+ * How far a pull's outline is kept clear of the positions it was drawn around.
  *
  * A position is drawn as a portrait, not as a point, so the outline has to clear the disc rather
- * than its centre: the widest an ordinary blip gets is 26.6 px. The push is radial from the
- * hull's centre, which is rarely the direction the outline runs in, and a rounded corner takes
- * back up to half its radius. A vertex therefore keeps well under half of this number, and the
- * loss grows with how elongated the pull is: 58 is what it takes for the tightest corner of a
- * pull spanning the map to still clear a portrait.
+ * than its centre: the widest an ordinary blip gets is 26.6 px. `expandPolygon` offsets the edges,
+ * so this distance holds in every direction, and only the corner rounding takes any of it back.
  */
-export const PULL_OUTLINE_PADDING = 58
+export const PULL_OUTLINE_PADDING = 40
 
-/** Pushes a polygon's vertices `padding` px out from its centre, for a legible outline. */
+/** How finely a corner's turn is sampled. A chord then sits at `cos(15°)` of the padding. */
+const OFFSET_STEP = Math.PI / 6
+
+/**
+ * Every point `padding` px outside a convex polygon: each edge moved out along its own normal,
+ * the corners joined by arcs.
+ *
+ * Pushing the vertices away from the polygon's centre instead would be simpler and wrong. That
+ * direction has little to do with the one the outline runs in, so the distance asked for is spent
+ * partly on sliding a vertex along its own edge: a square keeps only `padding * cos(45°)`, and an
+ * elongated shape — a pull crossing the dungeon — barely a third of it along its flanks. Offsetting
+ * the edges gives the same clearance in every direction, which is what makes `padding` mean
+ * something a caller can reason about.
+ *
+ * A single position has no edge to offset and nothing to enclose but itself, so it is returned
+ * unchanged; a pair is a segment, and comes back as a stadium around it.
+ */
 export function expandPolygon(points: Point[], padding: number): Point[] {
-  if (!points.length) return points
-  const cx = points.reduce((s, p) => s + p.x, 0) / points.length
-  const cy = points.reduce((s, p) => s + p.y, 0) / points.length
-  return points.map((p) => {
-    const dx = p.x - cx
-    const dy = p.y - cy
-    const len = Math.hypot(dx, dy) || 1
-    return { x: p.x + (dx / len) * padding, y: p.y + (dy / len) * padding }
+  if (points.length <= 1) return [...points]
+
+  // Outward normal of the edge leaving each vertex, for a hull wound clockwise.
+  const normals = points.map((a, i) => {
+    const b = points[(i + 1) % points.length]
+    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1
+    return { x: (b.y - a.y) / len, y: -(b.x - a.x) / len }
   })
+
+  const out: Point[] = []
+  points.forEach((v, i) => {
+    const from = normals[(i - 1 + points.length) % points.length]
+    const to = normals[i]
+    // The turn from one edge's normal to the next's, always taken the way the winding goes.
+    let turn = Math.atan2(from.x * to.y - from.y * to.x, from.x * to.x + from.y * to.y)
+    if (turn < 0) turn += 2 * Math.PI
+
+    const steps = Math.max(1, Math.ceil(turn / OFFSET_STEP))
+    for (let s = 0; s <= steps; s++) {
+      const angle = (turn * s) / steps
+      const cos = Math.cos(angle)
+      const sin = Math.sin(angle)
+      out.push({
+        x: v.x + (from.x * cos - from.y * sin) * padding,
+        y: v.y + (from.x * sin + from.y * cos) * padding,
+      })
+    }
+  })
+  return out
 }
 
 /**
@@ -89,16 +122,6 @@ export function expandPolygon(points: Point[], padding: number): Point[] {
  */
 const CORNER_RADIUS = 24
 
-/**
- * Half the width given to a hull that has no width of its own.
- *
- * Two positions — or any number of them in a straight line — have a convex hull with no
- * interior, and a shape with no interior encloses nothing. Widening it perpendicular to itself is
- * what makes the outline read as an outline rather than as a line joining two mobs. The same
- * distance as the radius drawn around a lone position, so a pair and a single look alike.
- */
-const DEGENERATE_WIDTH = 18
-
 /** Closed SVG path through the vertices, with the corners rounded. */
 export function roundedPolygonPath(points: Point[]): string {
   if (points.length === 0) return ''
@@ -107,20 +130,12 @@ export function roundedPolygonPath(points: Point[]): string {
     return `M ${x} ${y} m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0`
   }
 
-  const span = (a: Point, b: Point) => Math.hypot(b.x - a.x, b.y - a.y)
-
   if (points.length === 2) {
     const [a, b] = points
-    const len = span(a, b) || 1
-    const nx = (-(b.y - a.y) / len) * DEGENERATE_WIDTH
-    const ny = ((b.x - a.x) / len) * DEGENERATE_WIDTH
-    points = [
-      { x: a.x + nx, y: a.y + ny },
-      { x: b.x + nx, y: b.y + ny },
-      { x: b.x - nx, y: b.y - ny },
-      { x: a.x - nx, y: a.y - ny },
-    ]
+    return `M ${a.x} ${a.y} L ${b.x} ${b.y}`
   }
+
+  const span = (a: Point, b: Point) => Math.hypot(b.x - a.x, b.y - a.y)
   const along = (from: Point, to: Point, by: number): Point => {
     const len = span(from, to) || 1
     return { x: from.x + ((to.x - from.x) / len) * by, y: from.y + ((to.y - from.y) / len) * by }
