@@ -702,20 +702,29 @@ Expected: 4 passed. If the tolerance of 8 px proves too tight, widen it **once**
 can justify from the arrow's geometry, and say so in the report — do not loosen it repeatedly until
 it passes.
 
-- [ ] **Step 3: prove it fails when the transform is wrong**
+- [ ] **Step 3: prove the assertion discriminates**
 
-In `src/components/map/PeerCursors.tsx:22`, temporarily feed the cursor through untransformed:
+The break must fail **the poll**, not the build. Feeding the cursor through untransformed
+(`const at = p.cursor!`) leaves `toContainerPoint` and the `transform` parameter unused, and
+`noUnusedLocals` / `noUnusedParameters` make `tsc -b` refuse to build — so the webServer command dies
+before a browser ever opens. That proves the type system objects to that particular edit; it says
+nothing about whether this test's assertion discriminates, which is the whole question. A useless
+assertion with an 800 px tolerance would "pass" that check identically.
+
+So displace the cursor instead, by a distance comfortably above the tolerance, leaving every binding
+used. In `src/components/map/PeerCursors.tsx`, temporarily offset the rendered position:
 
 ```tsx
-          const at = p.cursor!
+              style={{ transform: `translate(${at.x + 40}px, ${at.y}px)` }}
 ```
 
 ```bash
 npm run test:e2e
 ```
 
-Expected: this test fails on the poll — the two viewports no longer agree. **Revert** and confirm
-`git diff -- src/components/map/PeerCursors.tsx` is empty.
+Expected: **this test fails on the poll**, with a measured distance near 40 px — five times the
+tolerance, which is what makes 8 px meaningful rather than decorative. Capture that number. **Revert**
+and confirm `git diff -- src/components/map/PeerCursors.tsx` is empty.
 
 - [ ] **Step 4: commit**
 
