@@ -260,7 +260,8 @@ Expected: the app server never becomes ready, or the smoke test fails on the URL
 npm test
 ```
 
-Expected: 639 passed, 25 files. Any other number means `e2e/**` leaked into the `app` project.
+Expected: **631 passed, 25 files** (`app` 620 in 24 files, `relay` 11 in 1). Any other number means
+`e2e/**` leaked into the `app` project.
 
 ```bash
 npm run typecheck
@@ -282,7 +283,7 @@ git commit -m "Serve the real build to a real browser, on its deployed path shap
 
 ### Task 2: the relay answers over a real socket, with a real Origin
 
-The canary for the origin allowlist — the one guarantee that had 639 green tests and no test at all.
+The canary for the origin allowlist — the one guarantee that had 631 green tests and no test at all.
 
 **Files:**
 - Create: `e2e/fixtures.ts`, `e2e/session.spec.ts`
@@ -606,7 +607,7 @@ Expected: PASS.
 npm test
 ```
 
-Expected: 640 passed (639 + this one).
+Expected: 632 passed (631 + this one).
 
 ```bash
 npm run typecheck
@@ -941,8 +942,14 @@ npm test
 npm run test:e2e
 ```
 
-Use what these print. Do not copy 640 from this plan if the number differs — earlier tasks may have
+Use what these print. Do not copy 632 from this plan if the number differs — earlier tasks may have
 added tests of their own.
+
+**`CLAUDE.md`'s current counts are already wrong** and must be corrected in the same pass: it claims
+"634 tests… `app` — 624 tests… `relay` — 10", where a clean checkout reports **631 = `app` 620 in 24
+files + `relay` 11 in 1**. The figure was written from a working tree carrying another session's
+uncommitted tests. Take the numbers from the commands above, in this worktree, not from any earlier
+document.
 
 - [ ] **Step 2: correct the testing table in `CLAUDE.md`**
 
