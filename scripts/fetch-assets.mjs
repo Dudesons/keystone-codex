@@ -17,6 +17,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { GENERATED_DIR, PUBLIC_DIR, SPELL_LOCALES } from './config.mjs'
+import { collectSpellIds } from './spell-ids.mjs'
 import { buildSpellText, parseTooltip, unfetchedLocales } from './wowhead-tooltip.mjs'
 
 const FORCE = process.env.FORCE === '1'
@@ -113,7 +114,7 @@ async function main() {
   fs.mkdirSync(ICON_DIR, { recursive: true })
   fs.mkdirSync(PORTRAIT_DIR, { recursive: true })
 
-  const spellIds = [...new Set(dungeons.flatMap((d) => d.enemies.flatMap((e) => e.spells.map((s) => s.id))))]
+  const spellIds = collectSpellIds(dungeons)
   const displayIds = [...new Set(dungeons.flatMap((d) => d.enemies.map((e) => e.displayId).filter(Boolean)))]
 
   // --- Spells ------------------------------------------------------------

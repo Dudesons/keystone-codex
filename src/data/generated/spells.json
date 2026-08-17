@@ -3811,6 +3811,22 @@
    }
   }
  },
+ "1217960": {
+  "id": 1217960,
+  "icon": "inv_weapon_rifle_40",
+  "text": {
+   "en": {
+    "name": "Loaded Pistol",
+    "castTime": "2 sec cast",
+    "description": "Item Effect"
+   },
+   "fr": {
+    "name": "Pistolet chargé",
+    "castTime": "2 s d'incantation",
+    "description": "[Item Effect]"
+   }
+  }
+ },
  "1217973": {
   "id": 1217973,
   "icon": "spell_shadow_auraofdarkness",
@@ -4253,6 +4269,24 @@
    }
   }
  },
+ "1223133": {
+  "id": 1223133,
+  "icon": "ui_profession_engineering",
+  "text": {
+   "en": {
+    "name": "Overload Golem",
+    "range": "30 yd range",
+    "castTime": "4 sec cast",
+    "description": "Temporarily revives an Arcane Golem."
+   },
+   "fr": {
+    "name": "Surcharge de golem",
+    "range": "30 m de portée",
+    "castTime": "4 s d'incantation",
+    "description": "Réanime temporairement un golem arcanique."
+   }
+  }
+ },
  "1223204": {
   "id": 1223204,
   "icon": "spell_fire_felflamebolt",
@@ -4268,6 +4302,52 @@
     "range": "20 m de portée",
     "castTime": "1.5 s d'incantation",
     "description": "Inflige \n points de dégâts de feu à un personnage adverse.38793"
+   }
+  }
+ },
+ "1223537": {
+  "id": 1223537,
+  "icon": "inv_infernalbrimstone",
+  "text": {
+   "en": {
+    "name": "Felstone",
+    "description": "Item Effect"
+   },
+   "fr": {
+    "name": "Gangrepierre",
+    "description": "[Item Effect]"
+   }
+  }
+ },
+ "1223570": {
+  "id": 1223570,
+  "icon": "inv_egg_08",
+  "text": {
+   "en": {
+    "name": "Felwyrm Egg",
+    "range": "40 yd range",
+    "castTime": "Instant",
+    "description": "Summons a fel-infused mana wyrm to strike at your enemies and empower you with destructive energy, increasing your haste by 15% for 30 sec."
+   },
+   "fr": {
+    "name": "Œuf de wyrm gangrené",
+    "range": "40 m de portée",
+    "castTime": "Instantanée",
+    "description": "Invoque un wyrm de mana gangrimprégné qui frappe vos adversaires et vous renforce d’énergie destructrice, augmentant votre Hâte de 15 % pendant 30 s."
+   }
+  }
+ },
+ "1223607": {
+  "id": 1223607,
+  "icon": "ability_boss_kilrogg_heartseeker",
+  "text": {
+   "en": {
+    "name": "Heartstop Poison",
+    "description": "Item Effect"
+   },
+   "fr": {
+    "name": "Poison arrête-cœur",
+    "description": "[Item Effect]"
    }
   }
  },
@@ -8449,6 +8529,24 @@
    }
   }
  },
+ "1265942": {
+  "id": 1265942,
+  "icon": "spell_lifegivingspeed",
+  "text": {
+   "en": {
+    "name": "Flourishing Stride",
+    "range": "Unlimited range",
+    "castTime": "Instant",
+    "description": "Movement speed increased by 20%.\nHaste increased by 5%."
+   },
+   "fr": {
+    "name": "Foulée florissante",
+    "range": "Portée illimitée",
+    "castTime": "Instantanée",
+    "description": "Vitesse de déplacement augmentée de 20 %.\nHâte augmentée de 5 %."
+   }
+  }
+ },
  "1266178": {
   "id": 1266178,
   "icon": "spell_hunter_icetrap",
@@ -8618,6 +8716,22 @@
     "range": "Allonge",
     "castTime": "Instantanée",
     "description": "Inflicts 1 Shadow damage to an enemy."
+   }
+  }
+ },
+ "1270638": {
+  "id": 1270638,
+  "icon": "inv_enchanting_wod_crystal",
+  "text": {
+   "en": {
+    "name": "Fel Contraband",
+    "castTime": "Instant",
+    "description": "Carrying a Faceted Crystalline Fel. Vendors of Murder Row would kill for this."
+   },
+   "fr": {
+    "name": "Contrebande gangrenée",
+    "castTime": "Instantanée",
+    "description": "Transporte une corruption cristalline à facettes. Les spécialistes de la vente de l’Allée du meurtre tueraient pour en obtenir."
    }
   }
  },
