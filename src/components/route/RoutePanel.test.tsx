@@ -469,6 +469,11 @@ describe('An invitation carried by a link', () => {
     expect(onJoinRoom).toHaveBeenCalledWith('ABC123', 'guest')
   })
 
+  it('refuses to join until a name is given, same as the other two entry points', () => {
+    mount({ pendingRoom: 'ABC123', collab: { ...offline, identity: null } })
+    expect(screen.getByRole('button', { name: /join room abc123/i }).closest('button')!.disabled).toBe(true)
+  })
+
   it('offers a link to copy while a session is open', () => {
     const connected: CollabState = {
       status: 'connected',

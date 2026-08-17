@@ -433,7 +433,7 @@ function CollabSection({
           <p className="text-[11px] text-ink-300">{t('collab.invitation', { room: pendingRoom })}</p>
           <button
             onClick={() => onJoinRoom(pendingRoom, 'guest')}
-            disabled={!collab.identity?.trim()}
+            disabled={!hasName}
             className="mt-2 w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20 disabled:opacity-40"
           >
             {t('collab.acceptInvitation', { room: pendingRoom })}

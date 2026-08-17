@@ -125,6 +125,15 @@ describe('Codex and Route tabs', () => {
   })
 })
 
+describe('Arriving with an invitation link', () => {
+  it('opens on the route panel and shows the invitation, not the codex', () => {
+    const { container } = renderEn(at(`/d/${SLUG}?room=ABC123`))
+    expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
+    expect(container.textContent).toContain('ABC123')
+    expect(container.textContent).toMatch(/set aside/i)
+  })
+})
+
 describe('Deep link to a mob', () => {
   const enemy = lookup.dungeon.enemies.find((e) => !e.isBoss)!
 
