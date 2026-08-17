@@ -145,7 +145,7 @@ export const en = {
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Join',
   'collab.hint':
-    'Peer-to-peer, no server: the route syncs live between browsers. Joining replaces your local route with the room’s.',
+    'The route syncs live through a relay. Joining leaves your local route behind and takes the room’s.',
 
   // MDT import errors addressed to the user. The codec's diagnostic errors stay in English
   // in the code and are surfaced as-is: whoever sees one is opening a ticket anyway.

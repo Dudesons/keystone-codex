@@ -112,15 +112,17 @@ network provider to it. Changes go through intent operations ("add this pack to 
 rather than a wholesale replacement, which lets two people edit different pulls without
 overwriting each other.
 
-*Open a session* generates a six-character code to read out on Discord; *Join* replaces the
-local route with the room's. The link is peer-to-peer over WebRTC, so hosting stays static.
+*Open a session* generates a six-character code to read out on Discord; *Join* leaves the
+local route behind and takes the room's — a guest starts from an empty document, so that
+nothing of its own can be arbitrated against what the room already holds.
 
-Only the initial matchmaking goes through a public signaling server
-(`wss://y-webrtc-eu.fly.dev`). That is the weak point of the setup: if it is unavailable,
-peers cannot find each other. It can be changed without touching the code:
+Sessions meet on a WebSocket relay, `wss://demos.yjs.dev/ws` by default. That is the weak
+point of the setup: it is someone else's demo server, kept here because every public
+signaling server the earlier WebRTC transport relied on has gone dark. It can be changed
+without touching the code, and hosting the relay yourself is the durable answer:
 
 ```bash
-VITE_SIGNALING_URL=wss://my-server npm run build
+VITE_COLLAB_URL=wss://my-server npm run build
 ```
 
 ## Tests

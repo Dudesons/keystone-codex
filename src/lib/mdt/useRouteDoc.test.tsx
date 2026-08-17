@@ -2,12 +2,46 @@
 // ABOUTME: Uses a real Y.Doc, with no network provider attached.
 
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { cloneKey, getLookup } from '../data'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
-import { randomRoomCode, useRouteDoc } from './useRouteDoc'
+import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
+
+/**
+ * A socket that never opens.
+ *
+ * jsdom would dial the real relay, which no test may depend on. Replacing the socket leaves
+ * the whole session lifecycle — join, leave, rejoin — running for real, and that lifecycle is
+ * exactly where the bugs were.
+ */
+class SilentSocket {
+  static readonly CONNECTING = 0
+  static readonly OPEN = 1
+  static readonly CLOSING = 2
+  static readonly CLOSED = 3
+  readonly CONNECTING = 0
+  readonly OPEN = 1
+  readonly CLOSING = 2
+  readonly CLOSED = 3
+  readyState = 0
+  binaryType = 'blob'
+  onopen: (() => void) | null = null
+  onclose: (() => void) | null = null
+  onerror: (() => void) | null = null
+  onmessage: ((event: unknown) => void) | null = null
+  constructor(readonly url: string) {}
+  send() {}
+  close() {
+    this.readyState = this.CLOSED
+    this.onclose?.()
+  }
+}
+
+beforeAll(() => {
+  globalThis.WebSocket = SilentSocket as unknown as typeof WebSocket
+})
 
 const SLUG = 'altar-of-fangs'
 const lookup = getLookup(SLUG)!
@@ -19,6 +53,11 @@ const packA = packs[0].members
 const packB = packs[1].members
 
 const mount = () => renderHook(() => useRouteDoc(SLUG, MDT_INDEX))
+
+const keysOf = (clones: { enemyIdx: number; cloneIdx: number }[]) =>
+  clones.map((c) => cloneKey(c.enemyIdx, c.cloneIdx)).sort()
+
+const firstPullKeys = (route: Route) => keysOf(route.pulls[0].clones)
 
 /** A genuine MDT string, produced by the repo's own codec from a real route. */
 function mdtString(pulls: Route['pulls'], name = 'Imported route'): string {
@@ -227,6 +266,101 @@ describe('Local persistence', () => {
     expect(result.current.route.pulls).toHaveLength(1)
     expect(result.current.route.pulls[0].clones).toEqual([])
     expect(localStorage.getItem(storageKey)).not.toBe('corrupted content')
+  })
+})
+
+describe('Sessions', () => {
+  it('announces the room it opened, before the relay has answered', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+
+    expect(result.current.collab.room).toBe('ABCDEF')
+    // Not 'connected': that word is about the socket. Reading it off the mere existence of a
+    // session made every session look live, including one whose relay never answered.
+    expect(result.current.collab.status).toBe('connecting')
+    unmount()
+  })
+
+  it('takes its route into the room it opens', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.actions.toggleClones(0, packA))
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+
+    expect(result.current.route.pulls[0].clones).toHaveLength(packA.length)
+    unmount()
+  })
+
+  it('leaves its own route behind when joining someone else’s session', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.actions.toggleClones(0, packA))
+    act(() => result.current.joinRoom('ABCDEF', 'guest'))
+
+    // A guest starts from an empty document and waits for the room's. Bringing its own would
+    // leave two documents having each set `pulls`, and a merge arbitrates that single key one
+    // way or the other — dropping, half the time, the host's whole route.
+    expect(result.current.route.pulls).toHaveLength(1)
+    expect(result.current.route.pulls[0].clones).toEqual([])
+    unmount()
+  })
+
+  /**
+   * Two sessions in one context reach each other over `BroadcastChannel`, which the provider
+   * uses beside the socket. So the meeting of a host and a guest is testable for real, with
+   * no relay: the same path two tabs of one browser take.
+   */
+  it('does not drop the host route when a guest arrives carrying one of its own', async () => {
+    const host = mount()
+    act(() => host.result.current.actions.toggleClones(0, packA))
+    act(() => host.result.current.joinRoom('ABCDEF', 'host'))
+
+    // The guest mounts on the same storage, so it opens on a route of its own and then adds
+    // to it — the ordinary case, and the one that used to cost the host everything.
+    const guest = mount()
+    act(() => guest.result.current.actions.toggleClones(0, packB))
+    act(() => guest.result.current.joinRoom('ABCDEF', 'guest'))
+
+    await waitFor(() => expect(firstPullKeys(guest.result.current.route)).toEqual(keysOf(packA)))
+    expect(firstPullKeys(host.result.current.route)).toEqual(keysOf(packA))
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('leaves a session for good', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+    act(() => result.current.leaveRoom())
+
+    expect(result.current.collab.status).toBe('off')
+    expect(result.current.collab.room).toBeNull()
+    expect(result.current.collab.peers).toBe(0)
+    unmount()
+  })
+
+  it('rejoins the room it just left', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+    act(() => result.current.leaveRoom())
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+
+    expect(result.current.collab.room).toBe('ABCDEF')
+    unmount()
+  })
+
+  it('keeps its route when it leaves', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.actions.toggleClones(0, packA))
+    act(() => result.current.joinRoom('ABCDEF', 'host'))
+    act(() => result.current.leaveRoom())
+
+    expect(result.current.route.pulls[0].clones).toHaveLength(packA.length)
+    unmount()
+  })
+})
+
+describe('roomName', () => {
+  it('namespaces the code by dungeon, so one code is two rooms in two dungeons', () => {
+    expect(roomName('altar-of-fangs', 'ABCDEF')).not.toBe(roomName('kings-rest', 'ABCDEF'))
   })
 })
 

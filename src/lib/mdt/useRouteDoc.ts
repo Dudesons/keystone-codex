@@ -13,17 +13,29 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as Y from 'yjs'
-import { WebrtcProvider } from 'y-webrtc'
+import { WebsocketProvider } from 'y-websocket'
 import type { CloneRef } from '../types'
 import { cloneKey } from '../data'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
 
-const SIGNALING = [import.meta.env.VITE_SIGNALING_URL || 'wss://y-webrtc-eu.fly.dev']
-
+/**
+ * Where a session meets.
+ *
+ * WebRTC came first here, because it asked nothing of us but a handshake. Every public
+ * y-webrtc signaling server that handshake relied on has since gone dark, and with no
+ * signaling two browsers never find each other at all — which left the feature working only
+ * between tabs of one browser, over `BroadcastChannel`. A relay is one host to keep alive
+ * rather than a rendezvous nobody runs any more, and it reaches through the NAT and the
+ * corporate firewall that WebRTC needs a TURN server to cross.
+ */
+const COLLAB_URL = import.meta.env.VITE_COLLAB_URL || 'wss://demos.yjs.dev/ws'
 
 const storageKey = (slug: string) => `midnight-codex:route:${slug}`
+
+/** Namespaced by dungeon: the same code in two dungeons is two different rooms. */
+export const roomName = (slug: string, code: string) => `midnight-codex:${slug}:${code}`
 
 export type CollabStatus = 'off' | 'connecting' | 'connected'
 
@@ -124,7 +136,7 @@ export interface CollabState {
  * destroying it on unmount would backfire against StrictMode's double mount.
  */
 export function useRouteDoc(slug: string, mdtIndex: number) {
-  const [doc] = useState(() => {
+  const [doc, setDoc] = useState(() => {
     const fresh = new Y.Doc()
     const saved = localStorage.getItem(storageKey(slug))
     if (saved) {
@@ -144,7 +156,8 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     pulls: [{ color: nextColor(0), clones: [] }],
   }))
 
-  const providerRef = useRef<WebrtcProvider | null>(null)
+  /** The open session, with the means to unsubscribe from it before tearing it down. */
+  const sessionRef = useRef<{ provider: WebsocketProvider; detach: () => void } | null>(null)
   const [collab, setCollab] = useState<CollabState>(() => ({
     status: 'off',
     room: null,
@@ -152,13 +165,18 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     identity: identityName(),
   }))
 
-  useEffect(
-    () => () => {
-      providerRef.current?.destroy()
-      providerRef.current = null
-    },
-    [],
-  )
+  const closeSession = useCallback(() => {
+    const open = sessionRef.current
+    if (!open) return
+    // Unsubscribe before destroying. Tearing a provider down emits one last awareness change,
+    // and a listener still attached would put the session straight back on screen — with no
+    // room and no provider behind it, which is a session you can neither leave nor rejoin.
+    open.detach()
+    open.provider.destroy()
+    sessionRef.current = null
+  }, [])
+
+  useEffect(() => () => closeSession(), [closeSession])
 
   // The doc drives React state, never the other way round.
   useEffect(() => {
@@ -278,38 +296,48 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
 
   const joinRoom = useCallback(
     (room: string, mode: 'host' | 'guest') => {
-      providerRef.current?.destroy()
+      closeSession()
 
-      // On joining, the local document is emptied first: otherwise the pulls from both
-      // sides would merge and pile up. The host, by contrast, brings its route to the room.
-      if (mode === 'guest') actions.reset()
+      // A guest adopts the room's document; it does not push its own into it. Two documents
+      // that have each set `pulls` leave that one key to be arbitrated on merge, and the
+      // loser's entire route is dropped — from the host's side, the route everyone came for.
+      // Handing the provider an empty document leaves the merge nothing to arbitrate. The
+      // host, by contrast, brings its route to the room, which is the point of opening one.
+      const target = mode === 'guest' ? new Y.Doc() : doc
+      setDoc(target)
 
-      const provider = new WebrtcProvider(`midnight-codex:${slug}:${room}`, doc, {
-        signaling: SIGNALING,
-      })
-      providerRef.current = provider
+      const provider = new WebsocketProvider(COLLAB_URL, roomName(slug, room), target)
       provider.awareness.setLocalStateField('user', { name: collab.identity })
 
       const update = () =>
         setCollab((c) => ({
           ...c,
-          status: provider.connected ? 'connected' : 'connecting',
+          // The socket, not an intention. The previous reading was true as soon as a room
+          // existed, so a session whose relay never answered still called itself connected.
+          status: provider.wsconnected ? 'connected' : 'connecting',
           peers: provider.awareness.getStates().size,
         }))
 
       provider.awareness.on('change', update)
       provider.on('status', update)
+      sessionRef.current = {
+        provider,
+        detach: () => {
+          provider.awareness.off('change', update)
+          provider.off('status', update)
+        },
+      }
+
       setCollab((c) => ({ ...c, status: 'connecting', room }))
       update()
     },
-    [doc, slug, actions, collab.identity],
+    [doc, slug, collab.identity, closeSession],
   )
 
   const leaveRoom = useCallback(() => {
-    providerRef.current?.destroy()
-    providerRef.current = null
+    closeSession()
     setCollab((c) => ({ ...c, status: 'off', room: null, peers: 0 }))
-  }, [])
+  }, [closeSession])
 
   return { route, actions, collab, joinRoom, leaveRoom }
 }

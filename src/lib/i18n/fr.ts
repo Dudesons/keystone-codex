@@ -146,7 +146,7 @@ export const fr: Dictionary = {
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Rejoindre',
   'collab.hint':
-    'Pair-à-pair, sans serveur : la route est synchronisée en direct entre les navigateurs. Rejoindre remplace ta route locale par celle du salon.',
+    'La route est synchronisée en direct via un relais. Rejoindre laisse ta route locale de côté et prend celle du salon.',
 
   // MDT import errors addressed to the user
   'mdtError.noValue': 'Preset MDT invalide : champ « value » absent.',
