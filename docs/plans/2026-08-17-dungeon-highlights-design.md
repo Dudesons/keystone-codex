@@ -30,21 +30,22 @@ hand-written field is introduced, and only because the data genuinely does not e
 | `/d/:slug` | `HighlightsPage` | **new**, full width, no map |
 | `/d/:slug/map` | `DungeonPage` | today's page, moved |
 | `/d/:slug/map/mob/:npcId` | `DungeonPage` | mob selected in the codex |
-| `/d/:slug/mob/:npcId` | → `/d/:slug/map/mob/:npcId` | redirect, so old links survive |
 | `*` | → `/` | unchanged |
 
 Full width rather than a third tab in the 400px aside: a table of spells with a mob name on
 the right does not fit in 400px, and the aside already has two tenants.
 
-**This breaks session links, and the design has to carry the fix.** `sessionLink()`
+**Every address under `/d/:slug` therefore changes, and no compatibility shim is written for
+the old ones.** The app has no users yet, so a breaking change costs nothing today and a
+redirect layer would be dead code we would carry forever. One consequence has to be followed
+through: `sessionLink()`
 ([RoutePanel.tsx:44](../../src/components/route/RoutePanel.tsx:44)) builds
-`#/d/:slug?room=XXX`. Under the new table that address is the highlights page, which has no
-route editor — an invitation already sent would land its recipient on a reading page. Two
-changes, together:
+`#/d/:slug?room=XXX`, which under the new table is the highlights page — a reading page with
+no route editor and nothing that reads `?room=`. It emits `#/d/:slug/map?room=XXX` instead.
 
-- `sessionLink()` emits `#/d/:slug/map?room=XXX`.
-- `HighlightsPage` seeing a `?room=` in its query redirects to `/d/:slug/map`, **preserving
-  the query string**. Links sent before this change keep working.
+An invitation or a mob link sent before this change lands on `*` and goes home. That is
+accepted, not overlooked. **If this app ever ships a link people keep, the same move will
+need the redirect that is deliberately absent here.**
 
 ### 2. The page is a briefing, not a copy of the guide
 
@@ -195,7 +196,7 @@ Written first, in this order.
 | `src/lib/highlights.test.ts` | node | the five *Paralyzing Shots* ids collapse to one row; bosses absent from the table; threat ordering; `bosses:` override honoured; a mob with no card contributes nothing; `en` and `fr` genuinely differ |
 | `src/lib/content.test.ts` | node | `bosses:` parses, and merges like `timer` |
 | `src/components/highlights/*.test.tsx` | jsdom | each block renders against the real Altar of Fangs pool, in both locales |
-| `src/routes/HighlightsPage.test.tsx` | jsdom | `?room=ABC` redirects to `/d/:slug/map?room=ABC`; an unknown slug behaves as today |
+| `src/routes/HighlightsPage.test.tsx` | jsdom | the four blocks assemble against a real dungeon; an unknown slug behaves as today |
 | `scripts/content-stub.test.mjs` | node | the dungeon stub carries the new line |
 
 Updated rather than new: `DungeonPage.test.tsx` (route table), `RoutePanel.test.tsx` (the
