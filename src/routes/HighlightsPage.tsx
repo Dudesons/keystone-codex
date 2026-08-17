@@ -1,5 +1,5 @@
-// ABOUTME: A dungeon's briefing: the mobs that matter, the written traps, and the bosses.
-// ABOUTME: Read-only and entirely derived — writing a mob card fills this page in by itself.
+// ABOUTME: A dungeon's briefing page: the shared header, the dungeon's written summary if it
+// ABOUTME: has one, and a placeholder sentence when the codex holds nothing for it at all.
 
 import { Link, useParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
