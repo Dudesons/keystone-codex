@@ -85,6 +85,7 @@ const mount = (over: Partial<React.ComponentProps<typeof RoutePanel>> = {}) => {
       collab={offline}
       onJoinRoom={() => {}}
       onLeaveRoom={() => {}}
+      onResumeRoom={() => {}}
       onSetIdentity={() => {}}
       pendingRoom={null}
       {...over}
@@ -268,6 +269,7 @@ describe('Import', () => {
         collab={offline}
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
+        onResumeRoom={() => {}}
         onSetIdentity={() => {}}
         pendingRoom={null}
       />,
@@ -390,6 +392,27 @@ describe('Collaborative session', () => {
   })
 })
 
+describe('A paused session', () => {
+  it('says so, rather than looking like a session still going', () => {
+    mount({ collab: { ...offline, status: 'paused', room: 'ABCDEF' } })
+    expect(screen.getByText(/paused/i)).toBeDefined()
+  })
+
+  it('offers the way back', () => {
+    const onResumeRoom = vi.fn()
+    mount({ collab: { ...offline, status: 'paused', room: 'ABCDEF' }, onResumeRoom })
+    fireEvent.click(screen.getByRole('button', { name: /return to the room/i }))
+    expect(onResumeRoom).toHaveBeenCalled()
+  })
+
+  it('offers nothing to come back from while the session is live', () => {
+    mount({
+      collab: { ...offline, status: 'connected', room: 'ABCDEF', peers: peersOf(1) },
+    })
+    expect(screen.queryByRole('button', { name: /return to the room/i })).toBeNull()
+  })
+})
+
 describe('Awaiting the room’s route', () => {
   // A guest whose document has joined the room but not yet received anything: an empty route
   // (nothing has arrived) mounted with `synced: false` (the provider hasn't caught up). That
@@ -488,6 +511,7 @@ describe('Choosing a name', () => {
         collab={{ ...offline, identity }}
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
+        onResumeRoom={() => {}}
         onSetIdentity={onSetIdentity}
         pendingRoom={null}
       />

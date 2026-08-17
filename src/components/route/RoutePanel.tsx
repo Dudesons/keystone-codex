@@ -28,6 +28,7 @@ interface Props {
   collab: CollabState
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
+  onResumeRoom: () => void
   onSetIdentity: (name: string) => void
   pendingRoom: string | null
 }
@@ -67,6 +68,7 @@ export default function RoutePanel({
   collab,
   onJoinRoom,
   onLeaveRoom,
+  onResumeRoom,
   onSetIdentity,
   pendingRoom,
 }: Props) {
@@ -278,6 +280,7 @@ export default function RoutePanel({
         pendingRoom={pendingRoom}
         onJoinRoom={onJoinRoom}
         onLeaveRoom={onLeaveRoom}
+        onResumeRoom={onResumeRoom}
         onSetIdentity={onSetIdentity}
         onMessage={setMessage}
       />
@@ -367,6 +370,7 @@ function CollabSection({
   pendingRoom,
   onJoinRoom,
   onLeaveRoom,
+  onResumeRoom,
   onSetIdentity,
   onMessage,
 }: {
@@ -375,6 +379,7 @@ function CollabSection({
   pendingRoom: string | null
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
+  onResumeRoom: () => void
   onSetIdentity: (name: string) => void
   onMessage: (m: { kind: 'ok' | 'error'; text: string }) => void
 }) {
@@ -394,36 +399,49 @@ function CollabSection({
           </div>
           <div className="text-right">
             <div className="text-xs text-ink-300">
-              {collab.status === 'connected'
-                ? plural('collab.connected', collab.peers.length)
-                : t('collab.connecting')}
+              {collab.status === 'paused'
+                ? t('collab.paused')
+                : collab.status === 'connected'
+                  ? plural('collab.connected', collab.peers.length)
+                  : t('collab.connecting')}
             </div>
             <NameField identity={collab.identity} onSetIdentity={onSetIdentity} t={t} />
           </div>
         </div>
         <div className="mt-2 flex gap-2">
-          <button
-            onClick={async () => {
-              await navigator.clipboard.writeText(collab.room ?? '')
-              onMessage({ kind: 'ok', text: t('route.codeCopied') })
-            }}
-            className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
-          >
-            {t('collab.copyCode')}
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(sessionLink(slug, collab.room ?? ''))
-                onMessage({ kind: 'ok', text: t('route.linkCopied') })
-              } catch (err) {
-                onMessage({ kind: 'error', text: errorText(err, t) })
-              }
-            }}
-            className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
-          >
-            {t('collab.copyLink')}
-          </button>
+          {collab.status === 'paused' ? (
+            <button
+              onClick={onResumeRoom}
+              className="flex-1 rounded border border-threat-low/60 px-2 py-1 text-xs text-threat-low hover:border-gold-500 hover:text-gold-400"
+            >
+              {t('collab.resume')}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(collab.room ?? '')
+                  onMessage({ kind: 'ok', text: t('route.codeCopied') })
+                }}
+                className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
+              >
+                {t('collab.copyCode')}
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(sessionLink(slug, collab.room ?? ''))
+                    onMessage({ kind: 'ok', text: t('route.linkCopied') })
+                  } catch (err) {
+                    onMessage({ kind: 'error', text: errorText(err, t) })
+                  }
+                }}
+                className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
+              >
+                {t('collab.copyLink')}
+              </button>
+            </>
+          )}
           <button
             onClick={onLeaveRoom}
             className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-500 hover:border-threat-lethal hover:text-threat-lethal"

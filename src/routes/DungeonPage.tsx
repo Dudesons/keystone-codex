@@ -72,7 +72,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const [currentPull, setCurrentPull] = useState(0)
   const [hoveredPull, setHoveredPull] = useState<number | null>(null)
 
-  const { route, actions, collab, joinRoom, leaveRoom, setIdentity, setCursor } = useRouteDoc(
+  const { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor } = useRouteDoc(
     slug,
     lookup.dungeon.mdtIndex,
   )
@@ -279,6 +279,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               collab={collab}
               onJoinRoom={joinRoom}
               onLeaveRoom={handleLeaveRoom}
+              onResumeRoom={resumeRoom}
               onSetIdentity={setIdentity}
               pendingRoom={pendingRoom}
             />

@@ -155,6 +155,8 @@ export const fr: Dictionary = {
     'La route est synchronisée en direct via un relais. Rejoindre met ta route locale de côté et te la rend quand tu quittes.',
   'collab.relayStalled': 'Le relais ne répond pas. Ta route locale est intacte.',
   'collab.awaitingRoom': 'Récupération de la route du salon…',
+  'collab.paused': 'en pause — plus personne ici',
+  'collab.resume': 'Revenir dans le salon',
 
   // MDT import errors addressed to the user
   'mdtError.noValue': 'Preset MDT invalide : champ « value » absent.',
