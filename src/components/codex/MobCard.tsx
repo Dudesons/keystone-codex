@@ -2,7 +2,7 @@
 // ABOUTME: Spells are ordered by what needs an immediate reaction, then by declared priority.
 
 import type { Enemy } from '../../lib/types'
-import { getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
+import { getLookup, getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
 import { getMobContent, isRole, type SpellNote } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
@@ -36,6 +36,8 @@ export default function MobCard({
   const content = getMobContent(slug, enemy.id, locale)
   const ind = getIndicators(slug, enemy, locale)
   const notes = new Map<number, SpellNote>((content?.spells ?? []).map((s) => [Number(s.id), s]))
+  // An unknown dungeon is one more dungeon we hold no CC for: absent data never reads as immunity.
+  const hasCcData = getLookup(slug)?.hasCcData ?? false
 
   const spells = [...enemy.spells].sort((a, b) => {
     const na = notes.get(a.id)
@@ -127,7 +129,9 @@ export default function MobCard({
       )}
 
       {!compact && enemy.cc.length === 0 && (
-        <div className="px-3 pb-3 text-xs text-ink-400">{t('mob.ccImmune')}</div>
+        <div className="px-3 pb-3 text-xs text-ink-400">
+          {t(hasCcData ? 'mob.ccImmune' : 'mob.ccUnknown')}
+        </div>
       )}
 
       {spells.length > 0 && (

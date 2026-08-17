@@ -58,6 +58,7 @@ export const en = {
   'mob.trap': 'THE TRAP',
   'mob.ccApplicable': 'APPLICABLE CC',
   'mob.ccImmune': 'Immune to every CC listed by MDT.',
+  'mob.ccUnknown': 'MDT has no CC data for this dungeon.',
   'mob.unknownSpell': 'Spell {id}',
 
   // Threat levels — the ring on the map, the badge on the card

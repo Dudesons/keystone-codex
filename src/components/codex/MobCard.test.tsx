@@ -21,10 +21,20 @@ const chieftain = lookup.dungeon.enemies.find((e) => e.id === 270_306)!
 const boss = lookup.dungeon.enemies.find((e) => e.isBoss)!
 const withoutCc = lookup.dungeon.enemies.find((e) => e.cc.length === 0)!
 
+const pool = dungeonList.flatMap((d) =>
+  (getDungeon(d.slug)?.enemies ?? []).map((enemy) => ({ slug: d.slug, enemy })),
+)
+
 /** No mob in altar-of-fangs declares any CC, so look across the whole pool. */
-const withCc = dungeonList
-  .flatMap((d) => (getDungeon(d.slug)?.enemies ?? []).map((enemy) => ({ slug: d.slug, enemy })))
-  .find(({ enemy }) => enemy.cc.length > 0)!
+const withCc = pool.find(({ enemy }) => enemy.cc.length > 0)!
+
+/**
+ * A mob with an empty CC list inside a dungeon MDT *did* fill in — the only case where the
+ * empty list carries a meaning of its own. Derived here rather than through `hasCcData`, so
+ * the fixture does not rest on the flag it is meant to exercise.
+ */
+const dungeonHasCc = (slug: string) => (getDungeon(slug)?.enemies ?? []).some((e) => e.cc.length > 0)
+const immune = pool.find(({ slug, enemy }) => enemy.cc.length === 0 && dungeonHasCc(slug))!
 
 /** A synthetic mob of the real type: covers cases the pool data does not contain. */
 const unknown: Enemy = {
@@ -104,7 +114,7 @@ describe('The trap', () => {
   it('puts the written trap up front', () => {
     renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.getByText('THE TRAP')).toBeDefined()
-    // Narrow pattern: "Immune to every CC" also opens the no-CC fallback line.
+    // Matches a fragment from the middle: the prose opens on the words of `mob.ccImmune`.
     expect(screen.getByText(/no stun, no fear/)).toBeDefined()
   })
 
@@ -128,9 +138,25 @@ describe('Applicable crowd control', () => {
     expect(container.textContent).toContain(withCc.enemy.cc[0])
   })
 
-  it('says outright that a mob with no CC is immune', () => {
-    renderEn(<MobCard slug={SLUG} enemy={withoutCc} />)
+  it('says outright that a mob with no CC is immune, when its dungeon has CC data', () => {
+    renderEn(<MobCard slug={immune.slug} enemy={immune.enemy} />)
     expect(screen.getByText('Immune to every CC listed by MDT.')).toBeDefined()
+  })
+
+  it('claims no immunity for a dungeon MDT never filled in', () => {
+    renderEn(<MobCard slug={SLUG} enemy={withoutCc} />)
+    expect(screen.queryByText('Immune to every CC listed by MDT.')).toBeNull()
+    expect(screen.getByText('MDT has no CC data for this dungeon.')).toBeDefined()
+  })
+
+  it('says the same in French', () => {
+    renderFr(<MobCard slug={SLUG} enemy={withoutCc} />)
+    expect(screen.getByText('MDT n’a pas de données de CC pour ce donjon.')).toBeDefined()
+  })
+
+  it('treats a dungeon it knows nothing about as missing data, not as immunity', () => {
+    renderEn(<MobCard slug="dungeon-without-content" enemy={unknown} />)
+    expect(screen.getByText('MDT has no CC data for this dungeon.')).toBeDefined()
   })
 
   it('hides the section in compact mode', () => {

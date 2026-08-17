@@ -59,6 +59,7 @@ export const fr: Dictionary = {
   'mob.trap': 'LE PIÈGE',
   'mob.ccApplicable': 'CC APPLICABLES',
   'mob.ccImmune': 'Immunisé à tous les CC listés par MDT.',
+  'mob.ccUnknown': 'MDT n’a pas de données de CC pour ce donjon.',
   'mob.unknownSpell': 'Sort {id}',
 
   // Threat levels — the ring on the map, the badge on the card
