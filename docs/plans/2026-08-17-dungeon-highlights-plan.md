@@ -982,9 +982,10 @@ After this task the app is navigable end to end, with the three content blocks s
 Create `src/routes/HighlightsPage.test.tsx`:
 
 ```tsx
-// @vitest-environment jsdom
 // ABOUTME: Mounts the highlights page against the real Altar of Fangs pool, in both languages.
 // ABOUTME: Checks the page exists, names the dungeon, and offers the way to the map.
+
+// @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, screen, within } from '@testing-library/react'
