@@ -1,0 +1,15 @@
+# Every text blob in this repository is stored with LF, and Git for Windows enables
+# `core.autocrlf` in its system configuration — so without this file a Windows checkout, every
+# `git worktree add` included, writes CRLF working files. That breaks
+# `scripts/content-stub.test.mjs`, which compares the committed fixture
+# `content/__fixtures__/270306-ritual-chieftain.md` byte for byte against the LF string
+# `buildMobStub()` produces, and the diff it prints shows no visible difference. `eol=lf` states
+# the contract here, in the repository, instead of leaving it to each contributor's Git
+# configuration. It overrides `core.autocrlf` and `core.eol` on both checkout and check-in.
+* text=auto eol=lf
+
+# `text=auto` already leaves these alone: it sniffs for a NUL byte and skips whatever looks
+# binary, which every WebP and JPEG here does. Declaring them removes the maps, the portraits
+# and the icon set — most of the files in the tree — from a heuristic's care.
+*.webp binary
+*.jpg binary
