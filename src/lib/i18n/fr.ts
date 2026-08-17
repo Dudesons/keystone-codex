@@ -145,6 +145,8 @@ export const fr: Dictionary = {
   'collab.openSession': 'Ouvrir une session avec cette route',
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Rejoindre',
+  'collab.name': 'Ton pseudo',
+  'collab.namePlaceholder': 'Pseudo',
   'collab.hint':
     'La route est synchronisée en direct via un relais. Rejoindre laisse ta route locale de côté et prend celle du salon.',
 

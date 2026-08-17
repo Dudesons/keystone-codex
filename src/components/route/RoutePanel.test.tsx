@@ -78,6 +78,7 @@ const mount = (over: Partial<React.ComponentProps<typeof RoutePanel>> = {}) => {
       collab={offline}
       onJoinRoom={() => {}}
       onLeaveRoom={() => {}}
+      onSetIdentity={() => {}}
       {...over}
     />,
   )
@@ -259,6 +260,7 @@ describe('Import', () => {
         collab={offline}
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
+        onSetIdentity={() => {}}
       />,
     )
     fireEvent.change(screen.getByPlaceholderText(/Paste an MDT string/), { target: { value: 'x' } })
@@ -341,7 +343,7 @@ describe('Collaborative session', () => {
     expect(section.getByText('SHARED SESSION')).toBeDefined()
     expect(section.getByText('AB3K9Z')).toBeDefined()
     expect(section.getByText('3 connected')).toBeDefined()
-    expect(section.getByText('Player-1234')).toBeDefined()
+    expect((section.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('Player-1234')
   })
 
   it('says it is connecting before the peers answer', () => {
@@ -361,5 +363,37 @@ describe('Collaborative session', () => {
     })
     fireEvent.click(screen.getByText('Leave'))
     expect(left).toBe(true)
+  })
+})
+
+describe('Choosing a name', () => {
+  it('refuses to open or join a session until a name is given', () => {
+    mount({ collab: { ...offline, identity: null } })
+    expect(screen.getByRole('button', { name: /open a session/i }).closest('button')!.disabled).toBe(true)
+    expect(screen.getByRole('button', { name: /^join$/i }).closest('button')!.disabled).toBe(true)
+  })
+
+  it('offers the name already remembered', () => {
+    mount({ collab: { ...offline, identity: 'Rwl' } })
+    expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('Rwl')
+  })
+
+  it('reports a name as it is typed', () => {
+    const onSetIdentity = vi.fn()
+    mount({ collab: { ...offline, identity: null }, onSetIdentity })
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'R' } })
+    expect(onSetIdentity).toHaveBeenCalledWith('R')
+  })
+
+  it('still offers the name while a session is open, so it can be changed', () => {
+    const connected: CollabState = {
+      status: 'connected',
+      room: 'AB3K9Z',
+      peers: peersOf(1),
+      identity: 'Rwl',
+      synced: true,
+    }
+    mount({ collab: connected })
+    expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('Rwl')
   })
 })

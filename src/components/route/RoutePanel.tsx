@@ -28,6 +28,7 @@ interface Props {
   collab: CollabState
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
+  onSetIdentity: (name: string) => void
 }
 
 /**
@@ -54,6 +55,7 @@ export default function RoutePanel({
   collab,
   onJoinRoom,
   onLeaveRoom,
+  onSetIdentity,
 }: Props) {
   const { t, plural, formatPercent } = useI18n()
   const [importText, setImportText] = useState('')
@@ -252,6 +254,7 @@ export default function RoutePanel({
         collab={collab}
         onJoinRoom={onJoinRoom}
         onLeaveRoom={onLeaveRoom}
+        onSetIdentity={onSetIdentity}
         onMessage={setMessage}
       />
 
@@ -338,15 +341,18 @@ function CollabSection({
   collab,
   onJoinRoom,
   onLeaveRoom,
+  onSetIdentity,
   onMessage,
 }: {
   collab: CollabState
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
+  onSetIdentity: (name: string) => void
   onMessage: (m: { kind: 'ok' | 'error'; text: string }) => void
 }) {
   const { t, plural } = useI18n()
   const [code, setCode] = useState('')
+  const hasName = !!collab.identity?.trim()
 
   if (collab.status !== 'off') {
     return (
@@ -364,7 +370,7 @@ function CollabSection({
                 ? plural('collab.connected', collab.peers.length)
                 : t('collab.connecting')}
             </div>
-            <div className="text-[10px] text-ink-500">{collab.identity}</div>
+            <NameField identity={collab.identity} onSetIdentity={onSetIdentity} t={t} />
           </div>
         </div>
         <div className="mt-2 flex gap-2">
@@ -393,9 +399,11 @@ function CollabSection({
       <h3 className="mb-2 text-[10px] font-bold tracking-widest text-ink-400">
         {t('collab.editTogether')}
       </h3>
+      <NameField identity={collab.identity} onSetIdentity={onSetIdentity} t={t} />
       <button
         onClick={() => onJoinRoom(randomRoomCode(), 'host')}
-        className="w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
+        disabled={!hasName}
+        className="w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20 disabled:opacity-40"
       >
         {t('collab.openSession')}
       </button>
@@ -409,7 +417,7 @@ function CollabSection({
         />
         <button
           onClick={() => onJoinRoom(code.trim(), 'guest')}
-          disabled={code.trim().length < 4}
+          disabled={!hasName || code.trim().length < 4}
           className="flex-1 rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400 disabled:opacity-40"
         >
           {t('collab.join')}
@@ -417,5 +425,35 @@ function CollabSection({
       </div>
       <p className="mt-2 text-[11px] text-ink-600">{t('collab.hint')}</p>
     </section>
+  )
+}
+
+/**
+ * The participant's own name: blank on a first visit, so choosing one is a real step rather
+ * than accepting an invented default without reading it. Stays editable once a session is
+ * open, since names get picked badly the first time.
+ */
+function NameField({
+  identity,
+  onSetIdentity,
+  t,
+}: {
+  identity: string | null
+  onSetIdentity: (name: string) => void
+  t: I18n['t']
+}) {
+  return (
+    <label className="mb-2 block">
+      <span className="mb-1 block text-[10px] font-bold tracking-widest text-ink-400">
+        {t('collab.name')}
+      </span>
+      <input
+        value={identity ?? ''}
+        onChange={(e) => onSetIdentity(e.target.value)}
+        placeholder={t('collab.namePlaceholder')}
+        maxLength={20}
+        className="w-full rounded border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-ink-100 focus:border-gold-500 focus:outline-none"
+      />
+    </label>
   )
 }

@@ -144,6 +144,8 @@ export const en = {
   'collab.openSession': 'Open a session with this route',
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Join',
+  'collab.name': 'Your name',
+  'collab.namePlaceholder': 'Name',
   'collab.hint':
     'The route syncs live through a relay. Joining leaves your local route behind and takes the room’s.',
 
