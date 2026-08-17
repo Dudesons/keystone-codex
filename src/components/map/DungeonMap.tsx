@@ -9,6 +9,8 @@ import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
+import type { MdtNote, MdtObject } from '../../lib/mdt/objects'
+import NoteLayer from './NoteLayer'
 import PeerCursors from './PeerCursors'
 import PoiLayer, { PoiTooltip } from './PoiLayer'
 import {
@@ -50,6 +52,8 @@ interface Props {
   onCursorMove?: (p: Point | null) => void
   cursors?: Peer[]
   notice?: ReactNode
+  /** The preset's notes and strokes. Route mode only: they belong to an itinerary. */
+  objects?: MdtObject[]
 }
 
 export default function DungeonMap({
@@ -66,6 +70,7 @@ export default function DungeonMap({
   onCursorMove,
   cursors,
   notice,
+  objects,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -316,6 +321,14 @@ export default function DungeonMap({
         <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
       )}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
+      {/* An explicit predicate, not a bare `o.kind === 'note'`: once Task 6 puts a second
+          member in the union, `filter` alone hands back `MdtObject[]`. */}
+      {objects && (
+        <NoteLayer
+          notes={objects.filter((o): o is MdtNote => o.kind === 'note')}
+          transform={transform}
+        />
+      )}
       {notice}
     </div>
   )

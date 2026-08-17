@@ -529,3 +529,17 @@ describe('Points of interest', () => {
     found.forEach((el) => expect(el.getAttribute('data-testid')).toBeNull())
   })
 })
+
+describe('Preset notes', () => {
+  const note = { kind: 'note' as const, at: { x: 100, y: 200 }, sublevel: 1, text: 'Lust here' }
+
+  it('draws a pin for each note it is given', () => {
+    renderEn(<DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} objects={[note]} />)
+    expect(screen.getByTestId('note-pin-0')).toBeTruthy()
+  })
+
+  it('draws none when the page passes no objects, as the codex tab does', () => {
+    renderEn(<DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} />)
+    expect(screen.queryByTestId('note-pin-0')).toBeNull()
+  })
+})

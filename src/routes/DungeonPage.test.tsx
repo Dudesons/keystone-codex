@@ -340,6 +340,17 @@ describe('Deep link to a mob', () => {
   })
 })
 
+describe('Points of interest', () => {
+  /** Murder Row, not the SLUG the rest of the file uses: Altar of Fangs declares no POI. */
+  it('shows the dungeon items in both tabs', () => {
+    renderEn(at('/d/murder-row'))
+    expect(screen.getAllByTestId(/^poi-/).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    expect(screen.getAllByTestId(/^poi-/).length).toBeGreaterThan(0)
+  })
+})
+
 describe('Remounting per dungeon', () => {
   it('starts a separate document for each dungeon', () => {
     // The `key={slug}` on DungeonView is what guarantees this: mob indices mean different

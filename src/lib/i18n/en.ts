@@ -101,6 +101,7 @@ export const en = {
   'map.badgeDispel': 'Dispel',
   'map.item': 'usable item',
   'map.dungeonEntrance': 'Dungeon entrance',
+  'map.note': 'note',
   'legend.pips': 'PIPS',
   'legend.ring': 'RING',
   'legend.kick': 'Spell to interrupt (from MDT)',

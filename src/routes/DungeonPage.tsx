@@ -227,6 +227,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             highlighted={highlighted}
             pullMarks={pullMarks}
             pullShapes={pullShapes}
+            objects={mode === 'route' ? route.objects : undefined}
             hoveredPull={hoveredPull}
             selectedPack={mode === 'codex' ? selectedPack : null}
             onCloneClick={handleCloneClick}
