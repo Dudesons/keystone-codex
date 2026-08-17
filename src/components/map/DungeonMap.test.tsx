@@ -6,6 +6,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { getMobContent } from '../../lib/content'
 import { cloneKey, getLookup, mapUrl } from '../../lib/data'
+import type { Point } from '../../lib/geometry'
 import { renderEn } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
@@ -301,6 +302,41 @@ describe('Panning', () => {
     fireEvent.pointerMove(surface(container), { pointerId: 7, clientX: 160, clientY: 140 })
     fireEvent.pointerMove(surface(container), { pointerId: 7, clientX: 200, clientY: 180 })
     expect(captured).toEqual([7])
+  })
+})
+
+describe('Reporting the pointer', () => {
+  it('reports a move in map coordinates, not screen pixels', () => {
+    const moves: (Point | null)[] = []
+    const { container } = renderEn(
+      <DungeonMap slug={SLUG} lookup={lookup} onCursorMove={(p) => moves.push(p)} />,
+    )
+    const surface = container.querySelector('.map-surface')!
+    fireEvent.pointerMove(surface, { clientX: 200, clientY: 150, pointerId: 1 })
+
+    // jsdom lays everything out at zero, so the container's rect is the origin and the
+    // transform is the whole of the arithmetic under test.
+    expect(moves.at(-1)).not.toBeNull()
+    expect(moves.at(-1)).toHaveProperty('x')
+  })
+
+  it('reports nothing once the pointer has left', () => {
+    const moves: (Point | null)[] = []
+    const { container } = renderEn(
+      <DungeonMap slug={SLUG} lookup={lookup} onCursorMove={(p) => moves.push(p)} />,
+    )
+    const surface = container.querySelector('.map-surface')!
+    fireEvent.pointerMove(surface, { clientX: 200, clientY: 150, pointerId: 1 })
+    fireEvent.pointerLeave(surface)
+    expect(moves.at(-1)).toBeNull()
+  })
+
+  it('says nothing at all when nobody is listening', () => {
+    const { container } = renderEn(<DungeonMap slug={SLUG} lookup={lookup} />)
+    const surface = container.querySelector('.map-surface')!
+    expect(() =>
+      fireEvent.pointerMove(surface, { clientX: 5, clientY: 5, pointerId: 1 }),
+    ).not.toThrow()
   })
 })
 

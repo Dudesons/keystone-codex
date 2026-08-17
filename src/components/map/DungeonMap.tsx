@@ -13,6 +13,7 @@ import {
   badgeArc,
   blipRadius,
   fitTransform,
+  toMapPoint,
   zoomAt,
   type Transform,
 } from './viewport'
@@ -42,6 +43,7 @@ interface Props {
   onCloneClick?: (ref: CloneRef, additive: boolean) => void
   onPullClick?: (index: number) => void
   showPackOutlines?: boolean
+  onCursorMove?: (p: Point | null) => void
 }
 
 export default function DungeonMap({
@@ -55,6 +57,7 @@ export default function DungeonMap({
   onCloneClick,
   onPullClick,
   showPackOutlines = true,
+  onCursorMove,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -102,6 +105,10 @@ export default function DungeonMap({
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
+    const el = e.currentTarget as HTMLElement
+    const rect = el.getBoundingClientRect()
+    onCursorMove?.(toMapPoint(transform, { x: e.clientX - rect.left, y: e.clientY - rect.top }))
+
     const d = drag.current
     if (!d) return
     const dx = e.clientX - d.x
@@ -140,6 +147,7 @@ export default function DungeonMap({
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onPointerLeave={() => onCursorMove?.(null)}
     >
       <div
         className="absolute top-0 left-0 origin-top-left"
