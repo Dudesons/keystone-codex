@@ -1,7 +1,7 @@
 # Wowhead tooltip fixtures
 
-Four responses captured verbatim from
-`nether.wowhead.com/tooltip/spell/<id>?dataEnv=1&locale=<n>`, two spells in two languages.
+Ten responses captured verbatim from `nether.wowhead.com/tooltip/<kind>/<id>?dataEnv=1&locale=<n>`
+— two spells and three creatures, each in two languages.
 
 ## Why they are committed rather than fetched
 
@@ -29,6 +29,21 @@ anyone to replace it with per-language regexes, that test would fail.
 
 Both `fade-out` responses also carry a separate `buff` block. `tooltipLines` reads the first
 table only, so "Invisible." must never appear in a spell's fields — there is a test for that.
+
+## The creature fixtures
+
+`tooltip/npc/<id>` renders the name, then `Type (Classification)` on the line below it. The
+three pairs are chosen the same way — each one breaks a parser the others would let through:
+
+| Fixture | Renders | What it shows |
+| --- | --- | --- |
+| `npc-ritual-chieftain.{en,fr}` | `Humanoid (Elite)` / `Humanoïde (Élite)` | the ordinary shape, and that the classification is dropped in both languages |
+| `npc-ravi.{en,fr}` | a boss | its tooltip opens with a `wowhead-tooltip-npc-graphic` row holding the journal portrait, which shifts every row down by one — read by index, the creature type comes back as "Rav'i" |
+| `npc-infused-eggs.{en,fr}` | ` (Normal)` / ` (Standard)` | a creature Wowhead gives no type at all, so the split has to yield nothing rather than an empty string |
+
+Both `npc-ritual-chieftain` responses are also the pair behind the "Wowhead agrees with MDT"
+check: `270306` is the reference entry of `content/altar-of-fangs/`, and its English name here
+is what proves the two sources share an id space.
 
 ## Refreshing them
 

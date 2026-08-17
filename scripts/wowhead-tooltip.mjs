@@ -1,4 +1,4 @@
-// ABOUTME: Parses Wowhead's tooltip HTML into per-language spell labels.
+// ABOUTME: Parses Wowhead's tooltip HTML into per-language spell and creature labels.
 // ABOUTME: classifyLines maps lines by position, so one English pass serves every other locale.
 
 /**
@@ -115,6 +115,68 @@ export function buildSpellText(id, entries) {
   }
 
   return { icon: base.tooltip.icon, text, warnings }
+}
+
+/**
+ * The line under an NPC's name: `Type (Classification)`, or a bare `(Classification)` for a
+ * creature Wowhead gives no type at all.
+ *
+ * Located relative to the name rather than by index. A boss tooltip opens with an extra row
+ * carrying its dungeon-journal portrait, which shifts every following row down by one — read
+ * positionally, Rav'i's creature type would come back as "Rav'i".
+ */
+function npcTypeLine(html, name) {
+  const lines = stripTags(html).split('\n').map((l) => l.trim()).filter(Boolean)
+  const nameAt = lines.indexOf(name)
+  return nameAt === -1 ? undefined : lines[nameAt + 1]
+}
+
+/**
+ * "Beast (Elite)" and "Bête (Élite)" both give "Beast" / "Bête".
+ *
+ * The split is on the parenthesis — punctuation, not vocabulary — so it needs no rule per
+ * language, the same reason `classifyLines` runs once on English. What is left may be empty:
+ * Infused Eggs render as " (Normal)", a classification with no creature type behind it.
+ */
+function creatureType(line) {
+  return line?.replace(/\s*\([^)]*\)\s*$/, '').trim() || undefined
+}
+
+/** Wowhead's NPC response into a name and a creature type. */
+export function parseNpcTooltip(json) {
+  if (!json?.name) return null
+  return { name: json.name, type: creatureType(npcTypeLine(json.tooltip || '', json.name)) }
+}
+
+/**
+ * One creature across every configured language.
+ *
+ * `mdtName` wins for the base language, and Wowhead's own English is spent on checking it
+ * instead: MDT's name is the identity every content file, spell note and test is keyed on,
+ * and a mismatch means the id is wrong rather than the name being stale. Renaming the mob on
+ * that basis would be invisible — it would simply start displaying another creature.
+ */
+export function buildNpcText(id, mdtName, entries) {
+  const [base, ...others] = entries
+  if (!base?.tooltip) return null
+
+  const warnings = []
+  if (base.tooltip.name !== mdtName) {
+    warnings.push(`${id}: MDT calls it "${mdtName}", Wowhead "${base.tooltip.name}" — check the id`)
+  }
+
+  const label = (name, type) => ({ name, ...(type && { type }) })
+  const text = { [base.lang]: label(mdtName, base.tooltip.type) }
+
+  for (const { lang, tooltip } of others) {
+    if (!tooltip) {
+      warnings.push(`${id}: no ${lang} tooltip`)
+      continue
+    }
+    text[lang] = label(tooltip.name, tooltip.type)
+  }
+
+  return { text, warnings }
 }
 
 /**
