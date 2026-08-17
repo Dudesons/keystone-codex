@@ -117,8 +117,13 @@ function chipsOf(slug: string, enemy: Enemy, locale: Locale): HighlightSpell[] {
  * so `mdtIdx` is the fallback, and a dungeon that knows better says so in `_dungeon.md`.
  * Ids the declaration does not mention keep their `mdtIdx` place at the end, so a partial or
  * stale list degrades to the fallback instead of hiding a boss.
+ *
+ * Exported for a direct unit test, the same precedent as `inlineMarkdown`/`isRole` in
+ * `content.ts` and `npcIdList`: real content only ever exercises a complete, accurate
+ * declaration (King's Rest names all six of its bosses), so the omitted-boss and
+ * stale-id branches below have no path to a test through `getHighlights` alone.
  */
-function orderBosses(bosses: HighlightMob[], byIdx: number[], declared?: number[]): HighlightMob[] {
+export function orderBosses(bosses: HighlightMob[], byIdx: number[], declared?: number[]): HighlightMob[] {
   const position = new Map(byIdx.map((id, i) => [id, i]))
   if (declared) declared.forEach((id, i) => position.set(id, i - declared.length))
   return [...bosses].sort((a, b) => (position.get(a.npcId) ?? 0) - (position.get(b.npcId) ?? 0))

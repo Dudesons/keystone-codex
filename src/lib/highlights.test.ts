@@ -2,7 +2,7 @@
 // ABOUTME: Landmarks are chosen from what the codex actually contains, not from invented mobs.
 
 import { describe, expect, it } from 'vitest'
-import { getHighlights } from './highlights'
+import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
 
 /**
@@ -118,5 +118,38 @@ describe('getHighlights bosses', () => {
     const ravi = getHighlights(ALTAR).bosses.find((b) => b.npcId === 259445)!
     expect(ravi.spells.length).toBeGreaterThan(0)
     expect(ravi.displayId).toBeTypeOf('number')
+  })
+})
+
+/**
+ * `orderBosses` exercised directly on plain data, the same precedent as `inlineMarkdown` and
+ * `isRole` in `content.test.ts` and `npcIdList`: no real `_dungeon.md` declares an incomplete
+ * or a stale boss list, so the branches that guard against exactly those two cases have no
+ * path to a test through `getHighlights` and real content alone.
+ */
+describe('orderBosses', () => {
+  const mob = (npcId: number): HighlightMob => ({ npcId, name: `#${npcId}`, spells: [] })
+
+  it('falls back to mdtIdx order when nothing is declared', () => {
+    const byIdx = [10, 20, 30]
+    const bosses = [mob(30), mob(10), mob(20)]
+    expect(orderBosses(bosses, byIdx).map((b) => b.npcId)).toEqual([10, 20, 30])
+  })
+
+  it('keeps an omitted boss in its mdtIdx place, after the declared ones', () => {
+    const byIdx = [10, 20, 30]
+    const bosses = [mob(10), mob(20), mob(30)]
+    // Declares 30 then 10, leaving 20 out entirely — a partial list, not a complete one.
+    const ordered = orderBosses(bosses, byIdx, [30, 10])
+    expect(ordered.map((b) => b.npcId)).toEqual([30, 10, 20])
+  })
+
+  it('ignores a declared id absent from the dungeon: no crash, no phantom entry', () => {
+    const byIdx = [10, 20, 30]
+    const bosses = [mob(10), mob(20), mob(30)]
+    // 999 is a stale id from a season change — no boss of this dungeon carries it.
+    const ordered = orderBosses(bosses, byIdx, [999, 20, 10])
+    expect(ordered).toHaveLength(3)
+    expect(ordered.map((b) => b.npcId)).toEqual([20, 10, 30])
   })
 })
