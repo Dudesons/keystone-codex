@@ -19,6 +19,7 @@ import { cloneKey } from '../data'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
+import { readPeers, type Peer } from '../collab/presence'
 
 /**
  * Where a session meets.
@@ -124,9 +125,9 @@ export interface RouteActions {
 export interface CollabState {
   status: CollabStatus
   room: string | null
-  /** Number of participants, yourself included. */
-  peers: number
-  identity: string
+  /** Participants, yourself included. */
+  peers: Peer[]
+  identity: string | null
 }
 
 /**
@@ -161,8 +162,8 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
   const [collab, setCollab] = useState<CollabState>(() => ({
     status: 'off',
     room: null,
-    peers: 0,
-    identity: identityName(),
+    peers: [],
+    identity: storedIdentity(),
   }))
 
   const closeSession = useCallback(() => {
@@ -307,7 +308,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       setDoc(target)
 
       const provider = new WebsocketProvider(COLLAB_URL, roomName(slug, room), target)
-      provider.awareness.setLocalStateField('user', { name: collab.identity })
+      if (collab.identity) provider.awareness.setLocalStateField('user', { name: collab.identity })
 
       const update = () =>
         setCollab((c) => ({
@@ -315,7 +316,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           // The socket, not an intention. The previous reading was true as soon as a room
           // existed, so a session whose relay never answered still called itself connected.
           status: provider.wsconnected ? 'connected' : 'connecting',
-          peers: provider.awareness.getStates().size,
+          peers: readPeers(provider.awareness.getStates(), provider.awareness.clientID),
         }))
 
       provider.awareness.on('change', update)
@@ -336,27 +337,31 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
 
   const leaveRoom = useCallback(() => {
     closeSession()
-    setCollab((c) => ({ ...c, status: 'off', room: null, peers: 0 }))
+    setCollab((c) => ({ ...c, status: 'off', room: null, peers: [] }))
   }, [closeSession])
 
-  return { route, actions, collab, joinRoom, leaveRoom }
+  const setIdentity = useCallback((name: string) => {
+    const trimmed = name.trim()
+    localStorage.setItem(IDENTITY_KEY, trimmed)
+    setCollab((c) => ({ ...c, identity: trimmed }))
+    sessionRef.current?.provider.awareness.setLocalStateField('user', { name: trimmed })
+  }, [])
+
+  return { route, actions, collab, joinRoom, leaveRoom, setIdentity }
 }
 
+const IDENTITY_KEY = 'midnight-codex:identity'
+
 /**
- * A stable, readable name, remembered across sessions.
+ * The name you chose, or nothing yet.
  *
  * Not translated, for the same reason as `DEFAULT_ROUTE_NAME`: this name is replicated to
  * Y.js peers, so two teammates on different locales must see the same string for the same
- * person. Names already in `localStorage` are kept as they are — renaming someone mid-season
- * would be worse than the inconsistency.
+ * person. Returning nothing on a first visit is what makes choosing one mean something —
+ * offering an invented name would have everybody accept it without reading.
  */
-function identityName(): string {
-  const key = 'midnight-codex:identity'
-  const existing = localStorage.getItem(key)
-  if (existing) return existing
-  const name = `Player-${Math.floor(1000 + Math.random() * 9000)}`
-  localStorage.setItem(key, name)
-  return name
+function storedIdentity(): string | null {
+  return localStorage.getItem(IDENTITY_KEY)
 }
 
 /** A short room code, easy to read out on Discord. */

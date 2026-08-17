@@ -361,7 +361,7 @@ function CollabSection({
           <div className="text-right">
             <div className="text-xs text-ink-300">
               {collab.status === 'connected'
-                ? plural('collab.connected', collab.peers)
+                ? plural('collab.connected', collab.peers.length)
                 : t('collab.connecting')}
             </div>
             <div className="text-[10px] text-ink-500">{collab.identity}</div>

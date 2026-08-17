@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getLookup } from '../../lib/data'
 import { emptyRoute, nextColor, routeToLua, type Route } from '../../lib/mdt/route'
 import { encodeMdtString } from '../../lib/mdt/string'
+import type { Peer } from '../../lib/collab/presence'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { renderEn } from '../../test/render'
 import RoutePanel from './RoutePanel'
@@ -42,7 +43,16 @@ function recorder() {
   return { calls, actions }
 }
 
-const offline: CollabState = { status: 'off', room: null, peers: 0, identity: 'Player-1234' }
+/** Stand-ins for connected participants: only the count is under test here, not who they are. */
+const peersOf = (n: number): Peer[] =>
+  Array.from({ length: n }, (_, i) => ({
+    clientId: i,
+    name: `Peer-${i}`,
+    color: '#000',
+    isSelf: i === 0,
+  }))
+
+const offline: CollabState = { status: 'off', room: null, peers: [], identity: 'Player-1234' }
 
 const routeWith = (packCount: number): Route => ({
   ...emptyRoute(SLUG, MDT_INDEX, 'Test route'),
@@ -319,7 +329,7 @@ describe('Collaborative session', () => {
     const connected: CollabState = {
       status: 'connected',
       room: 'AB3K9Z',
-      peers: 3,
+      peers: peersOf(3),
       identity: 'Player-1234',
     }
     const { container } = mount({ collab: connected })
@@ -332,7 +342,7 @@ describe('Collaborative session', () => {
 
   it('says it is connecting before the peers answer', () => {
     const { container } = mount({
-      collab: { status: 'connecting', room: 'AB3K9Z', peers: 0, identity: 'Player-1234' },
+      collab: { status: 'connecting', room: 'AB3K9Z', peers: [], identity: 'Player-1234' },
     })
     expect(container.textContent).toContain('connecting…')
   })
@@ -340,7 +350,7 @@ describe('Collaborative session', () => {
   it('leaves the session', () => {
     let left = false
     mount({
-      collab: { status: 'connected', room: 'AB3K9Z', peers: 2, identity: 'Player-1234' },
+      collab: { status: 'connected', room: 'AB3K9Z', peers: peersOf(2), identity: 'Player-1234' },
       onLeaveRoom: () => {
         left = true
       },

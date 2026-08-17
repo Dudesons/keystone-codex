@@ -81,7 +81,6 @@ describe('Initial state', () => {
     const { result } = mount()
     expect(result.current.collab.status).toBe('off')
     expect(result.current.collab.room).toBeNull()
-    expect(result.current.collab.identity).toMatch(/^Player-\d{4}$/)
   })
 })
 
@@ -333,7 +332,7 @@ describe('Sessions', () => {
 
     expect(result.current.collab.status).toBe('off')
     expect(result.current.collab.room).toBeNull()
-    expect(result.current.collab.peers).toBe(0)
+    expect(result.current.collab.peers).toEqual([])
     unmount()
   })
 
@@ -354,6 +353,44 @@ describe('Sessions', () => {
     act(() => result.current.leaveRoom())
 
     expect(result.current.route.pulls[0].clones).toHaveLength(packA.length)
+    unmount()
+  })
+})
+
+describe('Identity', () => {
+  it('starts with no name, so one has to be chosen', () => {
+    localStorage.removeItem('midnight-codex:identity')
+    const { result } = mount()
+    expect(result.current.collab.identity).toBeNull()
+  })
+
+  it('remembers a chosen name across mounts', () => {
+    const first = mount()
+    act(() => first.result.current.setIdentity('Rwl'))
+    first.unmount()
+    expect(mount().result.current.collab.identity).toBe('Rwl')
+  })
+
+  it('keeps a name already stored rather than renaming anyone', () => {
+    localStorage.setItem('midnight-codex:identity', 'Player-8429')
+    expect(mount().result.current.collab.identity).toBe('Player-8429')
+  })
+
+  it('counts yourself among the participants of a room you just opened', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.setIdentity('Rwl'))
+    act(() => result.current.joinRoom('AAAAAA', 'host'))
+    expect(result.current.collab.peers.map((p) => p.name)).toEqual(['Rwl'])
+    expect(result.current.collab.peers[0].isSelf).toBe(true)
+    unmount()
+  })
+
+  it('announces a rename to the room without reconnecting', () => {
+    const { result, unmount } = mount()
+    act(() => result.current.setIdentity('Rwl'))
+    act(() => result.current.joinRoom('AAAAAA', 'host'))
+    act(() => result.current.setIdentity('RwlRwl'))
+    expect(result.current.collab.peers.map((p) => p.name)).toEqual(['RwlRwl'])
     unmount()
   })
 })

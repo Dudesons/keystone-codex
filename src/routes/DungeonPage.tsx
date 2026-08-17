@@ -176,7 +176,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         <div className="ml-auto flex items-center gap-2">
           {collab.status !== 'off' && (
             <span className="rounded border border-threat-low/40 bg-threat-low/10 px-2 py-1 text-[11px] text-threat-low">
-              {collab.room} · {collab.peers}
+              {collab.room} · {collab.peers.length}
             </span>
           )}
           <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
