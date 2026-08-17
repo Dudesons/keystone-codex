@@ -64,7 +64,10 @@ export async function connect(room: string): Promise<Client> {
     socket.send(encoding.toUint8Array(encoder))
   })
 
-  awareness.on('update', ({ added, updated, removed }: Record<string, number[]>, origin: unknown) => {
+  awareness.on('update', (
+    { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
+    origin: unknown,
+  ) => {
     if (origin === socket) return
     const changed = added.concat(updated, removed)
     const encoder = encoding.createEncoder()

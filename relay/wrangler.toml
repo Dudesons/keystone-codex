@@ -1,8 +1,11 @@
 name = "keystone-relay"
 main = "src/index.js"
-# The installed workerd supports no later date than this and falls back to it on every run, so
-# pinning it here is what makes the tests exercise the runtime a deploy actually runs under.
-# Raising it means upgrading wrangler, which the pinned test pool forbids.
+# Two workerd builds are installed: the one bundled with wrangler, which `wrangler dev` and
+# the README's local-relay recipe use, and an older one nested inside
+# @cloudflare/vitest-pool-workers, which is what runs the tests. That older workerd supports
+# no later date than this and falls back to it on every run. Pinning it here keeps the tests
+# and production agreeing on one set of compatibility defaults, which is reason enough on its
+# own. Raising it means upgrading @cloudflare/vitest-pool-workers, not wrangler.
 compatibility_date = "2026-03-10"
 
 [[durable_objects.bindings]]
