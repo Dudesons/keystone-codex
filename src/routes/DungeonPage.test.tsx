@@ -3,13 +3,43 @@
 
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { getLookup } from '../lib/data'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
 
 afterEach(cleanup)
+
+/**
+ * A socket that never opens.
+ *
+ * jsdom would otherwise dial the real relay the moment a test clicks Join, which no test may
+ * depend on. See `useRouteDoc.test.tsx` for the fuller rationale — this file only needs a
+ * session to reach `status !== 'off'`, never a real handshake.
+ */
+class SilentSocket {
+  static readonly CONNECTING = 0
+  static readonly OPEN = 1
+  static readonly CLOSING = 2
+  static readonly CLOSED = 3
+  readonly CONNECTING = 0
+  readonly OPEN = 1
+  readonly CLOSING = 2
+  readonly CLOSED = 3
+  readyState = 0
+  binaryType = 'blob'
+  onopen: (() => void) | null = null
+  onclose: (() => void) | null = null
+  onerror: (() => void) | null = null
+  onmessage: ((event: unknown) => void) | null = null
+  constructor(readonly url: string) {}
+  send() {}
+  close() {
+    this.readyState = this.CLOSED
+    this.onclose?.()
+  }
+}
 
 beforeAll(() => {
   // jsdom implements neither of these. The codex panel scrolls to the clicked unit, and the
@@ -21,6 +51,7 @@ beforeAll(() => {
     unobserve() {}
     disconnect() {}
   }
+  globalThis.WebSocket = SilentSocket as unknown as typeof WebSocket
 })
 
 beforeEach(() => {
@@ -131,6 +162,70 @@ describe('Arriving with an invitation link', () => {
     expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
     expect(container.textContent).toContain('ABC123')
     expect(container.textContent).toMatch(/set aside/i)
+  })
+})
+
+describe('A link pasted after arrival', () => {
+  /** Changes the URL without remounting `DungeonPage`, the way a hash change from a pasted link does. */
+  function PasteLink() {
+    const navigate = useNavigate()
+    return <button onClick={() => navigate(`/d/${SLUG}?room=TESTX`)}>paste link</button>
+  }
+
+  const withPasteLink = (path: string) => (
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route
+          path="/d/:slug"
+          element={
+            <>
+              <PasteLink />
+              <DungeonPage />
+            </>
+          }
+        />
+      </Routes>
+    </MemoryRouter>
+  )
+
+  it('switches into route mode once the URL carries a room, with no reload', () => {
+    renderEn(withPasteLink(`/d/${SLUG}`))
+    expect(screen.getByRole('heading', { name: 'BOSSES' })).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'paste link' }))
+
+    expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
+    expect(screen.getByRole('button', { name: /join room testx/i })).toBeDefined()
+  })
+
+  it('does not force route mode back on someone who has since chosen Codex', () => {
+    renderEn(withPasteLink(`/d/${SLUG}`))
+    fireEvent.click(screen.getByRole('button', { name: 'paste link' }))
+    expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Codex' }))
+    expect(screen.getByRole('heading', { name: 'BOSSES' })).toBeDefined()
+  })
+})
+
+describe('Leaving a room offered by a link', () => {
+  it('does not re-offer the room it just escaped, though a reload still would', () => {
+    renderEn(at(`/d/${SLUG}?room=ABC123`))
+    expect(screen.getByRole('button', { name: /join room abc123/i })).toBeDefined()
+
+    // A name is required before Join enables.
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.click(screen.getByRole('button', { name: /join room abc123/i }))
+
+    // Connected (or still connecting) — the invitation is gone, replaced by the session view.
+    expect(screen.getByText('Leave')).toBeDefined()
+    fireEvent.click(screen.getByText('Leave'))
+
+    // The URL still carries `?room=ABC123` — reloading this link must still offer it — but
+    // this mounted instance must not put the same invitation back in front of the person who
+    // just left it.
+    expect(screen.queryByRole('button', { name: /join room abc123/i })).toBeNull()
+    expect(screen.getByRole('button', { name: /open a session/i })).toBeDefined()
   })
 })
 

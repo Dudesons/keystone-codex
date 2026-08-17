@@ -1,7 +1,7 @@
 // ABOUTME: A dungeon's page: the map beside either the codex panel or the route panel.
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
 import RelayNotice from '../components/map/RelayNotice'
@@ -44,12 +44,26 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const { t, plural, locale } = useI18n()
   const lookup = getLookup(slug)!
 
-  // The room a join link carries, read once: `?room=` stays in the URL after arrival, so a
-  // reload offers the invitation again rather than reconnecting silently.
+  // The room a join link carries. `?room=` stays in the URL after arrival, so a reload offers
+  // the invitation again rather than reconnecting silently — but leaving the session it led to
+  // must not offer it right back to the person who just escaped it. `declined` is that
+  // distinction: component state, so it resets on the reload the URL is there to support, and
+  // sticks for as long as the tab stays on this room.
   const [searchParams] = useSearchParams()
-  const pendingRoom = searchParams.get('room')
+  const [declined, setDeclined] = useState(false)
+  const pendingRoom = declined ? null : searchParams.get('room')
 
   const [mode, setMode] = useState<Mode>(pendingRoom ? 'route' : 'codex')
+
+  // A join link pasted into a tab already on this dungeon only changes the hash, which does
+  // not remount `DungeonPage` — the `useState` above only seeds the initial mode. Reacting to
+  // `pendingRoom` here is what makes the invitation appear without a reload. It only ever
+  // turns route mode *on*: once `pendingRoom` stops changing, a reader who clicks back to
+  // Codex stays there.
+  useEffect(() => {
+    if (pendingRoom) setMode('route')
+  }, [pendingRoom])
+
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
   const [focusNpc, setFocusNpc] = useState<number | null>(null)
@@ -60,6 +74,13 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     slug,
     lookup.dungeon.mdtIndex,
   )
+
+  // A session that just ended must not offer its room right back — whether left from the
+  // panel or from the relay notice, both go through here.
+  const handleLeaveRoom = useCallback(() => {
+    setDeclined(true)
+    leaveRoom()
+  }, [leaveRoom])
 
   const selectedMob = npcId ? Number(npcId) : null
   const hasRoute = route.pulls.some((p) => p.clones.length > 0)
@@ -213,7 +234,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             onCursorMove={collab.status === 'off' ? undefined : setCursor}
             notice={
               collab.status === 'off' ? undefined : (
-                <RelayNotice stalled={!collab.synced} onLeave={leaveRoom} />
+                <RelayNotice stalled={!collab.synced} onLeave={handleLeaveRoom} />
               )
             }
           />
@@ -255,7 +276,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               }}
               collab={collab}
               onJoinRoom={joinRoom}
-              onLeaveRoom={leaveRoom}
+              onLeaveRoom={handleLeaveRoom}
               onSetIdentity={setIdentity}
               pendingRoom={pendingRoom}
             />
