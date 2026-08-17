@@ -966,10 +966,12 @@ Use what these print. Do not copy 632 from this plan if the number differs — e
 added tests of their own.
 
 **`CLAUDE.md`'s current counts are already wrong** and must be corrected in the same pass: it claims
-"634 tests… `app` — 624 tests… `relay` — 10", where a clean checkout reports **631 = `app` 620 in 24
-files + `relay` 11 in 1**. The figure was written from a working tree carrying another session's
-uncommitted tests. Take the numbers from the commands above, in this worktree, not from any earlier
-document.
+"634 tests… `app` — 624 tests… `relay` — 10", all three of which are wrong. They were written from a
+working tree carrying another session's uncommitted tests; a clean checkout of this plan's starting point
+ran **631**, and Task 4 has added one since.
+
+Which is exactly why the numbers come from the commands above, run in this worktree, and from no document
+— including this one. Any figure written here is a prediction; the command's output is the fact.
 
 - [ ] **Step 2: correct the testing table in `CLAUDE.md`**
 
