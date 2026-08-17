@@ -31,8 +31,15 @@ import { readPeers, type Peer } from '../collab/presence'
  * between tabs of one browser, over `BroadcastChannel`. A relay is one host to keep alive
  * rather than a rendezvous nobody runs any more, and it reaches through the NAT and the
  * corporate firewall that WebRTC needs a TURN server to cross.
+ *
+ * The default is our own Worker, `relay/`, on Cloudflare's free plan. It used to be
+ * `wss://demos.yjs.dev/ws`, which is not dead — it refused an upgrade one morning and synced a
+ * document that afternoon — but flaky is the same as dead for something people rely on. Vite
+ * inlines this at build time, so a default in the source is what makes a fresh clone and the
+ * deployed site work without anyone remembering a variable; `VITE_COLLAB_URL` overrides it for
+ * a local relay and for the end-to-end harness.
  */
-const COLLAB_URL = import.meta.env.VITE_COLLAB_URL || 'wss://demos.yjs.dev/ws'
+const COLLAB_URL = import.meta.env.VITE_COLLAB_URL || 'wss://keystone-relay.damdam-gold.workers.dev'
 
 const storageKey = (slug: string) => `midnight-codex:route:${slug}`
 
