@@ -10,7 +10,7 @@ import { encodeMdtString } from '../../lib/mdt/string'
 import type { Peer } from '../../lib/collab/presence'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { renderEn } from '../../test/render'
-import RoutePanel from './RoutePanel'
+import RoutePanel, { sessionLink } from './RoutePanel'
 
 afterEach(cleanup)
 
@@ -79,6 +79,7 @@ const mount = (over: Partial<React.ComponentProps<typeof RoutePanel>> = {}) => {
       onJoinRoom={() => {}}
       onLeaveRoom={() => {}}
       onSetIdentity={() => {}}
+      pendingRoom={null}
       {...over}
     />,
   )
@@ -261,6 +262,7 @@ describe('Import', () => {
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
         onSetIdentity={() => {}}
+        pendingRoom={null}
       />,
     )
     fireEvent.change(screen.getByPlaceholderText(/Paste an MDT string/), { target: { value: 'x' } })
@@ -422,6 +424,7 @@ describe('Choosing a name', () => {
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
         onSetIdentity={onSetIdentity}
+        pendingRoom={null}
       />
     )
     const { rerender } = renderEn(renderPanel())
@@ -435,5 +438,46 @@ describe('Choosing a name', () => {
     }
 
     expect((screen.getByLabelText(/your name/i) as HTMLInputElement).value).toBe('AB CD')
+  })
+})
+
+describe('sessionLink', () => {
+  it('puts the room inside the hash, where a static host can still route it', () => {
+    expect(sessionLink('altar-of-fangs', 'ABC123')).toBe(
+      `${location.origin}${location.pathname}#/d/altar-of-fangs?room=ABC123`,
+    )
+  })
+})
+
+describe('An invitation carried by a link', () => {
+  it('names the room and warns that the local route is set aside', () => {
+    const { container } = mount({ pendingRoom: 'ABC123' })
+    expect(container.textContent).toContain('ABC123')
+    expect(container.textContent).toMatch(/set aside/i)
+  })
+
+  it('joins nothing until the invitation is accepted', () => {
+    const onJoinRoom = vi.fn()
+    mount({ pendingRoom: 'ABC123', onJoinRoom })
+    expect(onJoinRoom).not.toHaveBeenCalled()
+  })
+
+  it('joins as a guest once accepted', () => {
+    const onJoinRoom = vi.fn()
+    mount({ collab: { ...offline, identity: 'Rwl' }, pendingRoom: 'ABC123', onJoinRoom })
+    fireEvent.click(screen.getByRole('button', { name: /join room abc123/i }))
+    expect(onJoinRoom).toHaveBeenCalledWith('ABC123', 'guest')
+  })
+
+  it('offers a link to copy while a session is open', () => {
+    const connected: CollabState = {
+      status: 'connected',
+      room: 'ABC123',
+      peers: peersOf(1),
+      identity: 'Player-1234',
+      synced: true,
+    }
+    mount({ collab: connected })
+    expect(screen.getByRole('button', { name: /copy the link/i })).toBeDefined()
   })
 })

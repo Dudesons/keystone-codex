@@ -29,6 +29,18 @@ interface Props {
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
   onSetIdentity: (name: string) => void
+  pendingRoom: string | null
+}
+
+/**
+ * A link that carries the room.
+ *
+ * The build is served statically under a hash router, so the room has to live inside the
+ * hash. `location.pathname` already carries whatever prefix the host adds — nothing about
+ * the deployment is repeated here.
+ */
+export function sessionLink(slug: string, room: string): string {
+  return `${location.origin}${location.pathname}#/d/${slug}?room=${room}`
 }
 
 /**
@@ -56,6 +68,7 @@ export default function RoutePanel({
   onJoinRoom,
   onLeaveRoom,
   onSetIdentity,
+  pendingRoom,
 }: Props) {
   const { t, plural, formatPercent } = useI18n()
   const [importText, setImportText] = useState('')
@@ -251,7 +264,9 @@ export default function RoutePanel({
       </section>
 
       <CollabSection
+        slug={slug}
         collab={collab}
+        pendingRoom={pendingRoom}
         onJoinRoom={onJoinRoom}
         onLeaveRoom={onLeaveRoom}
         onSetIdentity={onSetIdentity}
@@ -338,13 +353,17 @@ function PullMobLine({
 }
 
 function CollabSection({
+  slug,
   collab,
+  pendingRoom,
   onJoinRoom,
   onLeaveRoom,
   onSetIdentity,
   onMessage,
 }: {
+  slug: string
   collab: CollabState
+  pendingRoom: string | null
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
   onSetIdentity: (name: string) => void
@@ -384,6 +403,15 @@ function CollabSection({
             {t('collab.copyCode')}
           </button>
           <button
+            onClick={async () => {
+              await navigator.clipboard.writeText(sessionLink(slug, collab.room ?? ''))
+              onMessage({ kind: 'ok', text: t('route.linkCopied') })
+            }}
+            className="flex-1 rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
+          >
+            {t('collab.copyLink')}
+          </button>
+          <button
             onClick={onLeaveRoom}
             className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-500 hover:border-threat-lethal hover:text-threat-lethal"
           >
@@ -400,6 +428,18 @@ function CollabSection({
         {t('collab.editTogether')}
       </h3>
       <NameField identity={collab.identity} onSetIdentity={onSetIdentity} t={t} />
+      {pendingRoom && (
+        <div className="mb-3 rounded border border-gold-500/40 bg-gold-500/5 p-2">
+          <p className="text-[11px] text-ink-300">{t('collab.invitation', { room: pendingRoom })}</p>
+          <button
+            onClick={() => onJoinRoom(pendingRoom, 'guest')}
+            disabled={!collab.identity?.trim()}
+            className="mt-2 w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20 disabled:opacity-40"
+          >
+            {t('collab.acceptInvitation', { room: pendingRoom })}
+          </button>
+        </div>
+      )}
       <button
         onClick={() => onJoinRoom(randomRoomCode(), 'host')}
         disabled={!hasName}

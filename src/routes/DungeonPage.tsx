@@ -2,7 +2,7 @@
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
@@ -43,7 +43,12 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const { t, plural, locale } = useI18n()
   const lookup = getLookup(slug)!
 
-  const [mode, setMode] = useState<Mode>('codex')
+  // The room a join link carries, read once: `?room=` stays in the URL after arrival, so a
+  // reload offers the invitation again rather than reconnecting silently.
+  const [searchParams] = useSearchParams()
+  const pendingRoom = searchParams.get('room')
+
+  const [mode, setMode] = useState<Mode>(pendingRoom ? 'route' : 'codex')
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
   const [focusNpc, setFocusNpc] = useState<number | null>(null)
@@ -241,6 +246,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               onJoinRoom={joinRoom}
               onLeaveRoom={leaveRoom}
               onSetIdentity={setIdentity}
+              pendingRoom={pendingRoom}
             />
           )}
         </aside>
