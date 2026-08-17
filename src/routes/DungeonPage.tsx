@@ -55,7 +55,10 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const [currentPull, setCurrentPull] = useState(0)
   const [hoveredPull, setHoveredPull] = useState<number | null>(null)
 
-  const { route, actions, collab, joinRoom, leaveRoom, setIdentity } = useRouteDoc(slug, lookup.dungeon.mdtIndex)
+  const { route, actions, collab, joinRoom, leaveRoom, setIdentity, setCursor } = useRouteDoc(
+    slug,
+    lookup.dungeon.mdtIndex,
+  )
 
   const selectedMob = npcId ? Number(npcId) : null
   const hasRoute = route.pulls.some((p) => p.clones.length > 0)
@@ -205,6 +208,8 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             onCloneClick={handleCloneClick}
             onPullClick={setCurrentPull}
             showPackOutlines={mode === 'codex'}
+            cursors={collab.status === 'off' ? undefined : collab.peers}
+            onCursorMove={collab.status === 'off' ? undefined : setCursor}
           />
         </div>
 

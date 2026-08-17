@@ -7,6 +7,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { getMobContent } from '../../lib/content'
 import { cloneKey, getLookup, mapUrl } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
+import type { Peer } from '../../lib/collab/presence'
 import { renderEn } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
@@ -402,5 +403,58 @@ describe('Heads-up display', () => {
     for (const label of ['Lethal threat', 'Dangerous', 'Watch out', 'Harmless', 'Boss']) {
       expect(container.textContent, label).toContain(label)
     }
+  })
+})
+
+describe('Peer cursors', () => {
+  const peer = (over: Partial<Peer> = {}): Peer => ({
+    clientId: 7,
+    name: 'Alice',
+    color: 'hsl(200 70% 62%)',
+    cursor: { x: 100, y: 200 },
+    isSelf: false,
+    ...over,
+  })
+
+  it('names the person behind the arrow', () => {
+    renderEn(<DungeonMap slug={SLUG} lookup={lookup} cursors={[peer()]} />)
+    expect(screen.getByText('Alice')).toBeDefined()
+  })
+
+  it('draws nobody who has not moved yet', () => {
+    renderEn(<DungeonMap slug={SLUG} lookup={lookup} cursors={[peer({ cursor: undefined })]} />)
+    expect(screen.queryByText('Alice')).toBeNull()
+  })
+
+  it('does not draw a second arrow under your own mouse', () => {
+    renderEn(<DungeonMap slug={SLUG} lookup={lookup} cursors={[peer({ name: 'Me', isSelf: true })]} />)
+    expect(screen.queryByText('Me')).toBeNull()
+  })
+
+  it('draws someone who has arrived without announcing a name', () => {
+    const { container } = renderEn(
+      <DungeonMap slug={SLUG} lookup={lookup} cursors={[peer({ name: '' })]} />,
+    )
+    expect(container.querySelectorAll('[data-peer-cursor]')).toHaveLength(1)
+  })
+
+  it('places the arrow through the same transform the map itself uses, not raw map coordinates', () => {
+    const { container } = renderEn(
+      <DungeonMap slug={SLUG} lookup={lookup} cursors={[peer({ cursor: { x: 100, y: 200 } })]} />,
+    )
+    const surface = container.querySelector('.map-surface')!
+
+    // Same stub and arithmetic as the "reports a move in map coordinates" test above: a
+    // 2000x1000 container is height-constrained against the map's fixed 1920x1280, so
+    // scale = 1000 / 1280 = 0.78125, tx = (2000 - 1920*0.78125) / 2 = 250, ty = 0.
+    Object.defineProperty(surface, 'clientWidth', { configurable: true, value: 2000 })
+    Object.defineProperty(surface, 'clientHeight', { configurable: true, value: 1000 })
+    fireEvent.click(screen.getByTitle('Fit'))
+
+    // toContainerPoint({x: 100, y: 200}) = {x: 100*0.78125 + 250, y: 200*0.78125 + 0}
+    // = {x: 328.125, y: 156.25}. The raw map coordinates {100, 200} would fail this, and so
+    // would toMapPoint's inverse, {x: (100-250)/0.78125, y: (200-0)/0.78125} = {x: -192, y: 256}.
+    const el = container.querySelector('[data-peer-cursor]') as HTMLElement
+    expect(el.style.transform).toBe('translate(328.125px, 156.25px)')
   })
 })

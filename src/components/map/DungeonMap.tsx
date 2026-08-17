@@ -7,6 +7,8 @@ import { cloneKey, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/dat
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
+import type { Peer } from '../../lib/collab/presence'
+import PeerCursors from './PeerCursors'
 import {
   BUTTON_STEP,
   WHEEL_STEP,
@@ -44,6 +46,7 @@ interface Props {
   onPullClick?: (index: number) => void
   showPackOutlines?: boolean
   onCursorMove?: (p: Point | null) => void
+  cursors?: Peer[]
 }
 
 export default function DungeonMap({
@@ -58,6 +61,7 @@ export default function DungeonMap({
   onPullClick,
   showPackOutlines = true,
   onCursorMove,
+  cursors,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -290,6 +294,7 @@ export default function DungeonMap({
 
       {showLegend && <Legend />}
       {hoverClone && <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />}
+      {cursors && <PeerCursors peers={cursors} transform={transform} />}
     </div>
   )
 }
