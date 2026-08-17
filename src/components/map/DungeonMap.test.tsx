@@ -172,13 +172,13 @@ describe('Indicator pips', () => {
 })
 
 describe('Pack outlines', () => {
-  it('draws one per pack in codex mode', () => {
+  it('draws one per pack when asked', () => {
     const { container } = mount({ showPackOutlines: true })
     const hulls = [...container.querySelectorAll('svg path')]
     expect(hulls.length).toBeGreaterThanOrEqual(lookup.packs.size)
   })
 
-  it('draws none when the route tab turns them off', () => {
+  it('draws none when not', () => {
     const { container } = mount({ showPackOutlines: false })
     expect(container.querySelectorAll('svg path')).toHaveLength(0)
   })

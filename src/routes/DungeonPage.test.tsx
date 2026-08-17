@@ -208,6 +208,21 @@ describe('A link pasted after arrival', () => {
   })
 })
 
+describe('Pack outlines', () => {
+  const outlines = (container: HTMLElement) => container.querySelectorAll('svg path').length
+
+  it('are drawn in route mode too, where the panel asks you to click a pack', () => {
+    const { container } = renderEn(at(`/d/${SLUG}`))
+    const inCodex = outlines(container)
+    expect(inCodex).toBeGreaterThanOrEqual(lookup.packs.size)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+
+    // The route starts empty, so no pull outline can account for these.
+    expect(outlines(container)).toBe(inCodex)
+  })
+})
+
 describe('Leaving a room offered by a link', () => {
   it('does not re-offer the room it just escaped, though a reload still would', () => {
     renderEn(at(`/d/${SLUG}?room=ABC123`))

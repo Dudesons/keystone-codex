@@ -231,7 +231,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             selectedPack={mode === 'codex' ? selectedPack : null}
             onCloneClick={handleCloneClick}
             onPullClick={setCurrentPull}
-            showPackOutlines={mode === 'codex'}
+            showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
             onCursorMove={collab.status === 'off' ? undefined : setCursor}
             notice={
