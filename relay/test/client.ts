@@ -125,6 +125,19 @@ export async function connect(room: string): Promise<Client> {
     close: () => socket.close(),
     reconnect: async () => {
       unwire()
+      /**
+       * A real client does not resend its old presence unchanged on reconnect. Every peer that
+       * saw this client depart remembers the exact clock it held when it left —
+       * `removeAwarenessStates` only advances a clock for the awareness instance's *own* id,
+       * never for a foreign one being removed (`y-protocols/awareness.js`) — so re-announcing
+       * at that same clock is indistinguishable from a stale duplicate and gets discarded
+       * everywhere, relay included. Re-setting the local state, even to itself, is what
+       * advances the clock — mirroring the fix in `useRouteDoc.ts`'s `resumeRoom`. `unwire()`
+       * runs first so this doesn't try to broadcast the bump over the now-closed old socket;
+       * `wire()`'s own "resend if there's a local state" step, below, is what actually puts the
+       * now-advanced clock on the wire once the new socket opens.
+       */
+      if (awareness.getLocalState() !== null) awareness.setLocalState(awareness.getLocalState())
       const next = await open(room)
       client.socket = next
       unwire = wire(next, doc, awareness)
