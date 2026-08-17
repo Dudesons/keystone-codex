@@ -134,25 +134,18 @@ Every participant's cursor is drawn on the map, as an arrow and a name pill; you
 drawn a second time. Positions are shared in the map's own coordinates, so two people zoomed
 in differently still point at the same mob.
 
-Sessions meet on a WebSocket relay, chosen with `VITE_COLLAB_URL`. The default,
-`wss://demos.yjs.dev/ws`, **was decommissioned on 2026-08-17**: it still answers plain HTTPS
-requests but refuses the WebSocket upgrade, so collaboration does not work against it as
-shipped. For local development, put your own relay's address in `.env.local` (already
-ignored by git):
+Sessions meet on a relay the project runs — nothing needs configuring. If you're running your
+own relay, point at it in `.env.local` (already ignored by git):
 
 ```bash
-VITE_COLLAB_URL=ws://localhost:1234
+VITE_COLLAB_URL=ws://127.0.0.1:8787
 ```
 
-and run one with:
+and start it with:
 
 ```bash
-npx -y y-websocket@2.1.0
+npx wrangler dev --config relay/wrangler.toml
 ```
-
-Pin that version — `y-websocket@3.1.0` is client-only and ships no server binary, so a plain
-`npx y-websocket` fails with "could not determine executable to run". Where a relay should
-live for everyone else, rather than on your own machine, is not decided yet.
 
 While a join is waiting on the relay, the panel says so alongside the empty pull it seeds in
 the meantime, rather than leaving that empty route to speak for itself; if five seconds pass

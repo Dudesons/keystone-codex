@@ -222,8 +222,9 @@ one. See the follow-up below.
 `COLLAB_URL` falls back to `wss://demos.yjs.dev/ws` when nothing is configured. As of
 2026-08-17 that host still serves its static demo pages over HTTPS (200) but refuses the
 WebSocket upgrade (close code 1006 in ~170 ms, while `wss://echo.websocket.org` opens in
-250 ms from the same browser). The default is not merely imperfect, it is **guaranteed
-broken**, and it is what the deployed site uses.
+250 ms from the same browser) — that was the morning's measurement; the same host synced a
+document that afternoon. The default is not dead, it is **flaky**, which for something people
+are meant to rely on is just as bad, and it is what the deployed site uses.
 
 `VITE_COLLAB_URL` already overrides it, so pointing at any server needs no code change. For
 local development, `.env.local` (covered by `*.local` in `.gitignore`) with:
@@ -245,6 +246,8 @@ against a classic `yjs` client with `store.getClock is not a function`.
 
 Choosing where the durable relay lives is a decision for the repository's owner and has not
 been taken.
+
+This follow-up is now closed by [`2026-08-17-relay-hosting-design.md`](2026-08-17-relay-hosting-design.md).
 
 ### An end-to-end harness
 

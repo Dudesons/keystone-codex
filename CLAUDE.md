@@ -167,14 +167,17 @@ Before implementing new functionality:
 
 The rule above is the target, not today's reality. What exists:
 
-508 tests, all green. No mocks anywhere: the tests read the real generated data, the real
-`content/*.md` through `import.meta.glob`, and real committed artefacts for anything that
-would otherwise need the network or a WoW install.
+634 tests, all green, run as two Vitest projects (`npm test` runs both): `app` — 624 tests in
+node and jsdom — and `relay` — 10 tests in workerd, via `@cloudflare/vitest-pool-workers` — which
+needs neither network nor a Cloudflare account. No mocks anywhere: the tests read the real
+generated data, the real `content/*.md` through `import.meta.glob`, and real committed artefacts
+for anything that would otherwise need the network or a WoW install.
 
 | Type | Runner | Actual coverage |
 | --- | --- | --- |
-| Unit | Vitest (`npm test`) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon`, `scripts/wowhead-tooltip` and `scripts/content-stub` |
-| Integration | Vitest + jsdom | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
+| Unit | Vitest, `app` project (node) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon`, `scripts/wowhead-tooltip` and `scripts/content-stub` |
+| Integration | Vitest, `app` project (jsdom) | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
+| Relay | Vitest, `relay` project (workerd) | The Cloudflare Worker in `relay/`: room lifecycle and the origin allowlist, run inside the same runtime a deploy actually uses |
 | End-to-end | — | **None.** No browser runner is installed |
 
 **Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`
@@ -393,8 +396,8 @@ See skills: `superpowers:brainstorming`, `superpowers:writing-plans`, `superpowe
 **keystone-codex** is a static web app (React 19 + Vite + Tailwind 4, TypeScript) that serves
 as a codex and interactive map for World of Warcraft Mythic+ dungeons. It draws a dungeon's
 mob packs on its map, gives every mob an entry, and provides a route editor that imports and
-exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js on WebRTC. Deployed to
-GitHub Pages: hash routing, relative asset paths.
+exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js through a relay we run
+(`relay/`). Deployed to GitHub Pages: hash routing, relative asset paths.
 
 ## Where things live
 
@@ -407,6 +410,7 @@ GitHub Pages: hash routing, relative asset paths.
 | `src/lib/mdt/` | MDT string codec (CBOR + raw deflate) and the route's Y.js document. | By hand |
 | `src/lib/i18n/` | Interface strings, language detection, formatting. | By hand |
 | `src/components/`, `src/routes/` | React UI. | By hand |
+| `relay/` | The Cloudflare Worker a session meets on: one durable object per room, storing nothing. | By hand |
 
 ## Invariants not to break
 
