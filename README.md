@@ -152,6 +152,11 @@ the meantime, rather than leaving that empty route to speak for itself; if five 
 with no answer, a notice appears on the map saying the relay is not answering and that your
 local route is safe, with a button to leave. It clears itself if the sync lands late.
 
+A session that goes quiet pauses itself — the tab hidden for five minutes, or visible but
+untouched for fifteen — and disconnects rather than sitting there unattended. Nothing is lost
+when it does: the route, the room and whatever you set aside on joining are exactly as you
+left them. A *Return to the room* button in the route panel picks the connection back up.
+
 ## Tests
 
 ```bash
