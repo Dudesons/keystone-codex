@@ -2,6 +2,8 @@
 // ABOUTME: Uses a real Y.Doc, with no network provider attached.
 
 // @vitest-environment jsdom
+import fs from 'node:fs'
+import path from 'node:path'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as encoding from 'lib0/encoding'
@@ -11,9 +13,14 @@ import { messageSync } from 'y-websocket'
 import * as Y from 'yjs'
 import { cloneKey, getLookup } from '../data'
 import type { Peer } from '../collab/presence'
+import type { LuaTable, LuaValue } from './cbor'
+import { luaToObjects, type MdtNote } from './objects'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
 import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
+
+/** A second, local copy of `objects.ts`'s module-private helper — `objects.test.ts` does the same. */
+const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
 
 /**
  * A socket that never opens on its own.
@@ -100,6 +107,16 @@ const self = (peers: Peer[]) => peers.find((p) => p.isSelf)!
 function mdtString(pulls: Route['pulls'], name = 'Imported route'): string {
   return encodeMdtString(routeToLua({ ...emptyRoute(SLUG, MDT_INDEX, name), pulls }))
 }
+
+/**
+ * A real MDT export carrying drawn objects — notes, freehand strokes and two arrows — needed to
+ * exercise adoption and export against something MDT itself wrote. Skipped rather than failed
+ * when absent, so the repository stays testable without it: `objects.test.ts` reads the same
+ * fixture under the same guard.
+ */
+const drawingsFixture = path.join(__dirname, '__fixtures__', 'real-export-strokes.txt')
+const drawn = fs.existsSync(drawingsFixture) ? fs.readFileSync(drawingsFixture, 'utf8').trim() : ''
+const runDrawn = drawn ? it : it.skip
 
 beforeEach(() => {
   localStorage.clear()
@@ -820,5 +837,97 @@ describe('An idle session pauses itself', () => {
     expect(setLocalStateSpy).toHaveBeenCalled()
     setLocalStateSpy.mockRestore()
     unmount()
+  })
+})
+
+describe('Objects in the document', () => {
+  runDrawn('does not touch the document until something is edited', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+
+    // Eleven objects are visible, and none of them is stored: they are still derived from
+    // `source`. There is no `doc` on the hook's return value to inspect directly (deliberately —
+    // see the task brief), but before any adoption every object comes straight out of
+    // `luaToObjects` and therefore has no `id`, which says the same thing from outside.
+    expect(result.current.route.objects.length).toBeGreaterThan(0)
+    expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+  })
+
+  runDrawn('adopts the preset’s objects on the first edit, then adds', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    const before = result.current.route.objects.length
+
+    act(() =>
+      result.current.actions.addObject({
+        kind: 'note',
+        at: { x: 10, y: 20 },
+        sublevel: 1,
+        text: 'mine',
+      }),
+    )
+
+    expect(result.current.route.objects.length).toBe(before + 1)
+    // Adoption gave every carried-over object an id too, not just the new one.
+    expect(result.current.route.objects.every((o) => o.id != null)).toBe(true)
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'mine')).toBe(true)
+  })
+
+  runDrawn('keeps provenance through adoption, so an untouched object still exports verbatim', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 2 }, sublevel: 1, text: 'x' }),
+    )
+
+    const adopted = result.current.route.objects.filter((o) => o.from != null)
+    expect(adopted.length).toBeGreaterThan(0)
+
+    const out = routeToLua(result.current.route)
+    const original = asTable(result.current.route.source!.get('objects'))!
+    const emitted = [...asTable(out.get('objects'))!.values()]
+    for (const o of adopted) {
+      expect(emitted).toContain(original.get(o.from!))
+    }
+  })
+
+  runDrawn('removes an object, and the export stops carrying it', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    // Adopting is what gives an object its id, so edit once before reaching for one.
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 9, y: 9 }, sublevel: 1, text: 'seed' }),
+    )
+    const target = result.current.route.objects.find(
+      (o): o is MdtNote => o.kind === 'note' && o.text !== 'seed',
+    )!
+
+    act(() => result.current.actions.removeObject(target.id!))
+
+    expect(result.current.route.objects).not.toContain(target)
+    const exported = luaToObjects(routeToLua(result.current.route))
+    expect(exported.some((o) => o.kind === 'note' && o.text === target.text)).toBe(false)
+  })
+
+  runDrawn('replicates an object to a peer', async () => {
+    const host = mount()
+    act(() => void host.result.current.actions.importRoute(drawn))
+    act(() => host.result.current.joinRoom('DRAWSYNC', 'host'))
+
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAWSYNC', 'guest'))
+
+    act(() =>
+      host.result.current.actions.addObject({ kind: 'note', at: { x: 5, y: 5 }, sublevel: 1, text: 'shared' }),
+    )
+
+    await waitFor(() =>
+      expect(
+        guest.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'shared'),
+      ).toBe(true),
+    )
+
+    host.unmount()
+    guest.unmount()
   })
 })

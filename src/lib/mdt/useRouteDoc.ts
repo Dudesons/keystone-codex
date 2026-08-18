@@ -20,7 +20,7 @@ import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
-import { luaToObjects } from './objects'
+import { luaToObjects, type MdtObject } from './objects'
 import { readPeers, type Peer } from '../collab/presence'
 
 /**
@@ -78,12 +78,23 @@ const CURSOR_INTERVAL_MS = 50
 const HIDDEN_PAUSE_MS = 5 * 60_000
 const IDLE_PAUSE_MS = 15 * 60_000
 
+/**
+ * The origin every object edit passes to `doc.transact`. Undo (plan 2) is scoped to it, which
+ * is how the pull actions — which pass no origin at all — stay outside undo without being
+ * touched: a bare `doc.transact(fn)` has a null origin, and `Y.UndoManager`'s `trackedOrigins`
+ * must name this one explicitly to exclude them.
+ */
+export const OBJECT_EDIT = 'object-edit'
+
 interface PullShape {
   color: string
   clones: Y.Array<string>
 }
 
 type PullMap = Y.Map<string | Y.Array<string>>
+
+/** One object in the document. Y.js stores plain JSON, so the model's own fields go in as they are. */
+type ObjectMap = Y.Map<unknown>
 
 /** The imported preset is kept as a string, the only form serialisable inside the doc. */
 const sourceCache = new Map<string, LuaTable | undefined>()
@@ -115,6 +126,29 @@ function makePull(color: string, clones: string[] = []): PullMap {
   return map
 }
 
+const storeObject = (object: MdtObject, id: string): ObjectMap => {
+  const map: ObjectMap = new Y.Map()
+  for (const [key, value] of Object.entries(object)) map.set(key, value)
+  map.set('id', id)
+  return map
+}
+
+/**
+ * Reads the array back into the model. Stored flat rather than nested: `kind` is already the
+ * discriminant, so a flat map needs no unwrapping and a new field on `MdtObject` needs no change
+ * here.
+ *
+ * This trusts the stored shape rather than validating it: the only writer is `storeObject`, and
+ * an object arriving from a peer over Y.js was written by that same code on their end. Adding a
+ * schema check here would guard against a bug that would have to be in `storeObject` itself, not
+ * against anything a peer or a malformed document can actually produce.
+ */
+const readObjects = (stored: Y.Array<ObjectMap>): MdtObject[] =>
+  stored.toArray().map((map) => Object.fromEntries(map.entries()) as unknown as MdtObject)
+
+const indexOfObject = (objects: Y.Array<ObjectMap>, id: string): number =>
+  objects.toArray().findIndex((map) => map.get('id') === id)
+
 function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route {
   const pullsArr = root.get('pulls') as Y.Array<PullMap> | undefined
   const pulls: Pull[] = []
@@ -129,13 +163,18 @@ function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route 
 
   const source = decodeSource(root.get('source') as string | undefined)
 
+  // Absent until the first object edit: while it is, `objects` stays derived from `source`
+  // exactly as before this key existed at all, so a session that never draws never writes it.
+  const stored = root.get('objects') as Y.Array<ObjectMap> | undefined
+  const objects = stored ? readObjects(stored) : source ? luaToObjects(source) : []
+
   return {
     name: (root.get('name') as string) || DEFAULT_ROUTE_NAME,
     slug,
     mdtIndex,
     pulls: pulls.length ? pulls : [{ color: nextColor(0), clones: [] }],
     source,
-    objects: source ? luaToObjects(source) : [],
+    objects,
   }
 }
 
@@ -161,6 +200,11 @@ export interface RouteActions {
   toggleClones(pullIndex: number, refs: CloneRef[]): void
   importRoute(mdtString: string): Route
   reset(): void
+  /** Places an object. Adopts the preset's objects into the document first, if it has not happened yet. */
+  addObject(object: MdtObject): void
+  /** Replaces one object by identity. */
+  updateObject(id: string, object: MdtObject): void
+  removeObject(id: string): void
 }
 
 export interface CollabState {
@@ -234,6 +278,16 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     pulls: [{ color: nextColor(0), clones: [] }],
     objects: [],
   }))
+
+  /**
+   * `n` in every id this hook instance mints, `${doc.clientID}:${n}`. A ref rather than a
+   * module-level counter: it must survive `doc` being swapped out (a guest joining a room gets a
+   * fresh `Y.Doc`, with its own `clientID`), but a plain module variable would be shared by every
+   * mounted `useRouteDoc` — including two peers in the same tab, as the collaboration tests set
+   * up over `BroadcastChannel` — and nothing requires that. Scoping it here means two sessions
+   * mint from independent counters, and uniqueness across them still comes from `clientID`.
+   */
+  const objectSeqRef = useRef(0)
 
   /** The open session, with the means to unsubscribe from it before tearing it down. */
   const sessionRef = useRef<{ provider: WebsocketProvider; detach: () => void } | null>(null)
@@ -383,6 +437,36 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     [doc],
   )
 
+  /**
+   * `${clientID}:${n}`: deterministic, unique across peers because the client id is, and
+   * testable without stubbing a random source. Reads `doc.clientID` fresh on every call, so it
+   * always names whichever document this hook currently holds.
+   */
+  const nextObjectId = useCallback(() => `${doc.clientID}:${objectSeqRef.current++}`, [doc])
+
+  /**
+   * Runs `fn` against the document's object array, creating it on the first call by adopting
+   * everything the preset carried. Adoption is deliberately lazy: a session that never edits an
+   * object leaves the document exactly as it was before this key existed, and `readRoute` goes
+   * on deriving the objects from `source`.
+   */
+  const withObjects = useCallback(
+    (fn: (objects: Y.Array<ObjectMap>) => void) => {
+      const root = doc.getMap('route')
+      doc.transact(() => {
+        let stored = root.get('objects') as Y.Array<ObjectMap> | undefined
+        if (!stored) {
+          stored = new Y.Array<ObjectMap>()
+          root.set('objects', stored)
+          const source = decodeSource(root.get('source') as string | undefined)
+          if (source) stored.push(luaToObjects(source).map((o) => storeObject(o, nextObjectId())))
+        }
+        fn(stored)
+      }, OBJECT_EDIT)
+    },
+    [doc, nextObjectId],
+  )
+
   const actions = useMemo<RouteActions>(
     () => ({
       setName: (name) => doc.transact(() => doc.getMap('route').set('name', name)),
@@ -454,8 +538,28 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           root.set('pulls', pulls)
           pulls.push([makePull(nextColor(0))])
         }),
+
+      addObject: (object) => withObjects((objects) => objects.push([storeObject(object, nextObjectId())])),
+
+      updateObject: (id, object) =>
+        withObjects((objects) => {
+          const index = indexOfObject(objects, id)
+          if (index < 0) return
+          // Y.Array has no replace: delete, then reinsert at the same index, as `movePull` does.
+          // The same wart applies here — a peer's concurrent edit to this object is lost, not
+          // merged — and matching the existing pattern is right for now rather than inventing a
+          // different one for this one caller.
+          objects.delete(index, 1)
+          objects.insert(index, [storeObject(object, id)])
+        }),
+
+      removeObject: (id) =>
+        withObjects((objects) => {
+          const index = indexOfObject(objects, id)
+          if (index >= 0) objects.delete(index, 1)
+        }),
     }),
-    [doc, withPulls],
+    [doc, withPulls, withObjects, nextObjectId],
   )
 
   const joinRoom = useCallback(

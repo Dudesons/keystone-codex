@@ -30,6 +30,12 @@ export interface MdtNote {
    * instead of rebuilding it — see the slice C design, decision 2.
    */
   from?: number
+  /**
+   * Set once the object is stored in the document (see `useRouteDoc.ts`'s `withObjects`).
+   * Bookkeeping for selection and deletion: the encoder never reads it, so it cannot leak into
+   * an exported preset.
+   */
+  id?: string
 }
 
 export interface MdtStroke {
@@ -50,6 +56,12 @@ export interface MdtStroke {
    * instead of rebuilding it — see the slice C design, decision 2.
    */
   from?: number
+  /**
+   * Set once the object is stored in the document (see `useRouteDoc.ts`'s `withObjects`).
+   * Bookkeeping for selection and deletion: the encoder never reads it, so it cannot leak into
+   * an exported preset.
+   */
+  id?: string
 }
 
 export type MdtObject = MdtNote | MdtStroke
