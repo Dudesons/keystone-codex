@@ -28,17 +28,30 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
    → verify: every one of the eight dungeons logs 100% force coverage, and the run prints no
    `unknown characteristics, add them to CC_ORDER: …` warning. If it does, add the named value
    to `CC_ORDER` in `scripts/mdt-dungeon.mjs` before continuing.
-4. `npm run mdt:report`
+
+   **This step does not refresh a single tooltip you already have.** `npm run data` ends in
+   `npm run fetch:assets`, which fetches only spells missing from `src/data/generated/spells.json`
+   and never revisits a cached one. So severity 3 — the tooltip diff — is measuring nothing
+   after a plain `npm run data`: every known spell's text comes back byte-identical, and the
+   section will read empty whether or not anything moved.
+4. **Only if a game patch landed too:** `FORCE=1 npm run fetch:assets`
+   → verify: the run reports a number of spells to fetch, not `0 to fetch`. This re-downloads
+   every tooltip in every language in `WOWHEAD_LOCALES` — 874 spells as of this writing — so it
+   is deliberately not part of step 3. An MDT update on its own rarely moves a
+   tooltip: MDT ships which mob casts what, and Blizzard ships what the spell says. A **patch**
+   is what rewrites descriptions and cast times, and this command is the only way the report
+   sees it. Skipping it means severity 3 is empty by construction, not by evidence.
+5. `npm run mdt:report`
    → verify: the report's title names both MDT versions, neither as `unknown`. The newer one
    renders `unknown` when `src/data/generated/mdt.json` is missing or the `.toc` carried no
    `## Version:` line — an extraction problem. The older one renders `unknown` when the base
    revision's own committed `mdt.json` has no version, a fact about that revision rather than
    this run.
-5. Work the report from severity 1 down. See below for what each severity asks of you.
-6. `npm test && npm run typecheck`
+6. Work the report from severity 1 down. See below for what each severity asks of you.
+7. `npm test && npm run typecheck`
    → verify: both green, and the fixture tests in `codec.test.ts` not reported as skipped — a
    skip there means `real-export.txt` went missing, not that the update is done.
-7. Commit, at the granularity below.
+8. Commit, at the granularity below.
 
 ## How to work each severity
 
@@ -51,7 +64,9 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
   unread finding is not.
 - **Severity 3 — writing possibly stale.** A tooltip changed under a note that may quote its
   numbers. Reread the note against the new tooltip — a changed description usually means a
-  changed sentence, since a note's figures are quoted from it.
+  changed sentence, since a note's figures are quoted from it. An **empty** severity 3 means
+  nothing unless step 4 ran: without `FORCE=1 npm run fetch:assets` every cached tooltip comes
+  back unchanged by construction.
 - **Severity 4 — to write.** A new mob or a new dungeon, with no card yet. Run
   `npm run scaffold`, then write. `codex-content` owns the threat scale.
 - **Severity 5 — dead weight.** The card's mob left MDT and the card was never written.
@@ -80,8 +95,10 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
   `# Applicable CC (auto, from MDT)` comment.** It never touches the per-spell `name:` lines
   under `spells:` — those carry the same `# auto` marker, but an earlier version of the code
   overwrote every one of them with the mob's own name, which is why the rewrite is anchored to
-  column 0. A spell whose label moved is reported by the label diff instead, not by `--apply`.
-  It never touches a `.fr.md` either. Run `npm run mdt:report` without the flag first and read
+  column 0. A spell whose label moved is reported by the label diff instead, not by `--apply` —
+  but only if the labels were actually re-fetched. Step 4 is what makes that true; after a plain
+  `npm run data` the label diff sees nothing, and a per-spell `name:` line is then stale in the
+  card with nothing anywhere saying so. It never touches a `.fr.md` either. Run `npm run mdt:report` without the flag first and read
   what it would change before adding `-- --apply`.
 
 ## Commit granularity
