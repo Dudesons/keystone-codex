@@ -3,12 +3,20 @@
 
 // @vitest-environment jsdom
 import { cleanup, fireEvent } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { renderEn } from '../../test/render'
 import DrawSurface from './DrawSurface'
 import type { Point } from '../../lib/geometry'
 
 afterEach(cleanup)
+
+// jsdom implements neither method, the same gap `DungeonMap.test.tsx` and `NoteLayer.test.tsx`
+// stub around: without this, `onPointerDown`'s real `setPointerCapture` call throws here, in an
+// environment that cannot demonstrate what the call is actually for.
+beforeAll(() => {
+  Element.prototype.setPointerCapture = () => {}
+  Element.prototype.releasePointerCapture = () => {}
+})
 
 const transform = { scale: 1, tx: 0, ty: 0 }
 

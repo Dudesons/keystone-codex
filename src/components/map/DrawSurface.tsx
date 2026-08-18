@@ -49,6 +49,14 @@ export default function DrawSurface({
         // here is what keeps a stroke from becoming a pan — and it is why drag-to-pan is gone while
         // a tool is active. Escape drops the tool, which is the way back.
         e.stopPropagation()
+        // Unlike the container, this surface captures from the first press rather than after some
+        // travel: it exists only while a tool is active, so there is no click it would otherwise
+        // need to let through. Without this, a hand fast enough to carry the pointer past the
+        // surface's edge (the map view is only ever as big as the viewport) leaves the browser to
+        // route the eventual `pointerup` to whatever element is now underneath it instead — and
+        // with the surface never hearing its own release, the gesture neither commits nor clears,
+        // leaving an abandoned preview on screen and, since the previous task, on every peer's too.
+        e.currentTarget.setPointerCapture(e.pointerId)
         const { map, container } = at(e)
         gesture.current = { points: [map], last: container }
         onProgress?.([map])
