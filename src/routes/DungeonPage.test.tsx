@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Awareness } from 'y-protocols/awareness'
 import { getLookup } from '../lib/data'
+import { MAP_SCALE } from '../lib/geometry'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
@@ -615,6 +616,93 @@ describe('The drawing tools', () => {
     fireEvent.keyDown(document, { key: 'Delete' })
 
     expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(0)
+  })
+
+  it('draws in the colour and the width the brush is set to', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    fireEvent.click(screen.getByTestId('colour-4ade80'))
+    fireEvent.click(screen.getByTestId('size-12'))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    const polyline = container.querySelector('[data-testid="stroke-0"] polyline')!
+    expect(polyline.getAttribute('stroke')).toBe('#4ade80')
+    // MDT's own 0.3 factor, applied to the width the brush chose rather than to its default.
+    expect(polyline.getAttribute('stroke-width')).toBe(String(12 * 0.3 * MAP_SCALE))
+  })
+
+  it('recolours a stroke already drawn, without redrawing it', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    // The stroke's own line is the last of the group: a selected stroke is drawn over a gold
+    // halo and an invisible hit target, both of which are polylines through the same points.
+    const drawn = () => {
+      const all = container.querySelectorAll('[data-testid="stroke-0"] polyline')
+      return all[all.length - 1]
+    }
+    const before = drawn().getAttribute('points')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    fireEvent.click(screen.getByTestId('colour-38bdf8'))
+
+    const polyline = drawn()
+    expect(polyline.getAttribute('stroke')).toBe('#38bdf8')
+    // The same line, in another colour: an edit that moved a point would not be a recolour.
+    expect(polyline.getAttribute('points')).toBe(before)
+  })
+
+  it('erases the drawing that is clicked, and leaves the others alone', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    for (const y of [0, 60]) {
+      fireEvent.pointerDown(surface, { clientX: 0, clientY: y, pointerId: 1 })
+      fireEvent.pointerMove(surface, { clientX: 40, clientY: y, pointerId: 1 })
+      fireEvent.pointerUp(surface, { clientX: 40, clientY: y, pointerId: 1 })
+    }
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+    fireEvent.click(container.querySelectorAll('[data-hit]')[0]!)
+
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+  })
+
+  it('erases a note as readily as a drawing', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    expect(container.querySelectorAll('[data-testid^=\"note-pin-\"]')).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+    fireEvent.click(container.querySelector('[data-testid^=\"note-pin-\"]')!)
+
+    expect(container.querySelectorAll('[data-testid^=\"note-pin-\"]')).toHaveLength(0)
+  })
+
+  it('draws nothing while the eraser is the active tool', () => {
+    // Erase reuses the objects' own hit targets, so it must not also mount the full-map surface
+    // that a drawing tool needs — that surface would sit over every one of them.
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+
+    expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
   })
 
   it('drops the selection on a tool change, so Delete cannot reach it afterwards', () => {

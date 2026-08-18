@@ -12,6 +12,7 @@ import RoutePanel from '../components/route/RoutePanel'
 import MobPanel from '../components/route/MobPanel'
 import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
 import ObjectEditor from '../components/route/ObjectEditor'
+import { DEFAULT_COLOUR, DEFAULT_SIZE } from '../components/route/BrushControls'
 import { cloneKey, getLookup } from '../lib/data'
 import { MDT_ARROW_DEFAULTS, MDT_STROKE_DEFAULTS } from '../lib/mdt/objects'
 import { toCssColor } from '../lib/mdt/route'
@@ -21,13 +22,6 @@ import { useI18n } from '../lib/i18n/context'
 import type { CloneRef, Enemy } from '../lib/types'
 
 type Mode = 'codex' | 'route'
-
-/**
- * What a stroke this app draws is coloured. MDT lets its author pick; we do not offer that yet, so
- * one value beats a colour picker nobody asked for. It is the colour every stroke in the real
- * export we have carries.
- */
-const STROKE_COLOR = 'ff365c'
 
 export default function DungeonPage({ mode }: { mode: Mode }) {
   const { slug = '', npcId } = useParams()
@@ -86,6 +80,13 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   /** The active drawing tool, or null when the map is just a map. */
   const [tool, setTool] = useState<Tool | null>(null)
+  /**
+   * The brush the next stroke takes. Local on purpose, and deliberately not in the document: it
+   * is a preference about what this person draws next, not part of the route, so two people in a
+   * session each keep their own rather than fighting over one.
+   */
+  const [colour, setColour] = useState(DEFAULT_COLOUR)
+  const [size, setSize] = useState(DEFAULT_SIZE)
   /** The object being edited, by the id plan 1 puts on a stored object. */
   const [selectedObject, setSelectedObject] = useState<string | null>(null)
   /** The gesture in flight, in map pixels. Empty between gestures. */
@@ -126,6 +127,27 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   }
 
   /**
+   * What clicking an object does — the whole difference between the two tools that can hit one.
+   *
+   * Erase reuses Select's hit targets rather than growing its own: the wide invisible band over a
+   * stroke and a note's pin already exist, and the tool only changes what the click means. That
+   * is also why neither tool mounts a `DrawSurface` — a full-map surface would sit over both.
+   */
+  const handleObjectClick = useCallback(
+    (id: string) => {
+      if (tool !== 'erase') {
+        setSelectedObject(id)
+        return
+      }
+      actions.removeObject(id)
+      // The editor is showing whatever was selected; erasing that very object must not leave it
+      // pointed at something the document no longer holds.
+      setSelectedObject((current) => (current === id ? null : current))
+    },
+    [tool, actions],
+  )
+
+  /**
    * The gesture the active tool wants. One surface serves every tool: a note's click is just the
    * degenerate case of a drag that never moved.
    */
@@ -147,9 +169,12 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             kind: 'stroke',
             points,
             sublevel: 1,
-            color: STROKE_COLOR,
+            color: colour,
             isArrow: true,
+            // MDT's own defaults still decide `smooth` and `layer` — an arrow it wrote carries no
+            // `smooth` key at all — but the width is the one the brush is for.
             ...MDT_ARROW_DEFAULTS,
+            size,
           })
         },
       }
@@ -168,15 +193,16 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             kind: 'stroke',
             points,
             sublevel: 1,
-            color: STROKE_COLOR,
+            color: colour,
             isArrow: false,
             ...MDT_STROKE_DEFAULTS,
+            size,
           })
         },
       }
     }
     return undefined
-  }, [tool, actions, publishDrawing])
+  }, [tool, actions, publishDrawing, colour, size])
 
   // Leaving Route mode drops the active tool too, not merely the panel that shows it: `mode`
   // is a URL param, not a remount, so `tool` would otherwise survive the switch and keep
@@ -404,6 +430,10 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             <ObjectToolbar
               tool={tool}
               onTool={setTool}
+              colour={colour}
+              size={size}
+              onColour={setColour}
+              onSize={setSize}
               canUndo={canUndo}
               canRedo={canRedo}
               onUndo={actions.undo}
@@ -422,6 +452,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             ) : (
               <ObjectEditor
                 object={editing}
+                hint={tool === 'erase' ? 'map.eraseHint' : 'map.notePlaceHint'}
                 onChange={(o) => o.id && actions.updateObject(o.id, o)}
                 onDelete={() => {
                   if (editing?.id) actions.removeObject(editing.id)
@@ -457,7 +488,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             // a tooltip would be the same redundancy this suppression exists to prevent.
             suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
             selectedObjectId={tool === 'select' ? selectedObject : null}
-            onSelectObject={tool === 'select' ? setSelectedObject : undefined}
+            onSelectObject={tool === 'select' || tool === 'erase' ? handleObjectClick : undefined}
             onMoveObject={
               tool === 'select'
                 ? (id: string, at: Point) => {
@@ -473,9 +504,10 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
                     kind: 'stroke',
                     points: progress,
                     sublevel: 1,
-                    color: STROKE_COLOR,
+                    color: colour,
                     isArrow: tool === 'arrow',
                     ...(tool === 'arrow' ? MDT_ARROW_DEFAULTS : MDT_STROKE_DEFAULTS),
+                    size,
                   }
                 : null
             }

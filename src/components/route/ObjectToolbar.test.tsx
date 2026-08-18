@@ -14,6 +14,10 @@ const mount = (over: Partial<React.ComponentProps<typeof ObjectToolbar>> = {}) =
     <ObjectToolbar
       tool={null}
       onTool={() => {}}
+      colour="ff365c"
+      size={7}
+      onColour={() => {}}
+      onSize={() => {}}
       canUndo={false}
       canRedo={false}
       onUndo={() => {}}
@@ -25,9 +29,42 @@ const mount = (over: Partial<React.ComponentProps<typeof ObjectToolbar>> = {}) =
 describe('ObjectToolbar', () => {
   it('offers every tool', () => {
     mount()
-    for (const name of ['Note', 'Arrow', 'Draw', 'Select']) {
+    for (const name of ['Note', 'Arrow', 'Draw', 'Select', 'Erase']) {
       expect(screen.getByRole('button', { name })).toBeDefined()
     }
+  })
+
+  it('shows the brush only under a tool that draws with it', () => {
+    // Nothing is being drawn yet, so a colour and a width would describe nothing.
+    mount()
+    expect(screen.queryByTestId('colour-ff365c')).toBeNull()
+
+    cleanup()
+    mount({ tool: 'freehand' })
+    expect(screen.getByTestId('colour-ff365c')).toBeTruthy()
+    expect(screen.getByTestId('size-7')).toBeTruthy()
+
+    cleanup()
+    mount({ tool: 'arrow' })
+    expect(screen.getByTestId('colour-ff365c')).toBeTruthy()
+  })
+
+  it('hides the brush under the tools that place, pick up and rub out', () => {
+    for (const tool of ['note', 'select', 'erase'] as const) {
+      cleanup()
+      mount({ tool })
+      expect(screen.queryByTestId('colour-ff365c')).toBeNull()
+    }
+  })
+
+  it('reports the brush a drawing tool was given', () => {
+    const colours: string[] = []
+    const sizes: number[] = []
+    mount({ tool: 'freehand', onColour: (c) => colours.push(c), onSize: (s) => sizes.push(s) })
+    fireEvent.click(screen.getByTestId('colour-4ade80'))
+    fireEvent.click(screen.getByTestId('size-12'))
+    expect(colours).toEqual(['4ade80'])
+    expect(sizes).toEqual([12])
   })
 
   it('reports the tool that was picked', () => {
