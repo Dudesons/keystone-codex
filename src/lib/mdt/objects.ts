@@ -17,7 +17,7 @@
  */
 
 import type { LuaTable, LuaValue } from './cbor'
-import { toPixels, type Point } from '../geometry'
+import { toMdtCoords, toPixels, type Point } from '../geometry'
 
 export interface MdtNote {
   kind: 'note'
@@ -195,8 +195,80 @@ function sameObject(a: MdtObject, b: MdtObject): boolean {
   return false
 }
 
-function objectToLua(_object: MdtObject): LuaTable {
-  // Task 2 of the object write path replaces this. Until then, nothing may reach it: every test in
-  // this task covers an object that is either untouched or absent.
-  throw new Error('objectToLua: synthesising an object is not implemented yet')
+/**
+ * What MDT itself wrote for a fresh object of each kind, read off
+ * `__fixtures__/real-export-strokes.txt`. We copy these rather than choose them: `layer` is `-8`
+ * on every object in that export and we do not know what the number means, and a freehand stroke
+ * is smoothed by default while an arrow carries no `smooth` key at all.
+ */
+export const MDT_STROKE_DEFAULTS = { size: 5, smooth: true, layer: -8 }
+export const MDT_ARROW_DEFAULTS = { size: 13, smooth: false, layer: -8 }
+
+/**
+ * The angle MDT stores in an arrow's `t`, in radians and in MDT's own coordinate space.
+ *
+ * Derived from the two real arrows in `__fixtures__/real-export-strokes.txt`, whose endpoints and
+ * stored angle are both known: it is the direction from the arrow's end back to its start, which
+ * agrees with both to within the rounding of coordinates stored at one decimal. Computing it in
+ * MDT's space rather than in map pixels matters — `toPixels` flips the Y sign, so the same formula
+ * on pixels gives the wrong answer.
+ */
+export function arrowAngle(points: Point[]): number {
+  const from = toMdtCoords(points[0].x, points[0].y)
+  const to = toMdtCoords(points[points.length - 1].x, points[points.length - 1].y)
+  return Math.atan2(from.y - to.y, from.x - to.x)
+}
+
+/** A note: two keys and nothing else, with full-precision coordinates. MDT's shape, not ours. */
+function noteToLua(note: MdtNote): LuaTable {
+  const at = toMdtCoords(note.at.x, note.at.y)
+  const d: LuaTable = new Map()
+  d.set(1, at.x)
+  d.set(2, at.y)
+  d.set(3, note.sublevel)
+  d.set(4, true)
+  d.set(5, note.text)
+
+  const obj: LuaTable = new Map()
+  obj.set('n', true)
+  obj.set('d', d)
+  return obj
+}
+
+function strokeToLua(stroke: MdtStroke): LuaTable {
+  const d: LuaTable = new Map()
+  d.set(1, stroke.size)
+  // `d[2]` is MDT's `lineFactor`. We do not know what it does; these are the values the game wrote
+  // for each kind, so a stroke we create looks to MDT like one it made itself.
+  d.set(2, stroke.isArrow ? 1 : 1.1)
+  d.set(3, stroke.sublevel)
+  d.set(4, true)
+  d.set(5, stroke.color)
+  d.set(6, stroke.layer)
+  // An arrow carries no `smooth` key in MDT's own output, so absent is not the same as false here.
+  if (stroke.smooth) d.set(7, true)
+
+  const l: LuaTable = new Map()
+  let i = 1
+  for (const p of stroke.points) {
+    const m = toMdtCoords(p.x, p.y)
+    // Strings at one decimal: what the game writes in `l`, and unlike a note, which stores its
+    // position as a full-precision number. The asymmetry is MDT's.
+    l.set(i++, m.x.toFixed(1))
+    l.set(i++, m.y.toFixed(1))
+  }
+
+  const obj: LuaTable = new Map()
+  obj.set('d', d)
+  obj.set('l', l)
+  if (stroke.isArrow) {
+    const t: LuaTable = new Map()
+    t.set(1, arrowAngle(stroke.points))
+    obj.set('t', t)
+  }
+  return obj
+}
+
+function objectToLua(object: MdtObject): LuaTable {
+  return object.kind === 'note' ? noteToLua(object) : strokeToLua(object)
 }
