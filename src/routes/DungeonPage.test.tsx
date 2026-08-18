@@ -560,6 +560,27 @@ describe('The drawing tools', () => {
     expect(container.querySelector('[data-testid="stroke-0"]')).toBeNull()
   })
 
+  it('draws a freehand stroke from a dragged gesture', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    for (const x of [20, 40, 60, 80]) {
+      fireEvent.pointerMove(surface, { clientX: x, clientY: x / 2, pointerId: 1 })
+    }
+    fireEvent.pointerUp(surface, { clientX: 80, clientY: 40, pointerId: 1 })
+
+    // One stroke on the map, drawn as a polyline by the layer that already existed.
+    const strokes = container.querySelectorAll('[data-testid^="stroke-"]')
+    expect(strokes).toHaveLength(1)
+    const polyline = strokes[0].querySelector('polyline')!
+    expect(polyline.getAttribute('points')!.trim().split(/\s+/).length).toBeGreaterThan(2)
+    // No arrowhead: this is a stroke, not an arrow.
+    expect(strokes[0].querySelector('polygon')).toBeNull()
+  })
+
   it('leaves no hit target over the codex map after picking a tool and switching tabs', () => {
     const { container } = renderEn(at('/d/murder-row/codex'))
     fireEvent.click(screen.getByRole('link', { name: 'Route' }))

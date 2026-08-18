@@ -13,7 +13,7 @@ import MobPanel from '../components/route/MobPanel'
 import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
 import ObjectEditor from '../components/route/ObjectEditor'
 import { cloneKey, getLookup } from '../lib/data'
-import { MDT_ARROW_DEFAULTS } from '../lib/mdt/objects'
+import { MDT_ARROW_DEFAULTS, MDT_STROKE_DEFAULTS } from '../lib/mdt/objects'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels, type Point } from '../lib/geometry'
@@ -112,8 +112,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   /**
    * The gesture the active tool wants. One surface serves every tool: a note's click is just the
-   * degenerate case of a drag that never moved. `'freehand'` falls through to `undefined` on
-   * purpose — that tool has no gesture wired yet.
+   * degenerate case of a drag that never moved.
    */
   const drawing = useMemo(() => {
     if (tool === 'note') {
@@ -132,6 +131,23 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             color: STROKE_COLOR,
             isArrow: true,
             ...MDT_ARROW_DEFAULTS,
+          })
+        },
+      }
+    }
+    if (tool === 'freehand') {
+      return {
+        mode: 'freehand' as const,
+        onCommit: (points: Point[]) => {
+          // Under two points there is no line, only a click that missed.
+          if (points.length < 2) return
+          actions.addObject({
+            kind: 'stroke',
+            points,
+            sublevel: 1,
+            color: STROKE_COLOR,
+            isArrow: false,
+            ...MDT_STROKE_DEFAULTS,
           })
         },
       }
