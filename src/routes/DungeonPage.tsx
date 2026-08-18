@@ -1,7 +1,7 @@
 // ABOUTME: A dungeon's page: the map beside either the codex panel or the route panel.
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
 import UnknownDungeon from '../components/UnknownDungeon'
@@ -9,14 +9,25 @@ import DungeonMap, { type PullMark, type PullShape } from '../components/map/Dun
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
+import MobPanel from '../components/route/MobPanel'
+import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
+import ObjectEditor from '../components/route/ObjectEditor'
 import { cloneKey, getLookup } from '../lib/data'
+import { MDT_ARROW_DEFAULTS, MDT_STROKE_DEFAULTS } from '../lib/mdt/objects'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
-import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
+import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels, type Point } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
-import type { CloneRef } from '../lib/types'
+import type { CloneRef, Enemy } from '../lib/types'
 
 type Mode = 'codex' | 'route'
+
+/**
+ * What a stroke this app draws is coloured. MDT lets its author pick; we do not offer that yet, so
+ * one value beats a colour picker nobody asked for. It is the colour every stroke in the real
+ * export we have carries.
+ */
+const STROKE_COLOR = 'ff365c'
 
 export default function DungeonPage({ mode }: { mode: Mode }) {
   const { slug = '', npcId } = useParams()
@@ -63,10 +74,178 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   const [currentPull, setCurrentPull] = useState(0)
   const [hoveredPull, setHoveredPull] = useState<number | null>(null)
 
-  const { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor } = useRouteDoc(
-    slug,
-    lookup.dungeon.mdtIndex,
-  )
+  /** The mob the route tab's left column shows. Kept when the cursor leaves the map, so the
+      entry stays readable. */
+  const [panelNpc, setPanelNpc] = useState<number | null>(null)
+  /** Set by a right-click: the column stops following the hover until it is released. */
+  const [frozenNpc, setFrozenNpc] = useState<number | null>(null)
+  /** The mob under the cursor right now, null once it leaves — not the same thing as the one
+      the column shows. Needed only to tell whether the map tooltip would repeat the column: see
+      `suppressCloneTooltip` below. */
+  const [cursorNpc, setCursorNpc] = useState<number | null>(null)
+
+  /** The active drawing tool, or null when the map is just a map. */
+  const [tool, setTool] = useState<Tool | null>(null)
+  /** The object being edited, by the id plan 1 puts on a stored object. */
+  const [selectedObject, setSelectedObject] = useState<string | null>(null)
+  /** The gesture in flight, in map pixels. Empty between gestures. */
+  const [progress, setProgress] = useState<Point[]>([])
+
+  const {
+    route,
+    actions,
+    collab,
+    joinRoom,
+    leaveRoom,
+    resumeRoom,
+    setIdentity,
+    setCursor,
+    setDrawing,
+    canUndo,
+    canRedo,
+  } = useRouteDoc(slug, lookup.dungeon.mdtIndex)
+
+  // `undefined` outside a session, the same guard `onCursorMove` uses below: a solo session
+  // must publish nothing.
+  const publishDrawing = collab.status === 'off' ? undefined : setDrawing
+
+  // A stand-in for `publishDrawing` that the tool-change effect below can read without
+  // depending on it. `publishDrawing` flips between `undefined` and `setDrawing` whenever a
+  // session opens, pauses or closes — an identity change that effect must not react to, since
+  // nothing about a session status flip is a reason to clear the current selection. Updated
+  // every render, so the effect always reaches the latest value despite reading through a ref.
+  const publishDrawingRef = useRef(publishDrawing)
+  publishDrawingRef.current = publishDrawing
+
+  const editing = route.objects.find((o) => o.id === selectedObject) ?? null
+
+  // `sublevel: 1` is hardcoded: every committed dungeon's objects are on sublevel 1, and
+  // nothing in the app reads `sublevel` yet.
+  const placeNote = (at: Point) => {
+    setSelectedObject(actions.addObject({ kind: 'note', at, sublevel: 1, text: '' }))
+  }
+
+  /**
+   * The gesture the active tool wants. One surface serves every tool: a note's click is just the
+   * degenerate case of a drag that never moved.
+   */
+  const drawing = useMemo(() => {
+    if (tool === 'note') {
+      return { mode: 'point' as const, onCommit: (points: Point[]) => placeNote(points[0]) }
+    }
+    if (tool === 'arrow') {
+      return {
+        mode: 'line' as const,
+        onProgress: (points: Point[]) => {
+          setProgress(points)
+          publishDrawing?.(points)
+        },
+        onCommit: (points: Point[]) => {
+          // A press that never moved has no direction, so there is no arrow to make.
+          if (points.length < 2) return
+          actions.addObject({
+            kind: 'stroke',
+            points,
+            sublevel: 1,
+            color: STROKE_COLOR,
+            isArrow: true,
+            ...MDT_ARROW_DEFAULTS,
+          })
+        },
+      }
+    }
+    if (tool === 'freehand') {
+      return {
+        mode: 'freehand' as const,
+        onProgress: (points: Point[]) => {
+          setProgress(points)
+          publishDrawing?.(points)
+        },
+        onCommit: (points: Point[]) => {
+          // Under two points there is no line, only a click that missed.
+          if (points.length < 2) return
+          actions.addObject({
+            kind: 'stroke',
+            points,
+            sublevel: 1,
+            color: STROKE_COLOR,
+            isArrow: false,
+            ...MDT_STROKE_DEFAULTS,
+          })
+        },
+      }
+    }
+    return undefined
+  }, [tool, actions, publishDrawing])
+
+  // Leaving Route mode drops the active tool too, not merely the panel that shows it: `mode`
+  // is a URL param, not a remount, so `tool` would otherwise survive the switch and keep
+  // handing `drawing` to the map — landing a full-surface hit target over the codex tab's
+  // blips, with nothing in that tab wired to give it a gesture.
+  useEffect(() => {
+    if (mode !== 'route') setTool(null)
+  }, [mode])
+
+  // Escape drops the active tool and the current selection, Delete removes the selected object,
+  // and Ctrl/Cmd+Z undoes or redoes the last one. Only listens in Route mode: the codex tab
+  // never has a tool, a selection or an object edit to act on.
+  useEffect(() => {
+    if (mode !== 'route') return
+    const onKey = (e: KeyboardEvent) => {
+      // A key pressed in a text field is text, not a command. Without this, Delete eats the
+      // object whose text you are editing and Ctrl+Z fights the field's own undo.
+      const target = e.target as HTMLElement | null
+      const typing =
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'INPUT' ||
+        target?.isContentEditable === true
+      if (typing) return
+
+      if (e.key === 'Escape') {
+        setTool(null)
+        setSelectedObject(null)
+        return
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
+        e.preventDefault()
+        actions.removeObject(selectedObject)
+        setSelectedObject(null)
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) actions.redo()
+        else actions.undo()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mode, selectedObject, actions])
+
+  // A tool change starts with no preview, for this session and for every peer, and with no
+  // selection either — both are state about the thing a *previous* tool was in the middle of.
+  // Without clearing the selection here, switching away from Select leaves `selectedObject` set
+  // with nothing on screen still showing it (the halo is gated on `tool === 'select'`), and
+  // `Delete` would go on removing an object nothing looked selected. Placing a note selects it
+  // for editing without changing `tool`, so that flow does not run through here and is untouched.
+  //
+  // Most gestures already publish their own clear on release or cancel, but dropping the tool
+  // mid-drag (Escape, or leaving Route mode) unmounts `DrawSurface` without either firing —
+  // locally that just leaves a stale, now-orphaned gesture to flash as the next tool's preview,
+  // but over the wire it is worse: with nothing else left to publish the clear, the last
+  // non-empty stroke stays on awareness indefinitely, and every teammate keeps rendering the
+  // abandoned half-stroke until this session starts a whole new gesture.
+  //
+  // Keyed on `tool` alone, not `[tool, publishDrawing]`: `publishDrawing` changes identity on
+  // every session status flip (see its own definition above), and a session opening or closing
+  // mid-edit is not a tool change — it must not wipe a selection nobody asked to drop. Reading
+  // it through `publishDrawingRef` is what lets this effect skip that dependency while still
+  // reaching whichever `publishDrawing` is current at the moment the tool actually changes.
+  useEffect(() => {
+    setProgress([])
+    publishDrawingRef.current?.([])
+    setSelectedObject(null)
+  }, [tool])
 
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.
@@ -174,6 +353,33 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
+  // A plain helper, redefined every render — it must not appear in a `useCallback` dependency
+  // array below. `lookup` is what those depend on instead.
+  const enemyOf = (ref: CloneRef | null): Enemy | null =>
+    ref ? (lookup.cloneByKey.get(cloneKey(ref.enemyIdx, ref.cloneIdx))?.enemy ?? null) : null
+
+  const handleHoverClone = useCallback(
+    (ref: CloneRef | null) => {
+      const id = enemyOf(ref)?.id ?? null
+      setCursorNpc(id)
+      // A null means the cursor left a blip: the column keeps what it had.
+      if (id != null && frozenNpc == null) setPanelNpc(id)
+    },
+    [lookup, frozenNpc],
+  )
+
+  const handleCloneContextMenu = useCallback(
+    (ref: CloneRef) => {
+      const id = enemyOf(ref)?.id
+      if (id == null) return
+      setFrozenNpc(id)
+      setPanelNpc(id)
+    },
+    [lookup],
+  )
+
+  const panelEnemy = panelNpc != null ? (lookup.enemyById.get(panelNpc) ?? null) : null
+
   return (
     <div className="flex h-full flex-col">
       <DungeonHeader
@@ -190,6 +396,41 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
       </DungeonHeader>
 
       <div className="flex min-h-0 flex-1">
+        {mode === 'route' && (
+          <aside
+            data-testid="mob-panel"
+            className="thin-scroll w-[360px] shrink-0 space-y-2 overflow-y-auto border-r border-ink-800 bg-ink-900 p-3"
+          >
+            <ObjectToolbar
+              tool={tool}
+              onTool={setTool}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={actions.undo}
+              onRedo={actions.redo}
+            />
+            {/* Weighing a pack and marking the map are different tasks; 360px shared between
+                them would serve neither. The toolbar stays, so there is always a way back. */}
+            {tool == null ? (
+              <MobPanel
+                slug={slug}
+                dungeon={lookup.dungeon}
+                enemy={panelEnemy}
+                frozen={frozenNpc != null}
+                onUnfreeze={() => setFrozenNpc(null)}
+              />
+            ) : (
+              <ObjectEditor
+                object={editing}
+                onChange={(o) => o.id && actions.updateObject(o.id, o)}
+                onDelete={() => {
+                  if (editing?.id) actions.removeObject(editing.id)
+                  setSelectedObject(null)
+                }}
+              />
+            )}
+          </aside>
+        )}
         <div className="min-w-0 flex-1">
           <DungeonMap
             slug={slug}
@@ -197,9 +438,47 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             highlighted={highlighted}
             pullMarks={pullMarks}
             pullShapes={pullShapes}
+            objects={mode === 'route' ? route.objects : undefined}
             hoveredPull={hoveredPull}
             selectedPack={mode === 'codex' ? selectedPack : null}
             onCloneClick={handleCloneClick}
+            // Route mode only: in the codex tab nothing reads `cursorNpc`/`panelNpc`, so
+            // wiring this unconditionally would re-render `DungeonView` — and with it an
+            // unmemoised `CodexPanel` full of `MobCard`s — on every blip enter and leave for no
+            // reader at all.
+            onHoverClone={mode === 'route' ? handleHoverClone : undefined}
+            onCloneContextMenu={mode === 'route' ? handleCloneContextMenu : undefined}
+            // Hidden whenever nothing is frozen (the column already follows the hover), and
+            // also while the cursor sits on the very mob just frozen by a right-click — that
+            // gesture leaves the map's own `hoverClone` pointed at that mob, and a tooltip
+            // would repeat exactly what the column now pins. Compared by enemy id, not clone
+            // key: hovering a *different clone of the same frozen enemy* hides the tooltip too,
+            // on purpose — the column already shows that enemy's numbers, so repeating them in
+            // a tooltip would be the same redundancy this suppression exists to prevent.
+            suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
+            selectedObjectId={tool === 'select' ? selectedObject : null}
+            onSelectObject={tool === 'select' ? setSelectedObject : undefined}
+            onMoveObject={
+              tool === 'select'
+                ? (id: string, at: Point) => {
+                    const object = route.objects.find((o) => o.id === id)
+                    if (object?.kind === 'note') actions.updateObject(id, { ...object, at })
+                  }
+                : undefined
+            }
+            drawing={drawing}
+            previewStroke={
+              progress.length > 1
+                ? {
+                    kind: 'stroke',
+                    points: progress,
+                    sublevel: 1,
+                    color: STROKE_COLOR,
+                    isArrow: tool === 'arrow',
+                    ...(tool === 'arrow' ? MDT_ARROW_DEFAULTS : MDT_STROKE_DEFAULTS),
+                  }
+                : null
+            }
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}

@@ -2,12 +2,13 @@
 // ABOUTME: jsdom lays everything out at zero, so this asserts structure rather than geometry.
 
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
-import { cloneKey, getLookup, getNpcLabel, mapUrl } from '../../lib/data'
+import { cloneKey, getLookup, getNpcLabel, mapUrl, type DungeonLookup } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
+import type { Clone, CloneRef, Dungeon, Enemy } from '../../lib/types'
 import { renderEn, renderFr } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
@@ -45,9 +46,14 @@ const totalClones = lookup.dungeon.enemies.reduce((n, e) => n + e.clones.length,
 const mount = (over: Partial<React.ComponentProps<typeof DungeonMap>> = {}) =>
   renderEn(<DungeonMap slug={SLUG} lookup={lookup} {...over} />)
 
-/** The <g> wrapping one clone's blip, found by the portrait or circle it draws. */
-const blips = (container: HTMLElement) =>
-  [...container.querySelectorAll('svg > g')].filter((g) => g.querySelector('circle'))
+/**
+ * The <g> wrapping one clone's blip.
+ *
+ * `Blip` alone carries `data-clone`, so filtering on that attribute (rather than "has a
+ * circle") is what keeps this from also matching a POI marker: `PoiLayer` draws its own
+ * `<g>` with its own `<circle>`, direct children of the same `<svg>`.
+ */
+const blips = (container: HTMLElement) => [...container.querySelectorAll('svg > g[data-clone]')]
 
 describe('Map surface', () => {
   it('draws the dungeon image at its natural size', () => {
@@ -281,6 +287,58 @@ describe('Clicking a unit', () => {
   })
 })
 
+describe('Reporting the hovered mob', () => {
+  it('names the mob the cursor entered, and null when it leaves', () => {
+    const seen: (CloneRef | null)[] = []
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} onHoverClone={(r) => seen.push(r)} />,
+    )
+    const blip = blips(container)[0]
+    fireEvent.mouseEnter(blip)
+    fireEvent.mouseLeave(blip)
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).toMatchObject({ enemyIdx: expect.any(Number), cloneIdx: expect.any(Number) })
+    expect(seen[1]).toBeNull()
+  })
+
+  it('reports a right-click on a mob without treating it as a click', () => {
+    const menued: CloneRef[] = []
+    const clicked: CloneRef[] = []
+    const { container } = renderEn(
+      <DungeonMap
+        slug="altar-of-fangs"
+        lookup={getLookup('altar-of-fangs')!}
+        onCloneClick={(r) => clicked.push(r)}
+        onCloneContextMenu={(r) => menued.push(r)}
+      />,
+    )
+    fireEvent.contextMenu(blips(container)[0])
+    expect(menued).toHaveLength(1)
+    expect(clicked).toEqual([])
+  })
+
+  it('suppresses the browser menu on a mob, and only on a mob', () => {
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} onCloneContextMenu={() => {}} />,
+    )
+    const onBlip = fireEvent.contextMenu(blips(container)[0])
+    // fireEvent returns false when a handler called preventDefault.
+    expect(onBlip).toBe(false)
+    const onMap = fireEvent.contextMenu(container.querySelector('svg')!)
+    expect(onMap).toBe(true)
+  })
+
+  it('leaves the browser menu alone on a mob when nothing handles the right-click', () => {
+    // The codex tab passes no `onCloneContextMenu` at all — a right-click there must not
+    // swallow the browser's own menu just because it landed on a blip.
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} />,
+    )
+    const onBlip = fireEvent.contextMenu(blips(container)[0])
+    expect(onBlip).toBe(true)
+  })
+})
+
 /**
  * Pan and click share one pointer, and pointer capture is what tells them apart.
  *
@@ -396,13 +454,20 @@ describe('Tooltip', () => {
     expect(container.textContent).not.toContain(firstEnemy.name)
   })
 
-  it('names the hovered mob and sums up its forces and pack', () => {
+  it('names the hovered mob, sums up its pack, and mounts MobStats for the numbers', () => {
     const { container } = mount()
     fireEvent.mouseEnter(blips(container)[0])
     expect(container.textContent).toContain(firstEnemy.name)
     if (firstClone.g != null) {
       expect(container.textContent).toContain(`pack ${firstClone.g}`)
     }
+    // The forces/share/score readout is `MobStats`, mounted here as the tooltip's half of the
+    // "one component, two places" split (decision 4) — this only passes if that mount is real.
+    // `firstEnemy` (altar-of-fangs' first enemy) grants forces and has a health value, so
+    // `MobStats` renders the share and score testids rather than the zero-force message.
+    const tooltip = screen.getByTestId('clone-tooltip')
+    expect(within(tooltip).getByTestId('mob-share')).toBeDefined()
+    expect(within(tooltip).getByTestId('mob-score')).toBeDefined()
   })
 
   it('names it in the reader’s language', () => {
@@ -417,6 +482,35 @@ describe('Tooltip', () => {
     fireEvent.mouseEnter(blips(container)[0])
     fireEvent.mouseLeave(blips(container)[0])
     expect(container.textContent).not.toContain(firstEnemy.name)
+  })
+
+  it('does not strand a leading separator for a patrolling clone with no pack', () => {
+    // No committed clone is both patrolling and pack-less — the one patrol in the pool has a
+    // pack — so this doctors a real lookup rather than inventing one from nothing: same
+    // dungeon, same enemy, one clone's `g` and `patrol` overridden. `[pack, patrol]`, joined
+    // naively without dropping the missing fragment, used to print a leading " · " with
+    // nothing before it (commit 6bdb164).
+    const real = getLookup(SLUG)!
+    const targetEnemy = real.dungeon.enemies[0]
+    const doctoredClone: Clone = { ...targetEnemy.clones[0], g: null, patrol: [{ x: 0, y: 0 }] }
+    const doctoredEnemy: Enemy = { ...targetEnemy, clones: [doctoredClone, ...targetEnemy.clones.slice(1)] }
+    const doctoredDungeon: Dungeon = {
+      ...real.dungeon,
+      enemies: [doctoredEnemy, ...real.dungeon.enemies.slice(1)],
+    }
+    const doctoredCloneByKey = new Map(real.cloneByKey)
+    doctoredCloneByKey.set(cloneKey(doctoredEnemy.mdtIdx, doctoredClone.mdtIdx), {
+      enemy: doctoredEnemy,
+      clone: doctoredClone,
+    })
+    const doctoredLookup: DungeonLookup = { ...real, dungeon: doctoredDungeon, cloneByKey: doctoredCloneByKey }
+
+    const { container } = mount({ lookup: doctoredLookup })
+    fireEvent.mouseEnter(blips(container)[0])
+
+    // `getByText` matches the element's whole normalised text exactly by default: a stranded
+    // " · patrol" would not equal "patrol" and this would fail.
+    expect(screen.getByText('patrol')).toBeDefined()
   })
 })
 
@@ -511,5 +605,133 @@ describe('Landmarks', () => {
     expect(found.length).toBeGreaterThan(0)
     // The key is the one the rest of the app uses for a clone: "enemyIdx:cloneIdx".
     found.forEach((el) => expect(el.getAttribute('data-clone')).toMatch(/^\d+:\d+$/))
+  })
+})
+
+describe('Points of interest', () => {
+  it('draws the dungeon items whether or not a route exists', () => {
+    renderEn(<DungeonMap slug="murder-row" lookup={getLookup('murder-row')!} />)
+    expect(screen.getAllByTestId(/^poi-/).length).toBeGreaterThan(0)
+  })
+
+  it('keeps blips() from picking up a POI marker in a dungeon that has some', () => {
+    const murderRow = getLookup('murder-row')!
+    const murderRowClones = murderRow.dungeon.enemies.reduce((n, e) => n + e.clones.length, 0)
+    expect(murderRow.dungeon.pois.length).toBeGreaterThan(0) // otherwise this proves nothing
+
+    const { container } = renderEn(<DungeonMap slug="murder-row" lookup={murderRow} />)
+    const found = blips(container)
+    expect(found).toHaveLength(murderRowClones)
+    found.forEach((el) => expect(el.getAttribute('data-testid')).toBeNull())
+  })
+})
+
+describe('The stroke being drawn', () => {
+  const stroke = (points: { x: number; y: number }[]) => ({
+    kind: 'stroke' as const,
+    points,
+    sublevel: 1,
+    color: 'ff365c',
+    size: 5,
+    smooth: true,
+    layer: -8,
+    isArrow: false,
+  })
+
+  it('draws the local gesture before it is committed', () => {
+    const { container } = mount({ previewStroke: stroke([{ x: 0, y: 0 }, { x: 10, y: 10 }]) })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeTruthy()
+  })
+
+  it('draws nothing when no gesture is live', () => {
+    const { container } = mount({ previewStroke: null })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeNull()
+  })
+
+  it('draws a peer’s gesture too, in the colour presence derived for them', () => {
+    // A real peer's colour is `hsl(<h> 70% 62%)` (`presence.ts`'s `peerColor`), not a hex value —
+    // this is what would have caught `color.replace('#', '')` turning that into the invalid SVG
+    // paint `#hsl(200 70% 62%)`, which fails by rendering nothing rather than by throwing.
+    const { container } = mount({
+      cursors: [
+        {
+          clientId: 7,
+          name: 'Ally',
+          color: 'hsl(200 70% 62%)',
+          isSelf: false,
+          drawing: [{ x: 0, y: 0 }, { x: 20, y: 20 }],
+        },
+      ],
+    })
+    const g = container.querySelector('[data-peer-drawing="7"]')
+    expect(g).toBeTruthy()
+    expect(g!.querySelector('polyline')!.getAttribute('stroke')).toBe('hsl(200 70% 62%)')
+  })
+
+  it('never lets a preview count as a committed stroke', () => {
+    // Both a local preview and a peer's are live at once, alongside one already-committed
+    // stroke: the page counts committed strokes via `[data-testid^="stroke-"]`, and a preview
+    // sharing that prefix would inflate the count the moment a gesture is in flight.
+    const { container } = mount({
+      objects: [stroke([{ x: 0, y: 0 }, { x: 5, y: 5 }])],
+      previewStroke: stroke([{ x: 1, y: 1 }, { x: 2, y: 2 }]),
+      cursors: [
+        {
+          clientId: 9,
+          name: 'Bo',
+          color: 'hsl(10 70% 62%)',
+          isSelf: false,
+          drawing: [{ x: 3, y: 3 }, { x: 4, y: 4 }],
+        },
+      ],
+    })
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+  })
+})
+
+describe('Preset notes', () => {
+  const note = { kind: 'note' as const, at: { x: 100, y: 200 }, sublevel: 1, text: 'Lust here' }
+
+  it('draws a pin for each note it is given', () => {
+    renderEn(<DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} objects={[note]} />)
+    expect(screen.getByTestId('note-pin-0')).toBeTruthy()
+  })
+
+  it('draws none when the page passes no objects, as the codex tab does', () => {
+    renderEn(<DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} />)
+    expect(screen.queryByTestId('note-pin-0')).toBeNull()
+  })
+
+  it('does not let a drawing tool pan the map when a press lands on an existing pin', () => {
+    // NoteLayer's pins sit above DrawSurface so the select tool can click them. But a press
+    // with another tool active (line mode here, standing in for Arrow or Draw) must not fall
+    // through past both layers and bubble to the map container's own pan starter. `captured`
+    // (see the `beforeAll` stub above) is what `Panning`'s own tests use to prove a pan
+    // actually started — empty here is the fix; the container's pan starter otherwise treats
+    // this exactly like a press on open water and starts one.
+    mount({
+      objects: [note],
+      drawing: { mode: 'line', onCommit: () => {} },
+    })
+    const pin = screen.getByTestId('note-pin-0')
+    fireEvent.pointerDown(pin, { button: 0, pointerId: 3, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(pin, { pointerId: 3, clientX: 160, clientY: 140 })
+    expect(captured).toEqual([])
+  })
+})
+
+describe('Drawing surface stacking', () => {
+  it('keeps the HUD above the draw surface, so its buttons are not swallowed by the drawing hit target', () => {
+    // No element in DungeonMap, MapHud or Legend sets a z-index, so with a tool active
+    // (`drawing` supplied) paint and hit order follow DOM order alone: whichever element is
+    // later in the document sits on top. `compareDocumentPosition` reads that order directly,
+    // which a plain "does the button exist" or "does clicking it fire" assertion cannot: jsdom
+    // dispatches `fireEvent.click` straight at its target and performs no hit-testing, so such
+    // an assertion would pass whether the surface sat above the HUD or below it.
+    const { container } = mount({ drawing: { mode: 'point', onCommit: () => {} } })
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    const fitButton = screen.getByTitle('Fit')
+    const position = surface.compareDocumentPosition(fitButton)
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

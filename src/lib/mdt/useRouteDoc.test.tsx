@@ -2,6 +2,8 @@
 // ABOUTME: Uses a real Y.Doc, with no network provider attached.
 
 // @vitest-environment jsdom
+import fs from 'node:fs'
+import path from 'node:path'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as encoding from 'lib0/encoding'
@@ -11,9 +13,14 @@ import { messageSync } from 'y-websocket'
 import * as Y from 'yjs'
 import { cloneKey, getLookup } from '../data'
 import type { Peer } from '../collab/presence'
+import type { LuaTable, LuaValue } from './cbor'
+import { luaToObjects, type MdtNote } from './objects'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
 import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
+
+/** A second, local copy of `objects.ts`'s module-private helper — `objects.test.ts` does the same. */
+const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
 
 /**
  * A socket that never opens on its own.
@@ -100,6 +107,27 @@ const self = (peers: Peer[]) => peers.find((p) => p.isSelf)!
 function mdtString(pulls: Route['pulls'], name = 'Imported route'): string {
   return encodeMdtString(routeToLua({ ...emptyRoute(SLUG, MDT_INDEX, name), pulls }))
 }
+
+/**
+ * A real MDT export carrying drawn objects — notes, freehand strokes and two arrows — needed to
+ * exercise adoption and export against something MDT itself wrote. Skipped rather than failed
+ * when absent, so the repository stays testable without it: `objects.test.ts` reads the same
+ * fixture under the same guard.
+ */
+const drawingsFixture = path.join(__dirname, '__fixtures__', 'real-export-strokes.txt')
+const drawn = fs.existsSync(drawingsFixture) ? fs.readFileSync(drawingsFixture, 'utf8').trim() : ''
+const runDrawn = drawn ? it : it.skip
+
+/**
+ * A second, unrelated real export — five notes, no strokes — used to exercise importing a
+ * different preset onto a document that has already adopted the first one's objects. Its
+ * `objects` table has keys `1..5`, overlapping the first fixture's `1..11`, which is what makes
+ * the corruption case constructible: an adopted object whose `from` is, say, `3` would otherwise
+ * be compared against and synthesised over this preset's own entry at key `3`.
+ */
+const plainFixture = path.join(__dirname, '__fixtures__', 'real-export.txt')
+const plain = fs.existsSync(plainFixture) ? fs.readFileSync(plainFixture, 'utf8').trim() : ''
+const runBothFixtures = drawn && plain ? it : it.skip
 
 beforeEach(() => {
   localStorage.clear()
@@ -635,6 +663,96 @@ describe('Sync and cursors', () => {
   })
 })
 
+describe('A stroke in progress', () => {
+  it('reaches a peer without touching the route', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('DRAW01', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAW01', 'guest'))
+
+    act(() => host.result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.some((p) => !p.isSelf && p.drawing?.length === 2)).toBe(true),
+    )
+    // Ephemeral: nothing was written to the route.
+    expect(guest.result.current.route.objects).toHaveLength(0)
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('clears when the gesture ends', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('DRAW02', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAW02', 'guest'))
+
+    act(() => host.result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.some((p) => !p.isSelf && p.drawing)).toBe(true),
+    )
+
+    act(() => host.result.current.setDrawing([]))
+
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.every((p) => !p.drawing?.length)).toBe(true),
+    )
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('clears at once when the gesture ends, not after the throttle window', () => {
+    // The direct mirror of `setCursor`'s "drops the cursor at once when the pointer leaves the
+    // map": a single session, read synchronously, with no `waitFor` to paper over a write that
+    // only lands after the throttle's trailing timer fires. `setDrawing([])` has to publish
+    // `null` rather than `[]` for this to hold — `[]` is truthy, so a timer already armed by the
+    // point just before it would write the empty array right back a moment later, and this
+    // assertion would still pass, just fifty milliseconds later than it looks like it does.
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('DRAW04', 'host'))
+    act(() => result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+    act(() => result.current.setDrawing([]))
+    expect(self(result.current.collab.peers).drawing).toBeUndefined()
+    unmount()
+  })
+
+  it('holds back a flood of points, then sends the last one', () => {
+    // Same mechanism `setCursor`'s "holds back a flood of moves" exercises, for the throttle
+    // `setDrawing` keeps of its own.
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      act(() => result.current.joinRoom('DRAW03', 'host'))
+      act(() => result.current.setDrawing([{ x: 1, y: 1 }]))
+      for (let i = 2; i <= 40; i++) act(() => result.current.setDrawing([{ x: i, y: i }]))
+
+      expect(self(result.current.collab.peers).drawing).toEqual([{ x: 1, y: 1 }])
+      act(() => void vi.advanceTimersByTime(60))
+      expect(self(result.current.collab.peers).drawing).toEqual([{ x: 40, y: 40 }])
+      unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('leaves no timer running when unmounted with no session ever open', () => {
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      // As with `setCursor`: the first call always writes at once, and the second lands inside
+      // the throttle window and schedules the trailing timer — with no session open at all.
+      act(() => result.current.setDrawing([{ x: 1, y: 1 }]))
+      act(() => result.current.setDrawing([{ x: 2, y: 2 }]))
+      unmount()
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('roomName', () => {
   it('namespaces the code by dungeon, so one code is two rooms in two dungeons', () => {
     expect(roomName('altar-of-fangs', 'ABCDEF')).not.toBe(roomName('kings-rest', 'ABCDEF'))
@@ -820,5 +938,437 @@ describe('An idle session pauses itself', () => {
     expect(setLocalStateSpy).toHaveBeenCalled()
     setLocalStateSpy.mockRestore()
     unmount()
+  })
+})
+
+describe('Objects in the document', () => {
+  runDrawn('does not touch the document until something is edited', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+
+    // Eleven objects are visible, and none of them is stored: they are still derived from
+    // `source`. There is no `doc` on the hook's return value to inspect directly (deliberately —
+    // see the task brief), but before any adoption every object comes straight out of
+    // `luaToObjects` and therefore has no `id`, which says the same thing from outside.
+    expect(result.current.route.objects.length).toBeGreaterThan(0)
+    expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+  })
+
+  runDrawn('adopts the preset’s objects on the first edit, then adds', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    const before = result.current.route.objects.length
+
+    act(() =>
+      result.current.actions.addObject({
+        kind: 'note',
+        at: { x: 10, y: 20 },
+        sublevel: 1,
+        text: 'mine',
+      }),
+    )
+
+    expect(result.current.route.objects.length).toBe(before + 1)
+    // Adoption gave every carried-over object an id too, not just the new one.
+    expect(result.current.route.objects.every((o) => o.id != null)).toBe(true)
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'mine')).toBe(true)
+  })
+
+  runDrawn('keeps provenance through adoption, so an untouched object still exports verbatim', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 2 }, sublevel: 1, text: 'x' }),
+    )
+
+    const adopted = result.current.route.objects.filter((o) => o.from != null)
+    expect(adopted.length).toBeGreaterThan(0)
+
+    const out = routeToLua(result.current.route)
+    const original = asTable(result.current.route.source!.get('objects'))!
+    const emitted = [...asTable(out.get('objects'))!.values()]
+    for (const o of adopted) {
+      expect(emitted).toContain(original.get(o.from!))
+    }
+  })
+
+  runDrawn('removes an object, and the export stops carrying it', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    // Adopting is what gives an object its id, so edit once before reaching for one.
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 9, y: 9 }, sublevel: 1, text: 'seed' }),
+    )
+    const target = result.current.route.objects.find(
+      (o): o is MdtNote => o.kind === 'note' && o.text !== 'seed',
+    )!
+
+    act(() => result.current.actions.removeObject(target.id!))
+
+    expect(result.current.route.objects).not.toContain(target)
+    const exported = luaToObjects(routeToLua(result.current.route))
+    expect(exported.some((o) => o.kind === 'note' && o.text === target.text)).toBe(false)
+  })
+
+  runDrawn('replicates an object to a peer', async () => {
+    const host = mount()
+    act(() => void host.result.current.actions.importRoute(drawn))
+    act(() => host.result.current.joinRoom('DRAWSYNC', 'host'))
+
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAWSYNC', 'guest'))
+
+    act(() =>
+      host.result.current.actions.addObject({ kind: 'note', at: { x: 5, y: 5 }, sublevel: 1, text: 'shared' }),
+    )
+
+    await waitFor(() =>
+      expect(
+        guest.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'shared'),
+      ).toBe(true),
+    )
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('hands back the id it minted, which names the object that appeared', () => {
+    // Every creation gesture needs this: place a note, then open the editor on the note you just
+    // placed. Taking the last element of `route.objects` instead would name a peer's object the
+    // moment one arrives between the insert and the read.
+    const { result } = mount()
+    let id = ''
+    act(() => {
+      id = result.current.actions.addObject({
+        kind: 'note',
+        at: { x: 6, y: 6 },
+        sublevel: 1,
+        text: 'just made',
+      })
+    })
+
+    expect(id).not.toBe('')
+    const created = result.current.route.objects.find((o) => o.id === id)
+    expect(created).toMatchObject({ kind: 'note', text: 'just made' })
+  })
+
+  it('rewrites an object where it stands, keeping its identity', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 2 }, sublevel: 1, text: 'draft' }),
+    )
+    const before = result.current.route.objects[0] as MdtNote
+
+    act(() => result.current.actions.updateObject(before.id!, { ...before, text: 'final' }))
+
+    expect(result.current.route.objects).toHaveLength(1)
+    const after = result.current.route.objects[0] as MdtNote
+    expect(after.text).toBe('final')
+    expect(after.id).toBe(before.id)
+  })
+
+  runDrawn('lets a field the edited object no longer carries disappear', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    // Adoption is what gives an object both an id to address it by and a `from` to lose.
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 8, y: 8 }, sublevel: 1, text: 'seed' }),
+    )
+    const adopted = result.current.route.objects.find(
+      (o): o is MdtNote => o.kind === 'note' && o.from != null,
+    )!
+
+    act(() =>
+      result.current.actions.updateObject(adopted.id!, {
+        kind: 'note',
+        at: adopted.at,
+        sublevel: adopted.sublevel,
+        text: adopted.text,
+      }),
+    )
+
+    // Writing the incoming fields over the stored ones is not enough on its own: a key the object
+    // has stopped carrying must go too, or provenance an edit deliberately dropped would linger and
+    // the object would still claim a source entry it no longer comes from.
+    expect(result.current.route.objects.find((o) => o.id === adopted.id)!.from).toBeUndefined()
+  })
+
+  /**
+   * Two peers editing the same object at the same instant, connected over `BroadcastChannel` the
+   * way `'replicates an object to a peer'` connects them. The room code is used by no other
+   * `describe` block — see the note on `SilentSocket`.
+   *
+   * Staging a genuinely simultaneous edit in one tab takes a propagation gap, and this is where
+   * that costs something: `lib0`'s broadcast channel hands a published message to every subscriber
+   * in the same process **synchronously**, on top of the real `BroadcastChannel` it also posts to.
+   * So two edits written back to back — even inside one `act` — are sequential, not simultaneous:
+   * the second peer has already applied the first's operation before making its own, and deletes
+   * the entry the first inserted. Pausing both sessions unsubscribes them from that channel
+   * (`provider.disconnect()` does `disconnectBc()`), and resuming publishes each side's full state
+   * to the other, which is what makes the pair concurrent in Y.js's sense.
+   */
+  it('leaves one object, not two, when two peers edit the same one at once', () => {
+    vi.useFakeTimers()
+    try {
+      const host = mount()
+      act(() => host.result.current.joinRoom('UPDDUP', 'host'))
+      const guest = mount()
+      act(() => guest.result.current.joinRoom('UPDDUP', 'guest'))
+
+      act(() =>
+        host.result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 7, y: 7 },
+          sublevel: 1,
+          text: 'ours',
+        }),
+      )
+      expect(guest.result.current.route.objects).toHaveLength(1)
+
+      act(() => setVisibility('hidden'))
+      act(() => void vi.advanceTimersByTime(5 * 60_000))
+      expect(host.result.current.collab.status).toBe('paused')
+      expect(guest.result.current.collab.status).toBe('paused')
+
+      const target = host.result.current.route.objects[0] as MdtNote
+      act(() => host.result.current.actions.updateObject(target.id!, { ...target, text: 'mine' }))
+      act(() => guest.result.current.actions.updateObject(target.id!, { ...target, text: 'theirs' }))
+
+      act(() => host.result.current.resumeRoom())
+      act(() => guest.result.current.resumeRoom())
+
+      // Replacing an object by deleting it and reinserting a copy leaves two entries here: both
+      // deletes are idempotent and both inserts survive. Worse than a lost edit, because the
+      // duplicate carries the same `id` — selection by id becomes ambiguous, and a created object
+      // exports twice. Setting the fields on the existing map merges per field instead, and the
+      // text the two settle on is Y.js's business, not this test's.
+      expect(host.result.current.route.objects).toHaveLength(1)
+      expect(guest.result.current.route.objects).toHaveLength(1)
+
+      host.unmount()
+      guest.unmount()
+    } finally {
+      setVisibility('visible')
+      vi.useRealTimers()
+    }
+  })
+
+  runBothFixtures(
+    'forgets a previously adopted objects array on re-import, so the new preset’s own objects are not silently rewritten',
+    () => {
+      const { result } = mount()
+      act(() => void result.current.actions.importRoute(drawn))
+      // Adoption is what makes the stale array able to outlive this import: without an edit,
+      // `objects` stays derived and there would be nothing left over to survive re-import at all.
+      act(() =>
+        result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 3, y: 3 },
+          sublevel: 1,
+          text: 'belongs only to the first preset',
+        }),
+      )
+
+      act(() => void result.current.actions.importRoute(plain))
+
+      // The sharpest form of this assertion: the second preset's own `objects` table must come
+      // back byte-identical, the same guard `codec.test.ts` already holds a preset to. Both
+      // fixtures' `objects` tables share overlapping integer keys (`1..11` and `1..5`), so if the
+      // first import's adopted array survived, an object whose `from` collided with one of this
+      // preset's own keys would be claimed and synthesised over that preset's own entry — not
+      // merely alongside it, but in its place.
+      const out = routeToLua(result.current.route)
+      expect(out.get('objects')).toEqual(decodeMdtString(plain).table.get('objects'))
+
+      // And the model itself is back to deriving from the new source: nothing here carries an
+      // id forward from the adoption the first import triggered.
+      expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+    },
+  )
+
+  runDrawn('leaves the objects derived from whatever reset leaves as the source — nothing, since reset clears it', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 4, y: 4 }, sublevel: 1, text: 'adopted' }),
+    )
+    expect(result.current.route.objects.length).toBeGreaterThan(0)
+
+    act(() => result.current.actions.reset())
+
+    // No source, therefore none: a stale adopted array must not outlive the source it came from.
+    expect(result.current.route.objects).toEqual([])
+  })
+})
+
+describe('Undoing my own object edits', () => {
+  it('takes back the object I just added', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'oops' }),
+    )
+    expect(result.current.canUndo).toBe(true)
+
+    act(() => result.current.actions.undo())
+
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'oops')).toBe(false)
+  })
+
+  runDrawn('undoing the very first edit gives back the derived state', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    const derived = result.current.route.objects.length
+
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'x' }),
+    )
+    act(() => result.current.actions.undo())
+
+    // The adoption went with it: every object is derived from `source` again, and a derived
+    // object never carries an id — the same signal `runDrawn('does not touch the document
+    // until something is edited', …)` above uses, since the hook exposes no `doc` to inspect
+    // the key directly.
+    expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+    expect(result.current.route.objects.length).toBe(derived)
+  })
+
+  it('redoes what it undid', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 2, y: 2 }, sublevel: 1, text: 'back' }),
+    )
+    act(() => result.current.actions.undo())
+    act(() => result.current.actions.redo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'back')).toBe(true)
+  })
+
+  it('does not undo a pull change, which carries no origin', () => {
+    const { result } = mount()
+    act(() => result.current.actions.addPull())
+    const pulls = result.current.route.pulls.length
+    // Nothing of ours has happened, so there is nothing to undo…
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.actions.undo())
+    // …and calling it anyway leaves the pulls alone.
+    expect(result.current.route.pulls.length).toBe(pulls)
+  })
+
+  /**
+   * Two peers, connected the way `'replicates an object to a peer'` above connects them: two
+   * mounted hooks joining the same room code over `BroadcastChannel`, no relay involved. The
+   * room code is not reused by any other `describe` block in this file — see the note on
+   * `SilentSocket` about a stale peer bleeding across blocks that share one.
+   */
+  it('does not undo a peer’s object', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('UNDOSYNC', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('UNDOSYNC', 'guest'))
+
+    act(() =>
+      guest.result.current.actions.addObject({ kind: 'note', at: { x: 3, y: 3 }, sublevel: 1, text: 'theirs' }),
+    )
+    await waitFor(() =>
+      expect(host.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'theirs')).toBe(
+        true,
+      ),
+    )
+
+    // The guarantee here is not computed anywhere in this file: `y-websocket` applies a remote
+    // update — over the socket, and over `BroadcastChannel` as it does here — as
+    // `Y.applyUpdate(doc, update, provider)`, so its transaction origin is the `WebsocketProvider`
+    // instance itself, never `OBJECT_EDIT`. Exclusion is by identity mismatch against our string
+    // origin, not by anything this hook decides. This assertion is the one with content: without
+    // it, the `undo()` call below would run against an empty stack, and "the peer's object
+    // survived" would pass whether or not the manager excludes peers at all. It goes red the
+    // moment `trackedOrigins` is widened to also catch the provider — e.g.
+    // `new Set([OBJECT_EDIT, WebsocketProvider])`, which `Y.UndoManager` matches against a
+    // transaction's origin by constructor as well as by identity — a realistic mistake for
+    // someone later trying to make undo cover something new.
+    expect(host.result.current.canUndo).toBe(false)
+
+    act(() => host.result.current.actions.undo())
+
+    // Stated for completeness, at no extra cost: undoing on an empty stack is a no-op, so the
+    // peer's object is still there either way.
+    expect(host.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'theirs')).toBe(
+      true,
+    )
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('treats each object edit as its own undo step, not merged with the next', () => {
+    // `Y.UndoManager` merges same-origin transactions that land within `captureTimeout` (500ms by
+    // default) into a single undo step — right for a text editor's keystrokes, wrong for a
+    // drawing tool where plan 2 wires undo straight to toolbar clicks and drawing gestures: an
+    // add immediately followed by a move both land inside that window, and one undo press would
+    // then take back both instead of just the last gesture. `captureTimeout: 0` turns that
+    // merging off, so two edits made back-to-back still undo one at a time.
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'first' }),
+    )
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 2, y: 2 }, sublevel: 1, text: 'second' }),
+    )
+
+    act(() => result.current.actions.undo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'first')).toBe(true)
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'second')).toBe(false)
+
+    act(() => result.current.actions.undo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'first')).toBe(false)
+  })
+
+  runBothFixtures(
+    'forgets what it could redo when a different route is imported, so redo cannot resurrect the previous preset’s objects',
+    () => {
+      const { result } = mount()
+      act(() => void result.current.actions.importRoute(drawn))
+      act(() =>
+        result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 3, y: 3 },
+          sublevel: 1,
+          text: 'belongs only to the first preset',
+        }),
+      )
+      act(() => result.current.actions.undo())
+
+      act(() => void result.current.actions.importRoute(plain))
+
+      // The direct statement of the fix: an edit made against a route that has since been
+      // replaced has nothing left to mean, so there is nothing to put back.
+      expect(result.current.canRedo).toBe(false)
+
+      act(() => result.current.actions.redo())
+
+      // And the sharp form: redoing must not re-create the `objects` key with the *first*
+      // preset's contents under the second preset's `source`. If it does, `objectsToLua` lets
+      // those stale `from` values claim this preset's own entries and synthesise over them,
+      // while every unclaimed entry is omitted as a deletion — the same byte-identical guard
+      // `'forgets a previously adopted objects array on re-import'` holds, now against redo.
+      const out = routeToLua(result.current.route)
+      expect(out.get('objects')).toEqual(decodeMdtString(plain).table.get('objects'))
+    },
+  )
+
+  runDrawn('forgets what it could redo on reset too, for the same reason', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 3, y: 3 }, sublevel: 1, text: 'gone' }),
+    )
+    act(() => result.current.actions.undo())
+
+    act(() => result.current.actions.reset())
+
+    expect(result.current.canRedo).toBe(false)
+    act(() => result.current.actions.redo())
+    // `reset` leaves no source, so there is nothing objects could be derived from — and redo must
+    // not put back an array adopted from the preset reset just discarded.
+    expect(result.current.route.objects).toEqual([])
   })
 })

@@ -21,6 +21,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { GENERATED_DIR, PUBLIC_DIR, WOWHEAD_LOCALES } from './config.mjs'
+import { collectSpellIds } from './spell-ids.mjs'
 import {
   buildNpcText,
   buildSpellText,
@@ -160,7 +161,7 @@ async function main() {
   fs.mkdirSync(ICON_DIR, { recursive: true })
   fs.mkdirSync(PORTRAIT_DIR, { recursive: true })
 
-  const spellIds = [...new Set(dungeons.flatMap((d) => d.enemies.flatMap((e) => e.spells.map((s) => s.id))))]
+  const spellIds = collectSpellIds(dungeons)
   const displayIds = [...new Set(dungeons.flatMap((d) => d.enemies.map((e) => e.displayId).filter(Boolean)))]
   // Keyed by id: the same creature stands in more than one dungeon, under the same MDT name.
   const mobs = [

@@ -4,16 +4,19 @@
 /**
  * The route model, and the bridge to MDT presets.
  *
- * An MDT preset carries far more than pulls: drawings, notes, rift offsets, assignments. We
- * cannot edit any of that, so we keep the original Lua table and only rewrite `value.pulls`
- * — re-exporting an imported route hands it back to the game without losing what we never
- * touched.
+ * An MDT preset carries far more than pulls: drawings, notes, rift offsets, assignments. We keep
+ * the original Lua table and rewrite only `value.pulls` and `objects`; everything else rides
+ * through untouched. An object this app did not edit is re-emitted from its source entry byte for
+ * byte rather than passed through wholesale — see
+ * `docs/plans/2026-08-18-mdt-object-editing-design.md`, "The invariant this changes, and what
+ * replaces it".
  */
 
 import type { CloneRef } from '../types'
 import { cloneKey, dungeonList, type DungeonLookup } from '../data'
 import type { LuaTable, LuaValue } from './cbor'
 import { MdtUserError } from './errors'
+import { luaToObjects, objectsToLua, type MdtObject } from './objects'
 
 /** MDT's default palette (colorPaletteIdx 4), reused so pulls look the same as in game. */
 export const PULL_COLORS = [
@@ -37,6 +40,15 @@ export interface Route {
   uid?: string
   /** The original table, kept so nothing is lost on re-export. */
   source?: LuaTable
+  /**
+   * The notes and strokes the preset carries.
+   *
+   * Read out of `source` on import. An object this app never edited is re-emitted from its
+   * original entry byte for byte on export; only an edited or created object is rebuilt. See
+   * `docs/plans/2026-08-18-mdt-object-editing-design.md`, "The invariant this changes, and what
+   * replaces it".
+   */
+  objects: MdtObject[]
 }
 
 const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
@@ -100,6 +112,7 @@ export function luaToRoute(table: LuaTable): Route {
     slug,
     mdtIndex,
     pulls,
+    objects: luaToObjects(table),
     uid: typeof uid === 'string' ? uid : undefined,
     difficulty: typeof difficulty === 'number' ? difficulty : undefined,
     source: table,
@@ -153,6 +166,26 @@ export function routeToLua(route: Route): LuaTable {
 
   table.set('text', route.name)
   table.set('value', value)
+  // The objects are no longer passed through: they are rebuilt, entry by entry, from where each
+  // one came from. `objectsToLua` re-emits an entry this app did not edit byte for byte, which is
+  // what keeps a preset we merely read indistinguishable from the one we were handed — see the
+  // design document referenced on `Route.objects` above.
+  //
+  // The key itself is only written when there is something to write: when the source already
+  // carried an `objects` table, or when the route now holds an object of its own (created, since
+  // an object read from `source` always brings a source that already has the key). A preset that
+  // never had `objects` — and a route with neither a source nor any objects — must not gain an
+  // empty one it never carried.
+  //
+  // And an `objects` that is present but is not a table at all is not ours to rebuild: it rides
+  // through in the shallow copy above, untouched. `objectsToLua` would read nothing from it and
+  // hand back an empty table in its place — destroying a value for the sole reason that we could
+  // not read it, which is exactly what the verbatim rule refuses to do elsewhere.
+  const hasObjects = route.source?.has('objects') === true
+  const unreadableObjects = hasObjects && asTable(route.source!.get('objects')) === undefined
+  if (!unreadableObjects && (hasObjects || route.objects.length > 0)) {
+    table.set('objects', objectsToLua(route.source, route.objects))
+  }
   if (route.difficulty !== undefined) table.set('difficulty', route.difficulty)
   if (route.uid !== undefined) table.set('uid', route.uid)
   if (!table.has('colorPaletteInfo')) {
@@ -177,7 +210,7 @@ export function routeToLua(route: Route): LuaTable {
 export const DEFAULT_ROUTE_NAME = 'New route'
 
 export function emptyRoute(slug: string, mdtIndex: number, name = DEFAULT_ROUTE_NAME): Route {
-  return { name, slug, mdtIndex, pulls: [{ color: nextColor(0), clones: [] }] }
+  return { name, slug, mdtIndex, pulls: [{ color: nextColor(0), clones: [] }], objects: [] }
 }
 
 /** Clone keys already assigned, with the pull they belong to. */
@@ -195,6 +228,20 @@ export interface RouteStats {
   total: number
   required: number
   percent: number
+}
+
+/** How a route's forces read against what the dungeon requires. */
+export type ForcesStanding = 'short' | 'complete' | 'over'
+
+/**
+ * Past this share of the requirement, the surplus is forces pulled for nothing. A route is
+ * meant to land a little above 100%, not on it — a mob that dies late still has to count.
+ */
+export const OVERPULL_PERCENT = 101.5
+
+export function forcesStanding(percent: number): ForcesStanding {
+  if (percent > OVERPULL_PERCENT) return 'over'
+  return percent >= 100 ? 'complete' : 'short'
 }
 
 export function routeStats(route: Route, lookup: DungeonLookup): RouteStats {

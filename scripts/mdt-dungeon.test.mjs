@@ -5,15 +5,17 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { AFFIX_SPELLS } from './config.mjs'
-import { LuaExpr } from './lua-table.mjs'
+import { LuaExpr, parseAssignment, toPlain } from './lua-table.mjs'
 import {
   CC_ORDER,
   extractTextureFolder,
   intEntries,
   normaliseCharacteristics,
   normaliseClones,
+  normalisePois,
   normaliseSpells,
   parseDungeon,
+  POI_TYPES,
   readLocalNumber,
   summarise,
   unwrap,
@@ -241,5 +243,74 @@ describe('Helpers', () => {
 describe('Refusing a source it cannot read', () => {
   it('names the file when dungeonIndex is missing', () => {
     expect(() => parseDungeon('-- nothing here', 'Broken')).toThrow(/Broken/)
+  })
+})
+
+/**
+ * Murder Row's `mapPOIs`, verbatim. Altar of Fangs — the file fixture — declares
+ * `MDT.mapPOIs[dungeonIndex] = {}`, so the only real POI data in the season lives here.
+ */
+const POIS_LUA = `MDT.mapPOIs[dungeonIndex] = {
+  [1] = {
+    [1] = {
+      ["type"] = "dungeonEntrance",
+      ["x"] = 779.77130254431,
+      ["y"] = -509.595640162,
+      ["sizeMult"] = 1.5,
+    },
+    [2] = {
+      ["type"] = "genericItem",
+      ["x"] = 679.39639902037,
+      ["y"] = -424.870189594,
+      ["info"] = {
+        ["texture"] = 236999,
+        ["spellId"] = 1223570,
+        ["size"] = 15,
+      },
+    },
+    [3] = {
+      ["type"] = "genericItem",
+      ["x"] = 505.61695608532,
+      ["y"] = -387.2334648551,
+      ["info"] = {
+        ["texture"] = 1003586,
+        ["spellId"] = 1270638,
+        ["size"] = 10,
+      },
+    },
+  },
+};`
+
+describe('POIs', () => {
+  const parsed = toPlain(parseAssignment(POIS_LUA, 'mapPOIs'), { arrays: false })
+
+  it('flattens the sublevel index MDT nests them under', () => {
+    const pois = normalisePois(parsed, () => {})
+    expect(pois).toHaveLength(3)
+    expect(pois.every((p) => p.sublevel === 1)).toBe(true)
+  })
+
+  it('keeps the entrance and its size multiplier', () => {
+    const [entrance] = normalisePois(parsed, () => {})
+    expect(entrance.type).toBe('dungeonEntrance')
+    expect(entrance.x).toBeCloseTo(779.7713, 3)
+    expect(entrance.y).toBeCloseTo(-509.5956, 3)
+    expect(entrance.sizeMult).toBe(1.5)
+  })
+
+  it('keeps the spell an item points at', () => {
+    const item = normalisePois(parsed, () => {})[1]
+    expect(item.type).toBe('genericItem')
+    expect(item.info).toEqual({ texture: 236999, spellId: 1223570, size: 15 })
+  })
+
+  it('keeps an unknown type and reports it', () => {
+    // No season file declares an unfamiliar type, so this table is ours: what is under test
+    // is our handling of the unknown, which by definition has no real sample.
+    const warned = []
+    const pois = normalisePois({ 1: { 1: { type: 'riftPortal', x: 1, y: -2 } } }, (w) => warned.push(w))
+    expect(pois).toHaveLength(1)
+    expect(pois[0].type).toBe('riftPortal')
+    expect(warned.join(' ')).toContain('riftPortal')
   })
 })

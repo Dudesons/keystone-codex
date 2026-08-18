@@ -107,10 +107,18 @@ do not replace this module with a library.
 
 ### Never lose what we cannot edit
 
-An MDT preset carries drawings, notes, rift offsets, assignments. We only know how to edit
-`value.pulls`. [route.ts](../../../src/lib/mdt/route.ts) therefore keeps the original Lua
-table in `Route.source`, and `routeToLua()` starts from that table: re-exporting an imported
-route hands it back to the game intact.
+An MDT preset carries drawings, notes, rift offsets, assignments. We know how to edit
+`value.pulls` and, since the object editing slice, `objects`.
+[route.ts](../../../src/lib/mdt/route.ts) therefore keeps the original Lua table in
+`Route.source`, and `routeToLua()` starts from that table: re-exporting an imported route hands
+back everything we never learned to edit, byte for byte.
+
+`objects` is the one key that is rebuilt rather than copied, because deleting a drawing means it
+must stop being exported. The promise there is narrower and is held by the same principle: an
+entry no object claims through its `from` index is re-emitted verbatim, and only an entry this app
+actually edited passes through the encoder. See
+[the object editing design](../../../docs/plans/2026-08-18-mdt-object-editing-design.md) for why a
+whole-model rebuild is not an option.
 
 **Any change to the route model must preserve that property.** If you add a field, write it
 into the copy of the source table; do not rebuild the table from scratch.
@@ -134,9 +142,10 @@ The invariant that matters is that the serialized bytes match.
 
 ### Do not make the test circular
 
-The route name in the fixture was anonymized **surgically** by
-[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs): only the bytes of the
-`text` field were rewritten, and 958 of the original 982 bytes are the ones the game emitted.
+The identifying strings in the fixture were anonymized **surgically** by
+[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs): only the `text` field and,
+where present, `createdBy.name` and `createdBy.realm` were rewritten; every other byte is the
+one the game emitted.
 
 Decoding and re-encoding the whole fixture with our own encoder would compare our code to
 itself and prove nothing. If you must touch the fixture, patch it in place.

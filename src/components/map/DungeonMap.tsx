@@ -9,7 +9,13 @@ import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
+import { MDT_STROKE_DEFAULTS, type MdtNote, type MdtObject, type MdtStroke } from '../../lib/mdt/objects'
+import MobStats from '../codex/MobStats'
+import DrawSurface from './DrawSurface'
+import NoteLayer from './NoteLayer'
+import ObjectLayer from './ObjectLayer'
 import PeerCursors from './PeerCursors'
+import PoiLayer, { PoiTooltip } from './PoiLayer'
 import {
   BUTTON_STEP,
   WHEEL_STEP,
@@ -20,6 +26,22 @@ import {
   zoomAt,
   type Transform,
 } from './viewport'
+
+/**
+ * The fields a stroke needs to be drawable, for one that exists only while a hand is moving.
+ * `color` is never actually painted: the one call site below always supplies `colorOverride`, a
+ * peer's own colour rather than MDT's. It is here only because `MdtStroke` requires the field —
+ * typed as `MdtStroke` rather than left to inference, so a future required field on that
+ * interface surfaces here rather than as a mystery at the call site.
+ */
+const PREVIEW_STROKE: MdtStroke = {
+  kind: 'stroke',
+  points: [],
+  sublevel: 1,
+  color: 'ffffff',
+  isArrow: false,
+  ...MDT_STROKE_DEFAULTS,
+}
 
 export interface PullMark {
   pullIdx: number
@@ -44,11 +66,33 @@ interface Props {
   hoveredPull?: number | null
   selectedPack?: number | null
   onCloneClick?: (ref: CloneRef, additive: boolean) => void
+  /** The mob under the cursor, or null when it leaves. Fires on every blip enter and leave. */
+  onHoverClone?: (ref: CloneRef | null) => void
+  /** Right-click on a mob. The map neither freezes nor knows what freezing means. */
+  onCloneContextMenu?: (ref: CloneRef) => void
   onPullClick?: (index: number) => void
   showPackOutlines?: boolean
   onCursorMove?: (p: Point | null) => void
   cursors?: Peer[]
   notice?: ReactNode
+  /** The preset's notes and strokes. Route mode only: they belong to an itinerary. */
+  objects?: MdtObject[]
+  /** The local stroke in progress, drawn with the same layer the committed ones use. */
+  previewStroke?: MdtStroke | null
+  /** Hide the hover tooltip: something else on the page is already showing the hovered mob. */
+  suppressCloneTooltip?: boolean
+  /** The object the page is editing, so the layers can mark it. */
+  selectedObjectId?: string | null
+  /** Clicking an object. Supplied only while something can select one — see the note on hit targets. */
+  onSelectObject?: (id: string) => void
+  /** Dragging an object to a new position, in map pixels. */
+  onMoveObject?: (id: string, at: Point) => void
+  /** The gesture a tool wants, or absent when the map is just a map. */
+  drawing?: {
+    mode: 'point' | 'line' | 'freehand'
+    onProgress?: (points: Point[]) => void
+    onCommit: (points: Point[]) => void
+  }
 }
 
 export default function DungeonMap({
@@ -60,17 +104,27 @@ export default function DungeonMap({
   hoveredPull,
   selectedPack,
   onCloneClick,
+  onHoverClone,
+  onCloneContextMenu,
   onPullClick,
   showPackOutlines = true,
   onCursorMove,
   cursors,
   notice,
+  objects,
+  previewStroke,
+  suppressCloneTooltip,
+  selectedObjectId,
+  onSelectObject,
+  onMoveObject,
+  drawing,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
   const [panning, setPanning] = useState(false)
   const [hoverPack, setHoverPack] = useState<number | null>(null)
   const [hoverClone, setHoverClone] = useState<string | null>(null)
+  const [hoverPoi, setHoverPoi] = useState<number | null>(null)
   const [showLegend, setShowLegend] = useState(false)
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
@@ -197,6 +251,8 @@ export default function DungeonMap({
             </clipPath>
           </defs>
 
+          <PoiLayer pois={lookup.dungeon.pois} onHover={setHoverPoi} />
+
           {showPackOutlines &&
             [...lookup.packs.values()].map((pack) => (
               <PackOutline
@@ -220,6 +276,38 @@ export default function DungeonMap({
               />
             </g>
           ))}
+
+          {/* The preset's own drawings: over the route's outline, under the mobs. */}
+          {objects && (
+            <ObjectLayer
+              strokes={objects.filter((o): o is MdtStroke => o.kind === 'stroke')}
+              selectedId={selectedObjectId}
+              onSelect={onSelectObject}
+            />
+          )}
+
+          {/* The local gesture in progress, at the same depth as a finished stroke. Its own
+              `data-testid` prefix, so it can never be counted among the committed strokes
+              above. */}
+          {previewStroke && (
+            <g data-testid="preview-stroke" opacity={0.7}>
+              <ObjectLayer strokes={[previewStroke]} testIdPrefix="preview-stroke" />
+            </g>
+          )}
+
+          {/* Every other peer's gesture in progress, in the colour presence gave them rather
+              than MDT's — a single point has no direction, so nothing is drawn for one yet. */}
+          {cursors
+            ?.filter((p) => !p.isSelf && p.drawing && p.drawing.length > 1)
+            .map((p) => (
+              <g key={`draw-${p.clientId}`} data-peer-drawing={p.clientId} opacity={0.7}>
+                <ObjectLayer
+                  strokes={[{ ...PREVIEW_STROKE, points: p.drawing! }]}
+                  colorOverride={p.color}
+                  testIdPrefix={`peer-drawing-${p.clientId}`}
+                />
+              </g>
+            ))}
 
           {lookup.dungeon.enemies.flatMap((enemy) =>
             enemy.clones
@@ -259,12 +347,22 @@ export default function DungeonMap({
                   onEnter={() => {
                     setHoverClone(key)
                     setHoverPack(clone.g)
+                    onHoverClone?.({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
                   }}
                   onLeave={() => {
                     setHoverClone(null)
                     setHoverPack(null)
+                    onHoverClone?.(null)
                   }}
                   onClick={(e) => handleCloneClick({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx }, e)}
+                  onContextMenu={(e) => {
+                    // Only on a blip, and only when something actually handles the right-click:
+                    // with nothing wired to it (the codex tab), the browser's own menu is what
+                    // a right-click on a mob should still give you.
+                    if (!onCloneContextMenu) return
+                    e.preventDefault()
+                    onCloneContextMenu({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
+                  }}
                 />
               )
             }),
@@ -290,6 +388,20 @@ export default function DungeonMap({
         </svg>
       </div>
 
+      {/* Mounted before the HUD and legend below: neither of those carries a z-index, so with
+          no `z-index` anywhere in this file, paint (and hit) order simply follows DOM order.
+          A drawing tool's surface has to be *hittable* — it is the drawing target — so it must
+          not become the top-most element while a tool is active, or it swallows every click
+          meant for the zoom, fit and legend buttons that come after it. */}
+      {drawing && (
+        <DrawSurface
+          transform={transform}
+          mode={drawing.mode}
+          onProgress={drawing.onProgress}
+          onCommit={drawing.onCommit}
+        />
+      )}
+
       <MapHud
         transform={transform}
         onFit={fit}
@@ -307,8 +419,25 @@ export default function DungeonMap({
       />
 
       {showLegend && <Legend />}
-      {hoverClone && <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />}
+      {hoverClone && !suppressCloneTooltip && (
+        <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />
+      )}
+      {hoverClone == null && hoverPoi != null && lookup.dungeon.pois[hoverPoi] && (
+        <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
+      )}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
+      {/* An explicit predicate, not a bare `o.kind === 'note'`: once Task 6 puts a second
+          member in the union, `filter` alone hands back `MdtObject[]`. */}
+      {objects && (
+        <NoteLayer
+          notes={objects.filter((o): o is MdtNote => o.kind === 'note')}
+          transform={transform}
+          selectedId={selectedObjectId}
+          onSelect={onSelectObject}
+          onMove={onMoveObject}
+          drawingActive={!!drawing}
+        />
+      )}
       {notice}
     </div>
   )
@@ -341,6 +470,7 @@ interface BlipProps {
   onEnter: () => void
   onLeave: () => void
   onClick: (e: React.MouseEvent) => void
+  onContextMenu?: (e: React.MouseEvent) => void
 }
 
 function Blip({
@@ -357,6 +487,7 @@ function Blip({
   onEnter,
   onLeave,
   onClick,
+  onContextMenu,
 }: BlipProps) {
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
@@ -378,6 +509,7 @@ function Blip({
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       style={{ cursor: 'pointer' }}
       opacity={dimmed ? 0.28 : 1}
     >
@@ -547,24 +679,32 @@ function CloneTooltip({
   lookup: DungeonLookup
   cloneKeyStr: string
 }) {
-  const { t, plural, locale } = useI18n()
+  const { t, locale } = useI18n()
   const entry = lookup.cloneByKey.get(cloneKeyStr)
   if (!entry) return null
   const { enemy, clone } = entry
   const pack = clone.g != null ? lookup.packs.get(clone.g) : null
   const ind = getIndicators(slug, enemy, locale)
+  // Either fragment can be absent on its own (a loner outside any patrol, or a patrol member
+  // with no pack), so the separator only belongs between two fragments that both exist.
+  const meta = [
+    pack ? t('map.pack', { g: pack.g, n: pack.count }) : null,
+    clone.patrol?.length ? t('map.patrol') : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
-    <div className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg">
+    <div
+      data-testid="clone-tooltip"
+      className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg"
+    >
       <div className="flex items-center gap-2">
         <span className="font-semibold text-ink-100">{getNpcLabel(enemy, locale).name}</span>
         {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
       </div>
-      <div className="mt-0.5 text-xs text-ink-400">
-        {enemy.count > 0 ? plural('common.forces', enemy.count) : t('common.noForce')}
-        {pack && ` · ${t('map.pack', { g: pack.g, n: pack.count })}`}
-        {clone.patrol?.length ? ` · ${t('map.patrol')}` : ''}
-      </div>
+      <MobStats enemy={enemy} dungeon={lookup.dungeon} />
+      {meta && <div className="mt-0.5 text-xs text-ink-400">{meta}</div>}
       {(ind.kick || ind.tankBuster || ind.dispel.length) && (
         <div className="mt-1 flex flex-wrap gap-1">
           {ind.kick && <Chip color="#d64550">{t('map.toKick')}</Chip>}

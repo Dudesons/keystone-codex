@@ -20,6 +20,7 @@ import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
 import type { LuaTable } from './cbor'
+import { luaToObjects, type MdtObject } from './objects'
 import { readPeers, type Peer } from '../collab/presence'
 
 /**
@@ -77,12 +78,23 @@ const CURSOR_INTERVAL_MS = 50
 const HIDDEN_PAUSE_MS = 5 * 60_000
 const IDLE_PAUSE_MS = 15 * 60_000
 
+/**
+ * The origin every object edit passes to `doc.transact`. The `Y.UndoManager` below is scoped to
+ * it, which is how the pull actions — which pass no origin at all — stay outside undo without
+ * being touched: a bare `doc.transact(fn)` has a null origin, and `Y.UndoManager`'s
+ * `trackedOrigins` must name this one explicitly to exclude them.
+ */
+export const OBJECT_EDIT = 'object-edit'
+
 interface PullShape {
   color: string
   clones: Y.Array<string>
 }
 
 type PullMap = Y.Map<string | Y.Array<string>>
+
+/** One object in the document. Y.js stores plain JSON, so the model's own fields go in as they are. */
+type ObjectMap = Y.Map<unknown>
 
 /** The imported preset is kept as a string, the only form serialisable inside the doc. */
 const sourceCache = new Map<string, LuaTable | undefined>()
@@ -114,6 +126,29 @@ function makePull(color: string, clones: string[] = []): PullMap {
   return map
 }
 
+const storeObject = (object: MdtObject, id: string): ObjectMap => {
+  const map: ObjectMap = new Y.Map()
+  for (const [key, value] of Object.entries(object)) map.set(key, value)
+  map.set('id', id)
+  return map
+}
+
+/**
+ * Reads the array back into the model. Stored flat rather than nested: `kind` is already the
+ * discriminant, so a flat map needs no unwrapping and a new field on `MdtObject` needs no change
+ * here.
+ *
+ * This trusts the stored shape rather than validating it: the only writer is `storeObject`, and
+ * an object arriving from a peer over Y.js was written by that same code on their end. Adding a
+ * schema check here would guard against a bug that would have to be in `storeObject` itself, not
+ * against anything a peer or a malformed document can actually produce.
+ */
+const readObjects = (stored: Y.Array<ObjectMap>): MdtObject[] =>
+  stored.toArray().map((map) => Object.fromEntries(map.entries()) as unknown as MdtObject)
+
+const indexOfObject = (objects: Y.Array<ObjectMap>, id: string): number =>
+  objects.toArray().findIndex((map) => map.get('id') === id)
+
 function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route {
   const pullsArr = root.get('pulls') as Y.Array<PullMap> | undefined
   const pulls: Pull[] = []
@@ -126,12 +161,20 @@ function readRoute(root: Y.Map<unknown>, slug: string, mdtIndex: number): Route 
     })
   })
 
+  const source = decodeSource(root.get('source') as string | undefined)
+
+  // Absent until the first object edit: while it is, `objects` stays derived from `source`
+  // exactly as before this key existed at all, so a session that never draws never writes it.
+  const stored = root.get('objects') as Y.Array<ObjectMap> | undefined
+  const objects = stored ? readObjects(stored) : source ? luaToObjects(source) : []
+
   return {
     name: (root.get('name') as string) || DEFAULT_ROUTE_NAME,
     slug,
     mdtIndex,
     pulls: pulls.length ? pulls : [{ color: nextColor(0), clones: [] }],
-    source: decodeSource(root.get('source') as string | undefined),
+    source,
+    objects,
   }
 }
 
@@ -157,6 +200,22 @@ export interface RouteActions {
   toggleClones(pullIndex: number, refs: CloneRef[]): void
   importRoute(mdtString: string): Route
   reset(): void
+  /**
+   * Places an object and returns the id it was given. Adopts the preset's objects into the document
+   * first, if that has not happened yet.
+   *
+   * The id is returned rather than looked up afterwards because every creation gesture needs to
+   * know what it just made — placing a note then opening the editor on it — and the last element of
+   * `route.objects` is the wrong answer the moment a peer inserts concurrently.
+   */
+  addObject(object: MdtObject): string
+  /** Replaces one object by identity. */
+  updateObject(id: string, object: MdtObject): void
+  removeObject(id: string): void
+  /** Takes back this session's own last object edit. Does nothing to a peer's or a pull's. */
+  undo(): void
+  /** Reapplies this session's own last undone object edit. */
+  redo(): void
 }
 
 export interface CollabState {
@@ -228,7 +287,18 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     slug,
     mdtIndex,
     pulls: [{ color: nextColor(0), clones: [] }],
+    objects: [],
   }))
+
+  /**
+   * `n` in every id this hook instance mints, `${doc.clientID}:${n}`. A ref rather than a
+   * module-level counter: it must survive `doc` being swapped out (a guest joining a room gets a
+   * fresh `Y.Doc`, with its own `clientID`), but a plain module variable would be shared by every
+   * mounted `useRouteDoc` — including two peers in the same tab, as the collaboration tests set
+   * up over `BroadcastChannel` — and nothing requires that. Scoping it here means two sessions
+   * mint from independent counters, and uniqueness across them still comes from `clientID`.
+   */
+  const objectSeqRef = useRef(0)
 
   /** The open session, with the means to unsubscribe from it before tearing it down. */
   const sessionRef = useRef<{ provider: WebsocketProvider; detach: () => void } | null>(null)
@@ -248,6 +318,13 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     timer: null,
   })
 
+  /** Throttles drawing writes the same way `cursorRef` throttles `setCursor`. */
+  const drawingRef = useRef<{ last: number; pending: Point[] | null; timer: ReturnType<typeof setTimeout> | null }>({
+    last: 0,
+    pending: null,
+    timer: null,
+  })
+
   const closeSession = useCallback(() => {
     // A throttled write outlives neither the session it was queued for nor, if none was ever
     // open, the component itself: `setCursor` schedules this timer regardless of `sessionRef`,
@@ -257,6 +334,14 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       cursorRef.current.timer = null
     }
     cursorRef.current.pending = null
+
+    // Same reasoning as `setCursor`'s, above: `setDrawing` schedules this regardless of
+    // `sessionRef` too.
+    if (drawingRef.current.timer != null) {
+      clearTimeout(drawingRef.current.timer)
+      drawingRef.current.timer = null
+    }
+    drawingRef.current.pending = null
 
     const open = sessionRef.current
     if (!open) return
@@ -378,6 +463,87 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     [doc],
   )
 
+  /**
+   * `${clientID}:${n}`: deterministic, unique across peers because the client id is, and
+   * testable without stubbing a random source. Reads `doc.clientID` fresh on every call, so it
+   * always names whichever document this hook currently holds.
+   */
+  const nextObjectId = useCallback(() => `${doc.clientID}:${objectSeqRef.current++}`, [doc])
+
+  /**
+   * Runs `fn` against the document's object array, creating it on the first call by adopting
+   * everything the preset carried. Adoption is deliberately lazy: a session that never edits an
+   * object leaves the document exactly as it was before this key existed, and `readRoute` goes
+   * on deriving the objects from `source`.
+   */
+  const withObjects = useCallback(
+    (fn: (objects: Y.Array<ObjectMap>) => void) => {
+      const root = doc.getMap('route')
+      doc.transact(() => {
+        let stored = root.get('objects') as Y.Array<ObjectMap> | undefined
+        if (!stored) {
+          stored = new Y.Array<ObjectMap>()
+          root.set('objects', stored)
+          const source = decodeSource(root.get('source') as string | undefined)
+          if (source) stored.push(luaToObjects(source).map((o) => storeObject(o, nextObjectId())))
+        }
+        fn(stored)
+      }, OBJECT_EDIT)
+    },
+    [doc, nextObjectId],
+  )
+
+  /**
+   * Undo covers this session's own object edits and nothing else.
+   *
+   * Scoped to `root`, not to the object array: the array does not exist until the first edit, so
+   * there would be nothing to scope to here, and the transaction that creates it must itself be
+   * undoable — undoing the very first edit has to remove the adoption along with it, which falls
+   * out for free once the manager watches the document root rather than a key that might not
+   * exist yet. Isolation therefore comes from the origin, not the scope: `trackedOrigins` names
+   * `OBJECT_EDIT` explicitly, because the default, `new Set([null])`, would also capture every
+   * pull action and every peer's incoming change, none of which pass an origin at all.
+   *
+   * `captureTimeout: 0` turns off the default merging of same-origin transactions that land
+   * within 500ms of each other into a single undo step. That default suits a text editor's
+   * keystrokes; it is wrong for a drawing tool, where each add, move or delete is its own
+   * deliberate act and toolbar clicks or a drawing gesture can easily land two edits inside that
+   * window — merging them would make one undo press take back two.
+   */
+  const undoManager = useMemo(
+    () =>
+      new Y.UndoManager(doc.getMap('route'), {
+        trackedOrigins: new Set([OBJECT_EDIT]),
+        captureTimeout: 0,
+      }),
+    [doc],
+  )
+
+  const [undoState, setUndoState] = useState({ canUndo: false, canRedo: false })
+  useEffect(() => {
+    const sync = () =>
+      setUndoState({
+        canUndo: undoManager.undoStack.length > 0,
+        canRedo: undoManager.redoStack.length > 0,
+      })
+    undoManager.on('stack-item-added', sync)
+    undoManager.on('stack-item-popped', sync)
+    // `clear()` — which `importRoute` and `reset` call — empties the stacks without popping
+    // anything, and announces itself as `stack-cleared` alone. Without this listener the buttons
+    // would stay enabled over two stacks that are already empty.
+    undoManager.on('stack-cleared', sync)
+    sync()
+    return () => {
+      undoManager.off('stack-item-added', sync)
+      undoManager.off('stack-item-popped', sync)
+      undoManager.off('stack-cleared', sync)
+      // The manager holds its own listener on the doc; leaving it running past this hook's
+      // interest in `undoManager` is the same class of leak `closeSession` exists to avoid for
+      // the provider and its awareness instance.
+      undoManager.destroy()
+    }
+  }, [undoManager])
+
   const actions = useMemo<RouteActions>(
     () => ({
       setName: (name) => doc.transact(() => doc.getMap('route').set('name', name)),
@@ -436,11 +602,29 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const pulls = new Y.Array<PullMap>()
           root.set('pulls', pulls)
           pulls.push(imported.pulls.map((p) => makePull(p.color, p.clones.map(refKey))))
+          // An adopted array is only ever a reading of the *previous* `source`. Left in place,
+          // it would outlive the preset it was adopted from: an entry whose `from` happened to
+          // collide with one of the new preset's own keys would be claimed and silently
+          // synthesised over that preset's own object. Deleting it here, in the same
+          // transaction, means a peer can never observe a route whose `source` and `objects`
+          // disagree about which preset they came from — `objects` goes back to being derived
+          // from the new `source`, exactly as it would for a document that had never adopted at
+          // all.
+          root.delete('objects')
         })
+        // The stacks outlive the transaction above: this hook's `UndoManager` is memoised on
+        // `[doc]`, and importing does not replace the document. A stack item recorded against a
+        // route that has since been replaced has nothing left to mean, and redoing one is worse
+        // than useless — it re-creates the `objects` key *and its contents*, objects belonging to
+        // the previous preset now sitting under a different `source`, which is exactly the
+        // corruption the `delete` above exists to prevent. Deleting the key inside the
+        // transaction is not enough on its own, because that transaction carries no origin and
+        // the manager therefore never sees it.
+        undoManager.clear()
         return imported
       },
 
-      reset: () =>
+      reset: () => {
         doc.transact(() => {
           const root = doc.getMap('route')
           root.set('name', DEFAULT_ROUTE_NAME)
@@ -448,9 +632,62 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const pulls = new Y.Array<PullMap>()
           root.set('pulls', pulls)
           pulls.push([makePull(nextColor(0))])
+          // Same reasoning as `importRoute`: an adopted array is a reading of the source that no
+          // longer exists after this. Left behind, every adopted object would vanish from export
+          // anyway (there is no `source` left for it to claim a key in), but silently — this
+          // makes the model agree with that outcome instead of disagreeing with it.
+          root.delete('objects')
+        })
+        // And for the same reason as `importRoute`: the stacks are about a route that no longer
+        // exists, and redoing one of them would put its objects back under a source that is gone.
+        undoManager.clear()
+      },
+
+      addObject: (object) => {
+        // Minted inside the transaction, so the adopted objects still take the ids before it: the
+        // counter's order is not load-bearing, but changing it for no reason is not either.
+        let id = ''
+        withObjects((objects) => {
+          id = nextObjectId()
+          objects.push([storeObject(object, id)])
+        })
+        return id
+      },
+
+      updateObject: (id, object) =>
+        withObjects((objects) => {
+          const stored = objects.toArray().find((map) => map.get('id') === id)
+          if (!stored) return
+          // Set the fields on the map that is already there, rather than deleting the entry and
+          // reinserting a copy the way `movePull` has to. Y.Array has no replace, and delete-then-
+          // insert does not merge: two peers doing it to the same object at once leaves **two**
+          // entries — both deletes are idempotent, both inserts survive — and both carry the same
+          // `id`, so selection becomes ambiguous and a created object exports twice. Writing the
+          // fields in place merges per field instead, which is what a `Y.Map` is for.
+          //
+          // `id` is left alone: this map was found by it, and it is bookkeeping the caller has no
+          // business changing.
+          for (const [key, value] of Object.entries(object)) {
+            if (key !== 'id') stored.set(key, value)
+          }
+          // A key the incoming object does not carry has to go, or a field that should disappear
+          // would linger — provenance dropped from an object, or the fields of the other kind after
+          // a note became a stroke.
+          for (const key of [...stored.keys()]) {
+            if (key !== 'id' && !(key in object)) stored.delete(key)
+          }
         }),
+
+      removeObject: (id) =>
+        withObjects((objects) => {
+          const index = indexOfObject(objects, id)
+          if (index >= 0) objects.delete(index, 1)
+        }),
+
+      undo: () => undoManager.undo(),
+      redo: () => undoManager.redo(),
     }),
-    [doc, withPulls],
+    [doc, withPulls, withObjects, nextObjectId, undoManager],
   )
 
   const joinRoom = useCallback(
@@ -558,6 +795,53 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     }
   }, [])
 
+  /**
+   * The stroke being drawn, published to the room and never to the document.
+   *
+   * Awareness for the same reason the cursor uses it: this is state that is true for as long as a
+   * hand is moving and meaningless afterwards. It enters the document once, on release, as one
+   * operation — a document write per sampled point would put a hundred-odd operations into a
+   * shared history for a gesture that is thrown away as often as it is kept.
+   *
+   * An empty array is not throttled, exactly as leaving the map is not: a stroke that lingers
+   * after the hand stopped says something false, and keeps saying it until someone moves. It is
+   * published as `null`, not `[]`, mirroring `setCursor`'s own `null` exactly: `[]` is truthy, so
+   * a trailing timer already armed by the point before it would happily resurrect it as `pending`
+   * and write it right back a moment later. `null` is falsy, so the same bypass that makes the
+   * clear immediate is what keeps it from being undone.
+   */
+  const setDrawing = useCallback((points: Point[]) => {
+    const state = drawingRef.current
+    const write = (value: Point[] | null) => {
+      // Read the provider at the moment of writing, never through a closure: a throttled write
+      // can land after the session it belonged to was torn down.
+      sessionRef.current?.provider.awareness.setLocalStateField('drawing', value)
+    }
+
+    if (points.length === 0) {
+      state.pending = null
+      write(null)
+      return
+    }
+
+    const wait = CURSOR_INTERVAL_MS - (Date.now() - state.last)
+    if (wait <= 0) {
+      state.last = Date.now()
+      write(points)
+      return
+    }
+
+    state.pending = points
+    if (state.timer == null) {
+      state.timer = setTimeout(() => {
+        state.timer = null
+        state.last = Date.now()
+        if (state.pending) write(state.pending)
+        state.pending = null
+      }, wait)
+    }
+  }, [])
+
   const setIdentity = useCallback((name: string) => {
     const trimmed = name.trim()
     localStorage.setItem(IDENTITY_KEY, trimmed)
@@ -565,7 +849,20 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     sessionRef.current?.provider.awareness.setLocalStateField('user', { name: trimmed })
   }, [])
 
-  return { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor }
+  return {
+    route,
+    actions,
+    collab,
+    joinRoom,
+    leaveRoom,
+    resumeRoom,
+    setIdentity,
+    setCursor,
+    setDrawing,
+    /** Whether there is anything of this session's own to undo, for a button's disabled state. */
+    canUndo: undoState.canUndo,
+    canRedo: undoState.canRedo,
+  }
 }
 
 const IDENTITY_KEY = 'midnight-codex:identity'

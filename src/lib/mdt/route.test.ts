@@ -4,8 +4,10 @@
 import { describe, expect, it } from 'vitest'
 import { cloneKey, getLookup } from '../data'
 import {
+  OVERPULL_PERCENT,
   PULL_COLORS,
   emptyRoute,
+  forcesStanding,
   nextColor,
   pullIndexByClone,
   routeStats,
@@ -67,6 +69,7 @@ describe('pullIndexByClone', () => {
         { color: nextColor(0), clones: [{ enemyIdx: 1, cloneIdx: 1 }] },
         { color: nextColor(1), clones: [{ enemyIdx: 2, cloneIdx: 3 }, { enemyIdx: 2, cloneIdx: 4 }] },
       ],
+      objects: [],
     }
     const map = pullIndexByClone(route)
     expect(map.get(cloneKey(1, 1))).toBe(0)
@@ -88,6 +91,7 @@ describe('routeStats', () => {
     slug: SLUG,
     mdtIndex: MDT_INDEX,
     pulls: packs.slice(0, n).map((pack, i) => ({ color: nextColor(i), clones: pack.members })),
+    objects: [],
   })
 
   it('accumulates forces pull after pull', () => {
@@ -125,6 +129,7 @@ describe('routeStats', () => {
       slug: SLUG,
       mdtIndex: MDT_INDEX,
       pulls: [{ color: nextColor(0), clones: [{ enemyIdx: 9999, cloneIdx: 9999 }] }],
+      objects: [],
     }
     expect(routeStats(route, lookup).total).toBe(0)
   })
@@ -138,7 +143,30 @@ describe('routeStats', () => {
         const [enemyIdx, cloneIdx] = k.split(':').map(Number)
         return { enemyIdx, cloneIdx }
       }) }],
+      objects: [],
     }
     expect(routeStats(route, lookup).percent).toBeGreaterThanOrEqual(100)
+  })
+})
+
+describe('forcesStanding', () => {
+  it('calls a route short of the requirement short', () => {
+    expect(forcesStanding(0)).toBe('short')
+    expect(forcesStanding(99.9)).toBe('short')
+  })
+
+  it('calls it complete from the requirement up to the overpull margin', () => {
+    expect(forcesStanding(100)).toBe('complete')
+    expect(forcesStanding(101.5)).toBe('complete')
+  })
+
+  it('calls it over past the margin, where the extra forces are pulled for nothing', () => {
+    expect(forcesStanding(101.6)).toBe('over')
+    expect(forcesStanding(140)).toBe('over')
+  })
+
+  it('reads the margin from the constant, so the two cannot drift apart', () => {
+    expect(forcesStanding(OVERPULL_PERCENT)).toBe('complete')
+    expect(forcesStanding(OVERPULL_PERCENT + 0.1)).toBe('over')
   })
 })
