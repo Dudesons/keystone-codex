@@ -26,11 +26,14 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
    it before continuing.
 3. `npm run data`
    → verify: every one of the eight dungeons logs 100% force coverage, and the run prints no
-   `unknown characteristics` warning. If it does, add the named value to `CC_ORDER` in
-   `scripts/mdt-dungeon.mjs` before continuing — see the `mdt-pipeline` skill.
+   `unknown characteristics, add them to CC_ORDER: …` warning. If it does, add the named value
+   to `CC_ORDER` in `scripts/mdt-dungeon.mjs` before continuing.
 4. `npm run mdt:report`
-   → verify: the report's title names both MDT versions, neither as `unknown` — `unknown`
-   means step 1 or step 2 was skipped.
+   → verify: the report's title names both MDT versions, neither as `unknown`. The newer one
+   renders `unknown` when `src/data/generated/mdt.json` is missing or the `.toc` carried no
+   `## Version:` line — an extraction problem. The older one renders `unknown` when the base
+   revision's own committed `mdt.json` has no version, a fact about that revision rather than
+   this run.
 5. Work the report from severity 1 down. See below for what each severity asks of you.
 6. `npm test && npm run typecheck`
    → verify: both green, and the fixture tests in `codec.test.ts` not reported as skipped — a
