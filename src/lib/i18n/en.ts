@@ -143,6 +143,8 @@ export const en = {
   'route.wrongDungeon': 'That route is for {dungeon}, not for this one.',
   'route.imported.one': '“{name}” imported: {n} pull.',
   'route.imported.other': '“{name}” imported: {n} pulls.',
+  'route.hoverAMob': 'Hover a mob on the map to read its entry. Right-click to keep it here.',
+  'route.unpin': 'Stop holding this mob',
 
   // Collaborative editing
   'collab.heading': 'SHARED SESSION',

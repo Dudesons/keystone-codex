@@ -144,6 +144,8 @@ export const fr: Dictionary = {
   'route.wrongDungeon': 'Cette route est pour {dungeon}, pas pour ce donjon.',
   'route.imported.one': '« {name} » importée : {n} pull.',
   'route.imported.other': '« {name} » importée : {n} pulls.',
+  'route.hoverAMob': 'Survole un mob sur la carte pour lire sa fiche. Clic droit pour la garder ici.',
+  'route.unpin': 'Ne plus retenir ce mob',
 
   // Collaborative editing
   'collab.heading': 'SESSION PARTAGÉE',
