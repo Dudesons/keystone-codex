@@ -552,6 +552,7 @@ directly** with the Read tool before touching the area they cover:
 | [`mdt-pipeline`](.claude/skills/mdt-pipeline/SKILL.md) | touching the MDT codec (`src/lib/mdt/`), the extraction scripts (`scripts/`), the generated data, or the test fixture |
 | [`i18n`](.claude/skills/i18n/SKILL.md) | adding a UI string, translating a `content/` entry, touching `src/lib/i18n/` or the spell and creature labels, adding a language |
 | [`codex-content`](.claude/skills/codex-content/SKILL.md) | writing or editing a `content/**.md` entry, rating a mob's `threat`, or reconciling MDT against another source |
+| [`mdt-update`](.claude/skills/mdt-update/SKILL.md) | installing an MDT update, re-running `npm run data`, or backporting what an update changed into the cards |
 
 Everything else — TDD, plans, code review, brainstorming — comes from plugins; see
 `superpowers:*` and `mattpocock-skills`. Only add a repo skill when an area is both specific

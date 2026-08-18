@@ -157,3 +157,6 @@ of `real-export.txt`, re-anonymize. See
    generated files are versioned.
 4. If the codec changed: re-import a real route in game before calling it done. The tests
    prove serialization, not acceptance by the client.
+5. If the change came from an MDT update rather than from our own code: follow the `mdt-update`
+   skill instead of this checklist. The order of operations matters there, and one step of it
+   cannot be undone.
