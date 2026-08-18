@@ -200,7 +200,10 @@ function SpellRow({
   const text = written || (compact ? undefined : spell?.description)
 
   return (
-    <div className="flex gap-2.5 px-3 py-2 hover:bg-ink-800/60">
+    // `data-spell` rather than an `id`: the panel's list view renders every mob at once, and
+    // two of them sharing a spell would share a document id. It is what a briefing chip's
+    // `#spell-<id>` hash resolves against.
+    <div data-spell={spellId} className="flex gap-2.5 px-3 py-2 hover:bg-ink-800/60">
       {spell?.icon ? (
         <img
           src={iconUrl(spell.icon)}

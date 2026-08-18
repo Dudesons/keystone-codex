@@ -70,7 +70,7 @@ function MobRow({ slug, mob }: { slug: string; mob: HighlightMob }) {
       </div>
       <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5">
         {mob.spells.map((spell) => (
-          <SpellChip key={spell.name} spell={spell} variant="row" />
+          <SpellChip key={spell.name} slug={slug} npcId={mob.npcId} spell={spell} variant="row" />
         ))}
       </div>
     </div>

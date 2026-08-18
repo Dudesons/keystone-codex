@@ -2,7 +2,7 @@
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
 import UnknownDungeon from '../components/UnknownDungeon'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
@@ -77,6 +77,11 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   const selectedMob = npcId ? Number(npcId) : null
   const hasRoute = route.pulls.some((p) => p.clones.length > 0)
+
+  // A briefing chip links to `…/codex/mob/<npc>#spell-<id>`. Reading the fragment here rather
+  // than in the panel keeps the panel router-free, the same split as `selectedMob` above.
+  const { hash } = useLocation()
+  const focusSpell = Number(/^#spell-(\d+)$/.exec(hash)?.[1]) || null
 
   const pullMarks = useMemo(() => {
     const map = new Map<string, PullMark>()
@@ -220,6 +225,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
               selectedPack={selectedPack}
               selectedMob={selectedMob}
               focusNpc={focusNpc}
+              focusSpell={focusSpell}
               pullByNpc={pullByNpc}
               onSelectMob={(id) => {
                 setFocusNpc(id)

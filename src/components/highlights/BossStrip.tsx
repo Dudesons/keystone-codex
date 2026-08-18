@@ -44,7 +44,13 @@ export default function BossStrip({ slug, bosses }: { slug: string; bosses: High
           {boss.spells.length > 0 && (
             <ul className="mt-2 space-y-1">
               {boss.spells.map((spell) => (
-                <SpellChip key={spell.name} spell={spell} variant="card" />
+                <SpellChip
+                  key={spell.name}
+                  slug={slug}
+                  npcId={boss.npcId}
+                  spell={spell}
+                  variant="card"
+                />
               ))}
             </ul>
           )}

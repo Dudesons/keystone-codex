@@ -45,12 +45,22 @@ describe('MobTable', () => {
     expect(img?.getAttribute('src')).toContain('portraits/142386.webp')
   })
 
-  it('puts every prio-1 spell of the mob on its row, linked to Wowhead', () => {
+  it("puts every prio-1 spell of the mob on its row, linked into the mob's codex entry", () => {
     const { container } = mount()
     const twinfang = container.querySelector('[data-mob="261554"]')!
     expect(twinfang.textContent).toContain('Duostrike')
     expect(twinfang.textContent).toContain('Paralyzing Shots')
-    expect(twinfang.querySelector('a[href*="wowhead.com"]')).not.toBeNull()
+    // The briefing keeps you here: a chip opens the codex card, which carries the cast time
+    // and the description the chip has no room for, and links out to Wowhead from there. The
+    // hash names the spell so the card lands on it rather than at the top.
+    expect(
+      twinfang.querySelector(`a[href="/d/${SLUG}/codex/mob/261554#spell-1294572"]`),
+    ).not.toBeNull()
+  })
+
+  it('leaves nothing on the page that navigates away from the app', () => {
+    const { container } = mount()
+    expect(container.querySelector('a[href*="wowhead.com"]')).toBeNull()
   })
 
   it('shows the threat as a badge', () => {

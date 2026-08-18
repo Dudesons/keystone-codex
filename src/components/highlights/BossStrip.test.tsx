@@ -32,10 +32,14 @@ describe('BossStrip', () => {
     expect(container.querySelector(`a[href="/d/${SLUG}/codex/mob/259445"]`)).not.toBeNull()
   })
 
-  it('gives a boss its own prio-1 spells', () => {
+  it('gives a boss its own prio-1 spells, each landing on that spell in the codex', () => {
     const { container } = mount(SLUG)
     const ravi = container.querySelector('[data-boss="259445"]')!
-    expect(ravi.querySelectorAll('a[href*="wowhead.com"]').length).toBeGreaterThan(0)
+    expect(
+      ravi.querySelector(`a[href="/d/${SLUG}/codex/mob/259445#spell-1298683"]`),
+    ).not.toBeNull()
+    // Wowhead is the codex card's link to make, not the briefing's.
+    expect(ravi.querySelector('a[href*="wowhead.com"]')).toBeNull()
   })
 
   it('renders nothing at all for a dungeon with no bosses in the derivation', () => {

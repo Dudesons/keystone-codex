@@ -1,20 +1,30 @@
-// ABOUTME: One HighlightSpell as an icon, a Wowhead-linked name, its tags, and its dispel
-// ABOUTME: badges — shared by MobTable's row and BossStrip's card, which differ only in size.
+// ABOUTME: One HighlightSpell as an icon, a name linking into the codex, its tags, and its
+// ABOUTME: dispel badges — shared by MobTable's row and BossStrip's card, sized differently.
 
+import { Link } from 'react-router-dom'
 import type { HighlightSpell } from '../../lib/highlights'
-import { iconUrl, wowheadUrl } from '../../lib/data'
-import { useI18n } from '../../lib/i18n/context'
+import { iconUrl } from '../../lib/data'
 import { DispelBadges, TagBadge } from '../codex/Badges'
 
+/**
+ * The chip's name opens the codex card, not Wowhead.
+ *
+ * A briefing is read before a pull, and Wowhead is a tab away from it; the card carries the
+ * cast time, the description and the written note the chip has no room for, and it is the one
+ * place that links out. The `#spell-<id>` hash is what makes this link worth having next to
+ * the mob's own — it lands on the row, not at the top of a card holding eight spells.
+ */
 export default function SpellChip({
+  slug,
+  npcId,
   spell,
   variant,
 }: {
+  slug: string
+  npcId: number
   spell: HighlightSpell
   variant: 'row' | 'card'
 }) {
-  const { locale } = useI18n()
-
   const icon = spell.icon ? (
     <img
       src={iconUrl(spell.icon)}
@@ -39,10 +49,8 @@ export default function SpellChip({
   const content = (
     <>
       {icon}
-      <a
-        href={wowheadUrl(spell.ids[0], locale)}
-        target="_blank"
-        rel="noreferrer"
+      <Link
+        to={`/d/${slug}/codex/mob/${npcId}#spell-${spell.ids[0]}`}
         className={
           variant === 'row'
             ? 'text-xs font-medium text-ink-200 hover:text-gold-400'
@@ -50,7 +58,7 @@ export default function SpellChip({
         }
       >
         {spell.name}
-      </a>
+      </Link>
       {spell.tags.map((tag) => (
         <TagBadge key={tag} tag={tag} />
       ))}
