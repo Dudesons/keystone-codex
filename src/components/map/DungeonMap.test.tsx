@@ -327,6 +327,16 @@ describe('Reporting the hovered mob', () => {
     const onMap = fireEvent.contextMenu(container.querySelector('svg')!)
     expect(onMap).toBe(true)
   })
+
+  it('leaves the browser menu alone on a mob when nothing handles the right-click', () => {
+    // The codex tab passes no `onCloneContextMenu` at all — a right-click there must not
+    // swallow the browser's own menu just because it landed on a blip.
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} />,
+    )
+    const onBlip = fireEvent.contextMenu(blips(container)[0])
+    expect(onBlip).toBe(true)
+  })
 })
 
 /**

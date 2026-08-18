@@ -351,6 +351,81 @@ describe('Points of interest', () => {
   })
 })
 
+describe('The mob panel', () => {
+  const hoverFirstBlip = (container: HTMLElement) => {
+    const blip = container.querySelectorAll('[data-clone]')[0]
+    fireEvent.mouseEnter(blip)
+    return blip
+  }
+
+  /**
+   * RoutePanel's forces readout: the label, the running total, the required total and the
+   * percent all sit in one row, directly above the bar that carries `data-standing`. Reading
+   * that row's text is what lets this file pin the total without a testid RoutePanel does not
+   * have — this task's file map does not include RoutePanel.tsx.
+   */
+  const forcesRow = (container: HTMLElement) =>
+    container.querySelector('[data-standing]')!.parentElement!.previousElementSibling as HTMLElement
+
+  it('is absent from the codex tab, where the right-hand panel already shows entries', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    expect(container.querySelector('[data-testid="mob-panel"]')).toBeNull()
+  })
+
+  it('appears in the route tab, asking to be given a mob', () => {
+    renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
+  })
+
+  it('fills with the hovered mob, and keeps it once the cursor leaves', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    const blip = hoverFirstBlip(container)
+    const panel = screen.getByTestId('mob-panel')
+    const named = panel.textContent
+    fireEvent.mouseLeave(blip)
+    // The entry would clear at the exact moment you moved the mouse toward it.
+    expect(screen.getByTestId('mob-panel').textContent).toBe(named)
+  })
+
+  it('holds a right-clicked mob while another is hovered, and shows the other in the tooltip', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    const blips = container.querySelectorAll('[data-clone]')
+    fireEvent.contextMenu(blips[0])
+    const held = screen.getByTestId('mob-panel').textContent
+    fireEvent.mouseEnter(blips[1])
+    expect(screen.getByTestId('mob-panel').textContent).toBe(held)
+    expect(screen.getByTestId('clone-tooltip')).toBeDefined()
+  })
+
+  it('shows no tooltip while nothing is held, since the panel already speaks', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    hoverFirstBlip(container)
+    expect(screen.queryByTestId('clone-tooltip')).toBeNull()
+  })
+
+  it('goes back to following the hover once the pin is clicked', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    const blips = container.querySelectorAll('[data-clone]')
+    fireEvent.contextMenu(blips[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Stop holding this mob' }))
+    fireEvent.mouseEnter(blips[1])
+    expect(screen.queryByRole('button', { name: 'Stop holding this mob' })).toBeNull()
+  })
+
+  it('does not add the right-clicked mob to the current pull', () => {
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    const before = forcesRow(container).textContent
+    fireEvent.contextMenu(container.querySelectorAll('[data-clone]')[0])
+    expect(forcesRow(container).textContent).toBe(before)
+  })
+})
+
 describe('Remounting per dungeon', () => {
   it('starts a separate document for each dungeon', () => {
     // The `key={slug}` on DungeonView is what guarantees this: mob indices mean different

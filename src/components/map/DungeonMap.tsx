@@ -60,6 +60,8 @@ interface Props {
   notice?: ReactNode
   /** The preset's notes and strokes. Route mode only: they belong to an itinerary. */
   objects?: MdtObject[]
+  /** Hide the hover tooltip: something else on the page is already showing the hovered mob. */
+  suppressCloneTooltip?: boolean
 }
 
 export default function DungeonMap({
@@ -79,6 +81,7 @@ export default function DungeonMap({
   cursors,
   notice,
   objects,
+  suppressCloneTooltip,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -288,9 +291,12 @@ export default function DungeonMap({
                   }}
                   onClick={(e) => handleCloneClick({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx }, e)}
                   onContextMenu={(e) => {
-                    // Only on a blip: the rest of the map keeps the browser's own menu.
+                    // Only on a blip, and only when something actually handles the right-click:
+                    // with nothing wired to it (the codex tab), the browser's own menu is what
+                    // a right-click on a mob should still give you.
+                    if (!onCloneContextMenu) return
                     e.preventDefault()
-                    onCloneContextMenu?.({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
+                    onCloneContextMenu({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
                   }}
                 />
               )
@@ -334,7 +340,9 @@ export default function DungeonMap({
       />
 
       {showLegend && <Legend />}
-      {hoverClone && <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />}
+      {hoverClone && !suppressCloneTooltip && (
+        <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />
+      )}
       {hoverClone == null && hoverPoi != null && lookup.dungeon.pois[hoverPoi] && (
         <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
       )}
@@ -604,7 +612,10 @@ function CloneTooltip({
     .join(' · ')
 
   return (
-    <div className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg">
+    <div
+      data-testid="clone-tooltip"
+      className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg"
+    >
       <div className="flex items-center gap-2">
         <span className="font-semibold text-ink-100">{enemy.name}</span>
         {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}

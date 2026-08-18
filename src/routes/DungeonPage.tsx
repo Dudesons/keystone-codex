@@ -7,6 +7,7 @@ import DungeonMap, { type PullMark, type PullShape } from '../components/map/Dun
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
+import MobPanel from '../components/route/MobPanel'
 import { cloneKey, getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { toCssColor } from '../lib/mdt/route'
@@ -14,7 +15,7 @@ import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
-import type { CloneRef } from '../lib/types'
+import type { CloneRef, Enemy } from '../lib/types'
 
 type Mode = 'codex' | 'route'
 
@@ -71,6 +72,12 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const [focusNpc, setFocusNpc] = useState<number | null>(null)
   const [currentPull, setCurrentPull] = useState(0)
   const [hoveredPull, setHoveredPull] = useState<number | null>(null)
+
+  /** The mob the route tab's left column shows. Kept when the cursor leaves the map, so the
+      entry stays readable. */
+  const [panelNpc, setPanelNpc] = useState<number | null>(null)
+  /** Set by a right-click: the column stops following the hover until it is released. */
+  const [frozenNpc, setFrozenNpc] = useState<number | null>(null)
 
   const { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor } = useRouteDoc(
     slug,
@@ -178,6 +185,32 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
+  // A plain helper, redefined every render — it must not appear in a `useCallback` dependency
+  // array below. `lookup` is what those depend on instead.
+  const enemyOf = (ref: CloneRef | null): Enemy | null =>
+    ref ? (lookup.cloneByKey.get(cloneKey(ref.enemyIdx, ref.cloneIdx))?.enemy ?? null) : null
+
+  const handleHoverClone = useCallback(
+    (ref: CloneRef | null) => {
+      const id = enemyOf(ref)?.id ?? null
+      // A null means the cursor left a blip: the column keeps what it had.
+      if (id != null && frozenNpc == null) setPanelNpc(id)
+    },
+    [lookup, frozenNpc],
+  )
+
+  const handleCloneContextMenu = useCallback(
+    (ref: CloneRef) => {
+      const id = enemyOf(ref)?.id
+      if (id == null) return
+      setFrozenNpc(id)
+      setPanelNpc(id)
+    },
+    [lookup],
+  )
+
+  const panelEnemy = panelNpc != null ? (lookup.enemyById.get(panelNpc) ?? null) : null
+
   const content = getDungeonContent(slug, locale)
   const tab = (value: Mode, label: string) => (
     <button
@@ -220,6 +253,20 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
       </header>
 
       <div className="flex min-h-0 flex-1">
+        {mode === 'route' && (
+          <aside
+            data-testid="mob-panel"
+            className="thin-scroll w-[360px] shrink-0 overflow-y-auto border-r border-ink-800 bg-ink-900 p-3"
+          >
+            <MobPanel
+              slug={slug}
+              dungeon={lookup.dungeon}
+              enemy={panelEnemy}
+              frozen={frozenNpc != null}
+              onUnfreeze={() => setFrozenNpc(null)}
+            />
+          </aside>
+        )}
         <div className="min-w-0 flex-1">
           <DungeonMap
             slug={slug}
@@ -231,6 +278,9 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             hoveredPull={hoveredPull}
             selectedPack={mode === 'codex' ? selectedPack : null}
             onCloneClick={handleCloneClick}
+            onHoverClone={handleHoverClone}
+            onCloneContextMenu={mode === 'route' ? handleCloneContextMenu : undefined}
+            suppressCloneTooltip={mode === 'route' && frozenNpc == null}
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
