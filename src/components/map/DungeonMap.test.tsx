@@ -8,6 +8,7 @@ import { getMobContent } from '../../lib/content'
 import { cloneKey, getLookup, mapUrl } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
+import type { CloneRef } from '../../lib/types'
 import { renderEn } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
@@ -283,6 +284,48 @@ describe('Clicking a unit', () => {
     fireEvent.click(blips(container)[0])
     fireEvent.click(blips(container)[0], { ctrlKey: true })
     expect(additive).toEqual([false, true])
+  })
+})
+
+describe('Reporting the hovered mob', () => {
+  it('names the mob the cursor entered, and null when it leaves', () => {
+    const seen: (CloneRef | null)[] = []
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} onHoverClone={(r) => seen.push(r)} />,
+    )
+    const blip = blips(container)[0]
+    fireEvent.mouseEnter(blip)
+    fireEvent.mouseLeave(blip)
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).toMatchObject({ enemyIdx: expect.any(Number), cloneIdx: expect.any(Number) })
+    expect(seen[1]).toBeNull()
+  })
+
+  it('reports a right-click on a mob without treating it as a click', () => {
+    const menued: CloneRef[] = []
+    const clicked: CloneRef[] = []
+    const { container } = renderEn(
+      <DungeonMap
+        slug="altar-of-fangs"
+        lookup={getLookup('altar-of-fangs')!}
+        onCloneClick={(r) => clicked.push(r)}
+        onCloneContextMenu={(r) => menued.push(r)}
+      />,
+    )
+    fireEvent.contextMenu(blips(container)[0])
+    expect(menued).toHaveLength(1)
+    expect(clicked).toEqual([])
+  })
+
+  it('suppresses the browser menu on a mob, and only on a mob', () => {
+    const { container } = renderEn(
+      <DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} onCloneContextMenu={() => {}} />,
+    )
+    const onBlip = fireEvent.contextMenu(blips(container)[0])
+    // fireEvent returns false when a handler called preventDefault.
+    expect(onBlip).toBe(false)
+    const onMap = fireEvent.contextMenu(container.querySelector('svg')!)
+    expect(onMap).toBe(true)
   })
 })
 

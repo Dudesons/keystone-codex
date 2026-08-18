@@ -49,6 +49,10 @@ interface Props {
   hoveredPull?: number | null
   selectedPack?: number | null
   onCloneClick?: (ref: CloneRef, additive: boolean) => void
+  /** The mob under the cursor, or null when it leaves. Fires on every blip enter and leave. */
+  onHoverClone?: (ref: CloneRef | null) => void
+  /** Right-click on a mob. The map neither freezes nor knows what freezing means. */
+  onCloneContextMenu?: (ref: CloneRef) => void
   onPullClick?: (index: number) => void
   showPackOutlines?: boolean
   onCursorMove?: (p: Point | null) => void
@@ -67,6 +71,8 @@ export default function DungeonMap({
   hoveredPull,
   selectedPack,
   onCloneClick,
+  onHoverClone,
+  onCloneContextMenu,
   onPullClick,
   showPackOutlines = true,
   onCursorMove,
@@ -273,12 +279,19 @@ export default function DungeonMap({
                   onEnter={() => {
                     setHoverClone(key)
                     setHoverPack(clone.g)
+                    onHoverClone?.({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
                   }}
                   onLeave={() => {
                     setHoverClone(null)
                     setHoverPack(null)
+                    onHoverClone?.(null)
                   }}
                   onClick={(e) => handleCloneClick({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx }, e)}
+                  onContextMenu={(e) => {
+                    // Only on a blip: the rest of the map keeps the browser's own menu.
+                    e.preventDefault()
+                    onCloneContextMenu?.({ enemyIdx: enemy.mdtIdx, cloneIdx: clone.mdtIdx })
+                  }}
                 />
               )
             }),
@@ -366,6 +379,7 @@ interface BlipProps {
   onEnter: () => void
   onLeave: () => void
   onClick: (e: React.MouseEvent) => void
+  onContextMenu?: (e: React.MouseEvent) => void
 }
 
 function Blip({
@@ -382,6 +396,7 @@ function Blip({
   onEnter,
   onLeave,
   onClick,
+  onContextMenu,
 }: BlipProps) {
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
@@ -403,6 +418,7 @@ function Blip({
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       style={{ cursor: 'pointer' }}
       opacity={dimmed ? 0.28 : 1}
     >
