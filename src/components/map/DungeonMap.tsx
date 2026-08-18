@@ -9,7 +9,7 @@ import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
-import type { MdtNote, MdtObject, MdtStroke } from '../../lib/mdt/objects'
+import { MDT_STROKE_DEFAULTS, type MdtNote, type MdtObject, type MdtStroke } from '../../lib/mdt/objects'
 import MobStats from '../codex/MobStats'
 import DrawSurface from './DrawSurface'
 import NoteLayer from './NoteLayer'
@@ -26,6 +26,16 @@ import {
   zoomAt,
   type Transform,
 } from './viewport'
+
+/** The fields a stroke needs to be drawable, for one that exists only while a hand is moving. */
+const PREVIEW_STROKE = {
+  kind: 'stroke' as const,
+  points: [] as Point[],
+  sublevel: 1,
+  color: 'ffffff',
+  isArrow: false,
+  ...MDT_STROKE_DEFAULTS,
+}
 
 export interface PullMark {
   pullIdx: number
@@ -61,6 +71,8 @@ interface Props {
   notice?: ReactNode
   /** The preset's notes and strokes. Route mode only: they belong to an itinerary. */
   objects?: MdtObject[]
+  /** The local stroke in progress, drawn with the same layer the committed ones use. */
+  previewStroke?: MdtStroke | null
   /** Hide the hover tooltip: something else on the page is already showing the hovered mob. */
   suppressCloneTooltip?: boolean
   /** The gesture a tool wants, or absent when the map is just a map. */
@@ -88,6 +100,7 @@ export default function DungeonMap({
   cursors,
   notice,
   objects,
+  previewStroke,
   suppressCloneTooltip,
   drawing,
 }: Props) {
@@ -251,6 +264,29 @@ export default function DungeonMap({
 
           {/* The preset's own drawings: over the route's outline, under the mobs. */}
           {objects && <ObjectLayer strokes={objects.filter((o): o is MdtStroke => o.kind === 'stroke')} />}
+
+          {/* The local gesture in progress, at the same depth as a finished stroke. Its own
+              `data-testid` prefix, so it can never be counted among the committed strokes
+              above. */}
+          {previewStroke && (
+            <g data-testid="preview-stroke" opacity={0.7}>
+              <ObjectLayer strokes={[previewStroke]} testIdPrefix="preview-stroke" />
+            </g>
+          )}
+
+          {/* Every other peer's gesture in progress, in the colour presence gave them rather
+              than MDT's — a single point has no direction, so nothing is drawn for one yet. */}
+          {cursors
+            ?.filter((p) => !p.isSelf && p.drawing && p.drawing.length > 1)
+            .map((p) => (
+              <g key={`draw-${p.clientId}`} data-peer-drawing={p.clientId} opacity={0.7}>
+                <ObjectLayer
+                  strokes={[{ ...PREVIEW_STROKE, points: p.drawing! }]}
+                  colorOverride={p.color}
+                  testIdPrefix={`peer-drawing-${p.clientId}`}
+                />
+              </g>
+            ))}
 
           {lookup.dungeon.enemies.flatMap((enemy) =>
             enemy.clones

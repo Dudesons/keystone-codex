@@ -318,6 +318,13 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     timer: null,
   })
 
+  /** Throttles drawing writes the same way `cursorRef` throttles `setCursor`. */
+  const drawingRef = useRef<{ last: number; pending: Point[] | null; timer: ReturnType<typeof setTimeout> | null }>({
+    last: 0,
+    pending: null,
+    timer: null,
+  })
+
   const closeSession = useCallback(() => {
     // A throttled write outlives neither the session it was queued for nor, if none was ever
     // open, the component itself: `setCursor` schedules this timer regardless of `sessionRef`,
@@ -327,6 +334,14 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       cursorRef.current.timer = null
     }
     cursorRef.current.pending = null
+
+    // Same reasoning as `setCursor`'s, above: `setDrawing` schedules this regardless of
+    // `sessionRef` too.
+    if (drawingRef.current.timer != null) {
+      clearTimeout(drawingRef.current.timer)
+      drawingRef.current.timer = null
+    }
+    drawingRef.current.pending = null
 
     const open = sessionRef.current
     if (!open) return
@@ -780,6 +795,49 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     }
   }, [])
 
+  /**
+   * The stroke being drawn, published to the room and never to the document.
+   *
+   * Awareness for the same reason the cursor uses it: this is state that is true for as long as a
+   * hand is moving and meaningless afterwards. It enters the document once, on release, as one
+   * operation — a document write per sampled point would put a hundred-odd operations into a
+   * shared history for a gesture that is thrown away as often as it is kept.
+   *
+   * An empty array is not throttled, exactly as leaving the map is not: a stroke that lingers
+   * after the hand stopped says something false, and keeps saying it until someone moves.
+   */
+  const setDrawing = useCallback((points: Point[]) => {
+    const state = drawingRef.current
+    const write = (value: Point[]) => {
+      // Read the provider at the moment of writing, never through a closure: a throttled write
+      // can land after the session it belonged to was torn down.
+      sessionRef.current?.provider.awareness.setLocalStateField('drawing', value)
+    }
+
+    if (points.length === 0) {
+      state.pending = null
+      write(points)
+      return
+    }
+
+    const wait = CURSOR_INTERVAL_MS - (Date.now() - state.last)
+    if (wait <= 0) {
+      state.last = Date.now()
+      write(points)
+      return
+    }
+
+    state.pending = points
+    if (state.timer == null) {
+      state.timer = setTimeout(() => {
+        state.timer = null
+        state.last = Date.now()
+        if (state.pending) write(state.pending)
+        state.pending = null
+      }, wait)
+    }
+  }, [])
+
   const setIdentity = useCallback((name: string) => {
     const trimmed = name.trim()
     localStorage.setItem(IDENTITY_KEY, trimmed)
@@ -796,6 +854,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     resumeRoom,
     setIdentity,
     setCursor,
+    setDrawing,
     /** Whether there is anything of this session's own to undo, for a button's disabled state. */
     canUndo: undoState.canUndo,
     canRedo: undoState.canRedo,

@@ -626,6 +626,69 @@ describe('Points of interest', () => {
   })
 })
 
+describe('The stroke being drawn', () => {
+  const stroke = (points: { x: number; y: number }[]) => ({
+    kind: 'stroke' as const,
+    points,
+    sublevel: 1,
+    color: 'ff365c',
+    size: 5,
+    smooth: true,
+    layer: -8,
+    isArrow: false,
+  })
+
+  it('draws the local gesture before it is committed', () => {
+    const { container } = mount({ previewStroke: stroke([{ x: 0, y: 0 }, { x: 10, y: 10 }]) })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeTruthy()
+  })
+
+  it('draws nothing when no gesture is live', () => {
+    const { container } = mount({ previewStroke: null })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeNull()
+  })
+
+  it('draws a peer’s gesture too, in the colour presence derived for them', () => {
+    // A real peer's colour is `hsl(<h> 70% 62%)` (`presence.ts`'s `peerColor`), not a hex value —
+    // this is what would have caught `color.replace('#', '')` turning that into the invalid SVG
+    // paint `#hsl(200 70% 62%)`, which fails by rendering nothing rather than by throwing.
+    const { container } = mount({
+      cursors: [
+        {
+          clientId: 7,
+          name: 'Ally',
+          color: 'hsl(200 70% 62%)',
+          isSelf: false,
+          drawing: [{ x: 0, y: 0 }, { x: 20, y: 20 }],
+        },
+      ],
+    })
+    const g = container.querySelector('[data-peer-drawing="7"]')
+    expect(g).toBeTruthy()
+    expect(g!.querySelector('polyline')!.getAttribute('stroke')).toBe('hsl(200 70% 62%)')
+  })
+
+  it('never lets a preview count as a committed stroke', () => {
+    // Both a local preview and a peer's are live at once, alongside one already-committed
+    // stroke: the page counts committed strokes via `[data-testid^="stroke-"]`, and a preview
+    // sharing that prefix would inflate the count the moment a gesture is in flight.
+    const { container } = mount({
+      objects: [stroke([{ x: 0, y: 0 }, { x: 5, y: 5 }])],
+      previewStroke: stroke([{ x: 1, y: 1 }, { x: 2, y: 2 }]),
+      cursors: [
+        {
+          clientId: 9,
+          name: 'Bo',
+          color: 'hsl(10 70% 62%)',
+          isSelf: false,
+          drawing: [{ x: 3, y: 3 }, { x: 4, y: 4 }],
+        },
+      ],
+    })
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+  })
+})
+
 describe('Preset notes', () => {
   const note = { kind: 'note' as const, at: { x: 100, y: 200 }, sublevel: 1, text: 'Lust here' }
 

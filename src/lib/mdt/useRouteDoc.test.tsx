@@ -663,6 +663,81 @@ describe('Sync and cursors', () => {
   })
 })
 
+describe('A stroke in progress', () => {
+  it('reaches a peer without touching the route', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('DRAW01', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAW01', 'guest'))
+
+    act(() => host.result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.some((p) => !p.isSelf && p.drawing?.length === 2)).toBe(true),
+    )
+    // Ephemeral: nothing was written to the route.
+    expect(guest.result.current.route.objects).toHaveLength(0)
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('clears when the gesture ends', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('DRAW02', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('DRAW02', 'guest'))
+
+    act(() => host.result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.some((p) => !p.isSelf && p.drawing)).toBe(true),
+    )
+
+    act(() => host.result.current.setDrawing([]))
+
+    await waitFor(() =>
+      expect(guest.result.current.collab.peers.every((p) => !p.drawing?.length)).toBe(true),
+    )
+
+    host.unmount()
+    guest.unmount()
+  })
+
+  it('holds back a flood of points, then sends the last one', () => {
+    // Same mechanism `setCursor`'s "holds back a flood of moves" exercises, for the throttle
+    // `setDrawing` keeps of its own.
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      act(() => result.current.joinRoom('DRAW03', 'host'))
+      act(() => result.current.setDrawing([{ x: 1, y: 1 }]))
+      for (let i = 2; i <= 40; i++) act(() => result.current.setDrawing([{ x: i, y: i }]))
+
+      expect(self(result.current.collab.peers).drawing).toEqual([{ x: 1, y: 1 }])
+      act(() => void vi.advanceTimersByTime(60))
+      expect(self(result.current.collab.peers).drawing).toEqual([{ x: 40, y: 40 }])
+      unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('leaves no timer running when unmounted with no session ever open', () => {
+    vi.useFakeTimers()
+    try {
+      const { result, unmount } = mount()
+      // As with `setCursor`: the first call always writes at once, and the second lands inside
+      // the throttle window and schedules the trailing timer — with no session open at all.
+      act(() => result.current.setDrawing([{ x: 1, y: 1 }]))
+      act(() => result.current.setDrawing([{ x: 2, y: 2 }]))
+      unmount()
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('roomName', () => {
   it('namespaces the code by dungeon, so one code is two rooms in two dungeons', () => {
     expect(roomName('altar-of-fangs', 'ABCDEF')).not.toBe(roomName('kings-rest', 'ABCDEF'))

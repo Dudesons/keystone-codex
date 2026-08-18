@@ -88,6 +88,8 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   const [tool, setTool] = useState<Tool | null>(null)
   /** The object being edited, by the id plan 1 puts on a stored object. */
   const [selectedObject, setSelectedObject] = useState<string | null>(null)
+  /** The gesture in flight, in map pixels. Empty between gestures. */
+  const [progress, setProgress] = useState<Point[]>([])
 
   const {
     route,
@@ -98,9 +100,14 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     resumeRoom,
     setIdentity,
     setCursor,
+    setDrawing,
     canUndo,
     canRedo,
   } = useRouteDoc(slug, lookup.dungeon.mdtIndex)
+
+  // `undefined` outside a session, the same guard `onCursorMove` uses below: a solo session
+  // must publish nothing.
+  const publishDrawing = collab.status === 'off' ? undefined : setDrawing
 
   const editing = route.objects.find((o) => o.id === selectedObject) ?? null
 
@@ -121,6 +128,10 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     if (tool === 'arrow') {
       return {
         mode: 'line' as const,
+        onProgress: (points: Point[]) => {
+          setProgress(points)
+          publishDrawing?.(points)
+        },
         onCommit: (points: Point[]) => {
           // A press that never moved has no direction, so there is no arrow to make.
           if (points.length < 2) return
@@ -138,6 +149,10 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     if (tool === 'freehand') {
       return {
         mode: 'freehand' as const,
+        onProgress: (points: Point[]) => {
+          setProgress(points)
+          publishDrawing?.(points)
+        },
         onCommit: (points: Point[]) => {
           // Under two points there is no line, only a click that missed.
           if (points.length < 2) return
@@ -153,7 +168,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
       }
     }
     return undefined
-  }, [tool, actions])
+  }, [tool, actions, publishDrawing])
 
   // Leaving Route mode drops the active tool too, not merely the panel that shows it: `mode`
   // is a URL param, not a remount, so `tool` would otherwise survive the switch and keep
@@ -173,6 +188,14 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [mode])
+
+  // A tool change starts with no preview. Most gestures already clear it themselves on release
+  // or cancel, but dropping the tool mid-drag (Escape, say) unmounts `DrawSurface` without
+  // either firing — leaving a stale, now-orphaned gesture to flash as the next tool's preview
+  // otherwise.
+  useEffect(() => {
+    setProgress([])
+  }, [tool])
 
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.
@@ -384,6 +407,18 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             // a tooltip would be the same redundancy this suppression exists to prevent.
             suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
             drawing={drawing}
+            previewStroke={
+              progress.length > 1
+                ? {
+                    kind: 'stroke',
+                    points: progress,
+                    sublevel: 1,
+                    color: STROKE_COLOR,
+                    isArrow: tool === 'arrow',
+                    ...(tool === 'arrow' ? MDT_ARROW_DEFAULTS : MDT_STROKE_DEFAULTS),
+                  }
+                : null
+            }
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}

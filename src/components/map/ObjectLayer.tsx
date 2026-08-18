@@ -31,13 +31,33 @@ function arrowHead(stroke: MdtStroke): string {
   ].join(' ')
 }
 
-export default function ObjectLayer({ strokes }: { strokes: MdtStroke[] }) {
+export default function ObjectLayer({
+  strokes,
+  colorOverride,
+  testIdPrefix = 'stroke',
+}: {
+  strokes: MdtStroke[]
+  /**
+   * A full CSS colour, replacing what each stroke's own `color` field would otherwise produce.
+   * For a preview whose colour comes from a peer's identity — `Peer.color` is a full CSS value,
+   * e.g. `hsl(137 70% 62%)` — rather than from MDT's own hex, which `stroke.color` is documented
+   * to hold without a leading hash.
+   */
+  colorOverride?: string
+  /**
+   * Distinguishes a preview's `data-testid` from a committed stroke's `stroke-${index}` — the
+   * only source of that prefix a committed layer produces, and what two page tests count via
+   * `[data-testid^="stroke-"]` to know how many strokes are actually on the map. A preview
+   * reusing that prefix would make the count ambiguous the moment a gesture is in flight.
+   */
+  testIdPrefix?: string
+}) {
   return (
     <g className="pointer-events-none">
       {strokes.map((stroke, index) => {
-        const color = `#${stroke.color}`
+        const color = colorOverride ?? `#${stroke.color}`
         return (
-          <g key={`stroke-${index}`} data-testid={`stroke-${index}`}>
+          <g key={`${testIdPrefix}-${index}`} data-testid={`${testIdPrefix}-${index}`}>
             <polyline
               points={stroke.points.map((p) => `${p.x},${p.y}`).join(' ')}
               fill="none"

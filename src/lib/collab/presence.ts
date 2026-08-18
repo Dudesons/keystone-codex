@@ -10,6 +10,8 @@ export interface Peer {
   color: string
   /** In map coordinates. Absent until the peer moves over the map. */
   cursor?: Point
+  /** The stroke this peer is drawing right now, in map pixels. Absent between gestures. */
+  drawing?: Point[]
   /** You. Kept in the list so a count of it means "participants, yourself included". */
   isSelf: boolean
 }
@@ -34,6 +36,13 @@ function readPoint(raw: unknown): Point | undefined {
   return { x: p.x, y: p.y }
 }
 
+/** Tolerant the same way `readPoint` is: anything that is not a plain array of points is absent. */
+function readPoints(raw: unknown): Point[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const points = raw.map(readPoint)
+  return points.every((p): p is Point => p != null) ? points : undefined
+}
+
 /**
  * Reads the awareness map, tolerating whatever is missing.
  *
@@ -44,12 +53,13 @@ function readPoint(raw: unknown): Point | undefined {
 export function readPeers(states: Map<number, unknown>, self: number): Peer[] {
   const peers: Peer[] = []
   states.forEach((raw, clientId) => {
-    const state = (raw ?? {}) as { user?: { name?: unknown }; cursor?: unknown }
+    const state = (raw ?? {}) as { user?: { name?: unknown }; cursor?: unknown; drawing?: unknown }
     peers.push({
       clientId,
       name: typeof state.user?.name === 'string' ? state.user.name : '',
       color: peerColor(clientId),
       cursor: readPoint(state.cursor),
+      drawing: readPoints(state.drawing),
       isSelf: clientId === self,
     })
   })
