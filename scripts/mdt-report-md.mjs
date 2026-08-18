@@ -43,14 +43,18 @@ export function summariseFindings(findings) {
  * because severity 3's whole job is showing a tooltip's old text against its new text: if the
  * only difference between two captures was one of these invisible characters, the report would
  * render two strings a reader cannot tell apart, in the one section whose purpose is showing a
- * difference. `[^\S  ]` reads as "whitespace, per `\s`, except those two" -- do not
- * simplify it back to `\s+`. See commit feb0910, "Spell a French label byte for byte, invisible
- * characters included", for the earlier bug in the same class.
+ * difference. `[^\S\u00a0\u202f]` reads as "whitespace, per `\s`, except those two" -- written as
+ * escapes rather than the literal bytes, so the two characters this function exists to preserve
+ * stay visible in the source instead of sitting invisibly in a character class, where an editor,
+ * a formatter or a careless copy-paste could silently normalise them to plain spaces and revive
+ * the exact bug this function fixes, with no visible diff to explain it. Do not simplify this
+ * back to `\s+`. See commit feb0910, "Spell a French label byte for byte, invisible characters
+ * included", for the earlier bug in the same class.
  */
 const oneLine = (s) =>
   String(s)
-    .replace(/[^\S  ]*(?:\r\n|\r|\n)[^\S  ]*/g, ' ')
-    .replace(/^[^\S  ]+|[^\S  ]+$/g, '')
+    .replace(/[^\S\u00a0\u202f]*(?:\r\n|\r|\n)[^\S\u00a0\u202f]*/g, ' ')
+    .replace(/^[^\S\u00a0\u202f]+|[^\S\u00a0\u202f]+$/g, '')
 
 function renderFinding(f) {
   const lines = [`- [ ] **${f.subject}** — ${f.what}`]
