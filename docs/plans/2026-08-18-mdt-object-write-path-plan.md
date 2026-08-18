@@ -852,16 +852,26 @@ describe('Objects in the document', () => {
 })
 ```
 
-`mountRouteDoc`, `twoConnectedDocs` and `readFixture` are stand-ins for whatever this file already
-has, and `result.current.doc` assumes the hook exposes the document — which it may not. **Read the
-file first and use its real helpers and its real accessors.** Its collaboration tests already reach
-a second peer somehow; follow that. If the hook does not expose the doc, assert on what the hook
-does expose — `route.objects` staying derived is observable without touching the document — and say
-in your report how you checked the key's absence, since that is the one assertion that genuinely
-needs to see inside.
+**Three things about that test file, checked rather than assumed:**
 
-If nothing in the file fits, say so rather than inventing a harness its other tests will not
-recognise.
+1. **`useRouteDoc` does not expose `doc`.** It holds it in `useState` (`useRouteDoc.ts:196`) and its
+   return object (`:573`) is
+   `{ route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor }`. So
+   `result.current.doc` above **will not compile** — rewrite those assertions against what the hook
+   does expose. Non-adoption is observable without seeing inside: before any edit, every object is
+   derived from `source` and therefore has **no `id`**, so `route.objects.every((o) => o.id == null)`
+   says exactly "nothing has been adopted". Use that. Do not add `doc` to the hook's return value for
+   a test's convenience.
+2. **The file's helper is `mount()`** — `const mount = () => renderHook(() => useRouteDoc(SLUG, MDT_INDEX))`
+   at `:85`. There is no `mountRouteDoc`.
+3. **There is no two-peer helper and no fixture loading.** Two peers are connected inline by calling
+   `mount()` twice and joining the same room code, which reach each other over `BroadcastChannel`
+   without a socket — see the test at `:359-380` and its comment. And routes are built in memory
+   through `mdtString()` (`:100-102`); nothing in this file reads a fixture file. **You will need to
+   add fixture loading here**, so copy `objects.test.ts`'s idiom, including its skip-if-absent
+   behaviour, rather than inventing a second way.
+
+Rename the helpers in the tests above accordingly, and say in your report what you changed.
 
 - [ ] **Step 2: Run them and watch them fail**
 
