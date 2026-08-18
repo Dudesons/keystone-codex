@@ -17,8 +17,8 @@ The invariant that matters is that the serialized bytes coincide.
 
 Only the bytes of the `text` field (the route's own name) and, where present, the
 `createdBy` table's `name` and `realm` fields were rewritten, by
-`scripts/patch-fixture-name.mjs`. In `real-export.txt`, 958 of the original 982 bytes are
-intact, exactly as the game emitted them.
+`scripts/patch-fixture-name.mjs`. Those three string values are the only bytes that differ
+from the game's export; every other byte is exactly what the game emitted.
 
 The patch is surgical on purpose. Decoding then re-encoding the whole fixture with our own
 encoder would have made the test **circular** — it would have compared our code to itself and

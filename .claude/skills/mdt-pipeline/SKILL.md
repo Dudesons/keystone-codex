@@ -142,9 +142,10 @@ The invariant that matters is that the serialized bytes match.
 
 ### Do not make the test circular
 
-The route name in the fixture was anonymized **surgically** by
-[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs): only the bytes of the
-`text` field were rewritten, and 958 of the original 982 bytes are the ones the game emitted.
+The identifying strings in the fixture were anonymized **surgically** by
+[patch-fixture-name.mjs](../../../scripts/patch-fixture-name.mjs): only the `text` field and,
+where present, `createdBy.name` and `createdBy.realm` were rewritten; every other byte is the
+one the game emitted.
 
 Decoding and re-encoding the whole fixture with our own encoder would compare our code to
 itself and prove nothing. If you must touch the fixture, patch it in place.
