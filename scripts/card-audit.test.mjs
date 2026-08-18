@@ -113,6 +113,61 @@ describe('auditDungeon', () => {
     expect(auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)).toEqual([])
   })
 
+  it('judges severity 2 over every locale at once, not file by file', () => {
+    // A `.fr.md` carries text only: a spell the base card gives a `tag:` and no `note:` is
+    // deliberately absent from the translation, which is the i18n rule. Judged file by file,
+    // the translation gets reported for obeying it.
+    const cards = [
+      cardFor({
+        spells: enemy.spells.map((s, i) => ({ id: s.id, note: i === 0 ? 'x' : null, tag: 'kick' })),
+      }),
+      cardFor({
+        locale: 'fr',
+        file: `content/altar-of-fangs/${enemy.id}-mob.fr.md`,
+        spells: [{ id: enemy.spells[0].id, note: 'x', tag: null }],
+      }),
+    ]
+    expect(auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)).toEqual([])
+  })
+
+  it('reports a spell no locale annotates once, on the base-language card', () => {
+    const cards = [
+      cardFor({ spells: [{ id: enemy.spells[0].id, note: 'x', tag: null }] }),
+      cardFor({
+        locale: 'fr',
+        file: `content/altar-of-fangs/${enemy.id}-mob.fr.md`,
+        spells: [{ id: enemy.spells[0].id, note: 'x', tag: null }],
+      }),
+    ]
+    const findings = auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)
+    expect(findings).toHaveLength(1)
+    expect(findings[0].file).toBe(`content/altar-of-fangs/${enemy.id}-mob.md`)
+    expect(findings[0].detail).toContain(String(enemy.spells[1].id))
+  })
+
+  it('falls back to the only card there is when the base language has none', () => {
+    const file = `content/altar-of-fangs/${enemy.id}-mob.fr.md`
+    const cards = [cardFor({ locale: 'fr', file, spells: [{ id: enemy.spells[0].id, note: 'x', tag: null }] })]
+    const findings = auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)
+    expect(findings).toHaveLength(1)
+    expect(findings[0].file).toBe(file)
+  })
+
+  it('counts the mob as written when only one of its locales carries writing', () => {
+    const cards = [
+      cardFor({ written: false, spells: [] }),
+      cardFor({
+        locale: 'fr',
+        file: `content/altar-of-fangs/${enemy.id}-mob.fr.md`,
+        written: true,
+        spells: [{ id: enemy.spells[0].id, note: 'x', tag: null }],
+      }),
+    ]
+    const findings = auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)
+    expect(findings).toHaveLength(1)
+    expect(findings[0].file).toBe(`content/altar-of-fangs/${enemy.id}-mob.md`)
+  })
+
   it('reports every mob with no card at all, at severity 4', () => {
     const findings = auditDungeon(realDungeon, []).filter((f) => f.severity === 4)
     const mobs = new Set(realDungeon.enemies.map((e) => e.id))

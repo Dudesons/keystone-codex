@@ -24,6 +24,9 @@ export function cardLocale(fileName) {
   return LOCALES.has(suffix) ? suffix : BASE_LANG
 }
 
+/** A spell carries writing when it has a note, or a tag that is not the scaffold's placeholder. */
+const isAnnotated = (spell) => Boolean(spell.note || (spell.tag && spell.tag !== 'todo'))
+
 /**
  * What a card claims, or null when it claims nothing usable.
  *
@@ -57,18 +60,10 @@ export function readCardFacts(text, file) {
     : []
 
   const prose = text.slice(match[0].length).replace(/<!--[\s\S]*?-->/g, '').trim()
-  const written = Boolean(
-    prose ||
-      data.trap ||
-      data.threat ||
-      spells.some((s) => s.note || (s.tag && s.tag !== 'todo')),
-  )
+  const written = Boolean(prose || data.trap || data.threat || spells.some(isAnnotated))
 
   return { file, npcId, locale: cardLocale(file), spells, written }
 }
-
-/** A spell carries writing when it has a note, or a tag that is not the scaffold's placeholder. */
-const isAnnotated = (spell) => Boolean(spell.note || (spell.tag && spell.tag !== 'todo'))
 
 /**
  * Every spell id some card annotates.
@@ -84,6 +79,16 @@ export function annotatedSpellIds(cards) {
   return ids
 }
 
+/** Every card of one mob, in every language, keyed by the npcId they all claim. */
+function groupByNpcId(cards) {
+  const groups = new Map()
+  for (const card of cards) {
+    if (!groups.has(card.npcId)) groups.set(card.npcId, [])
+    groups.get(card.npcId).push(card)
+  }
+  return groups
+}
+
 /**
  * What the current data costs the cards of one dungeon.
  *
@@ -91,8 +96,9 @@ export function annotatedSpellIds(cards) {
  * spells from the MDT data and looks each note up by id, so an id the data dropped takes its note
  * out of the page with no diagnostic anywhere. The same holds for a whole card whose mob left.
  *
- * Severity 2 is the opposite direction: a card a human has written, which the data has since
- * given spells nobody has annotated.
+ * Severity 2 is the opposite direction: a mob a human has written, which the data has since
+ * given spells nobody has annotated. It is judged **per mob, over every locale at once**, unlike
+ * severity 1 and 5, which each name one file a human has to edit.
  */
 export function auditDungeon(dungeon, cards) {
   const out = []
@@ -140,21 +146,33 @@ export function auditDungeon(dungeon, cards) {
         file: card.file,
       })
     }
+  }
 
-    if (!card.written) continue
-    const annotated = new Set(card.spells.filter(isAnnotated).map((s) => s.id))
+  // Severity 2 is one question about a mob, not one per file. A translation carries text alone:
+  // a spell the base card gives a `tag:` and no `note:` is deliberately missing from the
+  // `.fr.md`, which is the repository's i18n rule -- so judging each file on its own reports
+  // the translation for obeying it. `mergeSpells` in src/lib/content.ts merges the two by id
+  // before the app reads either, which makes the union of every locale the set the site shows.
+  for (const [npcId, group] of groupByNpcId(cards)) {
+    const enemy = byId.get(npcId)
+    if (!enemy || !group.some((c) => c.written)) continue
+
+    const annotated = annotatedSpellIds(group)
     const bare = enemy.spells.map((s) => s.id).filter((id) => !annotated.has(id))
-    if (bare.length) {
-      out.push({
-        severity: 2,
-        dungeon: slug,
-        subject: `${enemy.id} ${enemy.name}`,
-        what: `is written but leaves ${bare.length} spell(s) un-annotated`,
-        detail: `spells ${bare.join(', ')}`,
-        action: 'they render with their Wowhead description alone',
-        file: card.file,
-      })
-    }
+    if (!bare.length) continue
+
+    // The base-language card is where the annotation belongs; a mob written only in translation
+    // has no such file, and naming the card that does exist beats naming none.
+    const target = group.find((c) => c.locale === BASE_LANG) ?? group[0]
+    out.push({
+      severity: 2,
+      dungeon: slug,
+      subject: `${enemy.id} ${enemy.name}`,
+      what: `is written but leaves ${bare.length} spell(s) un-annotated`,
+      detail: `spells ${bare.join(', ')}`,
+      action: 'they render with their Wowhead description alone',
+      file: target.file,
+    })
   }
 
   const covered = new Set(cards.map((c) => c.npcId))
