@@ -214,16 +214,23 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     return () => document.removeEventListener('keydown', onKey)
   }, [mode, selectedObject, actions])
 
-  // A tool change starts with no preview, for this session and for every peer. Most gestures
-  // already publish their own clear on release or cancel, but dropping the tool mid-drag
-  // (Escape, or leaving Route mode) unmounts `DrawSurface` without either firing — locally that
-  // just leaves a stale, now-orphaned gesture to flash as the next tool's preview, but over the
-  // wire it is worse: with nothing else left to publish the clear, the last non-empty stroke
-  // stays on awareness indefinitely, and every teammate keeps rendering the abandoned half-stroke
-  // until this session starts a whole new gesture.
+  // A tool change starts with no preview, for this session and for every peer, and with no
+  // selection either — both are state about the thing a *previous* tool was in the middle of.
+  // Without clearing the selection here, switching away from Select leaves `selectedObject` set
+  // with nothing on screen still showing it (the halo is gated on `tool === 'select'`), and
+  // `Delete` would go on removing an object nothing looked selected. Placing a note selects it
+  // for editing without changing `tool`, so that flow does not run through here and is untouched.
+  //
+  // Most gestures already publish their own clear on release or cancel, but dropping the tool
+  // mid-drag (Escape, or leaving Route mode) unmounts `DrawSurface` without either firing —
+  // locally that just leaves a stale, now-orphaned gesture to flash as the next tool's preview,
+  // but over the wire it is worse: with nothing else left to publish the clear, the last
+  // non-empty stroke stays on awareness indefinitely, and every teammate keeps rendering the
+  // abandoned half-stroke until this session starts a whole new gesture.
   useEffect(() => {
     setProgress([])
     publishDrawing?.([])
+    setSelectedObject(null)
   }, [tool, publishDrawing])
 
   // A session that just ended must not offer its room right back — whether left from the

@@ -122,6 +122,29 @@ describe('Selecting and moving a note', () => {
     expect(screen.queryByText('Lust, a lot of kicks to do')).toBeNull()
   })
 
+  it('selects without moving on a press-and-release that never crosses the drag threshold, with both handlers wired', () => {
+    // `DungeonMap` always supplies `onSelect` and `onMove` together while the select tool is
+    // active — the only combination the app actually ships. A plain click in that combination
+    // must select, and must not write a no-op move to the document.
+    const picked: string[] = []
+    const moved: unknown[] = []
+    renderEn(
+      <NoteLayer
+        notes={notesWithIds}
+        transform={transform}
+        onSelect={(id) => picked.push(id)}
+        onMove={(id, at) => moved.push([id, at])}
+      />,
+    )
+    const pin = screen.getByTestId('note-pin-0')
+    fireEvent.pointerDown(pin, { clientX: 100, clientY: 200, pointerId: 1 })
+    fireEvent.pointerUp(pin, { clientX: 100, clientY: 200, pointerId: 1 })
+    fireEvent.click(pin)
+
+    expect(picked).toEqual(['note-0'])
+    expect(moved).toHaveLength(0)
+  })
+
   it('marks the selected pin, so a reader can see which it is', () => {
     renderEn(<NoteLayer notes={notesWithIds} transform={transform} selectedId="note-1" />)
     expect(screen.getByTestId('note-pin-0').dataset.selected).toBeUndefined()
@@ -149,17 +172,20 @@ describe('Selecting and moving a note', () => {
 
   it('does not move a note that has no id yet', () => {
     const moved: unknown[] = []
-    const { container } = renderEn(
+    renderEn(
       <NoteLayer notes={notes} transform={transform} onMove={(id, at) => moved.push([id, at])} />,
     )
     const pin = screen.getByTestId('note-pin-0')
     fireEvent.pointerDown(pin, { clientX: 100, clientY: 200, pointerId: 1 })
     fireEvent.pointerMove(pin, { clientX: 140, clientY: 220, pointerId: 1 })
     fireEvent.pointerUp(pin, { clientX: 140, clientY: 220, pointerId: 1 })
+    fireEvent.click(pin)
     expect(moved).toHaveLength(0)
-    // With nothing to move, the container's own click still ran unopposed and opened the pin —
-    // exactly what a plain click would do, proving the drag path never engaged at all.
-    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+    // With nothing to move (the id guard means the drag path never engaged at all), the
+    // browser's trailing click reaches the ordinary open/close toggle unopposed and opens it —
+    // checked through the note's text, the same way the sibling "still opens on a plain click"
+    // test does, since the pin's own `data-testid` element renders whether it is open or not.
+    expect(screen.getByText('Lust, a lot of kicks to do')).toBeTruthy()
   })
 
   it('does not reopen a dragged note when the browser fires its trailing click', () => {

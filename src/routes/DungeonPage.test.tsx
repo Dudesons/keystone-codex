@@ -617,6 +617,26 @@ describe('The drawing tools', () => {
     expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(0)
   })
 
+  it('drops the selection on a tool change, so Delete cannot reach it afterwards', () => {
+    // The halo is only ever shown while the select tool is active; if the selection survived a
+    // tool change, Delete could remove an object nothing on screen still looked selected.
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    fireEvent.keyDown(document, { key: 'Delete' })
+
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+  })
+
   it('leaves Delete alone while a note’s text has focus', () => {
     const { container } = renderEn(at('/d/murder-row/codex'))
     fireEvent.click(screen.getByRole('link', { name: 'Route' }))
