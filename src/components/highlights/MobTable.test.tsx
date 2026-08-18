@@ -23,6 +23,12 @@ describe('MobTable', () => {
     expect(container.querySelectorAll('[data-mob]')).toHaveLength(mobs.length)
   })
 
+  it('renders the rows in the order the derivation gives', () => {
+    const { container } = mount()
+    const ids = [...container.querySelectorAll('[data-mob]')].map((el) => el.getAttribute('data-mob'))
+    expect(ids).toEqual(mobs.map((m) => String(m.npcId)))
+  })
+
   it('names the mob and links it into the codex', () => {
     const { container } = mount()
     const twinfang = container.querySelector('[data-mob="261554"]')!

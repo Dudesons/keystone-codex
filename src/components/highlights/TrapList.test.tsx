@@ -23,6 +23,12 @@ describe('TrapList', () => {
     expect(container.querySelectorAll('[data-trap]')).toHaveLength(traps.length)
   })
 
+  it('renders the traps in the order the derivation gives', () => {
+    const { container } = mount()
+    const ids = [...container.querySelectorAll('[data-trap]')].map((el) => el.getAttribute('data-trap'))
+    expect(ids).toEqual(traps.map((t) => String(t.npcId)))
+  })
+
   it('names the mob and links it into the codex', () => {
     const { container } = mount()
     const twinfang = container.querySelector('[data-trap="261554"]')!
