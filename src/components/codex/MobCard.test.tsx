@@ -309,7 +309,9 @@ describe('Markdown in the one-line fields', () => {
   it('renders emphasis in the trap in every language', () => {
     cleanup()
     const { container } = renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
-    expect(trapText(container)).toContain('<strong>Blood Sacrifice</strong>')
+    // A different string from the English case on purpose: a trap names its spells with the
+    // label the chips beside it use, so the French entry emphasises the French name.
+    expect(trapText(container)).toContain('<strong>Sacrifice de sang</strong>')
   })
 
   it('leaves a Wowhead description alone: it is data, not our writing', () => {

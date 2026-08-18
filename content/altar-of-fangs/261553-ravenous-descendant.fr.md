@@ -11,7 +11,7 @@ spells:
   - id: 1306333
     note: "Chaque coup augmente sa vitesse d'attaque de 20 % pendant 2 s, cumulable. En le kitant, les stacks tombent d'eux-mêmes."
 
-trap: "Dissiper l'enrage, et kiter pour faire tomber les stacks de Ravenous Claws. Laissé libre de taper avec l'enrage actif, il tue le tank — pour un mob à 5 forces."
+trap: "Dissiper l'enrage, et kiter pour faire tomber les stacks de **Griffes voraces**. Laissé libre de taper avec l'enrage actif, il tue le tank — pour un mob à 5 forces."
 ---
 
 Dix-neuf unités réparties sur neuf packs — le mob le plus omniprésent du donjon, et celui dont

@@ -20,7 +20,7 @@ spells:
   - id: 1292892
     note: "Une canalisation permanente, du décor plutôt qu'une mécanique."
 
-trap: "Il n'arrive presque jamais seul : trois de ses quatre packs l'accompagnent de Venins vivants. Kicker Mass Envenom tant que les adds sont debout, sinon le poison s'empile sur un groupe déjà dispersé."
+trap: "Il n'arrive presque jamais seul : trois de ses quatre packs l'accompagnent de Venins vivants. Kicker **Envenimement de masse** tant que les adds sont debout, sinon le poison s'empile sur un groupe déjà dispersé."
 ---
 
 Le caster qui décide de la tournure d'un pull, à 25 forces par unité pour seulement quatre

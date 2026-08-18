@@ -20,7 +20,7 @@ spells:
   - id: 1287544
     note: "Le mob qui est étourdi, pas quelque chose qu'il vous fait."
 
-trap: "Arrêter Evolve au contrôle, pas à l'interruption. Laissé aller au bout, il s'est soigné de 30 % et repart avec un bouclier de 250k — le pull cesse simplement de mourir."
+trap: "Arrêter **Évolution** au contrôle, pas à l'interruption. Laissé aller au bout, il s'est soigné de 30 % et repart avec un bouclier de 250k — le pull cesse simplement de mourir."
 ---
 
 Le mob qui punit un groupe sans contrôle disponible.

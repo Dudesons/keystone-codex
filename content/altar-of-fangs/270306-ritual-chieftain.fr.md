@@ -18,7 +18,7 @@ spells:
     note: "Simple animation de pose du totem."
 
 
-trap: "**Blood Sacrifice** absorbe les 180k de soins suivants, et **Dismember** frappe pour 581k. Laisser passer l'absorption juste avant le buster est la séquence qui tue le tank."
+trap: "**Sacrifice de sang** absorbe les 180k de soins suivants, et **Démembrer** frappe pour 581k. Laisser passer l'absorption juste avant le buster est la séquence qui tue le tank."
 ---
 
 Deux sorts à 3 secondes d'incantation qui se répondent : **Dismember** frappe le tank pour 581k,

@@ -11,7 +11,7 @@ spells:
   - id: 1294849
     note: "58k physique par seconde pendant 5 s, et ça ignore l'armure — une mitigation qui repose sur l'armure ne sert à rien ici."
 
-trap: "Corrosive Fangs laisse +20 % de dégâts subis pendant 20 s, et Rattle ignore l'armure. Les deux ensemble transforment un pull survivable en tank mort — nettoyer le débuff plutôt que d'essayer de soigner à travers."
+trap: "**Crochets corrosifs** laissent +20 % de dégâts subis pendant 20 s, et **Cliquetis** ignore l'armure. Les deux ensemble transforment un pull survivable en tank mort — nettoyer le débuff plutôt que d'essayer de soigner à travers."
 ---
 
 Vingt-cinq forces par unité, et un mob dont les deux capacités ne sont dangereuses qu'ensemble.
