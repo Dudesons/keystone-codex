@@ -98,8 +98,19 @@ contribution(enemy: Enemy, dungeon: Dungeon): { count: number; share: number; sc
 scoreColor(score: number): string
 ```
 
-`scoreColor` implements MDT's own ramp, from Appendix A: `v = score / 10`, red at 0 through
-green at 5 and above.
+`scoreColor` implements MDT's own ramp, from Appendix A:
+
+```
+v = score / 10
+red   = max(0, min(1, 2 * (1 - v)))
+green = min(1, 2 * v)
+blue  = 0
+```
+
+Read it carefully before implementing it: the two channels saturate at different scores. Green
+reaches full at a score of **5**, but red only reaches zero at **10** — so the ramp is red at 0,
+**yellow at 5**, and green only at 10 and above. "Red through green, green from 5 up" is the
+plausible reading and it is wrong.
 
 ### 5. Zero-force mobs show no score
 
