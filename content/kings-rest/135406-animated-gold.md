@@ -25,7 +25,7 @@ trap: "0.2 million health each, and each one that reaches the boss makes her per
 ---
 
 Raised from the Molten Gold that **Spit Gold** leaves behind, when
-[the Golden Serpent](#/d/kings-rest/mob/135322) casts **Lucre's Call**.
+[the Golden Serpent](#/d/kings-rest/codex/mob/135322) casts **Lucre's Call**.
 
 They have 0.2 million health — trivial individually. The stake is what happens if one arrives:
 **Luster** shields her for 10% of her health and adds **25% damage done**, and it stacks with

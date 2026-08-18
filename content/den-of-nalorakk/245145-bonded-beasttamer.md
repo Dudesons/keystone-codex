@@ -37,7 +37,7 @@ trap: "Bestial Wrath buffs the tamer and the saberfang together. One soothe remo
 ---
 
 Four units at 6 forces each, and they never come alone: each is paired with a
-[Loyal Saberfang](#/d/den-of-nalorakk/mob/245190).
+[Loyal Saberfang](#/d/den-of-nalorakk/codex/mob/245190).
 
 **Bestial Wrath** is what makes the pair worth reading as one unit — it is +25% damage on
 tamer *and* pet, for 10 seconds, and MDT declares it an **enrage**, so a soothe removes it

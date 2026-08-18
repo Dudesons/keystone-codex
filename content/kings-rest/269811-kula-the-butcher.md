@@ -41,5 +41,5 @@ members are casting.
 Both her abilities apply **bleeds**, which is worth noting because King's Rest hands out
 bleeds constantly and a group without an answer to them will feel this fight most.
 
-The knockback deserves particular attention: [Aka'ali](#/d/kings-rest/mob/269808)'s
+The knockback deserves particular attention: [Aka'ali](#/d/kings-rest/codex/mob/269808)'s
 **Barrel Through** wants the group stacked, and Kula spends the fight pushing them apart.

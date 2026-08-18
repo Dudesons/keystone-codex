@@ -33,5 +33,5 @@ seconds on top of the hit. Two things make it more annoying than the numbers sug
 picks its own target rather than the tank, and the dispel type is **bleed**, which most groups
 are not carrying an answer for by reflex.
 
-The same ability, larger, belongs to [Lekshi](#/d/the-blinding-vale/mob/243030) in the
+The same ability, larger, belongs to [Lekshi](#/d/the-blinding-vale/codex/mob/243030) in the
 Lightblossom Trinity, so learning to read it here pays off later.

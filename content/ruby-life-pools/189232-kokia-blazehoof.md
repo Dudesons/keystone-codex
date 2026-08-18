@@ -73,5 +73,5 @@ stacking **Searing Wounds** at 15k every half-second, so the tank bleeds between
 rather than during them.
 
 At 100 energy, **Ritual of Blazebinding** spawns a
-[Blazebound Firestorm](#/d/ruby-life-pools/mob/189886) — whose Blaze Volley hits the whole
+[Blazebound Firestorm](#/d/ruby-life-pools/codex/mob/189886) — whose Blaze Volley hits the whole
 party from any distance and has to be interrupted.

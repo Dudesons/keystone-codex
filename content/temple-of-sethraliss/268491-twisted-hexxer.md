@@ -38,8 +38,8 @@ spells:
 trap: "Hex Muck in the Avatar fight means somebody is a frog while a Lifeforce orb is expiring. The two mechanics do not wait for each other."
 ---
 
-The [trash Hexxer](#/d/temple-of-sethraliss/mob/136250) again, this time inside the
-[Avatar of Sethraliss](#/d/temple-of-sethraliss/mob/133392) encounter, with 2.4 million health
+The [trash Hexxer](#/d/temple-of-sethraliss/codex/mob/136250) again, this time inside the
+[Avatar of Sethraliss](#/d/temple-of-sethraliss/codex/mob/133392) encounter, with 2.4 million health
 and immune to every crowd control listed.
 
 Same three abilities, and they cost far more here. **Hex Muck** removes a player from a fight

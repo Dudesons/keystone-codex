@@ -110,6 +110,19 @@ export interface SpellEntry {
 /** A spell resolved for one language — what the UI consumes. */
 export type Spell = SpellText & { id: number; icon: string }
 
+/** The part of a creature that changes with the language, as Wowhead serves it per locale. */
+export interface NpcText {
+  name: string
+  /** Absent for the creatures Wowhead files under no type at all. */
+  type?: string
+}
+
+/** An `npcs.json` entry. The English name is MDT's, not Wowhead's — see `buildNpcText`. */
+export interface NpcEntry {
+  id: number
+  text: Partial<Record<Locale, NpcText>>
+}
+
 /** Stable reference to one precise clone, in MDT indices. */
 export interface CloneRef {
   enemyIdx: number

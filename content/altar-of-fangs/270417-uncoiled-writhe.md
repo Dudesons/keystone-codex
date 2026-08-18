@@ -25,4 +25,4 @@ trap:
 
 A second, stripped-down Uncoiled Writhe: it reassembles and knocks back on death, but carries
 neither Toxic Atrophy nor the fixate. The one that matters is
-[npc 262398](#/d/altar-of-fangs/mob/262398).
+[npc 262398](#/d/altar-of-fangs/codex/mob/262398).

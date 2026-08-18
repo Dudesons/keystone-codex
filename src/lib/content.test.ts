@@ -9,8 +9,9 @@ import {
   getMobContent,
   inlineMarkdown,
   isRole,
+  npcIdList,
 } from './content'
-import { dungeonList, getLookup } from './data'
+import { dungeonList, getLookup, getNpcLabel, getSpell } from './data'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
@@ -31,6 +32,18 @@ const NO_ENTRY = 999_999
 
 /** The untouched scaffold output — same mob as WRITTEN, before anybody wrote anything. */
 const stub = { slug: '__fixtures__', npcId: 270306 }
+
+/**
+ * A written base carrying a deliberately partial translation, and an untranslated plan.
+ *
+ * Both used to be *found* by scanning the pool for content nobody had translated. That worked
+ * only while the translation was incomplete, which is the one thing it is meant to stop being:
+ * the subject vanishes the day the writing is finished, and a test must not go red for having
+ * succeeded. They are fixtures for the same reason the stub above is one, and their own
+ * comments say what each field is pinning.
+ */
+const partial = { slug: '__fixtures__', npcId: 263_109 }
+const untranslatedPlan = '__fixtures__'
 
 describe('isRole', () => {
   it('recognises the vocabulary the scaffold template offers', () => {
@@ -178,11 +191,49 @@ describe('Falling back to the base language', () => {
   })
 
   it('serves the base dungeon plan in both languages', () => {
-    expect(getDungeonContent(SLUG, 'fr')!.html).toBe(getDungeonContent(SLUG, 'en')!.html)
+    expect(getDungeonContent(untranslatedPlan, 'fr')!.html).toBe(
+      getDungeonContent(untranslatedPlan, 'en')!.html,
+    )
   })
 
   it('fabricates nothing for a mob with no file at all', () => {
     expect(getMobContent(SLUG, NO_ENTRY, 'fr')).toBeUndefined()
+  })
+})
+
+/**
+ * Which text fields the reader is being served in the base language rather than their own.
+ *
+ * The merge falls back per field, so a card can be half translated without anything saying
+ * so, and one of those fields is the spell note — which the card shows *instead of* Wowhead's
+ * description, French and available. Silently serving English over available French is the
+ * case this exists to make visible.
+ *
+ * A missing `.fr.md` and a `.fr.md` that omits the field are the same condition and take the
+ * same expression, so one partially translated fixture covers both: there is no second branch
+ * for a fixture to reach.
+ */
+describe('Fallback provenance', () => {
+  it('names the fields still reading in the base language', () => {
+    const { fallback } = getMobContent(partial.slug, partial.npcId, 'fr')!
+    // The fixture translates the trap and the note on 1307567, and nothing else.
+    expect(fallback).toEqual({ trap: false, prose: true, notes: [1306852] })
+  })
+
+  it('marks nothing when the reader asked for the base language', () => {
+    const { fallback } = getMobContent(partial.slug, partial.npcId, 'en')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+  })
+
+  it('marks nothing on an entry translated all the way through', () => {
+    const { fallback } = getMobContent(SLUG, WRITTEN, 'fr')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+  })
+
+  it('marks nothing on a stub: an empty field has no base text to fall back to', () => {
+    // The stub has no .fr.md at all, and still nothing is a fallback — there is nothing there.
+    const { fallback } = getMobContent(stub.slug, stub.npcId, 'fr')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
   })
 })
 
@@ -232,6 +283,241 @@ describe('Annotated spell ids', () => {
   })
 })
 
+/**
+ * Every cross-link a card writes must address a card the router actually serves.
+ *
+ * `marked` emits the href verbatim and nothing in the app rewrites it, so a wrong address is
+ * not a degraded link: `App.tsx` serves no `/d/:slug/mob/:npcId`, and its catch-all sends the
+ * reader to the home page instead. That is the quietest kind of broken link — it still looks
+ * and behaves like a link, it simply arrives somewhere else.
+ *
+ * The target is checked as well as the shape. A link naming a mob that no longer sits in that
+ * dungeon opens a codex with nothing focused, which is wrong in the same silent way.
+ */
+describe('Cross-links between cards', () => {
+  /** The one address a mob card has, from the route table in `App.tsx`. */
+  const CARD = /^#\/d\/([a-z0-9-]+)\/codex\/mob\/(\d+)$/
+  const isExternal = (href: string) => /^(https?:|mailto:)/.test(href)
+
+  // Keyed by mob and href so a link a translation inherits from its base is reported once.
+  const offenders = new Map<string, string>()
+
+  for (const summary of dungeonList) {
+    const lookup = getLookup(summary.slug)
+    if (!lookup) continue
+    for (const enemy of lookup.dungeon.enemies) {
+      for (const locale of ['en', 'fr'] as const) {
+        const content = getMobContent(summary.slug, enemy.id, locale)
+        if (!content) continue
+        // Everything a card renders as markdown: the prose body, the trap, and every note.
+        const rendered = [
+          content.html,
+          inlineMarkdown(content.trap),
+          ...(content.spells ?? []).map((s) => inlineMarkdown(s.note)),
+        ].join('\n')
+
+        for (const [, href] of rendered.matchAll(/href="([^"]+)"/g)) {
+          if (isExternal(href)) continue
+          const where = `content/${summary.slug}/${enemy.id}-*`
+          const key = `${summary.slug}/${enemy.id}/${href}`
+          const m = CARD.exec(href)
+          if (!m) {
+            offenders.set(
+              key,
+              `${where} links to "${href}", which no route serves.` +
+                ' A mob card is at #/d/<slug>/codex/mob/<npcId>.',
+            )
+            continue
+          }
+          const [, targetSlug, npcId] = m
+          const target = getLookup(targetSlug)
+          if (!target) {
+            offenders.set(key, `${where} links to "${href}": no dungeon named ${targetSlug}.`)
+          } else if (!target.enemyById.has(Number(npcId))) {
+            offenders.set(key, `${where} links to "${href}": ${targetSlug} has no mob ${npcId}.`)
+          }
+        }
+      }
+    }
+  }
+
+  it('all address a mob card the router serves', () => {
+    expect([...offenders.values()]).toEqual([])
+  })
+
+  /**
+   * A link naming one mob must not point at another.
+   *
+   * The sweep above cannot see this: the address is well formed and the target really is in
+   * that dungeon, so everything checks out except which mob it is. The reader clicks a name and
+   * lands on a different card — and because both cards exist and both look plausible, nothing
+   * about the result says it went wrong.
+   *
+   * Only flagged when the link text is *exactly* another mob's name, in either language. A
+   * link whose text is a description ("the adds", "its cubs") is deliberate phrasing and is
+   * left alone.
+   *
+   * A name maps to a **set** of ids, because thirteen names in the pool belong to two mobs each
+   * — a boss and its encounter copy, Merektha as 133384 and 134487. Keeping one id per name
+   * reported six correct links as wrong on the first run. The cost is that this cannot catch a
+   * link to the wrong one of two mobs sharing a name; what it does catch is a link naming a mob
+   * that has nothing to do with the target.
+   */
+  it('name the mob they point at, not a different one', () => {
+    const named = new Map<string, Set<number>>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const locale of ['en', 'fr'] as const) {
+          const name = getNpcLabel(enemy, locale).name
+          const ids = named.get(name) ?? new Set<number>()
+          ids.add(enemy.id)
+          named.set(name, ids)
+        }
+      }
+    }
+
+    const mismatched = new Map<string, string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const locale of ['en', 'fr'] as const) {
+          const content = getMobContent(summary.slug, enemy.id, locale)
+          if (!content) continue
+          const source = [content.html, content.trap ?? ''].join('\n')
+
+          const ANCHOR = /<a href="#\/d\/[a-z0-9-]+\/codex\/mob\/(\d+)">([^<]+)<\/a>/g
+          for (const [, target, label] of source.matchAll(ANCHOR)) {
+            const text = label.trim()
+            const claimed = named.get(text)
+            if (!claimed || claimed.has(Number(target))) continue
+            mismatched.set(
+              `${summary.slug}/${enemy.id}/${text}`,
+              `content/${summary.slug}/${enemy.id}-* links "${text}" to mob ${target},` +
+                ` but that name belongs to ${[...claimed].join(' / ')}.`,
+            )
+          }
+        }
+      }
+    }
+
+    expect([...mismatched.values()]).toEqual([])
+  })
+})
+
+/**
+ * A spell a translation names must be named in the reader's language.
+ *
+ * The chip, the badge and the card's own spell row all take their label from `spells.json`, so
+ * a sentence that spells the name out in English disagrees with the row printed right next to
+ * it — which is the version the reader trusts. Wowhead already gives us the French, so this is
+ * a gap rather than a convention.
+ *
+ * **Emphasised spans, not any occurrence of the name.** Naming a spell in emphasis is the
+ * house style, which makes the span the unit worth checking — and it is the only unit that can
+ * be checked without false alarms. A bare substring sweep flags the `Disruption` inside
+ * `Essence Disruption`, a name Method's guide carries and `spells.json` does not: it stays
+ * English because we have nothing to replace it with, and a guard that cannot tell the
+ * difference would be a guard nobody keeps green.
+ */
+describe('Spell names in the French entries', () => {
+  /** English label -> French one, over every spell the pool can attach to a mob. */
+  const french = new Map<string, string>()
+  for (const summary of dungeonList) {
+    for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+      for (const { id } of enemy.spells) {
+        const en = getSpell(id, 'en')?.name
+        const fr = getSpell(id, 'fr')?.name
+        if (en && fr && en !== fr) french.set(en, fr)
+      }
+    }
+  }
+
+  const offenders = new Map<string, string>()
+  for (const summary of dungeonList) {
+    for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+      const content = getMobContent(summary.slug, enemy.id, 'fr')
+      if (!content) continue
+      // Only text the translation actually wrote. A field still falling back to the base is
+      // English on purpose, and naming its spells in English is the one thing it should do.
+      const rendered = [
+        content.fallback.prose ? '' : content.html,
+        content.fallback.trap ? '' : inlineMarkdown(content.trap),
+        ...(content.spells ?? [])
+          .filter((s) => !content.fallback.notes.includes(Number(s.id)))
+          .map((s) => inlineMarkdown(s.note)),
+      ].join('\n')
+
+      for (const [, , name] of rendered.matchAll(/<(strong|em)>([^<]+)<\/\1>/g)) {
+        const fr = french.get(name.trim())
+        if (!fr) continue
+        offenders.set(
+          `${summary.slug}/${enemy.id}/${name}`,
+          `content/${summary.slug}/${enemy.id}-*.fr.md emphasises "${name}",` +
+            ` which the card next to it labels "${fr}".`,
+        )
+      }
+    }
+  }
+
+  it('use the label the card itself shows', () => {
+    expect([...offenders.values()]).toEqual([])
+  })
+
+  /**
+   * The same rule, for the half of it a reader cannot see.
+   *
+   * Wowhead's French labels carry real typography: a non-breaking space before `!` or `:`, a
+   * typographic apostrophe in `d’os`. Retyping a name by hand produces the lookalike — a plain
+   * space, a straight quote — and the result is indistinguishable on screen from the label it
+   * no longer matches. Every occurrence found when this was written had been introduced by
+   * hand, in files whose visible text was already correct, so nothing but a byte comparison
+   * was ever going to catch it.
+   *
+   * Only labels carrying one of those two characters are checked, and only their degraded
+   * form: an ordinary French sentence has no reason to reproduce a spell's name exactly.
+   */
+  it('spell the label byte for byte, invisible characters included', () => {
+    const NBSP = ' '
+    const APOSTROPHE = '’'
+    const degrade = (s: string) => s.replaceAll(NBSP, ' ').replaceAll(APOSTROPHE, "'")
+
+    const tricky = new Set<string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const { id } of enemy.spells) {
+          const fr = getSpell(id, 'fr')?.name
+          if (fr && degrade(fr) !== fr) tricky.add(fr)
+        }
+      }
+    }
+
+    const degraded = new Map<string, string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        const content = getMobContent(summary.slug, enemy.id, 'fr')
+        if (!content) continue
+        const written = [
+          content.fallback.prose ? '' : content.html,
+          content.fallback.trap ? '' : (content.trap ?? ''),
+          ...(content.spells ?? [])
+            .filter((s) => !content.fallback.notes.includes(Number(s.id)))
+            .map((s) => s.note ?? ''),
+        ].join('\n')
+
+        for (const label of tricky) {
+          if (!written.includes(degrade(label))) continue
+          degraded.set(
+            `${summary.slug}/${enemy.id}/${label}`,
+            `content/${summary.slug}/${enemy.id}-*.fr.md writes "${degrade(label)}"` +
+              ` where the label is "${label}".`,
+          )
+        }
+      }
+    }
+
+    expect([...degraded.values()]).toEqual([])
+  })
+})
+
 describe('contentProgress', () => {
   it('only counts entries carrying actual writing', () => {
     expect(contentProgress(SLUG, [WRITTEN])).toEqual({ written: 1, total: 1 })
@@ -270,5 +556,39 @@ describe('inlineMarkdown', () => {
   it('is empty for nothing, so callers can render it unconditionally', () => {
     expect(inlineMarkdown(undefined)).toBe('')
     expect(inlineMarkdown('')).toBe('')
+  })
+})
+
+describe('npcIdList', () => {
+  it('reads a hand-written list of ids', () => {
+    expect(npcIdList([135322, 134993])).toEqual([135322, 134993])
+  })
+
+  it('drops anything that is not a list of ids, rather than trusting it', () => {
+    // `bosses:` is typed by hand in YAML. An empty field parses to null, a typo to a string;
+    // neither must reach the ordering code as a half-valid array.
+    expect(npcIdList(null)).toBeUndefined()
+    expect(npcIdList(undefined)).toBeUndefined()
+    expect(npcIdList('135322')).toBeUndefined()
+    expect(npcIdList([])).toBeUndefined()
+    expect(npcIdList(['nope', 0, -3])).toBeUndefined()
+  })
+
+  it('keeps the ids it recognises and discards the rest of the list', () => {
+    expect(npcIdList([135322, 'nope'])).toEqual([135322])
+  })
+})
+
+describe('getDungeonContent bosses', () => {
+  it('reads the order a dungeon declares', () => {
+    // King's Rest is the one dungeon whose mdtIdx order is wrong: King Dazar, its last boss,
+    // sits at index 25 while the Council of Tribes was re-added at 34-36.
+    expect(getDungeonContent('kings-rest')?.bosses).toEqual([
+      135322, 134993, 269808, 269810, 269811, 136160,
+    ])
+  })
+
+  it('leaves it undefined where no order is declared, so mdtIdx stands', () => {
+    expect(getDungeonContent('altar-of-fangs')?.bosses).toBeUndefined()
   })
 })

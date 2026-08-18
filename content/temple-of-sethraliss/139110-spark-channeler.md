@@ -25,5 +25,5 @@ is disproportionate to all of that.
 being unable to act, in a room that also has Lingering Storm pools and Call Lightning circles,
 generally is not.
 
-The same spell belongs to the [Loose Spark](#/d/temple-of-sethraliss/mob/139108) units it
+The same spell belongs to the [Loose Spark](#/d/temple-of-sethraliss/codex/mob/139108) units it
 produces.

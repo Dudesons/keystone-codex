@@ -20,6 +20,6 @@ trap: "Same pool on death, and this one cannot be moved with crowd control — o
 ---
 
 The second MDT entry for the Scorchling, distinguished from
-[the first](#/d/ruby-life-pools/mob/190205) by being immune to every crowd control listed.
+[the first](#/d/ruby-life-pools/codex/mob/190205) by being immune to every crowd control listed.
 
 Same death pool, one fewer way of choosing where it lands.

@@ -94,7 +94,7 @@ counter is stated in her own tooltip: **Demonic Gateway** *prevents the initial 
 vulnerability from Malefic Wave*. Her gateways are the escape.
 
 **Fingers of Gul'dan** rewards spreading — 116k around each player, with
-[Wild Imps](#/d/murder-row/mob/237626) bursting from every impact — and those imps then gain
+[Wild Imps](#/d/murder-row/codex/mob/237626) bursting from every impact — and those imps then gain
 **Malefic Empowerment**, +100% haste, from the same wave.
 
 **Chaos Bolt** and **Searing Fel Flame** are her interruptible casts.

@@ -19,8 +19,8 @@ spells:
 trap: "It blooms 8 seconds after Kezkitt's beam starts on it. Standing in that beam is what stops it — the bloom is prevented, not survived."
 ---
 
-The seed [Lekshi](#/d/the-blinding-vale/mob/243030) plants at each end of a Lightsower Dash,
-and [Kezkitt](#/d/the-blinding-vale/mob/243029) then germinates with **Lightblossom Beam**.
+The seed [Lekshi](#/d/the-blinding-vale/codex/mob/243030) plants at each end of a Lightsower Dash,
+and [Kezkitt](#/d/the-blinding-vale/codex/mob/243029) then germinates with **Lightblossom Beam**.
 
 Eight seconds after the beam starts, it casts **Lightbloom Overgrowth** — 15k a second on the
 whole group for 8 seconds — and turns the Fertile Loam around it into Light-Scorched Earth,

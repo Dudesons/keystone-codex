@@ -41,7 +41,7 @@ trap: "Brutal Slams ramps 10% per slam for thirty seconds. Left to run its cours
 ---
 
 Eight units at 25 forces each: 27% of the dungeon, tied with the
-[Agitated Voidscythe](#/d/voidscar-arena/mob/263228) for second heaviest.
+[Agitated Voidscythe](#/d/voidscar-arena/codex/mob/263228) for second heaviest.
 
 **Brutal Slams** is a ramp with a visible brake. Twenty slams over thirty seconds, each 10%
 stronger, starting at 48k party-wide — the arithmetic gets ugly quickly. The shield it puts on

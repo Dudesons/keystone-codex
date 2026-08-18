@@ -77,7 +77,7 @@ them worth more attention than their damage suggests.
 
 They tick for 78k a second and apply **Mind-Numbing Poison**. But their real function is as
 spawn points: both **Monstrous Roar** and **Provoke Creeper** pull a
-[Toxic Creeper](#/d/voidscar-arena/mob/239070) out of an existing pool. A room with fewer pools
+[Toxic Creeper](#/d/voidscar-arena/codex/mob/239070) out of an existing pool. A room with fewer pools
 produces fewer creepers.
 
 And the creepers are the escalation: their **Sickening Bite** stacks **+50% Nature damage taken

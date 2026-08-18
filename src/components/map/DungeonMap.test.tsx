@@ -5,11 +5,11 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
-import { cloneKey, getLookup, mapUrl, type DungeonLookup } from '../../lib/data'
+import { cloneKey, getLookup, getNpcLabel, mapUrl, type DungeonLookup } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
 import type { Clone, CloneRef, Dungeon, Enemy } from '../../lib/types'
-import { renderEn } from '../../test/render'
+import { renderEn, renderFr } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
 afterEach(cleanup)
@@ -468,6 +468,13 @@ describe('Tooltip', () => {
     const tooltip = screen.getByTestId('clone-tooltip')
     expect(within(tooltip).getByTestId('mob-share')).toBeDefined()
     expect(within(tooltip).getByTestId('mob-score')).toBeDefined()
+  })
+
+  it('names it in the reader’s language', () => {
+    const { container } = renderFr(<DungeonMap slug={SLUG} lookup={lookup} />)
+    fireEvent.mouseEnter(blips(container)[0])
+    expect(container.textContent).toContain(getNpcLabel(firstEnemy, 'fr').name)
+    expect(container.textContent).not.toContain(firstEnemy.name)
   })
 
   it('disappears when the pointer leaves', () => {

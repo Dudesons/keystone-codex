@@ -5,7 +5,8 @@
  * The set of languages the app speaks.
  *
  * Adding one means: a value here, a dictionary file, and a probe of the Wowhead locale code
- * for the spell pipeline (see `SPELL_LOCALES` in `scripts/config.mjs`).
+ * the asset pipeline fetches spell and creature labels with (see `WOWHEAD_LOCALES` in
+ * `scripts/config.mjs`).
  */
 
 export const LOCALES = ['en', 'fr'] as const

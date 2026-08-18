@@ -27,7 +27,7 @@ Zero damage, 0.3 million health, and the totem most likely to be ignored.
 
 **Disruption** locks the entire group out of casting for four seconds. Nothing in the combat
 log looks urgent, which is why it survives — and its cost is paid indirectly, when
-[Zanazal](#/d/kings-rest/mob/269810)'s **Poison Nova** goes off unkicked because nobody could
+[Zanazal](#/d/kings-rest/codex/mob/269810)'s **Poison Nova** goes off unkicked because nobody could
 interrupt.
 
 It cannot be crowd controlled.

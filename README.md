@@ -1,9 +1,11 @@
 # Keystone Codex
 
 Codex and interactive map for World of Warcraft Mythic+ dungeons, currently tuned to the
-**Midnight season 2** pool. Every dungeon gets its MDT map with the real, clickable packs, a
-card per mob, and a route editor that imports and exports MDT strings — with other people if
-you want.
+**Midnight season 2** pool. Every dungeon has three fixed tabs, each its own address:
+**Overview**, the briefing — the mobs worth knowing, the traps, and the bosses in encounter
+order, drawn straight from the codex cards; **Codex**, the real MDT layout with its packs
+clickable and a card per mob; and **Route**, an editor that imports and exports MDT strings —
+with other people if you want.
 
 Nothing in the code is tied to an expansion: changing season only takes editing
 `SEASON_DUNGEONS` in `scripts/config.mjs`, then re-running `npm run data`.
@@ -44,8 +46,10 @@ app.
 
 The dev server hot-reloads: saving a `.md` updates the card immediately.
 
-`content/<dungeon>/_dungeon.md` carries the timer, the summary and the route plan of the
-dungeon.
+`content/<dungeon>/_dungeon.md` carries the timer, the summary, the route plan, and — where
+MDT's own encounter order is not usable — a `bosses:` list of npc ids giving the boss cards
+their reading order (King's Rest needs one: its Council of Tribes was re-added with new ids,
+so MDT's index alone would put King Dazar in the wrong place).
 
 ## Regenerating data after an MDT update
 
@@ -66,6 +70,18 @@ Chains the four scripts, which read the WoW installation and write versioned fil
 If WoW is installed elsewhere: `MDT_PATH="D:\other\path\MythicDungeonTools" npm run extract`.
 To change the dungeon pool (new season), edit `SEASON_DUNGEONS` in `scripts/config.mjs` —
 everything else (MDT index, force totals, mapID) is read from the game files.
+
+## Reading the briefing
+
+Opening a dungeon (`/d/<slug>`) shows its **Overview** rather than the codex: a row per mob
+worth knowing with its threat and its prio-1 spells, the traps to remember, and a card per
+boss in encounter order with its own spells and, where the card holds one, its trap sentence.
+A mob's or boss's name links straight into its full card in the codex, at
+`/d/<slug>/codex/mob/<npcId>`.
+
+The **Overview / Codex / Route** tabs in the header are fixed and always present, each its own
+address (`/d/<slug>`, `/d/<slug>/codex`, `/d/<slug>/route`); the URL follows whichever you
+pick, so a link to any of the three can be shared directly.
 
 ## Reading the map
 
@@ -120,10 +136,10 @@ next time, but you can still change it mid-session; everyone else sees the updat
 reconnect. The name travels as typed, in whichever language you wrote it.
 
 *Open a session* generates a six-character code, shown next to a link
-(`…#/d/<dungeon>?room=<code>`) that carries the same room — read the code out on Discord, or
+(`…#/d/<dungeon>/route?room=<code>`) that carries the same room — read the code out on Discord, or
 send the link itself. The code field under *Join* only takes the code: it is six characters
 wide and pasting a whole link there just truncates. A link is meant to be opened directly, and
-opening it by itself connects nothing: it loads the dungeon in route mode and shows a card
+opening it by itself connects nothing: it loads the dungeon on the Route tab and shows a card
 asking whether to join, so nobody is pulled into a session by clicking a link someone else
 posted; reloading that link asks again rather than reconnecting on its own.
 

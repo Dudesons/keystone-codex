@@ -37,7 +37,7 @@ spells:
 trap: "Both options cost something. Ignore the orb and it bursts for 194k with a stacking vulnerability; cleanse it and you carry +300% Physical damage taken for fifteen seconds."
 ---
 
-The orbs of the [Avatar of Sethraliss](#/d/temple-of-sethraliss/mob/133392) fight, and the
+The orbs of the [Avatar of Sethraliss](#/d/temple-of-sethraliss/codex/mob/133392) fight, and the
 clearest three-way trade in the pool.
 
 **Leave it**: **Corruption Burst** hits everyone for 194k *and* raises damage taken from that

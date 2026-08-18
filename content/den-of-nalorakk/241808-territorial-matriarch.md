@@ -30,5 +30,5 @@ unanswered is effectively permanent, and the next one lands on top of it.
 
 It is declared an **enrage** by MDT, which means the answer is a soothe rather than a magic
 dispel. And the same ability belongs to the
-[Curious Yearling](#/d/den-of-nalorakk/mob/241809) — worth no forces, nineteen of them on the
+[Curious Yearling](#/d/den-of-nalorakk/codex/mob/241809) — worth no forces, nineteen of them on the
 map, and casting the identical buff.

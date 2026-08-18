@@ -54,6 +54,24 @@ export interface SpellNote {
   note?: string
 }
 
+/**
+ * Which of a card's text fields the reader is being served in the base language.
+ *
+ * The merge falls back field by field, which is what lets a translation land one sentence at a
+ * time — but it also means a card can be half translated with nothing on screen saying so. A
+ * spell note matters most here, because the card shows it *instead of* Wowhead's description:
+ * an untranslated note hides a French description that exists.
+ *
+ * Empty whenever the reader asked for the base language, and whenever the field is empty in
+ * both — there is no fallback in serving nothing.
+ */
+export interface MobFallback {
+  trap: boolean
+  prose: boolean
+  /** Ids whose note still reads in the base language. */
+  notes: number[]
+}
+
 export interface MobContent {
   npcId: number
   threat?: Threat
@@ -64,11 +82,14 @@ export interface MobContent {
   html: string
   /** True as long as the file has received no writing at all. */
   isStub: boolean
+  fallback: MobFallback
 }
 
 export interface DungeonContent {
   timer?: string
   summary?: string
+  /** Boss npcIds in encounter order, where `mdtIdx` gets it wrong. */
+  bosses?: number[]
   html: string
 }
 
@@ -133,6 +154,7 @@ interface RawMob {
 interface RawDungeon {
   timer?: string
   summary?: string
+  bosses?: number[]
   prose: string
 }
 
@@ -163,6 +185,7 @@ for (const [filePath, raw] of Object.entries(files)) {
     slot(dungeonFiles, slug)[locale] = {
       timer: data.timer as string | undefined,
       summary: data.summary as string | undefined,
+      bosses: npcIdList(data.bosses),
       prose,
     }
     continue
@@ -205,7 +228,41 @@ function definedOnly<T extends object>(value: T): Partial<T> {
   ) as Partial<T>
 }
 
-function mergeMob(base?: RawMob, translation?: RawMob): MobContent | undefined {
+/**
+ * `bosses:` is hand-written YAML: an empty field parses to `null`, a typo to a string. Only a
+ * non-empty list of positive ids is worth anything downstream, so everything else becomes
+ * "not declared" rather than a half-valid array the ordering code would have to re-check.
+ */
+export function npcIdList(value: unknown): number[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const ids = value.map(Number).filter((n) => Number.isFinite(n) && n > 0)
+  return ids.length ? ids : undefined
+}
+
+/**
+ * Which fields the merge above resolved out of the base rather than out of the translation.
+ *
+ * Each test mirrors the expression that picked the value, so the two cannot disagree: a field
+ * the translation leaves out and a translation that does not exist are the same condition, and
+ * `?.` collapses them into one. A field empty on both sides is not a fallback — nothing is
+ * being served in the wrong language when nothing is being served.
+ */
+function fallbackOf(locale: Locale, base?: RawMob, translation?: RawMob): MobFallback {
+  if (locale === DEFAULT_LOCALE) return { trap: false, prose: false, notes: [] }
+
+  const translated = new Set(
+    (translation?.spells ?? []).filter((s) => s.note).map((s) => Number(s.id)),
+  )
+  return {
+    trap: base?.trap != null && translation?.trap == null,
+    prose: Boolean(base?.prose) && !translation?.prose,
+    notes: (base?.spells ?? [])
+      .filter((s) => s.note && !translated.has(Number(s.id)))
+      .map((s) => Number(s.id)),
+  }
+}
+
+function mergeMob(base: RawMob | undefined, translation: RawMob | undefined, locale: Locale): MobContent | undefined {
   const source = translation ?? base
   if (!source) return undefined
 
@@ -228,6 +285,7 @@ function mergeMob(base?: RawMob, translation?: RawMob): MobContent | undefined {
       !trap &&
       !threat &&
       !spells?.some((s) => s.note || (s.tag && s.tag !== 'todo')),
+    fallback: fallbackOf(locale, base, translation),
   }
 }
 
@@ -236,6 +294,7 @@ function mergeDungeon(base?: RawDungeon, translation?: RawDungeon): DungeonConte
   return {
     timer: translation?.timer ?? base?.timer,
     summary: translation?.summary ?? base?.summary,
+    bosses: translation?.bosses ?? base?.bosses,
     html: render(translation?.prose || base?.prose || ''),
   }
 }
@@ -255,7 +314,11 @@ export function getMobContent(
 
   const byLocale = mobFiles.get(`${slug}/${npcId}`)
   const merged = byLocale
-    ? mergeMob(byLocale[DEFAULT_LOCALE], locale === DEFAULT_LOCALE ? undefined : byLocale[locale])
+    ? mergeMob(
+        byLocale[DEFAULT_LOCALE],
+        locale === DEFAULT_LOCALE ? undefined : byLocale[locale],
+        locale,
+      )
     : undefined
 
   mobCache.set(key, merged)

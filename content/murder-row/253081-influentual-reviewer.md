@@ -19,7 +19,7 @@ spells:
 trap: "Kick the review. The tooltip says outright that an interrupted Scathing Review backfires and forces them out."
 ---
 
-Part of the [Illicit Rain](#/d/murder-row/mob/263940) sequence, and the only member of it whose
+Part of the [Illicit Rain](#/d/murder-row/codex/mob/263940) sequence, and the only member of it whose
 tooltip states its own solution.
 
 **Scathing Review** is an attempt to write badly of the establishment, and *if the caster is

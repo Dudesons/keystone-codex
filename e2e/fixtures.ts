@@ -44,30 +44,26 @@ export async function firstDungeonSlug(page: Page): Promise<string> {
  * Go to a dungeon, name yourself, and open a session on its route.
  *
  * It navigates itself, like `acceptInvitation` below: `firstDungeonSlug` leaves the page on the home
- * page, where the Route tab does not exist.
- *
- * `exact: true` matters on the tab: Playwright matches an accessible name as a case-insensitive
- * **substring** by default, and "Open a session with this route" contains "route" — without it the
- * locator resolves to two buttons and fails on strict mode, which reads like a missing element.
+ * page, where the route address has not been visited yet. Going straight to `/route` needs no tab
+ * click — it is the tab's own address.
  *
  * The room code is not returned. The only caller that needs it reads it from the share link, which
  * is the value under test there anyway; scraping it out of the panel would mean pinning a Tailwind
  * class as though it were an interface.
  */
 export async function openSession(page: Page, slug: string, name: string) {
-  await page.goto(`./#/d/${slug}`)
-  await page.getByRole('button', { name: 'Route', exact: true }).click()
+  await page.goto(`./#/d/${slug}/route`)
   await page.getByLabel('Your name').fill(name)
   await page.getByRole('button', { name: 'Open a session with this route' }).click()
   await expect(page.getByText('SHARED SESSION')).toBeVisible()
 }
 
 /**
- * Arrive by join link and accept. The invitation switches the panel to route mode on its own, so
- * no tab has to be clicked here.
+ * Arrive by join link and accept. The link already points at the route address, so the invitation
+ * is there from the first paint — no tab has to be clicked here.
  */
 export async function acceptInvitation(page: Page, slug: string, room: string, name: string) {
-  await page.goto(`./#/d/${slug}?room=${room}`)
+  await page.goto(`./#/d/${slug}/route?room=${room}`)
   await page.getByLabel('Your name').fill(name)
   await page.getByRole('button', { name: `Join room ${room}` }).click()
   await expect(page.getByText('SHARED SESSION')).toBeVisible()

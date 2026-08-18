@@ -12,6 +12,20 @@ export interface PullRef {
   color: string
 }
 
+/**
+ * Scroll something the panel was asked to show, and flash it so the eye finds it.
+ *
+ * `block: 'nearest'` rather than `'start'`: a target already on screen should not make the
+ * panel jump. `animate` is guarded because jsdom does not implement it.
+ */
+function bringIntoView(target: Element | null | undefined) {
+  target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  target?.animate?.(
+    [{ boxShadow: '0 0 0 2px #e0b552' }, { boxShadow: '0 0 0 2px transparent' }],
+    { duration: 1200, easing: 'ease-out' },
+  )
+}
+
 interface Props {
   slug: string
   lookup: DungeonLookup
@@ -19,6 +33,8 @@ interface Props {
   selectedMob: number | null
   /** Mob to scroll the panel to, after a click on the map. */
   focusNpc: number | null
+  /** Spell to scroll the panel to, named by the address a briefing chip links to. */
+  focusSpell?: number | null
   /** Which pull each mob belongs to in the current route. */
   pullByNpc: ReadonlyMap<number, PullRef>
   onSelectMob: (npcId: number | null) => void
@@ -32,6 +48,7 @@ export default function CodexPanel({
   selectedPack,
   selectedMob,
   focusNpc,
+  focusSpell,
   pullByNpc,
   onSelectMob,
   onHoverMob,
@@ -45,13 +62,16 @@ export default function CodexPanel({
   // forcing you to hunt for it in a list of forty mobs.
   useEffect(() => {
     if (focusNpc == null) return
-    const card = rootRef.current?.querySelector(`[data-npc="${focusNpc}"]`)
-    card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    card?.animate?.(
-      [{ boxShadow: '0 0 0 2px #e0b552' }, { boxShadow: '0 0 0 2px transparent' }],
-      { duration: 1200, easing: 'ease-out' },
-    )
+    bringIntoView(rootRef.current?.querySelector(`[data-npc="${focusNpc}"]`))
   }, [focusNpc, selectedPack, selectedMob])
+
+  // A briefing chip links to one spell inside a card. Under a hash router the whole route
+  // already occupies the document's single fragment, so the browser cannot act on the
+  // `#spell-<id>` part — the panel resolves it, exactly as it follows the map above.
+  useEffect(() => {
+    if (focusSpell == null) return
+    bringIntoView(rootRef.current?.querySelector(`[data-spell="${focusSpell}"]`))
+  }, [focusSpell, selectedMob])
 
   const packMobs = useMemo(() => {
     if (selectedPack == null) return []

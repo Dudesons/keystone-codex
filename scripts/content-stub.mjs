@@ -10,9 +10,9 @@
  * thing in this repository that cannot be regenerated.
  */
 
-import { SPELL_LOCALES } from './config.mjs'
+import { WOWHEAD_LOCALES } from './config.mjs'
 
-const BASE_LANG = SPELL_LOCALES[0].lang
+const BASE_LANG = WOWHEAD_LOCALES[0].lang
 
 export const TIMERS = {
   // Minutes on the M+ timer. The ones we do not know stay empty, to be filled by hand.
@@ -87,6 +87,8 @@ export function buildDungeonStub(dungeon) {
     `timer:${timer ? ` ${timer}` : ''}`,
     '# One sentence summing the dungeon up, shown on the home page.',
     'summary:',
+    '# Boss order, only when mdtIdx gets it wrong — npcIds as the group meets them.',
+    'bosses:',
     '---',
     '',
     '## Route plan',

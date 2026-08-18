@@ -26,5 +26,5 @@ after the cast lands, which is the saving grace.
 
 MDT lists Stun, Slow and Disorient as applicable, so it can also be controlled before it casts.
 
-The same spell belongs to [Seneschal M'bara](#/d/kings-rest/mob/134251) and
-[King Rahu'ai](#/d/kings-rest/mob/134331).
+The same spell belongs to [Seneschal M'bara](#/d/kings-rest/codex/mob/134251) and
+[King Rahu'ai](#/d/kings-rest/codex/mob/134331).

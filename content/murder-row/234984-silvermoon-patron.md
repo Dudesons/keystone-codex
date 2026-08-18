@@ -28,7 +28,7 @@ spells:
 trap: "Serve them before Awaiting Service turns into Enrage. This is a timer, not a fight."
 ---
 
-A customer in the [Illicit Rain](#/d/murder-row/mob/263940) sequence, and its three spells are
+A customer in the [Illicit Rain](#/d/murder-row/codex/mob/263940) sequence, and its three spells are
 its three moods: **Awaiting Service** → **Elated!** if served in time, **Enrage** if not.
 
 No damage, no cast to interrupt. The card exists because MDT places the patron on the map, and

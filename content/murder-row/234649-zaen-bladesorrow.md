@@ -91,7 +91,7 @@ casualty.
 
 **Murder in a Row** takes five and a half seconds to aim and then shoots **every player in
 line of sight** for 388k plus a further 873k. It is not dodged and it is not healed — the
-group hides behind the [Forbidden Freight](#/d/murder-row/mob/234852) crates.
+group hides behind the [Forbidden Freight](#/d/murder-row/codex/mob/234852) crates.
 
 **Fire Bomb** is what makes that hard. It explodes after six seconds for 175k *and destroys any
 Forbidden Freight caught in the blast*, so every bomb the group ignores costs them a piece of

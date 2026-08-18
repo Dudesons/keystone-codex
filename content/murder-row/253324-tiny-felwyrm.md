@@ -24,7 +24,7 @@ spells:
 trap: "Zero forces, 194k on death. Killing them in melee range is pure loss."
 ---
 
-Spawned by the [Massive Felwyrm](#/d/murder-row/mob/236902) at a rate of one every 0.3 seconds,
+Spawned by the [Massive Felwyrm](#/d/murder-row/codex/mob/236902) at a rate of one every 0.3 seconds,
 worth nothing, and each carrying the full 194k death explosion.
 
 That combination — no reward for killing them, real cost for killing them badly — makes them

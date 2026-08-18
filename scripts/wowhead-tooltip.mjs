@@ -1,4 +1,4 @@
-// ABOUTME: Parses Wowhead's tooltip HTML into per-language spell labels.
+// ABOUTME: Parses Wowhead's tooltip HTML into per-language spell and creature labels.
 // ABOUTME: classifyLines maps lines by position, so one English pass serves every other locale.
 
 /**
@@ -118,11 +118,103 @@ export function buildSpellText(id, entries) {
 }
 
 /**
+ * An NPC tooltip's header lines, name excluded.
+ *
+ * Read out of the markup rather than out of the whitespace. Wowhead separates the name row
+ * with a newline but runs the rows below it together, so splitting on newlines glues a
+ * creature's family onto its classification — "Beast (Elite)Chimaera". Rows carrying no text
+ * fall away, which is what removes the dungeon-journal portrait a boss tooltip opens with.
+ */
+function npcLines(html, name) {
+  const cells = [...html.matchAll(/<td>(.*?)<\/td>/gs)].map((m) => stripTags(m[1])).filter(Boolean)
+  const nameAt = cells.indexOf(name)
+  return nameAt === -1 ? [] : cells.slice(nameAt + 1)
+}
+
+/** Wowhead's NPC response into a name and its header lines. */
+export function parseNpcTooltip(json) {
+  if (!json?.name) return null
+  return { name: json.name, lines: npcLines(json.tooltip || '', json.name) }
+}
+
+/**
+ * Which header line carries `Type (Classification)`.
+ *
+ * A creature's header holds up to four lines — a title above, then the classification, then
+ * its family and its reaction — and which of them are present varies per creature, so the
+ * line's index does not. What is stable is the order, across languages, so this runs **once**
+ * on the base language and the other locales take the index: the same discipline as
+ * `classifyLines`, for the same reason.
+ */
+export function classifyNpcLines(lines) {
+  return lines.findIndex((line) => /\([^)]*\)\s*$/.test(line))
+}
+
+/**
+ * The creature type alone, out of a classification line.
+ *
+ * "Level 82 - 90 Humanoid (Normal)" and "Niveau 82 - 90 Humanoïde (Standard)" both give the
+ * type. The classification is parenthesised and the level prefix ends at its last digit —
+ * punctuation and digits, not vocabulary — so neither needs a rule per language. Zul'jarra
+ * reads "Level ??", hence the question mark alongside the digits.
+ *
+ * What is left may be nothing at all: Infused Eggs render as " (Normal)", a classification
+ * with no creature type in front of it.
+ */
+function creatureType(line) {
+  return line?.replace(/\s*\([^)]*\)\s*$/, '').replace(/^.*[\d?]\s+/, '').trim() || undefined
+}
+
+/**
+ * One creature across every configured language.
+ *
+ * `mdtName` wins for the base language, and Wowhead's own English is spent on checking it
+ * instead: MDT's name is the identity every content file, spell note and test is keyed on,
+ * and a mismatch means the id is wrong rather than the name being stale. Renaming the mob on
+ * that basis would be invisible — it would simply start displaying another creature.
+ */
+export function buildNpcText(id, mdtName, entries) {
+  const [base, ...others] = entries
+  if (!base?.tooltip) return null
+
+  const warnings = []
+  if (base.tooltip.name !== mdtName) {
+    warnings.push(`${id}: MDT calls it "${mdtName}", Wowhead "${base.tooltip.name}" — check the id`)
+  }
+
+  const classifiedAt = classifyNpcLines(base.tooltip.lines)
+  const label = (name, lines) => {
+    const type = classifiedAt === -1 ? undefined : creatureType(lines[classifiedAt])
+    return { name, ...(type && { type }) }
+  }
+  const text = { [base.lang]: label(mdtName, base.tooltip.lines) }
+
+  for (const { lang, tooltip } of others) {
+    if (!tooltip) {
+      warnings.push(`${id}: no ${lang} tooltip`)
+      continue
+    }
+    // The index only means anything if both headers hold the same lines. On a mismatch we do
+    // not guess: the name alone is enough, and the app falls back for the rest.
+    if (tooltip.lines.length !== base.tooltip.lines.length) {
+      warnings.push(
+        `${id}: ${lang} header has ${tooltip.lines.length} lines against ${base.tooltip.lines.length} in ${base.lang}, creature type omitted`,
+      )
+      text[lang] = { name: tooltip.name }
+      continue
+    }
+    text[lang] = label(tooltip.name, tooltip.lines)
+  }
+
+  return { text, warnings }
+}
+
+/**
  * Configured languages that the cache has never seen a single label for.
  *
  * The per-spell cache check only looks at the base language, because a *missing secondary*
  * locale is legitimate — Wowhead does not translate everything. That leniency has a blind
- * spot: add a language to `SPELL_LOCALES` and every entry still looks current, so the run
+ * spot: add a language to `WOWHEAD_LOCALES` and every entry still looks current, so the run
  * reports "0 to fetch", exits successfully, and the app silently falls back to English for
  * the whole pool. One entry carrying a label is enough to prove the pass actually ran, so
  * this looks across the cache rather than per spell.

@@ -20,6 +20,6 @@ trap: "Same counter as the other whelp, but this one takes no crowd control at a
 ---
 
 The second MDT entry for the Infused Whelp, distinguished from
-[the first](#/d/ruby-life-pools/mob/187894) by being immune to every crowd control listed.
+[the first](#/d/ruby-life-pools/codex/mob/187894) by being immune to every crowd control listed.
 
 Same ability, same counter to twenty, one fewer way of dealing with it.

@@ -43,8 +43,17 @@ export const en = {
   'dungeon.unknown': 'Unknown dungeon.',
   'dungeon.backHome': 'Back to home',
   'dungeon.route': 'route “{name}”',
+  'tab.overview': 'Overview',
   'tab.codex': 'Codex',
   'tab.route': 'Route',
+
+  // Highlights page
+  'highlights.mobs': 'MOBS TO KNOW',
+  // A shortlisted mob's trap moved onto its row; what is left here belongs to the mobs the
+  // shortlist dropped, so the heading says so rather than reading as a list of everything.
+  'highlights.traps': 'OTHER TRAPS',
+  'highlights.bosses': 'BOSSES',
+  'highlights.trap': 'Trap',
 
   // Codex panel
   'codex.pack': 'Pack {n}',
@@ -60,6 +69,7 @@ export const en = {
   'mob.ccImmune': 'Immune to every CC listed by MDT.',
   'mob.ccUnknown': 'MDT has no CC data for this dungeon.',
   'mob.unknownSpell': 'Spell {id}',
+  'mob.untranslated': 'Not translated yet',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',

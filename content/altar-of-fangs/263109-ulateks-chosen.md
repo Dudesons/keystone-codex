@@ -57,7 +57,7 @@ The caster that decides how a pull goes, at 25 forces per unit for only four uni
 whole dungeon.
 
 **Mass Envenom** is the reason. It is the cast worth a kick over anything else here, and it
-comes while [Living Venom](#/d/altar-of-fangs/mob/263112) adds are alive — packs 34, 38 and
+comes while [Living Venom](#/d/altar-of-fangs/codex/mob/263112) adds are alive — packs 34, 38 and
 39 all pair the two. Pack 43 is the exception: there it stands with the Ritual Chieftain and
 Blades of the Altar instead, which changes what your interrupts are competing for.
 

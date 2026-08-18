@@ -5,9 +5,12 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
+  buildNpcText,
   buildSpellText,
   buildText,
   classifyLines,
+  classifyNpcLines,
+  parseNpcTooltip,
   parseTooltip,
   stripTags,
   tooltipDescription,
@@ -28,6 +31,18 @@ const dismemberEn = parseTooltip(fixture('dismember.en'))
 const dismemberFr = parseTooltip(fixture('dismember.fr'))
 const fadeOutEn = parseTooltip(fixture('fade-out.en'))
 const fadeOutFr = parseTooltip(fixture('fade-out.fr'))
+
+const chieftainEn = parseNpcTooltip(fixture('npc-ritual-chieftain.en'))
+const chieftainFr = parseNpcTooltip(fixture('npc-ritual-chieftain.fr'))
+const raviEn = parseNpcTooltip(fixture('npc-ravi.en'))
+const eggsEn = parseNpcTooltip(fixture('npc-infused-eggs.en'))
+const eggsFr = parseNpcTooltip(fixture('npc-infused-eggs.fr'))
+const twinfangEn = parseNpcTooltip(fixture('npc-twinfang-harrower.en'))
+const twinfangFr = parseNpcTooltip(fixture('npc-twinfang-harrower.fr'))
+const belathEn = parseNpcTooltip(fixture('npc-belath-dawnblade.en'))
+const belathFr = parseNpcTooltip(fixture('npc-belath-dawnblade.fr'))
+const zuljarraEn = parseNpcTooltip(fixture('npc-zuljarra.en'))
+const zuljarraFr = parseNpcTooltip(fixture('npc-zuljarra.fr'))
 
 describe('parseTooltip', () => {
   it('reads the name and the icon', () => {
@@ -201,7 +216,7 @@ describe('unfetchedLocales', () => {
   })
 
   it('names a language the cache has never heard of', () => {
-    // The case that matters: someone adds `de` to SPELL_LOCALES. Without this, the run
+    // The case that matters: someone adds `de` to WOWHEAD_LOCALES. Without this, the run
     // reports "0 to fetch", exits happy, and the app silently falls back to English.
     expect(unfetchedLocales(cache, ['en', 'fr', 'de'])).toEqual(['de'])
   })
@@ -214,5 +229,129 @@ describe('unfetchedLocales', () => {
 
   it('reports an empty cache as missing every language, not as complete', () => {
     expect(unfetchedLocales({}, ['en', 'fr'])).toEqual(['en', 'fr'])
+  })
+})
+
+
+describe('parseNpcTooltip', () => {
+  it('reads the name and the header lines, name excluded', () => {
+    expect(chieftainEn).toEqual({ name: 'Ritual Chieftain', lines: ['Humanoid (Elite)'] })
+    expect(chieftainFr).toEqual({ name: 'Chef du rituel', lines: ['Humanoïde (Élite)'] })
+  })
+
+  it('separates rows Wowhead runs together with no newline between them', () => {
+    // Twinfang Harrower's family sits in its own <tr> but on the same text line, so the rows
+    // have to be read from the markup rather than from Wowhead's whitespace.
+    expect(twinfangEn.lines).toEqual(['Beast (Elite)', 'Chimaera'])
+    expect(twinfangFr.lines).toEqual(['Bête (Élite)', 'Chimère'])
+  })
+
+  it('skips the portrait row a boss tooltip opens with', () => {
+    // Rav'i's first row holds the dungeon-journal image and no text at all.
+    expect(raviEn).toEqual({ name: "Rav'i", lines: ['Beast (Elite)'] })
+  })
+
+  it('keeps the title above the classification and the reaction below it', () => {
+    expect(belathEn.lines).toEqual(['Illidari', 'Level 82 - 90 Humanoid (Normal)', 'Illidari'])
+    expect(zuljarraEn.lines).toEqual(['Level ?? Humanoid (Elite)', 'Friendly'])
+  })
+
+  it('gives up on a response with no name', () => {
+    expect(parseNpcTooltip({})).toBeNull()
+    expect(parseNpcTooltip(null)).toBeNull()
+  })
+
+  it('survives a response carrying no tooltip HTML at all', () => {
+    expect(parseNpcTooltip({ name: 'Bare' })).toEqual({ name: 'Bare', lines: [] })
+  })
+})
+
+describe('classifyNpcLines', () => {
+  it('picks the parenthesised line out of however many the creature has', () => {
+    expect(classifyNpcLines(chieftainEn.lines)).toBe(0)
+    expect(classifyNpcLines(twinfangEn.lines)).toBe(0)
+    expect(classifyNpcLines(belathEn.lines)).toBe(1)
+    expect(classifyNpcLines(zuljarraEn.lines)).toBe(0)
+  })
+
+  it('says so when no line carries a classification', () => {
+    expect(classifyNpcLines([])).toBe(-1)
+    expect(classifyNpcLines(['Illidari'])).toBe(-1)
+  })
+})
+
+describe('buildNpcText', () => {
+  const entries = (en, fr) => [
+    { lang: 'en', tooltip: en },
+    { lang: 'fr', tooltip: fr },
+  ]
+
+  it('translates the name and the creature type together', () => {
+    const { text } = buildNpcText(270306, 'Ritual Chieftain', entries(chieftainEn, chieftainFr))
+    expect(text.en).toEqual({ name: 'Ritual Chieftain', type: 'Humanoid' })
+    expect(text.fr).toEqual({ name: 'Chef du rituel', type: 'Humanoïde' })
+  })
+
+  it('takes the line English put the classification on, not one French happens to match', () => {
+    // Belath's classification is the second of three lines, under a title. Anything that
+    // looked for the first parenthesised line in French would land there by luck, not design.
+    const { text } = buildNpcText(263940, 'Belath Dawnblade', entries(belathEn, belathFr))
+    expect(text.en.type).toBe('Humanoid')
+    expect(text.fr.type).toBe('Humanoïde')
+  })
+
+  it('drops a level prefix, whether it is a range or unknowable', () => {
+    // "Level 82 - 90" and "Niveau 82 - 90", "Level ??" and "Niveau ??": the prefix ends at
+    // its last digit, so it needs no rule per language.
+    expect(buildNpcText(263940, 'Belath', entries(belathEn, belathFr)).text.fr.type).toBe('Humanoïde')
+    expect(buildNpcText(246409, "Zul'jarra", entries(zuljarraEn, zuljarraFr)).text.fr.type).toBe('Humanoïde')
+  })
+
+  it('ignores the creature family, which is a line of its own', () => {
+    const { text } = buildNpcText(261554, 'Twinfang Harrower', entries(twinfangEn, twinfangFr))
+    expect(text.en.type).toBe('Beast')
+    expect(text.fr.type).toBe('Bête')
+  })
+
+  it('omits the type rather than emitting undefined when Wowhead names none', () => {
+    // Infused Eggs render as " (Normal)": a classification with nothing in front of it.
+    const { text } = buildNpcText(264798, 'Infused Eggs', entries(eggsEn, eggsFr))
+    expect(text.en).toEqual({ name: 'Infused Eggs' })
+    expect('type' in text.fr).toBe(false)
+  })
+
+  it('keeps MDT as the authority on the English name', () => {
+    // MDT's name is the identity every content file, note and test is keyed on. Wowhead's
+    // English is a check on the id, never a source that may quietly rename a mob.
+    const { text, warnings } = buildNpcText(270306, 'Ritual Chieftain', entries(chieftainEn, chieftainFr))
+    expect(text.en.name).toBe('Ritual Chieftain')
+    expect(warnings).toEqual([])
+  })
+
+  it('warns rather than renaming when Wowhead disagrees about the English name', () => {
+    const { text, warnings } = buildNpcText(270306, 'Ritual Cheiftain', entries(chieftainEn, chieftainFr))
+    expect(text.en.name).toBe('Ritual Cheiftain')
+    expect(warnings).toEqual([
+      '270306: MDT calls it "Ritual Cheiftain", Wowhead "Ritual Chieftain" — check the id',
+    ])
+  })
+
+  it('refuses to guess when the two headers have different shapes', () => {
+    // The index only means anything if both headers hold the same lines. Keep the name,
+    // drop the type, and say so — exactly what buildSpellText does.
+    const { text, warnings } = buildNpcText(263940, 'Belath Dawnblade', entries(belathEn, chieftainFr))
+    expect(text.fr).toEqual({ name: 'Chef du rituel' })
+    expect(warnings[0]).toContain('1 lines against 3')
+  })
+
+  it('warns and carries on when a secondary locale is missing', () => {
+    const { text, warnings } = buildNpcText(270306, 'Ritual Chieftain', entries(chieftainEn, null))
+    expect(text.en).toBeDefined()
+    expect(text.fr).toBeUndefined()
+    expect(warnings).toEqual(['270306: no fr tooltip'])
+  })
+
+  it('gives up entirely when the base language is missing', () => {
+    expect(buildNpcText(270306, 'Ritual Chieftain', entries(null, chieftainFr))).toBeNull()
   })
 })

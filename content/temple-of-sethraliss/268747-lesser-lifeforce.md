@@ -11,7 +11,7 @@ role: add
 trap:
 ---
 
-A smaller counterpart to the [Lifeforce](#/d/temple-of-sethraliss/mob/268364) orbs, recorded by
+A smaller counterpart to the [Lifeforce](#/d/temple-of-sethraliss/codex/mob/268364) orbs, recorded by
 MDT with **no health and no spells**.
 
 The name implies the same cleanse-or-burst decision at a reduced scale, but nothing in the data
