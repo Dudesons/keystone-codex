@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import type { HighlightMob, HighlightSpell } from '../../lib/highlights'
 import { iconUrl, wowheadUrl } from '../../lib/data'
 import { useI18n } from '../../lib/i18n/context'
-import { TagBadge, ThreatBadge } from '../codex/Badges'
+import { DispelBadges, TagBadge, ThreatBadge } from '../codex/Badges'
 
 export default function MobTable({ slug, mobs }: { slug: string; mobs: HighlightMob[] }) {
   if (!mobs.length) return null
@@ -78,6 +78,7 @@ function SpellChip({ spell }: { spell: HighlightSpell }) {
       ))}
       {/* With no hand-written tag, what MDT knows is still worth showing. */}
       {!spell.tags.length && spell.interruptible && <TagBadge tag="kick" />}
+      <DispelBadges dispel={spell.dispel} />
     </span>
   )
 }

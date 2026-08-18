@@ -44,6 +44,14 @@ describe('MobTable', () => {
     expect(screen.getAllByText('Watch out').length).toBeGreaterThan(0)
   })
 
+  it('names the dispel type MDT declares for a dispellable spell', () => {
+    const { container } = mount()
+    const twinfang = container.querySelector('[data-mob="261554"]')!
+    // Twinfang's Paralyzing Shots (1294569) carries tag: dispel and MDT's own
+    // dispel: ['magic'] — the DISPEL tag alone would not say which school clears it.
+    expect(twinfang.textContent).toContain('magic')
+  })
+
   it('renders nothing at all when there is nothing to show', () => {
     const { container } = renderEn(<MobTable slug={SLUG} mobs={[]} />, { wrapper: MemoryRouter })
     expect(container.querySelector('[data-mob]')).toBeNull()
