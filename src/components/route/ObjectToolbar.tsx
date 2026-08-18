@@ -46,51 +46,51 @@ export default function ObjectToolbar({
 
   return (
     <div className="space-y-2 border-b border-ink-800 pb-2">
-    <div className="flex items-center gap-1">
-      {TOOLS.map(({ tool: candidate, key, glyph }) => {
-        const active = tool === candidate
-        return (
+      <div className="flex items-center gap-1">
+        {TOOLS.map(({ tool: candidate, key, glyph }) => {
+          const active = tool === candidate
+          return (
+            <button
+              key={candidate}
+              // Clicking the active tool drops it, so the strip is its own way back to panning.
+              onClick={() => onTool(active ? null : candidate)}
+              title={t(key)}
+              aria-label={t(key)}
+              data-active={active ? 'true' : undefined}
+              className={`rounded px-2 py-1 text-sm transition ${
+                active ? 'bg-gold-500 text-ink-950' : 'text-ink-300 hover:bg-ink-800'
+              }`}
+            >
+              {glyph}
+            </button>
+          )
+        })}
+        <span className="ml-auto flex gap-1">
           <button
-            key={candidate}
-            // Clicking the active tool drops it, so the strip is its own way back to panning.
-            onClick={() => onTool(active ? null : candidate)}
-            title={t(key)}
-            aria-label={t(key)}
-            data-active={active ? 'true' : undefined}
-            className={`rounded px-2 py-1 text-sm transition ${
-              active ? 'bg-gold-500 text-ink-950' : 'text-ink-300 hover:bg-ink-800'
-            }`}
+            onClick={onUndo}
+            disabled={!canUndo}
+            title={t('map.undo')}
+            aria-label={t('map.undo')}
+            className="rounded px-2 py-1 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-40"
           >
-            {glyph}
+            ↶
           </button>
-        )
-      })}
-      <span className="ml-auto flex gap-1">
-        <button
-          onClick={onUndo}
-          disabled={!canUndo}
-          title={t('map.undo')}
-          aria-label={t('map.undo')}
-          className="rounded px-2 py-1 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-40"
-        >
-          ↶
-        </button>
-        <button
-          onClick={onRedo}
-          disabled={!canRedo}
-          title={t('map.redo')}
-          aria-label={t('map.redo')}
-          className="rounded px-2 py-1 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-40"
-        >
-          ↷
-        </button>
-      </span>
-    </div>
-    {/* Only under a tool that draws: the brush says nothing about placing a note, picking an
-        object up or rubbing one out, and a control that cannot affect the next click is noise. */}
-    {tool && DRAWS.has(tool) && (
-      <BrushControls colour={colour} size={size} onColour={onColour} onSize={onSize} />
-    )}
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            title={t('map.redo')}
+            aria-label={t('map.redo')}
+            className="rounded px-2 py-1 text-sm text-ink-300 hover:bg-ink-800 disabled:opacity-40"
+          >
+            ↷
+          </button>
+        </span>
+      </div>
+      {/* Only under a tool that draws: the brush says nothing about placing a note, picking an
+          object up or rubbing one out, and a control that cannot affect the next click is noise. */}
+      {tool && DRAWS.has(tool) && (
+        <BrushControls colour={colour} size={size} onColour={onColour} onSize={onSize} />
+      )}
     </div>
   )
 }
