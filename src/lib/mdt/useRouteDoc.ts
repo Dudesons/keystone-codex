@@ -804,11 +804,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
    * shared history for a gesture that is thrown away as often as it is kept.
    *
    * An empty array is not throttled, exactly as leaving the map is not: a stroke that lingers
-   * after the hand stopped says something false, and keeps saying it until someone moves.
+   * after the hand stopped says something false, and keeps saying it until someone moves. It is
+   * published as `null`, not `[]`, mirroring `setCursor`'s own `null` exactly: `[]` is truthy, so
+   * a trailing timer already armed by the point before it would happily resurrect it as `pending`
+   * and write it right back a moment later. `null` is falsy, so the same bypass that makes the
+   * clear immediate is what keeps it from being undone.
    */
   const setDrawing = useCallback((points: Point[]) => {
     const state = drawingRef.current
-    const write = (value: Point[]) => {
+    const write = (value: Point[] | null) => {
       // Read the provider at the moment of writing, never through a closure: a throttled write
       // can land after the session it belonged to was torn down.
       sessionRef.current?.provider.awareness.setLocalStateField('drawing', value)
@@ -816,7 +820,7 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
 
     if (points.length === 0) {
       state.pending = null
-      write(points)
+      write(null)
       return
     }
 

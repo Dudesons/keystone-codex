@@ -51,6 +51,30 @@ describe('readPeers', () => {
     expect(peers[0].cursor).toBeUndefined()
   })
 
+  it('reads a drawing when there is one', () => {
+    const points = [{ x: 1, y: 1 }, { x: 2, y: 2 }]
+    const peers = readPeers(new Map<number, unknown>([[7, { drawing: points }]]), 1)
+    expect(peers[0].drawing).toEqual(points)
+  })
+
+  it('leaves the drawing out when the peer is not mid-gesture', () => {
+    const peers = readPeers(new Map<number, unknown>([[7, {}]]), 1)
+    expect(peers[0].drawing).toBeUndefined()
+  })
+
+  it('ignores a drawing that is not an array', () => {
+    const peers = readPeers(new Map<number, unknown>([[7, { drawing: { x: 1, y: 1 } }]]), 1)
+    expect(peers[0].drawing).toBeUndefined()
+  })
+
+  it('ignores a drawing with a point that is not a pair of numbers', () => {
+    const peers = readPeers(
+      new Map<number, unknown>([[7, { drawing: [{ x: 1, y: 1 }, { x: 'far' }] }]]),
+      1,
+    )
+    expect(peers[0].drawing).toBeUndefined()
+  })
+
   it('orders by client id, so cursors do not swap places between renders', () => {
     const shuffled = new Map<number, unknown>([
       [9, { user: { name: 'C' } }],

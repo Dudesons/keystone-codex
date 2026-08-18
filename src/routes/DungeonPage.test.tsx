@@ -2,10 +2,12 @@
 // ABOUTME: Covers the header, the tab switch, and an unknown dungeon.
 
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, renderHook, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Awareness } from 'y-protocols/awareness'
 import { getLookup } from '../lib/data'
+import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
 
@@ -592,6 +594,87 @@ describe('The drawing tools', () => {
     // map: nothing in the codex tab ever hands `drawing` a gesture to report, so a surface
     // here would only ever sit between the cursor and the blips beneath it.
     expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
+  })
+})
+
+describe('Publishing the stroke in progress', () => {
+  it('shows a preview while dragging, and drops it once released', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeTruthy()
+
+    fireEvent.pointerUp(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+    expect(container.querySelector('[data-testid="preview-stroke"]')).toBeNull()
+  })
+
+  it('publishes nothing while nobody could be listening, and something once a session is open', () => {
+    const spy = vi.spyOn(Awareness.prototype, 'setLocalStateField')
+    const { container } = renderEn(at(`/d/${SLUG}/route`))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+    let surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+    expect(spy.mock.calls.some(([field]) => field === 'drawing')).toBe(false)
+
+    // Drop the tool, open a session, and repeat the same drag: it now has somewhere to publish.
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.click(screen.getByText('Open a session with this route'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+    surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 2 })
+    fireEvent.pointerMove(surface, { clientX: 120, clientY: 80, pointerId: 2 })
+    expect(spy.mock.calls.some(([field]) => field === 'drawing')).toBe(true)
+  })
+
+  it('is withdrawn from a peer when Escape drops the tool mid-drag', async () => {
+    // The host half of a real room: `joinRoom` reaches other tabs of the same origin over a
+    // genuine `BroadcastChannel`, the same mechanism `useRouteDoc.test.tsx`'s own two-peer tests
+    // rely on — no relay and no second browser are needed to prove a peer sees the withdrawal.
+    const peer = renderHook(() => useRouteDoc(SLUG, lookup.dungeon.mdtIndex))
+    act(() => peer.result.current.joinRoom('ESCPMD', 'host'))
+
+    const { container } = renderEn(at(`/d/${SLUG}/route?room=ESCPMD`))
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.click(screen.getByRole('button', { name: /join room escpmd/i }))
+    expect(screen.getByText('Leave')).toBeDefined()
+
+    // jsdom lays everything out at zero: without a real container size, `toMapPoint` would
+    // divide by it and every reported point would come out `NaN` — which a peer correctly
+    // treats as no point at all (`readPoints` rejects a coordinate that is not a number), never
+    // seeing a gesture that, on the host's own screen, looks perfectly real. Same stub the
+    // map's own "reports a move in map coordinates" test uses.
+    const mapSurface = container.querySelector('.map-surface')!
+    Object.defineProperty(mapSurface, 'clientWidth', { configurable: true, value: 2000 })
+    Object.defineProperty(mapSurface, 'clientHeight', { configurable: true, value: 1000 })
+    fireEvent.click(screen.getByTitle('Fit'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+    const surface = screen.getByTestId('draw-surface')
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+
+    await waitFor(() =>
+      expect(peer.result.current.collab.peers.some((p) => !p.isSelf && p.drawing?.length)).toBe(true),
+    )
+
+    // Escape, not a release: the drag is abandoned mid-gesture, the one path `DrawSurface`
+    // itself never gets a chance to clean up after.
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    await waitFor(() =>
+      expect(peer.result.current.collab.peers.every((p) => !p.drawing?.length)).toBe(true),
+    )
+
+    peer.unmount()
   })
 })
 

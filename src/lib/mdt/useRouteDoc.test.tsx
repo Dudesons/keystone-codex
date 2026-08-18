@@ -703,6 +703,21 @@ describe('A stroke in progress', () => {
     guest.unmount()
   })
 
+  it('clears at once when the gesture ends, not after the throttle window', () => {
+    // The direct mirror of `setCursor`'s "drops the cursor at once when the pointer leaves the
+    // map": a single session, read synchronously, with no `waitFor` to paper over a write that
+    // only lands after the throttle's trailing timer fires. `setDrawing([])` has to publish
+    // `null` rather than `[]` for this to hold — `[]` is truthy, so a timer already armed by the
+    // point just before it would write the empty array right back a moment later, and this
+    // assertion would still pass, just fifty milliseconds later than it looks like it does.
+    const { result, unmount } = mount()
+    act(() => result.current.joinRoom('DRAW04', 'host'))
+    act(() => result.current.setDrawing([{ x: 1, y: 1 }, { x: 2, y: 2 }]))
+    act(() => result.current.setDrawing([]))
+    expect(self(result.current.collab.peers).drawing).toBeUndefined()
+    unmount()
+  })
+
   it('holds back a flood of points, then sends the last one', () => {
     // Same mechanism `setCursor`'s "holds back a flood of moves" exercises, for the throttle
     // `setDrawing` keeps of its own.

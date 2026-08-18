@@ -189,13 +189,17 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     return () => document.removeEventListener('keydown', onKey)
   }, [mode])
 
-  // A tool change starts with no preview. Most gestures already clear it themselves on release
-  // or cancel, but dropping the tool mid-drag (Escape, say) unmounts `DrawSurface` without
-  // either firing — leaving a stale, now-orphaned gesture to flash as the next tool's preview
-  // otherwise.
+  // A tool change starts with no preview, for this session and for every peer. Most gestures
+  // already publish their own clear on release or cancel, but dropping the tool mid-drag
+  // (Escape, or leaving Route mode) unmounts `DrawSurface` without either firing — locally that
+  // just leaves a stale, now-orphaned gesture to flash as the next tool's preview, but over the
+  // wire it is worse: with nothing else left to publish the clear, the last non-empty stroke
+  // stays on awareness indefinitely, and every teammate keeps rendering the abandoned half-stroke
+  // until this session starts a whole new gesture.
   useEffect(() => {
     setProgress([])
-  }, [tool])
+    publishDrawing?.([])
+  }, [tool, publishDrawing])
 
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.

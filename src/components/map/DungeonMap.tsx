@@ -27,10 +27,16 @@ import {
   type Transform,
 } from './viewport'
 
-/** The fields a stroke needs to be drawable, for one that exists only while a hand is moving. */
-const PREVIEW_STROKE = {
-  kind: 'stroke' as const,
-  points: [] as Point[],
+/**
+ * The fields a stroke needs to be drawable, for one that exists only while a hand is moving.
+ * `color` is never actually painted: the one call site below always supplies `colorOverride`, a
+ * peer's own colour rather than MDT's. It is here only because `MdtStroke` requires the field —
+ * typed as `MdtStroke` rather than left to inference, so a future required field on that
+ * interface surfaces here rather than as a mystery at the call site.
+ */
+const PREVIEW_STROKE: MdtStroke = {
+  kind: 'stroke',
+  points: [],
   sublevel: 1,
   color: 'ffffff',
   isArrow: false,
