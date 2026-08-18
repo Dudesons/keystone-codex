@@ -34,8 +34,23 @@ export function summariseFindings(findings) {
  * text would land as a top-level paragraph and the `→ action` line would attach to nothing. A
  * description beginning `- ` or `# ` would go further and fabricate a checkbox or a heading in a
  * document whose checkboxes are the worklist.
+ *
+ * `oneLine` folds only a line break and the ordinary whitespace hugging it -- not every run of
+ * whitespace. 695 of the values in the committed `spells.json` carry U+00A0 (non-breaking space)
+ * or U+202F (narrow no-break space), which is how French tooltips space their numbers.
+ * JavaScript's `\s` -- and `String.prototype.trim` -- already treat both as whitespace, so a
+ * plain `\s+` (or a bare `.trim()` on the result) silently rewrites those bytes. That matters
+ * because severity 3's whole job is showing a tooltip's old text against its new text: if the
+ * only difference between two captures was one of these invisible characters, the report would
+ * render two strings a reader cannot tell apart, in the one section whose purpose is showing a
+ * difference. `[^\S  ]` reads as "whitespace, per `\s`, except those two" -- do not
+ * simplify it back to `\s+`. See commit feb0910, "Spell a French label byte for byte, invisible
+ * characters included", for the earlier bug in the same class.
  */
-const oneLine = (s) => String(s).replace(/\s+/g, ' ').trim()
+const oneLine = (s) =>
+  String(s)
+    .replace(/[^\S  ]*(?:\r\n|\r|\n)[^\S  ]*/g, ' ')
+    .replace(/^[^\S  ]+|[^\S  ]+$/g, '')
 
 function renderFinding(f) {
   const lines = [`- [ ] **${f.subject}** — ${f.what}`]

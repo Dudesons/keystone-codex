@@ -98,4 +98,39 @@ describe('renderReport', () => {
     // Nothing from the tooltip escaped into a heading or a second checkbox.
     expect((out.match(/- \[ \] /g) ?? [])).toHaveLength(1)
   })
+
+  it('keeps a non-breaking space byte for byte, even across a paragraph break', () => {
+    // A real value, not a hand-made one: French tooltips use U+00A0 (non-breaking space) and
+    // U+202F (narrow no-break space) to space their numbers, and `\s` -- the character class the
+    // old implementation collapsed -- matches both. Spell 263958's French description carries two
+    // non-breaking spaces *and* the blank line between paragraphs that oneLine must still fold,
+    // so this one case pins both halves of the guarantee at once.
+    const entry = realSpells['263958']
+    const description = entry.text.fr.description
+    expect(description).toContain(' ')
+    expect(description).toContain('\n\n')
+
+    const out = renderReport({
+      ...context,
+      findings: [{
+        severity: 3,
+        dungeon: 'altar-of-fangs',
+        subject: 'spell 263958',
+        what: 'description changed',
+        detail: `[fr] (none) -> ${description}`,
+        action: 'reread the note',
+      }],
+    })
+
+    const lines = out.split('\n')
+    const bullet = lines.findIndex((l) => l.startsWith('- [ ] '))
+    // Every non-breaking space in the source value survives, at the same count.
+    const nbspInSource = (description.match(/ /g) ?? []).length
+    const nbspInLine = (lines[bullet + 1].match(/ /g) ?? []).length
+    expect(nbspInSource).toBeGreaterThan(0)
+    expect(nbspInLine).toBe(nbspInSource)
+    // The paragraph break still folds into one space, so the detail stays one list item.
+    expect((out.match(/- \[ \] /g) ?? [])).toHaveLength(1)
+    expect(lines[bullet + 2].trimStart()).toBe('→ reread the note')
+  })
 })
