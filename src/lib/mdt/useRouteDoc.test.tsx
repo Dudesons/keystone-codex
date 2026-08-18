@@ -1110,4 +1110,54 @@ describe('Undoing my own object edits', () => {
     act(() => result.current.actions.undo())
     expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'first')).toBe(false)
   })
+
+  runBothFixtures(
+    'forgets what it could redo when a different route is imported, so redo cannot resurrect the previous preset’s objects',
+    () => {
+      const { result } = mount()
+      act(() => void result.current.actions.importRoute(drawn))
+      act(() =>
+        result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 3, y: 3 },
+          sublevel: 1,
+          text: 'belongs only to the first preset',
+        }),
+      )
+      act(() => result.current.actions.undo())
+
+      act(() => void result.current.actions.importRoute(plain))
+
+      // The direct statement of the fix: an edit made against a route that has since been
+      // replaced has nothing left to mean, so there is nothing to put back.
+      expect(result.current.canRedo).toBe(false)
+
+      act(() => result.current.actions.redo())
+
+      // And the sharp form: redoing must not re-create the `objects` key with the *first*
+      // preset's contents under the second preset's `source`. If it does, `objectsToLua` lets
+      // those stale `from` values claim this preset's own entries and synthesise over them,
+      // while every unclaimed entry is omitted as a deletion — the same byte-identical guard
+      // `'forgets a previously adopted objects array on re-import'` holds, now against redo.
+      const out = routeToLua(result.current.route)
+      expect(out.get('objects')).toEqual(decodeMdtString(plain).table.get('objects'))
+    },
+  )
+
+  runDrawn('forgets what it could redo on reset too, for the same reason', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 3, y: 3 }, sublevel: 1, text: 'gone' }),
+    )
+    act(() => result.current.actions.undo())
+
+    act(() => result.current.actions.reset())
+
+    expect(result.current.canRedo).toBe(false)
+    act(() => result.current.actions.redo())
+    // `reset` leaves no source, so there is nothing objects could be derived from — and redo must
+    // not put back an array adopted from the preset reset just discarded.
+    expect(result.current.route.objects).toEqual([])
+  })
 })

@@ -506,10 +506,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       })
     undoManager.on('stack-item-added', sync)
     undoManager.on('stack-item-popped', sync)
+    // `clear()` — which `importRoute` and `reset` call — empties the stacks without popping
+    // anything, and announces itself as `stack-cleared` alone. Without this listener the buttons
+    // would stay enabled over two stacks that are already empty.
+    undoManager.on('stack-cleared', sync)
     sync()
     return () => {
       undoManager.off('stack-item-added', sync)
       undoManager.off('stack-item-popped', sync)
+      undoManager.off('stack-cleared', sync)
       // The manager holds its own listener on the doc; leaving it running past this hook's
       // interest in `undoManager` is the same class of leak `closeSession` exists to avoid for
       // the provider and its awareness instance.
@@ -585,10 +590,19 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           // all.
           root.delete('objects')
         })
+        // The stacks outlive the transaction above: this hook's `UndoManager` is memoised on
+        // `[doc]`, and importing does not replace the document. A stack item recorded against a
+        // route that has since been replaced has nothing left to mean, and redoing one is worse
+        // than useless — it re-creates the `objects` key *and its contents*, objects belonging to
+        // the previous preset now sitting under a different `source`, which is exactly the
+        // corruption the `delete` above exists to prevent. Deleting the key inside the
+        // transaction is not enough on its own, because that transaction carries no origin and
+        // the manager therefore never sees it.
+        undoManager.clear()
         return imported
       },
 
-      reset: () =>
+      reset: () => {
         doc.transact(() => {
           const root = doc.getMap('route')
           root.set('name', DEFAULT_ROUTE_NAME)
@@ -601,7 +615,11 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           // anyway (there is no `source` left for it to claim a key in), but silently — this
           // makes the model agree with that outcome instead of disagreeing with it.
           root.delete('objects')
-        }),
+        })
+        // And for the same reason as `importRoute`: the stacks are about a route that no longer
+        // exists, and redoing one of them would put its objects back under a source that is gone.
+        undoManager.clear()
+      },
 
       addObject: (object) => withObjects((objects) => objects.push([storeObject(object, nextObjectId())])),
 
