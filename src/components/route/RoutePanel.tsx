@@ -8,12 +8,40 @@ import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { frontalList, getIndicators, kickList } from '../../lib/indicators'
 import { encodeMdtString } from '../../lib/mdt/string'
 import { MdtUserError } from '../../lib/mdt/errors'
-import { routeStats, routeToLua, toCssColor, type Route } from '../../lib/mdt/route'
+import {
+  forcesStanding,
+  routeStats,
+  routeToLua,
+  toCssColor,
+  type ForcesStanding,
+  type Route,
+} from '../../lib/mdt/route'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { randomRoomCode } from '../../lib/mdt/useRouteDoc'
 import { useI18n } from '../../lib/i18n/context'
 import type { I18n } from '../../lib/i18n/context'
 import type { Enemy } from '../../lib/types'
+
+/**
+ * The forces readout is three elements deep — the running total, the percentage and the bar —
+ * and all three say the same thing about the same number. Keeping the mapping in one place is
+ * what stops them disagreeing.
+ */
+const FORCES_TOTAL_CLASS: Record<ForcesStanding, string> = {
+  short: 'text-ink-100',
+  complete: 'text-threat-low',
+  over: 'text-threat-lethal',
+}
+const FORCES_PERCENT_CLASS: Record<ForcesStanding, string> = {
+  short: 'text-gold-400',
+  complete: 'text-threat-low',
+  over: 'text-threat-lethal',
+}
+const FORCES_BAR_CLASS: Record<ForcesStanding, string> = {
+  short: 'bg-gold-500',
+  complete: 'bg-threat-low',
+  over: 'bg-threat-lethal',
+}
 
 interface Props {
   slug: string
@@ -78,6 +106,7 @@ export default function RoutePanel({
   const [expanded, setExpanded] = useState<number | null>(null)
 
   const stats = routeStats(route, lookup)
+  const standing = forcesStanding(stats.percent)
 
   /** Whether anything has been pulled yet — a route with no clones is nothing to show. */
   const hasRoute = route.pulls.some((pull) => pull.clones.length > 0)
@@ -140,16 +169,17 @@ export default function RoutePanel({
         <div className="mt-3 flex items-baseline justify-between text-sm">
           <span className="text-ink-400">{t('route.forces')}</span>
           <span className="tabular-nums">
-            <span className={stats.percent >= 100 ? 'text-threat-low' : 'text-ink-100'}>{stats.total}</span>
+            <span className={FORCES_TOTAL_CLASS[standing]}>{stats.total}</span>
             <span className="text-ink-600"> / {stats.required}</span>
-            <span className={`ml-2 ${stats.percent >= 100 ? 'text-threat-low' : 'text-gold-400'}`}>
+            <span className={`ml-2 ${FORCES_PERCENT_CLASS[standing]}`}>
               {formatPercent(stats.percent, 1)}
             </span>
           </span>
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-800">
           <div
-            className={`h-full rounded-full ${stats.percent >= 100 ? 'bg-threat-low' : 'bg-gold-500'}`}
+            data-standing={standing}
+            className={`h-full rounded-full ${FORCES_BAR_CLASS[standing]}`}
             style={{ width: `${Math.min(100, stats.percent)}%` }}
           />
         </div>

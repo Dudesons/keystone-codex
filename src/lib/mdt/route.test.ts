@@ -4,8 +4,10 @@
 import { describe, expect, it } from 'vitest'
 import { cloneKey, getLookup } from '../data'
 import {
+  OVERPULL_PERCENT,
   PULL_COLORS,
   emptyRoute,
+  forcesStanding,
   nextColor,
   pullIndexByClone,
   routeStats,
@@ -144,5 +146,27 @@ describe('routeStats', () => {
       objects: [],
     }
     expect(routeStats(route, lookup).percent).toBeGreaterThanOrEqual(100)
+  })
+})
+
+describe('forcesStanding', () => {
+  it('calls a route short of the requirement short', () => {
+    expect(forcesStanding(0)).toBe('short')
+    expect(forcesStanding(99.9)).toBe('short')
+  })
+
+  it('calls it complete from the requirement up to the overpull margin', () => {
+    expect(forcesStanding(100)).toBe('complete')
+    expect(forcesStanding(101.5)).toBe('complete')
+  })
+
+  it('calls it over past the margin, where the extra forces are pulled for nothing', () => {
+    expect(forcesStanding(101.6)).toBe('over')
+    expect(forcesStanding(140)).toBe('over')
+  })
+
+  it('reads the margin from the constant, so the two cannot drift apart', () => {
+    expect(forcesStanding(OVERPULL_PERCENT)).toBe('complete')
+    expect(forcesStanding(OVERPULL_PERCENT + 0.1)).toBe('over')
   })
 })

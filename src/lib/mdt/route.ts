@@ -206,6 +206,20 @@ export interface RouteStats {
   percent: number
 }
 
+/** How a route's forces read against what the dungeon requires. */
+export type ForcesStanding = 'short' | 'complete' | 'over'
+
+/**
+ * Past this share of the requirement, the surplus is forces pulled for nothing. A route is
+ * meant to land a little above 100%, not on it — a mob that dies late still has to count.
+ */
+export const OVERPULL_PERCENT = 101.5
+
+export function forcesStanding(percent: number): ForcesStanding {
+  if (percent > OVERPULL_PERCENT) return 'over'
+  return percent >= 100 ? 'complete' : 'short'
+}
+
 export function routeStats(route: Route, lookup: DungeonLookup): RouteStats {
   const cumulative: number[] = []
   let running = 0

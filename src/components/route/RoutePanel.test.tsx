@@ -69,6 +69,20 @@ const routeWith = (packCount: number): Route => ({
   })),
 })
 
+/** Every clone in the dungeon, in one pull — more forces than the dungeon requires. */
+const fullRoute = (): Route => ({
+  ...emptyRoute(SLUG, MDT_INDEX),
+  pulls: [
+    {
+      color: nextColor(0),
+      clones: [...lookup.cloneByKey.keys()].map((k) => {
+        const [enemyIdx, cloneIdx] = k.split(':').map(Number)
+        return { enemyIdx, cloneIdx }
+      }),
+    },
+  ],
+})
+
 const mount = (over: Partial<React.ComponentProps<typeof RoutePanel>> = {}) => {
   const { calls, actions } = recorder()
   const result = renderEn(
@@ -114,16 +128,23 @@ describe('Route summary', () => {
   })
 
   it('caps the progress bar at 100% even when the route over-pulls', () => {
-    const everything: Route = {
-      ...emptyRoute(SLUG, MDT_INDEX),
-      pulls: [{ color: nextColor(0), clones: [...lookup.cloneByKey.keys()].map((k) => {
-        const [enemyIdx, cloneIdx] = k.split(':').map(Number)
-        return { enemyIdx, cloneIdx }
-      }) }],
-    }
-    const { container } = mount({ route: everything })
-    const bar = container.querySelector<HTMLElement>('.bg-threat-low')!
+    const { container } = mount({ route: fullRoute() })
+    const bar = container.querySelector<HTMLElement>('[data-standing]')!
     expect(bar.style.width).toBe('100%')
+  })
+
+  it('leaves the bar short of the requirement on a partial route', () => {
+    const { container } = mount()
+    expect(container.querySelector('[data-standing]')?.getAttribute('data-standing')).toBe('short')
+  })
+
+  it('turns the bar red once the route pulls more than it needs', () => {
+    // Every clone in Altar of Fangs is 963 forces against 817 required — 117.9%, well past
+    // the margin. That the dungeon offers more than it asks for is the point of routing.
+    const { container } = mount({ route: fullRoute() })
+    const bar = container.querySelector('[data-standing]')!
+    expect(bar.getAttribute('data-standing')).toBe('over')
+    expect(bar.className).toContain('bg-threat-lethal')
   })
 })
 
