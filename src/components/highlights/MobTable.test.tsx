@@ -33,7 +33,16 @@ describe('MobTable', () => {
     const { container } = mount()
     const twinfang = container.querySelector('[data-mob="261554"]')!
     expect(twinfang.textContent).toContain('Twinfang Harrower')
-    expect(twinfang.querySelector(`a[href="/d/${SLUG}/map/mob/261554"]`)).not.toBeNull()
+    expect(twinfang.querySelector(`a[href="/d/${SLUG}/codex/mob/261554"]`)).not.toBeNull()
+  })
+
+  it("shows the mob's portrait, from its displayId", () => {
+    const { container } = mount()
+    // Twinfang Harrower carries displayId 142386 (src/data/generated/altar-of-fangs.json),
+    // and public/portraits/142386.webp exists among the 227 portraits fetched.
+    const twinfang = container.querySelector('[data-mob="261554"]')!
+    const img = twinfang.querySelector('img')
+    expect(img?.getAttribute('src')).toContain('portraits/142386.webp')
   })
 
   it('puts every prio-1 spell of the mob on its row, linked to Wowhead', () => {

@@ -3,6 +3,7 @@
 
 import { Link } from 'react-router-dom'
 import type { HighlightMob } from '../../lib/highlights'
+import { portraitUrl } from '../../lib/data'
 import { useI18n } from '../../lib/i18n/context'
 import { ThreatBadge } from '../codex/Badges'
 import SpellChip from './SpellChip'
@@ -28,8 +29,16 @@ function MobRow({ slug, mob }: { slug: string; mob: HighlightMob }) {
       className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-ink-800 px-3 py-2.5 last:border-b-0 hover:bg-ink-800/40"
     >
       <div className="flex min-w-[13rem] items-center gap-2">
+        {mob.displayId != null && (
+          <img
+            src={portraitUrl(mob.displayId)}
+            alt=""
+            loading="lazy"
+            className="h-7 w-7 shrink-0 rounded-full border border-gold-500/40 object-cover"
+          />
+        )}
         <Link
-          to={`/d/${slug}/map/mob/${mob.npcId}`}
+          to={`/d/${slug}/codex/mob/${mob.npcId}`}
           className="text-sm font-semibold text-ink-100 hover:text-gold-400"
         >
           {mob.name}
