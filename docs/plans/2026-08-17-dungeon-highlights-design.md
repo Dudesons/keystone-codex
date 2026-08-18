@@ -5,7 +5,7 @@ two screens — the spells to know, the traps, the bosses — before the map and
 ever loaded.
 
 **Why now:** the material already exists and nobody reads it in aggregate. The codex holds
-**419 spells marked `prio: 1`** across 226 mob files, **215 written `trap:` sentences**, plus
+**419 spells marked `prio: 1`** across 226 mob files, **214 written `trap:` sentences**, plus
 `threat`, `role` and the `tag` on every annotated spell. Today all of it is reachable only one
 mob at a time, through a 400px panel, after picking the right blip on a map. A derived page
 turns the same content into a briefing, and costs no new writing: filling in a mob card
@@ -43,9 +43,14 @@ through: `sessionLink()`
 `#/d/:slug?room=XXX`, which under the new table is the highlights page — a reading page with
 no route editor and nothing that reads `?room=`. It emits `#/d/:slug/map?room=XXX` instead.
 
-An invitation or a mob link sent before this change lands on `*` and goes home. That is
-accepted, not overlooked. **If this app ever ships a link people keep, the same move will
-need the redirect that is deliberately absent here.**
+A mob link sent before this change lands on `*` and goes home. That is accepted, not
+overlooked. An old **invitation** does not: `?room=` is a query string, which route matching
+never looks at, so `#/d/:slug?room=XXX` still matches `/d/:slug` and renders the highlights
+page — a page that does not read `room` at all. The invitee sees an ordinary briefing, with
+no join card and no error, and never learns the link was stale. That failure is silent and
+strictly worse than the mob link's `*`, and is accepted for the same reason: the app has no
+users yet. **If this app ever ships a link people keep, the same move will need the redirect
+that is deliberately absent here.**
 
 ### 2. The page is a briefing, not a copy of the guide
 
