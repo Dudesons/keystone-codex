@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CloneRef, Enemy, Pack } from '../../lib/types'
-import { cloneKey, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'
+import { cloneKey, getNpcLabel, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
@@ -557,7 +557,7 @@ function CloneTooltip({
   return (
     <div className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg">
       <div className="flex items-center gap-2">
-        <span className="font-semibold text-ink-100">{enemy.name}</span>
+        <span className="font-semibold text-ink-100">{getNpcLabel(enemy, locale).name}</span>
         {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
       </div>
       <div className="mt-0.5 text-xs text-ink-400">

@@ -12,7 +12,7 @@
  * adds the new mobs. That decision lives in `content-stub.mjs`, where it is tested without a
  * filesystem; this file only reads and writes.
  *
- * Stubs are written in the base language (`SPELL_LOCALES[0]`). A translation is a separate
+ * Stubs are written in the base language (`WOWHEAD_LOCALES[0]`). A translation is a separate
  * `<name>.<locale>.md` file carrying text only — see the `i18n` skill.
  */
 

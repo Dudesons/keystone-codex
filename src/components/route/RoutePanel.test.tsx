@@ -4,12 +4,12 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getLookup } from '../../lib/data'
+import { getLookup, getNpcLabel } from '../../lib/data'
 import { emptyRoute, nextColor, routeToLua, type Route } from '../../lib/mdt/route'
 import { encodeMdtString } from '../../lib/mdt/string'
 import type { Peer } from '../../lib/collab/presence'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
-import { renderEn } from '../../test/render'
+import { renderEn, renderFr } from '../../test/render'
 import RoutePanel, { sessionLink } from './RoutePanel'
 
 afterEach(cleanup)
@@ -69,9 +69,12 @@ const routeWith = (packCount: number): Route => ({
   })),
 })
 
-const mount = (over: Partial<React.ComponentProps<typeof RoutePanel>> = {}) => {
+const mount = (
+  over: Partial<React.ComponentProps<typeof RoutePanel>> = {},
+  render: typeof renderEn = renderEn,
+) => {
   const { calls, actions } = recorder()
-  const result = renderEn(
+  const result = render(
     <RoutePanel
       slug={SLUG}
       lookup={lookup}
@@ -138,6 +141,14 @@ describe('Pull list', () => {
     const items = container.querySelectorAll('ol > li')
     expect(items).toHaveLength(2)
     expect(items[0].textContent).toMatch(/\d+× /)
+  })
+
+  it('names those mobs in the reader’s language', () => {
+    // The pull line is the one place a mob name appears without its card next to it, so an
+    // untranslated one here reads as a bug rather than as missing content.
+    const first = lookup.enemyByIdx.get(packs[0].members[0].enemyIdx)!
+    const { container } = mount({}, renderFr)
+    expect(container.querySelector('ol > li')!.textContent).toContain(getNpcLabel(first, 'fr').name)
   })
 
   it('says a pull is empty rather than showing a blank line', () => {

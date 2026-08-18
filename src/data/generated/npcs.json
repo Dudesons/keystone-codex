@@ -1,0 +1,3319 @@
+{
+ "133384": {
+  "id": 133384,
+  "text": {
+   "en": {
+    "name": "Merektha",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Merekpha",
+    "type": "Bête"
+   }
+  }
+ },
+ "133392": {
+  "id": 133392,
+  "text": {
+   "en": {
+    "name": "Avatar of Sethraliss",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Avatar de Sephraliss",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "133935": {
+  "id": 133935,
+  "text": {
+   "en": {
+    "name": "Animated Guardian",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Gardien animé",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "133943": {
+  "id": 133943,
+  "text": {
+   "en": {
+    "name": "Minion of Zul",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Séide de Zul",
+    "type": "Aberration"
+   }
+  }
+ },
+ "134157": {
+  "id": 134157,
+  "text": {
+   "en": {
+    "name": "Umbral Warrior",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Guerrier ombreux",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134158": {
+  "id": 134158,
+  "text": {
+   "en": {
+    "name": "Shadow-Borne Champion",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Champion portelombre",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134174": {
+  "id": 134174,
+  "text": {
+   "en": {
+    "name": "Risen Hexer",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Maléficieur ressuscité",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134251": {
+  "id": 134251,
+  "text": {
+   "en": {
+    "name": "Seneschal M'bara",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Sénéchal M'bara",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134331": {
+  "id": 134331,
+  "text": {
+   "en": {
+    "name": "King Rahu'ai",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Roi Rahu'ai",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134364": {
+  "id": 134364,
+  "text": {
+   "en": {
+    "name": "Faithless Subjugator",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Subjugateur infidèle",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134388": {
+  "id": 134388,
+  "text": {
+   "en": {
+    "name": "A Knot of Snakes",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Noeud de serpents",
+    "type": "Bête"
+   }
+  }
+ },
+ "134389": {
+  "id": 134389,
+  "text": {
+   "en": {
+    "name": "Toxic Viper",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Vipère toxique",
+    "type": "Bête"
+   }
+  }
+ },
+ "134390": {
+  "id": 134390,
+  "text": {
+   "en": {
+    "name": "Storm Serpent",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent des tempêtes",
+    "type": "Bête"
+   }
+  }
+ },
+ "134487": {
+  "id": 134487,
+  "text": {
+   "en": {
+    "name": "Merektha",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Merekpha",
+    "type": "Bête"
+   }
+  }
+ },
+ "134599": {
+  "id": 134599,
+  "text": {
+   "en": {
+    "name": "Imbued Stormcaller",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Mande-foudre imprégné",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134600": {
+  "id": 134600,
+  "text": {
+   "en": {
+    "name": "Sandswept Hunter",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Chasseur ensablé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134602": {
+  "id": 134602,
+  "text": {
+   "en": {
+    "name": "Shrouded Fang",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Serpent camouflé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134616": {
+  "id": 134616,
+  "text": {
+   "en": {
+    "name": "Barbed Krolusk",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Krolusk épineux",
+    "type": "Bête"
+   }
+  }
+ },
+ "134629": {
+  "id": 134629,
+  "text": {
+   "en": {
+    "name": "Sand-Sworn Rider",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Coursier ligesable",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134686": {
+  "id": 134686,
+  "text": {
+   "en": {
+    "name": "Krolusk Matriarch",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Matriarche krolusk",
+    "type": "Bête"
+   }
+  }
+ },
+ "134691": {
+  "id": 134691,
+  "text": {
+   "en": {
+    "name": "Static Anomaly",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Anomalie statique",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "134739": {
+  "id": 134739,
+  "text": {
+   "en": {
+    "name": "Purification Construct",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Assemblage purificateur",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "134990": {
+  "id": 134990,
+  "text": {
+   "en": {
+    "name": "Storm Adept",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Adepte des tempêtes",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134991": {
+  "id": 134991,
+  "text": {
+   "en": {
+    "name": "Sandfury Stonefist",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Empoigneur furie-des-sables",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "134993": {
+  "id": 134993,
+  "text": {
+   "en": {
+    "name": "Mchimba the Embalmer",
+    "type": "Mechanical"
+   },
+   "fr": {
+    "name": "Mchimba l'Embaumeur",
+    "type": "Mécanique"
+   }
+  }
+ },
+ "135007": {
+  "id": 135007,
+  "text": {
+   "en": {
+    "name": "Orb Watcher",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Surveillant d'orbe",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "135167": {
+  "id": 135167,
+  "text": {
+   "en": {
+    "name": "Royal Berserker",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Berserker royal",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "135192": {
+  "id": 135192,
+  "text": {
+   "en": {
+    "name": "Honored Raptor",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Raptor honoré",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "135204": {
+  "id": 135204,
+  "text": {
+   "en": {
+    "name": "Phantom Hex Priest",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Prêtre maléficieur fantôme",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "135231": {
+  "id": 135231,
+  "text": {
+   "en": {
+    "name": "Ghostly Brute",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Brute fantomatique",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "135239": {
+  "id": 135239,
+  "text": {
+   "en": {
+    "name": "Spectral Shaman",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Chamane spectrale",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "135322": {
+  "id": 135322,
+  "text": {
+   "en": {
+    "name": "The Golden Serpent",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Le serpent doré",
+    "type": "Bête"
+   }
+  }
+ },
+ "135406": {
+  "id": 135406,
+  "text": {
+   "en": {
+    "name": "Animated Gold",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Or animé",
+    "type": "Aberration"
+   }
+  }
+ },
+ "135445": {
+  "id": 135445,
+  "text": {
+   "en": {
+    "name": "Lightning Spire",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Flèche de foudre",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "135562": {
+  "id": 135562,
+  "text": {
+   "en": {
+    "name": "Poisonous Viper",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Vipère venimeuse",
+    "type": "Bête"
+   }
+  }
+ },
+ "135761": {
+  "id": 135761,
+  "text": {
+   "en": {
+    "name": "Disruption Totem"
+   },
+   "fr": {
+    "name": "Totem fulgurant"
+   }
+  }
+ },
+ "135764": {
+  "id": 135764,
+  "text": {
+   "en": {
+    "name": "Explosive Totem"
+   },
+   "fr": {
+    "name": "Totem explosif"
+   }
+  }
+ },
+ "135765": {
+  "id": 135765,
+  "text": {
+   "en": {
+    "name": "Torrent Totem"
+   },
+   "fr": {
+    "name": "Totem de torrent"
+   }
+  }
+ },
+ "135846": {
+  "id": 135846,
+  "text": {
+   "en": {
+    "name": "Lightning Serpent",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent de foudre",
+    "type": "Bête"
+   }
+  }
+ },
+ "135971": {
+  "id": 135971,
+  "text": {
+   "en": {
+    "name": "Faithless Conscript",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Conscrit infidèle",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "136076": {
+  "id": 136076,
+  "text": {
+   "en": {
+    "name": "Agitated Nimbus",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Nimbus agité",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "136160": {
+  "id": 136160,
+  "text": {
+   "en": {
+    "name": "King Dazar",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Roi Dazar",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "136250": {
+  "id": 136250,
+  "text": {
+   "en": {
+    "name": "Twisted Hexxer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Maléficieur dénaturé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "136256": {
+  "id": 136256,
+  "text": {
+   "en": {
+    "name": "Coffin"
+   },
+   "fr": {
+    "name": "Cercueil"
+   }
+  }
+ },
+ "136976": {
+  "id": 136976,
+  "text": {
+   "en": {
+    "name": "T'zala",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "T'zala",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "136984": {
+  "id": 136984,
+  "text": {
+   "en": {
+    "name": "Reban",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Reban",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137473": {
+  "id": 137473,
+  "text": {
+   "en": {
+    "name": "Guard Captain Atu",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Capitaine de la garde Atu",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137474": {
+  "id": 137474,
+  "text": {
+   "en": {
+    "name": "King Timalji",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Roi Timalji",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137478": {
+  "id": 137478,
+  "text": {
+   "en": {
+    "name": "Queen Wasi",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Reine Wasi",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137484": {
+  "id": 137484,
+  "text": {
+   "en": {
+    "name": "King A'akul",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Roi A'akul",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137485": {
+  "id": 137485,
+  "text": {
+   "en": {
+    "name": "Bloodsworn Assassin",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Assassin ligessang",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137486": {
+  "id": 137486,
+  "text": {
+   "en": {
+    "name": "Queen Patlaa",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Reine Patlaa",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137487": {
+  "id": 137487,
+  "text": {
+   "en": {
+    "name": "Skeletal Hunting Raptor",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Raptor de chasse squelette",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137591": {
+  "id": 137591,
+  "text": {
+   "en": {
+    "name": "Healing Tide Totem"
+   },
+   "fr": {
+    "name": "Totem de marée de soins"
+   }
+  }
+ },
+ "137969": {
+  "id": 137969,
+  "text": {
+   "en": {
+    "name": "Interment Construct",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Assemblage funéraire",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "137989": {
+  "id": 137989,
+  "text": {
+   "en": {
+    "name": "Embalming Fluid",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Fluide d'embaumement",
+    "type": "Aberration"
+   }
+  }
+ },
+ "138489": {
+  "id": 138489,
+  "text": {
+   "en": {
+    "name": "Shadow of Zul",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Ombre de Zul",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "138493": {
+  "id": 138493,
+  "text": {
+   "en": {
+    "name": "Minion of Zul",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Séide de Zul",
+    "type": "Aberration"
+   }
+  }
+ },
+ "139097": {
+  "id": 139097,
+  "text": {
+   "en": {
+    "name": "Sandswept Marksman",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Tireur des sables",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "139108": {
+  "id": 139108,
+  "text": {
+   "en": {
+    "name": "Loose Spark",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Etincelle résiduelle",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "139110": {
+  "id": 139110,
+  "text": {
+   "en": {
+    "name": "Spark Channeler",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Canaliste d'étincelles",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "139131": {
+  "id": 139131,
+  "text": {
+   "en": {
+    "name": "Polarized Spire",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Flèche polarisée",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "139422": {
+  "id": 139422,
+  "text": {
+   "en": {
+    "name": "Dutiful Tamer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Dompteur dévoué",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "139425": {
+  "id": 139425,
+  "text": {
+   "en": {
+    "name": "Brood Tender",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Soigne-couvée",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "187894": {
+  "id": 187894,
+  "text": {
+   "en": {
+    "name": "Infused Whelp",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Dragonnet imprégné",
+    "type": "Draconien"
+   }
+  }
+ },
+ "187897": {
+  "id": 187897,
+  "text": {
+   "en": {
+    "name": "Defier Draghar",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Draghar dissident",
+    "type": "Draconien"
+   }
+  }
+ },
+ "187969": {
+  "id": 187969,
+  "text": {
+   "en": {
+    "name": "Deepstone Earthshaper",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sculpte-terre pierre-profonde",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "188011": {
+  "id": 188011,
+  "text": {
+   "en": {
+    "name": "Earthbound Guardian",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Gardien lié à la terre",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "188067": {
+  "id": 188067,
+  "text": {
+   "en": {
+    "name": "Flashfrost Chillweaver",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Tisse-glace givréclair",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "188244": {
+  "id": 188244,
+  "text": {
+   "en": {
+    "name": "Primal Juggernaut",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Mastodonte primordial",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "188252": {
+  "id": 188252,
+  "text": {
+   "en": {
+    "name": "Melidrussa Chillworn",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Mélidrussa Manteglace",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "189232": {
+  "id": 189232,
+  "text": {
+   "en": {
+    "name": "Kokia Blazehoof",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Kokia Foulebraise",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "189886": {
+  "id": 189886,
+  "text": {
+   "en": {
+    "name": "Blazebound Firestorm",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Tempête braseliée",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "189893": {
+  "id": 189893,
+  "text": {
+   "en": {
+    "name": "Infused Whelp",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Dragonnet imprégné",
+    "type": "Draconien"
+   }
+  }
+ },
+ "190034": {
+  "id": 190034,
+  "text": {
+   "en": {
+    "name": "Blazebound Destroyer",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Destructeur braselié",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "190205": {
+  "id": 190205,
+  "text": {
+   "en": {
+    "name": "Scorchling",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Brûletin",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "190206": {
+  "id": 190206,
+  "text": {
+   "en": {
+    "name": "Ashseer Flamelasher",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Prophète des cendres cingleflamme",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "190207": {
+  "id": 190207,
+  "text": {
+   "en": {
+    "name": "Primalist Cinderweaver",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Tisse-cendre primaliste",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "190484": {
+  "id": 190484,
+  "text": {
+   "en": {
+    "name": "Kyrakka",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Kyrakka",
+    "type": "Draconien"
+   }
+  }
+ },
+ "190485": {
+  "id": 190485,
+  "text": {
+   "en": {
+    "name": "Erkhart Stormvein",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Erkhart Foudreveine",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "194622": {
+  "id": 194622,
+  "text": {
+   "en": {
+    "name": "Scorchling",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Brûletin",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "195119": {
+  "id": 195119,
+  "text": {
+   "en": {
+    "name": "Ruinous Stormbringer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Porte-tempête dévastateur",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "197509": {
+  "id": 197509,
+  "text": {
+   "en": {
+    "name": "Primal Thundercloud"
+   },
+   "fr": {
+    "name": "Nuage d'orage primordial"
+   }
+  }
+ },
+ "197535": {
+  "id": 197535,
+  "text": {
+   "en": {
+    "name": "High Channeler Ryvati",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Haute invocatrice Ryvati",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "197697": {
+  "id": 197697,
+  "text": {
+   "en": {
+    "name": "Flamegullet",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Gorge-de-feu",
+    "type": "Draconien"
+   }
+  }
+ },
+ "197698": {
+  "id": 197698,
+  "text": {
+   "en": {
+    "name": "Thunderhead",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Tête-tonnerre",
+    "type": "Draconien"
+   }
+  }
+ },
+ "197982": {
+  "id": 197982,
+  "text": {
+   "en": {
+    "name": "Storm Warrior",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Guerrier des tempêtes",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "198047": {
+  "id": 198047,
+  "text": {
+   "en": {
+    "name": "Tempest Channeler",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Invocatrice de tempêtes",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "234647": {
+  "id": 234647,
+  "text": {
+   "en": {
+    "name": "Xathuux the Annihilator",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Xathuux l'Annihilateur",
+    "type": "Démon"
+   }
+  }
+ },
+ "234648": {
+  "id": 234648,
+  "text": {
+   "en": {
+    "name": "Kystia Manaheart",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Kystia Coeur-de-Mana",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "234649": {
+  "id": 234649,
+  "text": {
+   "en": {
+    "name": "Zaen Bladesorrow",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Zaen Tristelame",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "234660": {
+  "id": 234660,
+  "text": {
+   "en": {
+    "name": "Nibbles",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Mordicus",
+    "type": "Bête"
+   }
+  }
+ },
+ "234763": {
+  "id": 234763,
+  "text": {
+   "en": {
+    "name": "Lithiel Cinderfury",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Lithiel Fureur-de-Cendre",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "234799": {
+  "id": 234799,
+  "text": {
+   "en": {
+    "name": "Furious Vilefiend",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Démon abject furieux",
+    "type": "Démon"
+   }
+  }
+ },
+ "234849": {
+  "id": 234849,
+  "text": {
+   "en": {
+    "name": "Unleashed Imp",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Diablotin déchaîné",
+    "type": "Démon"
+   }
+  }
+ },
+ "234852": {
+  "id": 234852,
+  "text": {
+   "en": {
+    "name": "Forbidden Freight"
+   },
+   "fr": {
+    "name": "Cargaison interdite"
+   }
+  }
+ },
+ "234860": {
+  "id": 234860,
+  "text": {
+   "en": {
+    "name": "Crate Loader",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Débardeur de caisses",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "234984": {
+  "id": 234984,
+  "text": {
+   "en": {
+    "name": "Silvermoon Patron",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Client de Lune-d'Argent",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "235257": {
+  "id": 235257,
+  "text": {
+   "en": {
+    "name": "Demon Fly",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Aile démoniaque",
+    "type": "Démon"
+   }
+  }
+ },
+ "235261": {
+  "id": 235261,
+  "text": {
+   "en": {
+    "name": "Trained Felhunter",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Chasseur corrompu dressé",
+    "type": "Démon"
+   }
+  }
+ },
+ "235265": {
+  "id": 235265,
+  "text": {
+   "en": {
+    "name": "Corrupted Warlock",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Démoniste corrompu",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "235267": {
+  "id": 235267,
+  "text": {
+   "en": {
+    "name": "Wrathguard Flayer",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Ecorcheur garde-courroux",
+    "type": "Démon"
+   }
+  }
+ },
+ "235268": {
+  "id": 235268,
+  "text": {
+   "en": {
+    "name": "Fel Invoker",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Invocatrice gangrenée",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "235322": {
+  "id": 235322,
+  "text": {
+   "en": {
+    "name": "Defiled Golem",
+    "type": "Mechanical"
+   },
+   "fr": {
+    "name": "Golem profané",
+    "type": "Mécanique"
+   }
+  }
+ },
+ "235465": {
+  "id": 235465,
+  "text": {
+   "en": {
+    "name": "Shivan Punisher",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Punisseuse shivane",
+    "type": "Démon"
+   }
+  }
+ },
+ "235520": {
+  "id": 235520,
+  "text": {
+   "en": {
+    "name": "Legion Axe"
+   },
+   "fr": {
+    "name": "Hache de la Légion"
+   }
+  }
+ },
+ "235841": {
+  "id": 235841,
+  "text": {
+   "en": {
+    "name": "Selenar Sunshy",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sélénar Soléclipse",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236071": {
+  "id": 236071,
+  "text": {
+   "en": {
+    "name": "Bribed Guard",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Garde soudoyé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236073": {
+  "id": 236073,
+  "text": {
+   "en": {
+    "name": "Row Hooligan",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Voyou de l'allée",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236082": {
+  "id": 236082,
+  "text": {
+   "en": {
+    "name": "Seductive Sayaad",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Sayaad séductrice",
+    "type": "Démon"
+   }
+  }
+ },
+ "236084": {
+  "id": 236084,
+  "text": {
+   "en": {
+    "name": "Felonious Mage",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Mage félon",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236085": {
+  "id": 236085,
+  "text": {
+   "en": {
+    "name": "Felwyrm",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Wyrm gangrené",
+    "type": "Bête"
+   }
+  }
+ },
+ "236088": {
+  "id": 236088,
+  "text": {
+   "en": {
+    "name": "Masked Noble",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Noble masqué",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236091": {
+  "id": 236091,
+  "text": {
+   "en": {
+    "name": "Street Sneak",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Rôdeur des rues",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236525": {
+  "id": 236525,
+  "text": {
+   "en": {
+    "name": "Rowdy Patron",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Client chahuteur",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236893": {
+  "id": 236893,
+  "text": {
+   "en": {
+    "name": "Warehouse Worker",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Ouvrier de l'entrepôt",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236897": {
+  "id": 236897,
+  "text": {
+   "en": {
+    "name": "Keen Taskmaster",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sous-chef enthousiaste",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "236902": {
+  "id": 236902,
+  "text": {
+   "en": {
+    "name": "Massive Felwyrm",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Enorme wyrm gangrené",
+    "type": "Bête"
+   }
+  }
+ },
+ "236905": {
+  "id": 236905,
+  "text": {
+   "en": {
+    "name": "Felmaster Lucsei",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Maître de la gangrène Lucsei",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "237626": {
+  "id": 237626,
+  "text": {
+   "en": {
+    "name": "Wild Imp",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Diablotin sauvage",
+    "type": "Démon"
+   }
+  }
+ },
+ "238414": {
+  "id": 238414,
+  "text": {
+   "en": {
+    "name": "Infernal",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Infernal",
+    "type": "Démon"
+   }
+  }
+ },
+ "238883": {
+  "id": 238883,
+  "text": {
+   "en": {
+    "name": "Dominated Brawler",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Bastonneur dominé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "238887": {
+  "id": 238887,
+  "text": {
+   "en": {
+    "name": "Taz'Rah",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Taz'Rah",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "239008": {
+  "id": 239008,
+  "text": {
+   "en": {
+    "name": "Atroxus",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Atroxus",
+    "type": "Bête"
+   }
+  }
+ },
+ "239070": {
+  "id": 239070,
+  "text": {
+   "en": {
+    "name": "Toxic Creeper",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Rampant toxique",
+    "type": "Bête"
+   }
+  }
+ },
+ "239167": {
+  "id": 239167,
+  "text": {
+   "en": {
+    "name": "Charonus",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Charonus",
+    "type": "Aberration"
+   }
+  }
+ },
+ "240289": {
+  "id": 240289,
+  "text": {
+   "en": {
+    "name": "Nauseous Patron",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Client nauséeux",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "240681": {
+  "id": 240681,
+  "text": {
+   "en": {
+    "name": "Eye of Sethraliss"
+   },
+   "fr": {
+    "name": "Oeil de Sephraliss"
+   }
+  }
+ },
+ "241496": {
+  "id": 241496,
+  "text": {
+   "en": {
+    "name": "Enthralled Shaman",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Chaman ensorcelé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "241808": {
+  "id": 241808,
+  "text": {
+   "en": {
+    "name": "Territorial Matriarch",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Matriarche territoriale",
+    "type": "Bête"
+   }
+  }
+ },
+ "241809": {
+  "id": 241809,
+  "text": {
+   "en": {
+    "name": "Curious Yearling",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Jeune ours curieux",
+    "type": "Bête"
+   }
+  }
+ },
+ "241812": {
+  "id": 241812,
+  "text": {
+   "en": {
+    "name": "The Hoardmonger",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Le Thésauriseur",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "241813": {
+  "id": 241813,
+  "text": {
+   "en": {
+    "name": "Thornclaw Gatherer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Récolteur griffépine",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "241814": {
+  "id": 241814,
+  "text": {
+   "en": {
+    "name": "Earthwhisper Tender",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Soigneur murmeterre",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "241816": {
+  "id": 241816,
+  "text": {
+   "en": {
+    "name": "Keen-Eyed Striker",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Frappeur oeil-de-lynx",
+    "type": "Bête"
+   }
+  }
+ },
+ "241869": {
+  "id": 241869,
+  "text": {
+   "en": {
+    "name": "Avatar of Determination",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Avatar de détermination",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "241872": {
+  "id": 241872,
+  "text": {
+   "en": {
+    "name": "Frigid Mauler",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Marteleur algide",
+    "type": "Bête"
+   }
+  }
+ },
+ "241874": {
+  "id": 241874,
+  "text": {
+   "en": {
+    "name": "Frostfang",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Croc-de-givre",
+    "type": "Bête"
+   }
+  }
+ },
+ "241876": {
+  "id": 241876,
+  "text": {
+   "en": {
+    "name": "Glacial Revenant",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Revenant glaciaire",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "241911": {
+  "id": 241911,
+  "text": {
+   "en": {
+    "name": "Terra Rumbler",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Grondeur de Terra",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "243028": {
+  "id": 243028,
+  "text": {
+   "en": {
+    "name": "Meittik",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Meittik",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "243029": {
+  "id": 243029,
+  "text": {
+   "en": {
+    "name": "Kezkitt",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Kezkitt",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "243030": {
+  "id": 243030,
+  "text": {
+   "en": {
+    "name": "Lekshi",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Lekshi",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "243736": {
+  "id": 243736,
+  "text": {
+   "en": {
+    "name": "Blistercreep"
+   },
+   "fr": {
+    "name": "Ectocloque"
+   }
+  }
+ },
+ "243766": {
+  "id": 243766,
+  "text": {
+   "en": {
+    "name": "Kilivore Screamer",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Mortivore hurleur",
+    "type": "Bête"
+   }
+  }
+ },
+ "243835": {
+  "id": 243835,
+  "text": {
+   "en": {
+    "name": "Savage Shredclaw",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Griffentaille sauvage",
+    "type": "Bête"
+   }
+  }
+ },
+ "243983": {
+  "id": 243983,
+  "text": {
+   "en": {
+    "name": "Sycophantic Tarasek",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Tarasèke servile",
+    "type": "Draconien"
+   }
+  }
+ },
+ "243985": {
+  "id": 243985,
+  "text": {
+   "en": {
+    "name": "Longtooth Tuskarr",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Rohart longues-dents",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "243988": {
+  "id": 243988,
+  "text": {
+   "en": {
+    "name": "Feral Saberon",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sabron farouche",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "243996": {
+  "id": 243996,
+  "text": {
+   "en": {
+    "name": "Lost Sethrak",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sephrak perdu",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "244100": {
+  "id": 244100,
+  "text": {
+   "en": {
+    "name": "Sentinel of Winter",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sentinelle de l'hiver",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "244260": {
+  "id": 244260,
+  "text": {
+   "en": {
+    "name": "Chitigoth",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Chitigoth",
+    "type": "Bête"
+   }
+  }
+ },
+ "244309": {
+  "id": 244309,
+  "text": {
+   "en": {
+    "name": "Brutok",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Brutok",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "244528": {
+  "id": 244528,
+  "text": {
+   "en": {
+    "name": "Lightblossom"
+   },
+   "fr": {
+    "name": "Lumiflore"
+   }
+  }
+ },
+ "244696": {
+  "id": 244696,
+  "text": {
+   "en": {
+    "name": "Raging Squall"
+   },
+   "fr": {
+    "name": "Ouragan déchaîné"
+   }
+  }
+ },
+ "244708": {
+  "id": 244708,
+  "text": {
+   "en": {
+    "name": "Voidminder",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Factotum du Néant",
+    "type": "Aberration"
+   }
+  }
+ },
+ "244759": {
+  "id": 244759,
+  "text": {
+   "en": {
+    "name": "Fractured Shivercore",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Frémicoeur fracturé",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "244887": {
+  "id": 244887,
+  "text": {
+   "en": {
+    "name": "Ikuzz the Light Hunter",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Chasselumière Ikuzz",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "244889": {
+  "id": 244889,
+  "text": {
+   "en": {
+    "name": "Loa Speaker Nanea",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Parle-loa Nanéa",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245076": {
+  "id": 245076,
+  "text": {
+   "en": {
+    "name": "The Pale Eye"
+   },
+   "fr": {
+    "name": "L'Oeil pâle"
+   }
+  }
+ },
+ "245139": {
+  "id": 245139,
+  "text": {
+   "en": {
+    "name": "Stormbound Mystic",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Mystique liée à la tempête",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245143": {
+  "id": 245143,
+  "text": {
+   "en": {
+    "name": "Ruthless Totemcaller",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Mande-totem impitoyable",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245145": {
+  "id": 245145,
+  "text": {
+   "en": {
+    "name": "Bonded Beasttamer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Dompteur de bêtes lié",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245146": {
+  "id": 245146,
+  "text": {
+   "en": {
+    "name": "Grizzled Warbringer",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Porteguerre aguerri",
+    "type": "Bête"
+   }
+  }
+ },
+ "245148": {
+  "id": 245148,
+  "text": {
+   "en": {
+    "name": "Grizzled Warbringer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Porteguerre aguerrie",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245190": {
+  "id": 245190,
+  "text": {
+   "en": {
+    "name": "Loyal Saberfang",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Sabrecroc fidèle",
+    "type": "Bête"
+   }
+  }
+ },
+ "245336": {
+  "id": 245336,
+  "text": {
+   "en": {
+    "name": "Radiant Spellsower",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Sème-sorts radieux",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245339": {
+  "id": 245339,
+  "text": {
+   "en": {
+    "name": "Underbrush Stalker",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Traqueur des broussailles",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245345": {
+  "id": 245345,
+  "text": {
+   "en": {
+    "name": "Lightgorged Lasher",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Flagellant gorgé de lumière",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "245346": {
+  "id": 245346,
+  "text": {
+   "en": {
+    "name": "Virid Grovekeeper",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Surveille-bosquet viridien",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245410": {
+  "id": 245410,
+  "text": {
+   "en": {
+    "name": "Lasher"
+   },
+   "fr": {
+    "name": "Flagellant"
+   }
+  }
+ },
+ "245460": {
+  "id": 245460,
+  "text": {
+   "en": {
+    "name": "Leafy Grovecrawler",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Rampant des bosquets feuillu",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "245473": {
+  "id": 245473,
+  "text": {
+   "en": {
+    "name": "Thorny Saptor",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Cédraptor épineux",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "245484": {
+  "id": 245484,
+  "text": {
+   "en": {
+    "name": "Lightfeather Petalwing",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Folibri vive-plume",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "245513": {
+  "id": 245513,
+  "text": {
+   "en": {
+    "name": "Overgrown Hydra",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Hydre géante",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "245527": {
+  "id": 245527,
+  "text": {
+   "en": {
+    "name": "Spineshield Beetle"
+   },
+   "fr": {
+    "name": "Hanneton broquéchine"
+   }
+  }
+ },
+ "245567": {
+  "id": 245567,
+  "text": {
+   "en": {
+    "name": "Starvation Effigy"
+   },
+   "fr": {
+    "name": "Effigie de famine"
+   }
+  }
+ },
+ "245752": {
+  "id": 245752,
+  "text": {
+   "en": {
+    "name": "Keen-Eyed Striker",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Frappeur oeil-de-lynx",
+    "type": "Bête"
+   }
+  }
+ },
+ "245855": {
+  "id": 245855,
+  "text": {
+   "en": {
+    "name": "Spirit of Hunger",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Esprit de faim",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "245912": {
+  "id": 245912,
+  "text": {
+   "en": {
+    "name": "Lightwarden Ruia",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Gardelumière Ruia",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "245950": {
+  "id": 245950,
+  "text": {
+   "en": {
+    "name": "Watchful Harrower",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Persécuteur vigilant",
+    "type": "Bête"
+   }
+  }
+ },
+ "246367": {
+  "id": 246367,
+  "text": {
+   "en": {
+    "name": "Spirit Bear",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Esprit de l'ours",
+    "type": "Bête"
+   }
+  }
+ },
+ "246371": {
+  "id": 246371,
+  "text": {
+   "en": {
+    "name": "Spirit Moonkin",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Esprit sélénien",
+    "type": "Bête"
+   }
+  }
+ },
+ "246404": {
+  "id": 246404,
+  "text": {
+   "en": {
+    "name": "Nalorakk",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Nalorakk",
+    "type": "Bête"
+   }
+  }
+ },
+ "246409": {
+  "id": 246409,
+  "text": {
+   "en": {
+    "name": "Zul'jarra",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Zul'jarra",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "246871": {
+  "id": 246871,
+  "text": {
+   "en": {
+    "name": "Luminous Thornmaw",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Gueulépine lumineux",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "247301": {
+  "id": 247301,
+  "text": {
+   "en": {
+    "name": "Echo of Nalorakk",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Echo de Nalorakk",
+    "type": "Bête"
+   }
+  }
+ },
+ "247676": {
+  "id": 247676,
+  "text": {
+   "en": {
+    "name": "Ziekket",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Ziekket",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "247755": {
+  "id": 247755,
+  "text": {
+   "en": {
+    "name": "Lightspawn Lasher",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Flagellant né de la lumière",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "248666": {
+  "id": 248666,
+  "text": {
+   "en": {
+    "name": "Magma Totem"
+   },
+   "fr": {
+    "name": "Totem de magma"
+   }
+  }
+ },
+ "249461": {
+  "id": 249461,
+  "text": {
+   "en": {
+    "name": "Abducted Drakonid",
+    "type": "Dragonkin"
+   },
+   "fr": {
+    "name": "Drakônide enlevée",
+    "type": "Draconien"
+   }
+  }
+ },
+ "249590": {
+  "id": 249590,
+  "text": {
+   "en": {
+    "name": "Angry Krolusk",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Krolusk colérique",
+    "type": "Bête"
+   }
+  }
+ },
+ "249603": {
+  "id": 249603,
+  "text": {
+   "en": {
+    "name": "Protective Turtle",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Tortue protectrice",
+    "type": "Bête"
+   }
+  }
+ },
+ "249608": {
+  "id": 249608,
+  "text": {
+   "en": {
+    "name": "Raging Raptor",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Raptor déchaîné",
+    "type": "Bête"
+   }
+  }
+ },
+ "249756": {
+  "id": 249756,
+  "text": {
+   "en": {
+    "name": "Potatoad Matriarch",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Matriarche terratracienne",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "249783": {
+  "id": 249783,
+  "text": {
+   "en": {
+    "name": "Potadpole Egg",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Oeuf de tertard",
+    "type": "Bête"
+   }
+  }
+ },
+ "250202": {
+  "id": 250202,
+  "text": {
+   "en": {
+    "name": "Newborn Potadpole",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Tertard nourrisson",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "250478": {
+  "id": 250478,
+  "text": {
+   "en": {
+    "name": "The Winter Squall",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "La rafale hivernale",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "251189": {
+  "id": 251189,
+  "text": {
+   "en": {
+    "name": "Snow Orb Stalker"
+   },
+   "fr": {
+    "name": "Traqueur d'orbe neigeux"
+   }
+  }
+ },
+ "252053": {
+  "id": 252053,
+  "text": {
+   "en": {
+    "name": "Brutal Overseer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Surveillant brute",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "252072": {
+  "id": 252072,
+  "text": {
+   "en": {
+    "name": "Voidtouched Magi",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Magi touché par le Vide",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "252508": {
+  "id": 252508,
+  "text": {
+   "en": {
+    "name": "Scavenging Siphoid",
+    "type": "Aberration"
+   },
+   "fr": {
+    "name": "Siphoïde charognard",
+    "type": "Aberration"
+   }
+  }
+ },
+ "252529": {
+  "id": 252529,
+  "text": {
+   "en": {
+    "name": "Bribed Captain",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Capitaine soudoyé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "253081": {
+  "id": 253081,
+  "text": {
+   "en": {
+    "name": "Influentual Reviewer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Influenceur critique",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "253324": {
+  "id": 253324,
+  "text": {
+   "en": {
+    "name": "Tiny Felwyrm",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Minuscule wyrm gangrené",
+    "type": "Bête"
+   }
+  }
+ },
+ "253571": {
+  "id": 253571,
+  "text": {
+   "en": {
+    "name": "Bloodthorn Roots"
+   },
+   "fr": {
+    "name": "Racines épine-sanglante"
+   }
+  }
+ },
+ "254677": {
+  "id": 254677,
+  "text": {
+   "en": {
+    "name": "Ethereal Shade",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Ombre éthérienne",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "254850": {
+  "id": 254850,
+  "text": {
+   "en": {
+    "name": "Sporeblight Belcher",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Cracheur sporefléau",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "255000": {
+  "id": 255000,
+  "text": {
+   "en": {
+    "name": "Targeting Stalker"
+   },
+   "fr": {
+    "name": "Traqueur de ciblage"
+   }
+  }
+ },
+ "255001": {
+  "id": 255001,
+  "text": {
+   "en": {
+    "name": "Gravitic Orb"
+   },
+   "fr": {
+    "name": "Orbe gravitationnel"
+   }
+  }
+ },
+ "255050": {
+  "id": 255050,
+  "text": {
+   "en": {
+    "name": "Kystia Manaheart",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Kystia Coeur-de-Mana",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "255604": {
+  "id": 255604,
+  "text": {
+   "en": {
+    "name": "Seductive Sayaad",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Sayaad séducteur",
+    "type": "Démon"
+   }
+  }
+ },
+ "259445": {
+  "id": 259445,
+  "text": {
+   "en": {
+    "name": "Rav'i",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Rav'i",
+    "type": "Bête"
+   }
+  }
+ },
+ "259446": {
+  "id": 259446,
+  "text": {
+   "en": {
+    "name": "The Writhing Coil",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "L'Ophidien ondulant",
+    "type": "Bête"
+   }
+  }
+ },
+ "259447": {
+  "id": 259447,
+  "text": {
+   "en": {
+    "name": "Zul'jan",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Zul'jan",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "261550": {
+  "id": 261550,
+  "text": {
+   "en": {
+    "name": "Venom Leech",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Sangsue venimeuse",
+    "type": "Bête"
+   }
+  }
+ },
+ "261552": {
+  "id": 261552,
+  "text": {
+   "en": {
+    "name": "Bloodletter",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Saigneur",
+    "type": "Bête"
+   }
+  }
+ },
+ "261553": {
+  "id": 261553,
+  "text": {
+   "en": {
+    "name": "Ravenous Descendant",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Descendant vorace",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "261554": {
+  "id": 261554,
+  "text": {
+   "en": {
+    "name": "Twinfang Harrower",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Persécuteur crochet-double",
+    "type": "Bête"
+   }
+  }
+ },
+ "261556": {
+  "id": 261556,
+  "text": {
+   "en": {
+    "name": "Hatchling",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Jeune",
+    "type": "Bête"
+   }
+  }
+ },
+ "261557": {
+  "id": 261557,
+  "text": {
+   "en": {
+    "name": "High Evolutionist",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Grand évolutionniste",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "261560": {
+  "id": 261560,
+  "text": {
+   "en": {
+    "name": "Primal Serpent",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent primordial",
+    "type": "Bête"
+   }
+  }
+ },
+ "261573": {
+  "id": 261573,
+  "text": {
+   "en": {
+    "name": "Ascendant Serpent",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent ascendant",
+    "type": "Bête"
+   }
+  }
+ },
+ "262011": {
+  "id": 262011,
+  "text": {
+   "en": {
+    "name": "Rattling Writhe",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Tortilleur cliquetant",
+    "type": "Bête"
+   }
+  }
+ },
+ "262398": {
+  "id": 262398,
+  "text": {
+   "en": {
+    "name": "Uncoiled Writhe",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Tortilleur déroulé",
+    "type": "Bête"
+   }
+  }
+ },
+ "262530": {
+  "id": 262530,
+  "text": {
+   "en": {
+    "name": "Adderis",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Viperis",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "262822": {
+  "id": 262822,
+  "text": {
+   "en": {
+    "name": "Aspix",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Aspis",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "263109": {
+  "id": 263109,
+  "text": {
+   "en": {
+    "name": "Ula'tek's Chosen",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Elu d'Ula'tek",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "263112": {
+  "id": 263112,
+  "text": {
+   "en": {
+    "name": "Living Venom",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Venin vivant",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "263181": {
+  "id": 263181,
+  "text": {
+   "en": {
+    "name": "Egg Marker",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Oeuf",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "263228": {
+  "id": 263228,
+  "text": {
+   "en": {
+    "name": "Agitated Voidscythe",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Fauche-Vide agité",
+    "type": "Bête"
+   }
+  }
+ },
+ "263383": {
+  "id": 263383,
+  "text": {
+   "en": {
+    "name": "Snake",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent",
+    "type": "Bête"
+   }
+  }
+ },
+ "263658": {
+  "id": 263658,
+  "text": {
+   "en": {
+    "name": "Galvazzt",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Galvazzt",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "263940": {
+  "id": 263940,
+  "text": {
+   "en": {
+    "name": "Belath Dawnblade",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Belath Aubelame",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "264785": {
+  "id": 264785,
+  "text": {
+   "en": {
+    "name": "Swarming Krolusk",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Krolusk grouillant",
+    "type": "Bête"
+   }
+  }
+ },
+ "264798": {
+  "id": 264798,
+  "text": {
+   "en": {
+    "name": "Infused Eggs"
+   },
+   "fr": {
+    "name": "Oeufs imprégnés"
+   }
+  }
+ },
+ "265057": {
+  "id": 265057,
+  "text": {
+   "en": {
+    "name": "Spark Channeler",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Canaliste d'étincelles",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "267545": {
+  "id": 267545,
+  "text": {
+   "en": {
+    "name": "Aegyra the Unyielding",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Aegyra l'Inflexible",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "267546": {
+  "id": 267546,
+  "text": {
+   "en": {
+    "name": "Raj'kess the Spellstorm",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Raj'kess la Tempête ensorcelée",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268184": {
+  "id": 268184,
+  "text": {
+   "en": {
+    "name": "Devouring Brutalizer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Brutaliseur dévorant",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268317": {
+  "id": 268317,
+  "text": {
+   "en": {
+    "name": "Faithless Tormentor",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Tortionnaire infidèle",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268344": {
+  "id": 268344,
+  "text": {
+   "en": {
+    "name": "Corrupted Guardian",
+    "type": "Elemental"
+   },
+   "fr": {
+    "name": "Gardien corrompu",
+    "type": "Élémentaire"
+   }
+  }
+ },
+ "268358": {
+  "id": 268358,
+  "text": {
+   "en": {
+    "name": "Ritual Snake",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Serpent rituel",
+    "type": "Bête"
+   }
+  }
+ },
+ "268364": {
+  "id": 268364,
+  "text": {
+   "en": {
+    "name": "Lifeforce"
+   },
+   "fr": {
+    "name": "Force vitale"
+   }
+  }
+ },
+ "268427": {
+  "id": 268427,
+  "text": {
+   "en": {
+    "name": "Essence Defiler",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Souilleuse d'essence",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268491": {
+  "id": 268491,
+  "text": {
+   "en": {
+    "name": "Twisted Hexxer",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Maléficieur dénaturé",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268729": {
+  "id": 268729,
+  "text": {
+   "en": {
+    "name": "Faithless Tormentor",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Tortionnaire infidèle",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "268747": {
+  "id": 268747,
+  "text": {
+   "en": {
+    "name": "Lesser Lifeforce"
+   },
+   "fr": {
+    "name": "Force vitale inférieure"
+   }
+  }
+ },
+ "269227": {
+  "id": 269227,
+  "text": {
+   "en": {
+    "name": "Temple Disruptor",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Disrupteur du temple",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "269808": {
+  "id": 269808,
+  "text": {
+   "en": {
+    "name": "Aka'ali the Conqueror",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Aka'ali la Conquérante",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "269810": {
+  "id": 269810,
+  "text": {
+   "en": {
+    "name": "Zanazal the Wise",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Zanazal le Sage",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "269811": {
+  "id": 269811,
+  "text": {
+   "en": {
+    "name": "Kula the Butcher",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Kula la Bouchère",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "270306": {
+  "id": 270306,
+  "text": {
+   "en": {
+    "name": "Ritual Chieftain",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Chef du rituel",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "270378": {
+  "id": 270378,
+  "text": {
+   "en": {
+    "name": "Ritual Spirit",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Esprit rituel",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "270417": {
+  "id": 270417,
+  "text": {
+   "en": {
+    "name": "Uncoiled Writhe",
+    "type": "Beast"
+   },
+   "fr": {
+    "name": "Tortilleur déroulé",
+    "type": "Bête"
+   }
+  }
+ },
+ "270502": {
+  "id": 270502,
+  "text": {
+   "en": {
+    "name": "Half-Finished Mummy",
+    "type": "Undead"
+   },
+   "fr": {
+    "name": "Momie à moitié terminée",
+    "type": "Mort-vivant"
+   }
+  }
+ },
+ "271453": {
+  "id": 271453,
+  "text": {
+   "en": {
+    "name": "Blade of the Altar",
+    "type": "Humanoid"
+   },
+   "fr": {
+    "name": "Lame de l'autel",
+    "type": "Humanoïde"
+   }
+  }
+ },
+ "272074": {
+  "id": 272074,
+  "text": {
+   "en": {
+    "name": "Volatile Totem"
+   },
+   "fr": {
+    "name": "Totem instable"
+   }
+  }
+ },
+ "272246": {
+  "id": 272246,
+  "text": {
+   "en": {
+    "name": "Trained Felhunter",
+    "type": "Demon"
+   },
+   "fr": {
+    "name": "Chasseur corrompu dressé",
+    "type": "Démon"
+   }
+  }
+ }
+}

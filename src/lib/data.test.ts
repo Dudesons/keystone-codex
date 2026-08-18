@@ -8,6 +8,7 @@ import {
   dungeonList,
   getDungeon,
   getLookup,
+  getNpcLabel,
   getSpell,
   iconUrl,
   mapUrl,
@@ -70,6 +71,60 @@ describe('Spells', () => {
 
   it('takes the default language when none is given', () => {
     expect(getSpell(1_306_911)).toEqual(getSpell(1_306_911, DEFAULT_LOCALE))
+  })
+})
+
+describe('Creature labels', () => {
+  const chieftain = getLookup(SLUG)!.enemyById.get(270_306)!
+  /**
+   * Disruption Totem, in King's Rest: MDT gives it a name and a `creatureType` that Wowhead
+   * disagrees with and omits respectively. It is what the two fallbacks are for.
+   */
+  const totem = getLookup('kings-rest')!.enemyById.get(135_761)!
+
+  it('serves the mob name in the requested language', () => {
+    expect(getNpcLabel(chieftain, 'en').name).toBe('Ritual Chieftain')
+    expect(getNpcLabel(chieftain, 'fr').name).toBe('Chef du rituel')
+  })
+
+  it('localizes the creature type too, not just the name', () => {
+    expect(getNpcLabel(chieftain, 'en').type).toBe('Humanoid')
+    expect(getNpcLabel(chieftain, 'fr').type).toBe('Humanoïde')
+  })
+
+  it('keeps MDT as the authority on the English name where Wowhead disagrees', () => {
+    // Wowhead calls 135761 "Thundering Totem". MDT's name is what the content is keyed on,
+    // so English shows it — and French still gets a translation.
+    expect(getNpcLabel(totem, 'en').name).toBe('Disruption Totem')
+    expect(getNpcLabel(totem, 'fr').name).toBe('Totem fulgurant')
+  })
+
+  it("falls back to MDT's creature type rather than leaving a hole", () => {
+    // Wowhead gives this one no type at all; MDT says "Totem". A reader in either language
+    // sees that rather than nothing.
+    expect(getNpcLabel(totem, 'en').type).toBe('Totem')
+    expect(getNpcLabel(totem, 'fr').type).toBe('Totem')
+  })
+
+  it('treats MDT\'s "Not specified" as no type at all', () => {
+    // It is MDT's placeholder for a creature it files under nothing, not a creature type.
+    // Falling back to it would print an English phrase into a French card, and say nothing
+    // in either language.
+    const coffin = getLookup('kings-rest')!.enemyById.get(136_256)!
+    expect(coffin.creatureType).toBe('Not specified')
+    expect(getNpcLabel(coffin, 'en').type).toBeUndefined()
+    expect(getNpcLabel(coffin, 'fr').type).toBeUndefined()
+  })
+
+  it("falls back to MDT's name for a creature the pipeline never resolved", () => {
+    // The invariant that a mob renders from MDT data alone reaches this too: an id Wowhead
+    // has never answered for must still have a name.
+    const unresolved = { ...chieftain, id: 888_002, name: 'Unresolved', creatureType: undefined }
+    expect(getNpcLabel(unresolved, 'fr')).toEqual({ name: 'Unresolved', type: undefined })
+  })
+
+  it('takes the default language when none is given', () => {
+    expect(getNpcLabel(chieftain)).toEqual(getNpcLabel(chieftain, DEFAULT_LOCALE))
   })
 })
 

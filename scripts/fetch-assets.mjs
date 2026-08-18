@@ -1,27 +1,38 @@
-// ABOUTME: Downloads spell labels, icons and mob portraits into versioned, cached files.
-// ABOUTME: One fetch pass per SPELL_LOCALES entry; the parsing lives in wowhead-tooltip.mjs.
+// ABOUTME: Downloads spell and creature labels, icons and mob portraits into versioned files.
+// ABOUTME: One fetch pass per WOWHEAD_LOCALES entry; the parsing lives in wowhead-tooltip.mjs.
 
 /**
- * Fetches artwork and spell labels.
+ * Fetches artwork, spell labels and creature labels.
  *
  * MDT stores only spell IDs and creature `displayId`s: names, icons and descriptions come
  * from the game at runtime, which is not available on the web. So we resolve them once at
  * build time through Wowhead and cache everything into versioned files — the script only
  * re-downloads what is missing.
  *
+ * Creatures are the one case where MDT does carry a label — an English name and an English
+ * `creatureType` — so what Wowhead adds there is the other languages. Wowhead's English is
+ * spent checking MDT's name instead of replacing it; see `buildNpcText`.
+ *
  *   npm run fetch:assets          # fill in what is missing
  *   FORCE=1 npm run fetch:assets  # re-download everything (new patch, or a new language
- *                                 # added to SPELL_LOCALES)
+ *                                 # added to WOWHEAD_LOCALES)
  */
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { GENERATED_DIR, PUBLIC_DIR, SPELL_LOCALES } from './config.mjs'
-import { buildSpellText, parseTooltip, unfetchedLocales } from './wowhead-tooltip.mjs'
+import { GENERATED_DIR, PUBLIC_DIR, WOWHEAD_LOCALES } from './config.mjs'
+import {
+  buildNpcText,
+  buildSpellText,
+  parseNpcTooltip,
+  parseTooltip,
+  unfetchedLocales,
+} from './wowhead-tooltip.mjs'
 
 const FORCE = process.env.FORCE === '1'
 const CONCURRENCY = 8
 const SPELL_CACHE = path.join(GENERATED_DIR, 'spells.json')
+const NPC_CACHE = path.join(GENERATED_DIR, 'npcs.json')
 const ICON_DIR = path.join(PUBLIC_DIR, 'icons')
 const PORTRAIT_DIR = path.join(PUBLIC_DIR, 'portraits')
 
@@ -61,33 +72,44 @@ async function fetchRetry(url, init, attempts = 3) {
   throw lastErr
 }
 
-async function fetchTooltip(id, wowheadLocale) {
+/** One tooltip, parsed. `parse` is the whole difference between a spell and a creature. */
+async function fetchTooltip(kind, id, wowheadLocale, parse) {
   const res = await fetchRetry(
-    `https://nether.wowhead.com/tooltip/spell/${id}?dataEnv=1&locale=${wowheadLocale}`,
+    `https://nether.wowhead.com/tooltip/${kind}/${id}?dataEnv=1&locale=${wowheadLocale}`,
   )
-  if (!res) return null
-  return parseTooltip(await res.json())
+  return res ? parse(await res.json()) : null
 }
 
 /**
- * One spell in every configured language.
+ * One id in every configured language, base language first.
  *
- * The base language is fetched first and on its own: without it there is nothing to build,
- * and no point spending a request per remaining locale. The merging itself lives in
- * wowhead-tooltip.mjs, where it is tested against captured responses.
+ * The base is fetched on its own and before the rest: without it there is nothing to build,
+ * so there is no point spending a request per remaining locale. Returns null in that case.
+ * The merging itself lives in wowhead-tooltip.mjs, where it is tested against captured
+ * responses.
  */
-async function fetchSpell(id) {
-  const [baseLocale, ...others] = SPELL_LOCALES
+async function fetchLocales(kind, id, parse) {
+  const [baseLocale, ...others] = WOWHEAD_LOCALES
 
-  const base = await fetchTooltip(id, baseLocale.wowhead)
-  if (!base) return { id, missing: true }
+  const base = await fetchTooltip(kind, id, baseLocale.wowhead, parse)
+  if (!base) return null
 
   const entries = [{ lang: baseLocale.lang, tooltip: base }]
   for (const { lang, wowhead } of others) {
-    entries.push({ lang, tooltip: await fetchTooltip(id, wowhead) })
+    entries.push({ lang, tooltip: await fetchTooltip(kind, id, wowhead, parse) })
   }
+  return entries
+}
 
-  return { id, ...buildSpellText(id, entries) }
+async function fetchSpell(id) {
+  const entries = await fetchLocales('spell', id, parseTooltip)
+  return entries ? { id, ...buildSpellText(id, entries) } : { id, missing: true }
+}
+
+/** `mdtName` is what the English entry keeps; Wowhead's English only checks it. */
+async function fetchNpc({ id, mdtName }) {
+  const entries = await fetchLocales('npc', id, parseNpcTooltip)
+  return entries ? { id, ...buildNpcText(id, mdtName, entries) } : { id, missing: true }
 }
 
 async function downloadTo(url, dest) {
@@ -96,6 +118,31 @@ async function downloadTo(url, dest) {
   if (!res) return 'missing'
   fs.writeFileSync(dest, Buffer.from(await res.arrayBuffer()))
   return 'downloaded'
+}
+
+/**
+ * A label cache, and the refusal to run against one that has never seen a configured language.
+ *
+ * An entry with no `text` block predates localization and has to be redone. A missing
+ * *secondary* locale, on the other hand, is not a signal — Wowhead does not translate
+ * everything — so the per-entry check below only looks at the base language.
+ *
+ * That leniency would otherwise let a newly configured language pass unnoticed: every entry
+ * still looks current, the run reports "0 to fetch" and succeeds, and the app falls back to
+ * the base language for the whole pool without anyone being told. Hence
+ * **adding a language to WOWHEAD_LOCALES requires a `FORCE=1`**, and hence this refusal when
+ * someone forgets.
+ */
+function loadLabelCache(file, langs) {
+  const cache = !FORCE && fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
+  const never = unfetchedLocales(cache, langs)
+  if (never.length && Object.keys(cache).length) {
+    throw new Error(
+      `${path.basename(file)} holds no ${never.join(', ')} label at all. A language added to ` +
+        'WOWHEAD_LOCALES needs a full pass: FORCE=1 npm run fetch:assets',
+    )
+  }
+  return cache
 }
 
 function loadDungeons() {
@@ -115,26 +162,18 @@ async function main() {
 
   const spellIds = [...new Set(dungeons.flatMap((d) => d.enemies.flatMap((e) => e.spells.map((s) => s.id))))]
   const displayIds = [...new Set(dungeons.flatMap((d) => d.enemies.map((e) => e.displayId).filter(Boolean)))]
+  // Keyed by id: the same creature stands in more than one dungeon, under the same MDT name.
+  const mobs = [
+    ...new Map(
+      dungeons.flatMap((d) => d.enemies).map((e) => [e.id, { id: e.id, mdtName: e.name }]),
+    ).values(),
+  ]
+
+  const isCurrent = (entry) => Boolean(entry?.text?.[WOWHEAD_LOCALES[0].lang])
+  const langs = WOWHEAD_LOCALES.map((l) => l.lang)
 
   // --- Spells ------------------------------------------------------------
-  const cache = !FORCE && fs.existsSync(SPELL_CACHE) ? JSON.parse(fs.readFileSync(SPELL_CACHE, 'utf8')) : {}
-  // An entry with no `text` block predates localization and has to be redone. A missing
-  // secondary locale, on the other hand, is not a signal — Wowhead does not translate
-  // everything — so **adding a language to SPELL_LOCALES requires a `FORCE=1`**.
-  const isCurrent = (entry) => Boolean(entry?.text?.[SPELL_LOCALES[0].lang])
-  const langs = SPELL_LOCALES.map((l) => l.lang)
-
-  // That leniency would otherwise let a newly configured language pass unnoticed: every
-  // entry still looks current, the run reports "0 to fetch" and succeeds, and the app falls
-  // back to the base language for the whole pool without anyone being told.
-  const never = unfetchedLocales(cache, langs)
-  if (never.length && Object.keys(cache).length) {
-    throw new Error(
-      `spells.json holds no ${never.join(', ')} label at all. A language added to ` +
-        'SPELL_LOCALES needs a full pass: FORCE=1 npm run fetch:assets',
-    )
-  }
-
+  const cache = loadLabelCache(SPELL_CACHE, langs)
   const todo = spellIds.filter((id) => !isCurrent(cache[String(id)]))
   console.log(`Spells: ${spellIds.length} unique, ${todo.length} to fetch (${langs.join(', ')})`)
 
@@ -152,6 +191,28 @@ async function main() {
   if (spellWarnings.length) {
     console.log(`  ${spellWarnings.length} partial tooltips:`)
     for (const w of spellWarnings) console.log(`    ${w}`)
+  }
+
+  // --- Creature labels ---------------------------------------------------
+  const npcCache = loadLabelCache(NPC_CACHE, langs)
+  const npcTodo = mobs.filter((m) => !isCurrent(npcCache[String(m.id)]))
+  console.log(`Creatures: ${mobs.length} unique, ${npcTodo.length} to fetch (${langs.join(', ')})`)
+
+  done = 0
+  const npcResults = await pool(npcTodo, CONCURRENCY, async (mob) => {
+    const npc = await fetchNpc(mob)
+    if (!npc.missing) npcCache[String(npc.id)] = { id: npc.id, text: npc.text }
+    if (++done % 50 === 0) process.stdout.write(`  ${done}/${npcTodo.length}\r`)
+    return npc
+  })
+  const missingNpcs = npcResults.filter((n) => n.missing || n.error)
+  const npcWarnings = npcResults.flatMap((n) => n.warnings ?? [])
+  fs.writeFileSync(NPC_CACHE, JSON.stringify(npcCache, null, 1), 'utf8')
+  console.log(`  ${Object.keys(npcCache).length} creatures cached${missingNpcs.length ? `, ${missingNpcs.length} unresolved` : ''}`)
+  if (npcWarnings.length) {
+    // A name disagreement is the one worth stopping over: it means a wrong id, not a wording.
+    console.log(`  ${npcWarnings.length} to look at:`)
+    for (const w of npcWarnings) console.log(`    ${w}`)
   }
 
   // --- Icons -------------------------------------------------------------
@@ -179,6 +240,9 @@ async function main() {
 
   if (missingSpells.length) {
     console.log(`\nUnresolved spells (rendered with their raw ID): ${missingSpells.map((s) => s.id).join(', ')}`)
+  }
+  if (missingNpcs.length) {
+    console.log(`\nUnresolved creatures (rendered with MDT's English name): ${missingNpcs.map((n) => n.id).join(', ')}`)
   }
 }
 

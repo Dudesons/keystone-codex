@@ -1,5 +1,5 @@
 // ABOUTME: The one file to edit when the season, the machine or the spell languages change.
-// ABOUTME: Holds MDT_CANDIDATES, SEASON_DUNGEONS, SPELL_LOCALES and MDT's coordinate geometry.
+// ABOUTME: Holds MDT_CANDIDATES, SEASON_DUNGEONS, WOWHEAD_LOCALES and MDT's coordinate geometry.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -65,7 +65,8 @@ export const AFFIX_SPELLS = [
 ]
 
 /**
- * Languages we fetch spell labels for, and their locale code on nether.wowhead.com.
+ * Languages we fetch spell and creature labels for, and their locale code on
+ * nether.wowhead.com.
  *
  * These codes were **established by probing**, not read from documentation: `0` returns
  * English, `2` French. Probe before adding one; do not guess it.
@@ -74,7 +75,7 @@ export const AFFIX_SPELLS = [
  * tooltip line for all the others (see `parseTooltip` in fetch-assets.mjs). It must match
  * `DEFAULT_LOCALE` in `src/lib/i18n/locales.ts`.
  */
-export const SPELL_LOCALES = [
+export const WOWHEAD_LOCALES = [
   { lang: 'en', wowhead: 0 },
   { lang: 'fr', wowhead: 2 },
 ]

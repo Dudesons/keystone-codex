@@ -462,7 +462,7 @@ exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js throug
 | Path | Role | Edited |
 | --- | --- | --- |
 | `content/<dungeon>/*.md` | **The written content**: threat, role, spell notes, traps. One file per mob, YAML frontmatter plus prose. A `.fr.md` sibling holds the French version. | By hand |
-| `src/data/generated/*.json` | Mobs, clones, packs, forces, spells — extracted from MDT. | **Generated, never by hand** |
+| `src/data/generated/*.json` | Mobs, clones, packs, forces — extracted from MDT; spell and creature labels per language, fetched from Wowhead. | **Generated, never by hand** |
 | `public/maps/` | WebP maps assembled from MDT tiles. | **Generated** |
 | `scripts/*.mjs` | Extraction chain (`npm run data`): reads the local WoW install, writes the versioned files. | By hand |
 | `src/lib/mdt/` | MDT string codec (CBOR + raw deflate) and the route's Y.js document. | By hand |
@@ -550,7 +550,7 @@ directly** with the Read tool before touching the area they cover:
 | Skill | Read before… |
 | --- | --- |
 | [`mdt-pipeline`](.claude/skills/mdt-pipeline/SKILL.md) | touching the MDT codec (`src/lib/mdt/`), the extraction scripts (`scripts/`), the generated data, or the test fixture |
-| [`i18n`](.claude/skills/i18n/SKILL.md) | adding a UI string, translating a `content/` entry, touching `src/lib/i18n/` or the spell labels, adding a language |
+| [`i18n`](.claude/skills/i18n/SKILL.md) | adding a UI string, translating a `content/` entry, touching `src/lib/i18n/` or the spell and creature labels, adding a language |
 | [`codex-content`](.claude/skills/codex-content/SKILL.md) | writing or editing a `content/**.md` entry, rating a mob's `threat`, or reconciling MDT against another source |
 
 Everything else — TDD, plans, code review, brainstorming — comes from plugins; see

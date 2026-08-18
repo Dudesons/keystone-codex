@@ -31,8 +31,10 @@ plain `.mjs` run by Node.
   with `export PATH="/c/Program Files/nodejs:$PATH"`.
 - **`rm` is denied** by the permission layer. Overwrite with the Write tool, or
   `node -e "require('fs').unlinkSync('…')"` when a file must truly go.
-- **Another session holds ~260 dirty files** under `content/**` and in a few `src/` files.
-  Stage only the paths a task names — never `git add -A`, never `git commit -a`.
+- **Another session commits to this repository concurrently** — seven commits landed on `main`
+  in one evening while this plan was being written. Run `git status` before staging, stage only
+  the paths a task names, and never `git add -A` or `git commit -a`: work that is not yours can
+  appear in the tree between two of your own steps.
 - **MDT indices are sparse and must never be renumbered** (`intEntries` sorts without
   compacting). Routes reference those exact indices.
 - **`--no-verify` and every other hook-bypassing git flag are forbidden.**

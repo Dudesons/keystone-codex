@@ -33,6 +33,19 @@ const NO_ENTRY = 999_999
 /** The untouched scaffold output — same mob as WRITTEN, before anybody wrote anything. */
 const stub = { slug: '__fixtures__', npcId: 270306 }
 
+/**
+ * A dungeon whose plan nobody has translated yet.
+ *
+ * Found rather than named. `altar-of-fangs` used to serve as the fallback's subject and
+ * stopped the day its plan was translated — so the test follows the content instead of having
+ * to be re-pointed every time a translation lands. `__fixtures__` cannot stand in here: it
+ * holds one mob stub and no `_dungeon.md` at all.
+ */
+const translatedPlans = Object.keys(import.meta.glob('../../content/*/_dungeon.fr.md'))
+const untranslatedPlan = dungeonList
+  .map((d) => d.slug)
+  .find((slug) => !translatedPlans.some((path) => path.includes(`/${slug}/`)))
+
 describe('isRole', () => {
   it('recognises the vocabulary the scaffold template offers', () => {
     for (const role of ROLES) expect(isRole(role), role).toBe(true)
@@ -179,7 +192,12 @@ describe('Falling back to the base language', () => {
   })
 
   it('serves the base dungeon plan in both languages', () => {
-    expect(getDungeonContent(SLUG, 'fr')!.html).toBe(getDungeonContent(SLUG, 'en')!.html)
+    expect(
+      untranslatedPlan,
+      'every dungeon plan is now translated — this test needs another subject',
+    ).toBeDefined()
+    const slug = untranslatedPlan!
+    expect(getDungeonContent(slug, 'fr')!.html).toBe(getDungeonContent(slug, 'en')!.html)
   })
 
   it('fabricates nothing for a mob with no file at all', () => {
