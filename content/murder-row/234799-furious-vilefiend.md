@@ -23,7 +23,7 @@ spells:
 trap:
 ---
 
-[Lithiel Cinderfury](#/d/murder-row/mob/234763)'s **Summon Vilefiend** add, with 1.6 million
+[Lithiel Cinderfury](#/d/murder-row/map/mob/234763)'s **Summon Vilefiend** add, with 1.6 million
 health and one ability.
 
 **Shadow Bite** adds 39k to its melee swings, which makes it a tank-damage problem rather than

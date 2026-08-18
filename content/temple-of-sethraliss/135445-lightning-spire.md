@@ -11,7 +11,7 @@ role: add
 trap: "MDT holds no spells for it, but 21.6 million health says it is not scenery. Method lists Lightning Spire as party damage to avoid during Galvazzt."
 ---
 
-**21.6 million health — the same as [Galvazzt](#/d/temple-of-sethraliss/mob/263658) himself —
+**21.6 million health — the same as [Galvazzt](#/d/temple-of-sethraliss/map/mob/263658) himself —
 and no spells recorded in MDT.**
 
 That combination is worth flagging rather than glossing over. A unit with a boss-sized health

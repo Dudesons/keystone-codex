@@ -39,8 +39,8 @@ One unit at 25 forces, and the mob that makes the case for reading dispel types.
 **Captain's Bulwark** gives allies 30% damage reduction. MDT does **not** list it as
 interruptible, so a group waiting for a kick will simply watch it land — but it carries a
 **magic** dispel type, which most groups can answer. Three different mobs in King's Rest cast
-this same spell: Rahu'ai, [Seneschal M'bara](#/d/kings-rest/mob/134251) and
-[Guard Captain Atu](#/d/kings-rest/mob/137473).
+this same spell: Rahu'ai, [Seneschal M'bara](#/d/kings-rest/map/mob/134251) and
+[Guard Captain Atu](#/d/kings-rest/map/mob/137473).
 
 **Overload** is four seconds of lightning around itself at 102k a beam — the cast to walk away
 from rather than to trade with.

@@ -19,7 +19,7 @@ spells:
 trap: "It holds until something breaks it. Waiting is not an option — dispel it, break it, or have Ikuzz trample it."
 ---
 
-The hazard the [Ikuzz](#/d/the-blinding-vale/mob/244887) fight is built around, tracked by MDT
+The hazard the [Ikuzz](#/d/the-blinding-vale/map/mob/244887) fight is built around, tracked by MDT
 as a unit of its own because it has to be killed.
 
 Two things make it dangerous. It deals 48k a second, and it holds its target **until

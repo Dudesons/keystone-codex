@@ -24,5 +24,5 @@ Four units at 7 forces each, and a single ability with two answers.
 player if it runs. It is **interruptible**, and MDT also flags it as a **disease**, so a
 missed kick is recoverable.
 
-The same spell belongs to [Mchimba the Embalmer](#/d/kings-rest/mob/134993), who summons these
+The same spell belongs to [Mchimba the Embalmer](#/d/kings-rest/map/mob/134993), who summons these
 mummies during his encounter — so learning to kick it here pays off there.

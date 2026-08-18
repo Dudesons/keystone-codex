@@ -23,7 +23,7 @@ Nal'orakk.
 
 The arithmetic is what makes it: **Magma Totem** pulses 36k to every player **every 0.3
 seconds**. That is around 120k per second, party-wide, unavoidable by position, running until
-the [totem](#/d/den-of-nalorakk/mob/248666) dies.
+the [totem](#/d/den-of-nalorakk/map/mob/248666) dies.
 
 Nothing else here comes close, and nothing about the mob's forces or health suggests it. This
 is the entry that exists to stop a group from ignoring the small caster while it kills the big

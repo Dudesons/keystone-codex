@@ -32,11 +32,11 @@ spells:
 trap: "It carries Bestial Berserk, the same pack-wide enrage Queen Patlaa casts. Ten forces on a body that buffs everything around it."
 ---
 
-One unit at 10 forces, and the [Honored Raptor](#/d/kings-rest/mob/135192)'s leap with an
+One unit at 10 forces, and the [Honored Raptor](#/d/kings-rest/map/mob/135192)'s leap with an
 enrage bolted on.
 
 **Bestial Berserk** is the difference: 25% more speed on everything nearby, for 15 seconds.
-It is the same spell [Queen Patlaa](#/d/kings-rest/mob/137486) casts, and the tooltip still
+It is the same spell [Queen Patlaa](#/d/kings-rest/map/mob/137486) casts, and the tooltip still
 names her — this raptor is one of hers.
 
 Only **Taunt** applies to it, unlike the Honored Raptor, so the leap cannot be stunned here.

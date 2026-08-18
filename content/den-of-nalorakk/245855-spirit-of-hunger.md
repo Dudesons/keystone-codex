@@ -36,7 +36,7 @@ Seven units at 25 forces each — 24% of the dungeon, the heaviest mob in Den of
 
 Its two casts fail in different ways. **Feast of Misery** is party damage that also heals the
 caster, so letting it through costs twice. **Starvation Effigy** is worse and quieter: it
-plants a [Starvation Effigy](#/d/den-of-nalorakk/mob/245567) totem which strips **15% of
+plants a [Starvation Effigy](#/d/den-of-nalorakk/map/mob/245567) totem which strips **15% of
 maximum health** for 25 seconds, stacking. Nobody dies to it directly; the group simply gets
 easier to kill with everything else.
 

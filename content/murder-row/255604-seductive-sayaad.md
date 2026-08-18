@@ -19,6 +19,6 @@ trap: "Same six-second disorient as the other Sayaad, on a single unit that is e
 ---
 
 The second MDT entry for the Seductive Sayaad — one placement rather than four, and otherwise
-identical to [the first](#/d/murder-row/mob/236082).
+identical to [the first](#/d/murder-row/map/mob/236082).
 
 Same cast, same two answers: interrupt it, or dispel the disorient as magic.

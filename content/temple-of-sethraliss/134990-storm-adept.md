@@ -23,5 +23,5 @@ interruptible bolt, and a CC list that includes Stun, Silence, Fear, Root, Sap a
 
 Nothing here needs a plan beyond spending an interrupt or a stun.
 
-The [Imbued Stormcaller](#/d/temple-of-sethraliss/mob/134599) casts the same Lightning Bolt
+The [Imbued Stormcaller](#/d/temple-of-sethraliss/map/mob/134599) casts the same Lightning Bolt
 alongside two abilities that matter considerably more.

@@ -84,7 +84,7 @@ trap: "Nothing here is dodged — it is intercepted. Every Echo that reaches Zul
 The dungeon's last fight inverts the usual instinct completely: **the mechanics are aimed at
 Zul'jarra, and the group's job is to get in the way.**
 
-**Fury of the War God** sends every [Echo of Nalorakk](#/d/den-of-nalorakk/mob/247301) charging
+**Fury of the War God** sends every [Echo of Nalorakk](#/d/den-of-nalorakk/map/mob/247301) charging
 at her. An Echo stopped by a player costs 68k. An Echo that arrives triggers
 **Demoralizing Scream** — 145k to everyone, ignoring armour, plus **+10% damage taken for 30
 seconds, stacking**. So the cheap outcome is taking the hit.

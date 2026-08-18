@@ -47,7 +47,7 @@ spells:
 trap: "She is not an enemy — she is the fight's health bar. Every Echo and every slam that gets through her costs the group a stacking 10% damage taken."
 ---
 
-Not a mob to kill: Zul'jarra is who [Nalorakk](#/d/den-of-nalorakk/mob/246404) is attacking,
+Not a mob to kill: Zul'jarra is who [Nalorakk](#/d/den-of-nalorakk/map/mob/246404) is attacking,
 and protecting her is the encounter.
 
 Two directions of dependence. **Demoralizing Scream** is her taking a hit the group failed to

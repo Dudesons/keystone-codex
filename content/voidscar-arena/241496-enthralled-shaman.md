@@ -26,7 +26,7 @@ trap: "The totem does more damage than the shaman. Kill the object, not the cast
 
 Nine units at 7 forces each, and the same **Magma Totem** that appears in Den of Nal'orakk —
 around 120k a second to the entire party, regardless of range or position, for as long as the
-[totem](#/d/voidscar-arena/mob/248666) stands.
+[totem](#/d/voidscar-arena/map/mob/248666) stands.
 
 Everything else is secondary. **Lava Bolt** is a normal interruptible cast at 116k on one
 target; spending a kick on it while a totem is up is the mistake this card exists to prevent.

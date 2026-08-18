@@ -73,9 +73,9 @@ arena for 90 seconds*, so by the third cast there are several of them drifting a
 knockbacks. And **Blizzard's Wrath** is what waits at the edge — 194k for being there.
 
 **Shattering Frostspike** adds bodies:
-[Fractured Shivercores](#/d/den-of-nalorakk/mob/244759) whose Winter's Shroud must be
+[Fractured Shivercores](#/d/den-of-nalorakk/map/mob/244759) whose Winter's Shroud must be
 interrupted and whose Rimeshatter, if unsoaked, roots the whole group.
 
 Worth remembering from the trash: the
-[Glacial Revenant's](#/d/den-of-nalorakk/mob/241876) Snowdrift grants **immunity to forced
+[Glacial Revenant's](#/d/den-of-nalorakk/map/mob/241876) Snowdrift grants **immunity to forced
 movement**. In this fight, that is not a small thing.

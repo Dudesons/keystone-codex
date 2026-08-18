@@ -25,7 +25,7 @@ trap: "Fixate runs twelve seconds and ignores the tank. The target kites; nobody
 ---
 
 Four units at 5 forces each, always beside a
-[Bonded Beasttamer](#/d/den-of-nalorakk/mob/245145).
+[Bonded Beasttamer](#/d/den-of-nalorakk/map/mob/245145).
 
 **Fixate** is the part that changes what the group does: twelve seconds locked onto one player,
 with no tank interaction available. The correct answer is the target running, and everyone

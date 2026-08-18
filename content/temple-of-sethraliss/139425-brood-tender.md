@@ -19,7 +19,7 @@ trap:
 ---
 
 Three units at 7 forces each, with a single interruptible bolt. Functionally the
-[Storm Adept](#/d/temple-of-sethraliss/mob/134990) with a different damage school.
+[Storm Adept](#/d/temple-of-sethraliss/map/mob/134990) with a different damage school.
 
 Stun, Incapacitate, Silence, Fear, Root, Slow and Disorient all apply, so an interrupt is only
 one of several ways to handle it.

@@ -33,7 +33,7 @@ spells:
 trap: "A second source of Lightfire means a second set of silencing beams on the floor. Take them somewhere the group is not going to need."
 ---
 
-Called by [Lightwarden Ruia](#/d/the-blinding-vale/mob/245912)'s **Spirits of the Vale**, and
+Called by [Lightwarden Ruia](#/d/the-blinding-vale/map/mob/245912)'s **Spirits of the Vale**, and
 carrying his moonkin-form abilities.
 
 The cost is cumulative rather than immediate: every **Lightfire** leaves beams where its target

@@ -50,10 +50,10 @@ tavern sequence rather than an ability set.
 (patrons order and lose patience), **Cleaner** (mop the spills), **Entertainer** (perform on
 beat) and **Bouncer** (eject the rowdy ones).
 
-The other tavern NPCs — [Silvermoon Patron](#/d/murder-row/mob/234984),
-[Rowdy Patron](#/d/murder-row/mob/236525),
-[Nauseous Patron](#/d/murder-row/mob/240289),
-[Selenar Sunshy](#/d/murder-row/mob/235841),
-[Masked Noble](#/d/murder-row/mob/236088) and
-[Influentual Reviewer](#/d/murder-row/mob/253081) — are the states of that sequence, and each
+The other tavern NPCs — [Silvermoon Patron](#/d/murder-row/map/mob/234984),
+[Rowdy Patron](#/d/murder-row/map/mob/236525),
+[Nauseous Patron](#/d/murder-row/map/mob/240289),
+[Selenar Sunshy](#/d/murder-row/map/mob/235841),
+[Masked Noble](#/d/murder-row/map/mob/236088) and
+[Influentual Reviewer](#/d/murder-row/map/mob/253081) — are the states of that sequence, and each
 has a card here because MDT places them on the map.

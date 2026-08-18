@@ -36,7 +36,7 @@ spells:
 trap: "Rimeshatter shards must be caught, not avoided. An unsoaked shard detonates for 155k and roots the whole group — dodging it is the mistake."
 ---
 
-Uncovered when the [Sentinel of Winter](#/d/den-of-nalorakk/mob/244100)'s Shattering Frostspike
+Uncovered when the [Sentinel of Winter](#/d/den-of-nalorakk/map/mob/244100)'s Shattering Frostspike
 splinters, and it brings the two mechanics the boss herself does not have.
 
 **Winter's Shroud** stacks +10% Frost damage taken on a fight where every source of damage is

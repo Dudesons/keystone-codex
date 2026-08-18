@@ -38,7 +38,7 @@ trap: "Bladestorm chases a player rather than spinning in place. Whoever it pick
 ---
 
 One of the royal pair, worth 25 forces, bonded to
-[Queen Wasi](#/d/kings-rest/mob/137478) by **Eternal Bond** — they share a health pool, so
+[Queen Wasi](#/d/kings-rest/map/mob/137478) by **Eternal Bond** — they share a health pool, so
 there is no priority target and no split to manage.
 
 He is the melee half. **Bladestorm** is 165k every half-second and it **travels**, so the

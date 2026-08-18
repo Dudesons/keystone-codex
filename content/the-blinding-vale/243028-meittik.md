@@ -42,7 +42,7 @@ trap: "The Fertile Loam that Bedrock Slam creates is not just a puddle — it is
 ---
 
 One third of the **Lightblossom Trinity**, alongside
-[Kezkitt](#/d/the-blinding-vale/mob/243029) and [Lekshi](#/d/the-blinding-vale/mob/243030).
+[Kezkitt](#/d/the-blinding-vale/map/mob/243029) and [Lekshi](#/d/the-blinding-vale/map/mob/243030).
 **Thicket's Trinity** makes all three share damage taken, so there is no priority target and
 no split to manage — whatever is hit, all three take it.
 

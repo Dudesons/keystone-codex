@@ -57,7 +57,7 @@ trap: "Inferno Spit leaves embers where it expires, and Erkhart then blows them 
 ---
 
 Half of a two-boss encounter, fought alongside
-[Erkhart Stormvein](#/d/ruby-life-pools/mob/190485). Read the two together: Kyrakka lays fire
+[Erkhart Stormvein](#/d/ruby-life-pools/map/mob/190485). Read the two together: Kyrakka lays fire
 on the floor and Erkhart moves it.
 
 **Inferno Spit** is the coupling point. It ticks for six seconds, then explodes and leaves

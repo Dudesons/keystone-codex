@@ -23,5 +23,5 @@ The cheapest problem in the Vale to solve, and the easiest to walk past.
 
 **Hatch** takes ten seconds. An egg broken inside that window costs the group a few globals of
 incidental cleave; an egg left alone becomes a
-[Newborn Potadpole](#/d/the-blinding-vale/mob/250202) with a knockback. There is no mechanic
+[Newborn Potadpole](#/d/the-blinding-vale/map/mob/250202) with a knockback. There is no mechanic
 here beyond noticing.

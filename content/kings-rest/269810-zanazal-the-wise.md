@@ -42,9 +42,9 @@ stop it.
 **Call of the Elements** is the fight's real content. It brings three totems, each demanding a
 different response:
 
-- [Explosive Totem](#/d/kings-rest/mob/135764) — 397k to everyone after a nine-second cast.
+- [Explosive Totem](#/d/kings-rest/map/mob/135764) — 397k to everyone after a nine-second cast.
   The one that kills.
-- [Disruption Totem](#/d/kings-rest/mob/135761) — interrupts the whole group for 4 seconds.
-- [Torrent Totem](#/d/kings-rest/mob/135765) — 158k and a knockback within 3 yards.
+- [Disruption Totem](#/d/kings-rest/map/mob/135761) — interrupts the whole group for 4 seconds.
+- [Torrent Totem](#/d/kings-rest/map/mob/135765) — 158k and a knockback within 3 yards.
 
 All three carry a **Reinforced** buff in the data, and none of them can be crowd controlled.

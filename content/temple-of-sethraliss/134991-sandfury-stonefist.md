@@ -24,7 +24,7 @@ spells:
 trap: "Sunder Slam stacks +50% Physical damage taken. It is the multiplier that kills the tank, not the 388k."
 ---
 
-Four units at 25 forces each, tied with the [Sand-Sworn Rider](#/d/temple-of-sethraliss/mob/134629)
+Four units at 25 forces each, tied with the [Sand-Sworn Rider](#/d/temple-of-sethraliss/map/mob/134629)
 for the heaviest mob in the dungeon.
 
 **Sunder Slam** is the ability to plan around. Fifty percent extra Physical damage taken, for

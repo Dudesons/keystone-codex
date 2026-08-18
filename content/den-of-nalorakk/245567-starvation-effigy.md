@@ -19,7 +19,7 @@ spells:
 trap: "It takes maximum health, not current. Nobody's health bar drops — the ceiling does, and the healer notices too late."
 ---
 
-The totem the [Spirit of Hunger](#/d/den-of-nalorakk/mob/245855) plants, with 0.6 million
+The totem the [Spirit of Hunger](#/d/den-of-nalorakk/map/mob/245855) plants, with 0.6 million
 health and one job.
 
 **Insatiable Hunger** removes 15% of everyone's maximum health for 25 seconds, and it stacks.

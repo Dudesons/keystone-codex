@@ -39,10 +39,10 @@ spells:
 trap: "Unstable Corruption is 485k in twenty yards and it spawns the Lifeforce orbs. Where it goes off decides where the group has to go next."
 ---
 
-The [Avatar](#/d/temple-of-sethraliss/mob/133392)'s heavy add, with 1.7 million health and a
+The [Avatar](#/d/temple-of-sethraliss/map/mob/133392)'s heavy add, with 1.7 million health and a
 tank buster that would not be out of place on a boss.
 
 **Tainted Strike** is 485k with a stacking ten-second burn. **Unstable Corruption** is 485k in
 a twenty-yard radius — and it is what creates the
-[Corrupted Lifeforce](#/d/temple-of-sethraliss/mob/268364) orbs, so it is simultaneously the
+[Corrupted Lifeforce](#/d/temple-of-sethraliss/map/mob/268364) orbs, so it is simultaneously the
 biggest hit in the encounter and the thing that sets up its central decision.

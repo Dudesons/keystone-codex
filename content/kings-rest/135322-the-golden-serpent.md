@@ -64,7 +64,7 @@ trap: "Every Spit Gold pool becomes an add on the next Lucre's Call, and every a
 A fight that punishes untidiness three casts later.
 
 The loop runs: **Spit Gold** leaves pools → **Lucre's Call** animates all of them at once →
-each [Animated Gold](#/d/kings-rest/mob/135406) that reaches her grants **Luster**, a 10%
+each [Animated Gold](#/d/kings-rest/map/mob/135406) that reaches her grants **Luster**, a 10%
 shield *and a stacking +25% damage*. Nothing removes those stacks.
 
 So the group is not really fighting the serpent's damage; it is managing how much of it there

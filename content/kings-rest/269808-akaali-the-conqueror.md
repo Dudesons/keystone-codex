@@ -35,8 +35,8 @@ trap: "Barrel Through is shared damage — the group stacks into it. Debilitatin
 ---
 
 One of the three **Council of Tribes**, alongside
-[Zanazal the Wise](#/d/kings-rest/mob/269810) and
-[Kula the Butcher](#/d/kings-rest/mob/269811). She is the physical one.
+[Zanazal the Wise](#/d/kings-rest/map/mob/269810) and
+[Kula the Butcher](#/d/kings-rest/map/mob/269811). She is the physical one.
 
 **Barrel Through** is a soak, not a dodge: 873k divided among everyone within 7 yards. The
 instinct to scatter from a charging boss is exactly wrong here.

@@ -19,7 +19,7 @@ spells:
 trap: "A 70% slow is a 70% slow, even in a role-play sequence. Clean it or walk around it."
 ---
 
-Part of the [Illicit Rain](#/d/murder-row/mob/263940) sequence, and the one flavour NPC with a
+Part of the [Illicit Rain](#/d/murder-row/map/mob/263940) sequence, and the one flavour NPC with a
 real mechanical effect attached.
 
 **Spill Zone** slows by **70%** — the harshest movement penalty anywhere in the season's data —

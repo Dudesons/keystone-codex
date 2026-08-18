@@ -22,7 +22,7 @@ Nineteen of them on the map, each worth **nothing**, each carrying the dungeon's
 dangerous buff.
 
 **Mother's Wrath** is the identical ability the
-[Territorial Matriarch](#/d/den-of-nalorakk/mob/241808) casts: +50% damage to every bear within
+[Territorial Matriarch](#/d/den-of-nalorakk/map/mob/241808) casts: +50% damage to every bear within
 40 yards, for a minute, stacking. A route built to skip the cubs on the grounds that they give
 no count will still be fighting a pack that they have enraged.
 

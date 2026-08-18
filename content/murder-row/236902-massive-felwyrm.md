@@ -45,9 +45,9 @@ trap: "It explodes for 291k in ten yards, and it spawns Tiny Felwyrms that explo
 One unit worth 12 forces, and the centre of a chain of explosions.
 
 **Massive Fel Detonation** is 291k in a 10-yard radius on death, and MDT flags it **magic
-dispellable** — the same trick as the small [Felwyrm](#/d/murder-row/mob/236085), scaled up.
+dispellable** — the same trick as the small [Felwyrm](#/d/murder-row/map/mob/236085), scaled up.
 
-**Summon Wyrms** makes the problem multiply: a [Tiny Felwyrm](#/d/murder-row/mob/253324) every
+**Summon Wyrms** makes the problem multiply: a [Tiny Felwyrm](#/d/murder-row/map/mob/253324) every
 0.3 seconds, each carrying its own 194k death explosion. Killing the adds carelessly is as
 expensive as killing the parent carelessly.
 

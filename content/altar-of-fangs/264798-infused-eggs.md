@@ -21,4 +21,4 @@ trap:
 ---
 
 Not a mob so much as a spawner, and worth no forces. What comes out is
-[Hatchling](#/d/altar-of-fangs/mob/261556), which fixates.
+[Hatchling](#/d/altar-of-fangs/map/mob/261556), which fixates.

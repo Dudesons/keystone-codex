@@ -19,7 +19,7 @@ spells:
 trap: "Every stack takes 2% movement speed. Left long enough, the orb slows its target too much to escape the singularity that would have destroyed it."
 ---
 
-One per player during [Charonus](#/d/voidscar-arena/mob/239167), fixating and unkillable by
+One per player during [Charonus](#/d/voidscar-arena/map/mob/239167), fixating and unkillable by
 conventional means.
 
 **Condensed Mass** is a slow disguised as a damage-over-time. Two percent per application

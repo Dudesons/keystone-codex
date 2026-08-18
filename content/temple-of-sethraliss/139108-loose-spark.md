@@ -31,6 +31,6 @@ trap: "Wall of Sparks travels. Standing still and waiting for it to pass is not 
 Worth no forces, and carrying two mechanics that are worth real attention.
 
 **Loose Sparks** is 291k and a **six-second stun** — the same ability the
-[Spark Channeler](#/d/temple-of-sethraliss/mob/139110) uses. **Wall of Sparks** is different in
+[Spark Channeler](#/d/temple-of-sethraliss/map/mob/139110) uses. **Wall of Sparks** is different in
 kind: it *moves across the battlefield*, so it is dodged by travelling rather than by
 sidestepping once.

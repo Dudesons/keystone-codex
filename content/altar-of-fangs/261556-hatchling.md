@@ -17,5 +17,5 @@ spells:
 trap:
 ---
 
-Worth zero forces: it comes out of [Infused Eggs](#/d/altar-of-fangs/mob/264798) rather than
+Worth zero forces: it comes out of [Infused Eggs](#/d/altar-of-fangs/map/mob/264798) rather than
 being pulled, so killing it advances nothing but the fixated player's survival.

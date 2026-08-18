@@ -32,5 +32,5 @@ What is reliable: **Shield Bash** applies **+20% Physical damage taken for 20 se
 **Glaive Toss** bounces between players applying a bleed. The multiplier is the dangerous half,
 because Murder Row's heavy hitters are all Physical.
 
-The [Bribed Captain](#/d/murder-row/mob/252529) casts both of these as well, with a pack-wide
+The [Bribed Captain](#/d/murder-row/map/mob/252529) casts both of these as well, with a pack-wide
 buff on top.

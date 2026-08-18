@@ -18,9 +18,9 @@ spells:
 trap:
 ---
 
-Part of the [Illicit Rain](#/d/murder-row/mob/263940) sequence: a patron about to make work for
+Part of the [Illicit Rain](#/d/murder-row/map/mob/263940) sequence: a patron about to make work for
 whoever took the **Cleaner** role.
 
 Nothing hostile, nothing to react to. The resulting mess is
-[Selenar Sunshy](#/d/murder-row/mob/235841)'s **Spill Zone**, which does slow anyone standing
+[Selenar Sunshy](#/d/murder-row/map/mob/235841)'s **Spill Zone**, which does slow anyone standing
 in it.

@@ -19,6 +19,6 @@ spells:
 trap:
 ---
 
-The spirit [the Ritual Chieftain](#/d/altar-of-fangs/mob/270306) invokes. Worth no forces, but
+The spirit [the Ritual Chieftain](#/d/altar-of-fangs/map/mob/270306) invokes. Worth no forces, but
 it carries the healing absorb that makes the chieftain's Dismember lethal, so it is the same
 problem arriving on a second body.

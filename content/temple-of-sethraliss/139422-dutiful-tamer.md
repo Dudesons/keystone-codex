@@ -24,8 +24,8 @@ trap:
 ---
 
 A single unit at 7 forces. Both its abilities are shared with the
-[Sand-Sworn Rider](#/d/temple-of-sethraliss/mob/134629): the
-[Swarming Krolusk](#/d/temple-of-sethraliss/mob/264785) summon and the Serrated Charge bleed.
+[Sand-Sworn Rider](#/d/temple-of-sethraliss/map/mob/134629): the
+[Swarming Krolusk](#/d/temple-of-sethraliss/map/mob/264785) summon and the Serrated Charge bleed.
 
 The summon is the reason to kill it rather than leave it — the Krolusks it brings are worth no
 forces at all, so they are pure added time.
