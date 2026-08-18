@@ -16,7 +16,7 @@ describe('parseTocVersion', () => {
     expect(parseTocVersion(realToc)).toBe('6.2.2')
   })
 
-  it('takes the ## Version line, not a Version word appearing elsewhere', () => {
+  it('finds the version line regardless of where among other directives it falls', () => {
     // `## Interface:` precedes it and `## X-Curse-Project-ID:` follows: order must not matter.
     const shuffled = ['## Title: MDT', '## Version: 7.0.1', '## Interface: 120100'].join('\n')
     expect(parseTocVersion(shuffled)).toBe('7.0.1')
