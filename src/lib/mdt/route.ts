@@ -4,17 +4,19 @@
 /**
  * The route model, and the bridge to MDT presets.
  *
- * An MDT preset carries far more than pulls: drawings, notes, rift offsets, assignments. We
- * cannot edit any of that, so we keep the original Lua table and only rewrite `value.pulls`
- * — re-exporting an imported route hands it back to the game without losing what we never
- * touched.
+ * An MDT preset carries far more than pulls: drawings, notes, rift offsets, assignments. We keep
+ * the original Lua table and rewrite only `value.pulls` and `objects`; everything else rides
+ * through untouched. An object this app did not edit is re-emitted from its source entry byte for
+ * byte rather than passed through wholesale — see
+ * `docs/plans/2026-08-18-mdt-object-editing-design.md`, "The invariant this changes, and what
+ * replaces it".
  */
 
 import type { CloneRef } from '../types'
 import { cloneKey, dungeonList, type DungeonLookup } from '../data'
 import type { LuaTable, LuaValue } from './cbor'
 import { MdtUserError } from './errors'
-import { luaToObjects, type MdtObject } from './objects'
+import { luaToObjects, objectsToLua, type MdtObject } from './objects'
 
 /** MDT's default palette (colorPaletteIdx 4), reused so pulls look the same as in game. */
 export const PULL_COLORS = [
@@ -39,10 +41,12 @@ export interface Route {
   /** The original table, kept so nothing is lost on re-export. */
   source?: LuaTable
   /**
-   * The notes and strokes the preset carries, read-only.
+   * The notes and strokes the preset carries.
    *
-   * Read out of `source` and never written back: `routeToLua` hands the original table over
-   * untouched, so these survive a round trip precisely because we do not rebuild them.
+   * Read out of `source` on import. An object this app never edited is re-emitted from its
+   * original entry byte for byte on export; only an edited or created object is rebuilt. See
+   * `docs/plans/2026-08-18-mdt-object-editing-design.md`, "The invariant this changes, and what
+   * replaces it".
    */
   objects: MdtObject[]
 }
@@ -162,6 +166,19 @@ export function routeToLua(route: Route): LuaTable {
 
   table.set('text', route.name)
   table.set('value', value)
+  // The objects are no longer passed through: they are rebuilt, entry by entry, from where each
+  // one came from. `objectsToLua` re-emits an entry this app did not edit byte for byte, which is
+  // what keeps a preset we merely read indistinguishable from the one we were handed — see the
+  // design document referenced on `Route.objects` above.
+  //
+  // The key itself is only written when there is something to write: when the source already
+  // carried an `objects` table, or when the route now holds an object of its own (created, since
+  // an object read from `source` always brings a source that already has the key). A preset that
+  // never had `objects` — and a route with neither a source nor any objects — must not gain an
+  // empty one it never carried.
+  if (route.source?.has('objects') || route.objects.length > 0) {
+    table.set('objects', objectsToLua(route.source, route.objects))
+  }
   if (route.difficulty !== undefined) table.set('difficulty', route.difficulty)
   if (route.uid !== undefined) table.set('uid', route.uid)
   if (!table.has('colorPaletteInfo')) {

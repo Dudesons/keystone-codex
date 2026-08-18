@@ -8,10 +8,22 @@ import pako from 'pako'
 import { decodeCbor, encodeCbor, isLuaArray, luaToJs, type LuaTable, type LuaValue } from './cbor'
 import { decodeMdtString, deserializeAce, encodeMdtString } from './string'
 import { luaToRoute, routeToLua } from './route'
+import { luaToObjects, type MdtNote } from './objects'
 import { MdtUserError } from './errors'
+import { toPixels } from '../geometry'
 
 const hex = (s: string) => new Uint8Array(s.match(/../g)!.map((b) => parseInt(b, 16)))
 const toHex = (b: Uint8Array) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
+/** A second, local copy of `objects.ts`'s module-private helper — see that file's own note on why. */
+const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
+
+/**
+ * The export carrying drawn strokes, following `objects.test.ts`'s fixture idiom: skipped rather
+ * than failed when absent, so the repository stays testable without it.
+ */
+const strokesFixture = path.join(__dirname, '__fixtures__', 'real-export-strokes.txt')
+const drawn = fs.existsSync(strokesFixture) ? fs.readFileSync(strokesFixture, 'utf8').trim() : ''
+const runDrawn = drawn ? it : it.skip
 
 /** A Lua table literal, to keep the tests light. */
 const lua = (...entries: [number | string, LuaValue][]): LuaTable => new Map(entries)
@@ -235,6 +247,33 @@ describe('MDT route', () => {
     const out = routeToLua(luaToRoute(withExtras))
     expect(out.get('wagoID')).toBe('hH8oS8VqB')
     expect(out.get('objects')).toEqual(seq(lua(['t', 'note'])))
+  })
+
+  // The guard that mattered before objects were editable, and still has to hold: importing and
+  // re-exporting without touching anything must not rewrite a single object.
+  runDrawn('still hands back an objects table it was not asked to change', () => {
+    const preset = decodeMdtString(drawn).table
+    const before = preset.get('objects')
+    const out = routeToLua(luaToRoute(preset))
+    expect(out.get('objects')).toEqual(before)
+  })
+
+  runDrawn('drops an object the route no longer holds', () => {
+    const preset = decodeMdtString(drawn).table
+    const route = luaToRoute(preset)
+    const kept = route.objects.filter((o) => o.kind !== 'note')
+    const out = routeToLua({ ...route, objects: kept })
+    const emitted = asTable(out.get('objects'))!
+    expect(emitted.size).toBe(kept.length)
+    expect(luaToObjects(out).some((o) => o.kind === 'note')).toBe(false)
+  })
+
+  runDrawn('carries an object the app created into the exported table', () => {
+    const preset = decodeMdtString(drawn).table
+    const route = luaToRoute(preset)
+    const added: MdtNote = { kind: 'note', at: toPixels(500, -400), sublevel: 1, text: 'new' }
+    const out = routeToLua({ ...route, objects: [...route.objects, added] })
+    expect(luaToObjects(out).some((o) => o.kind === 'note' && o.text === 'new')).toBe(true)
   })
 })
 
