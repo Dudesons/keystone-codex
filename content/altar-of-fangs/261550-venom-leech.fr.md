@@ -12,8 +12,8 @@ spells:
 ---
 
 Vingt-huit unités à 1 force chacune — le corps le moins cher du donjon et, sur le papier, celui
-qui frappe le plus fort. **Septic Spatter** pose 291k à l'impact quand la sangsue éclate, le
-même ordre de grandeur que le Toxic Beam de l'Élu d'Ula'tek.
+qui frappe le plus fort. **Éclaboussure septique** pose 291k à l'impact quand la sangsue éclate, le
+même ordre de grandeur que le Rayon toxique de l'Élu d'Ula'tek.
 
 À 1 force pièce, elles meurent incidemment, ce qui veut dire que l'éclaboussure arrive que
 quelqu'un l'ait guettée ou non.

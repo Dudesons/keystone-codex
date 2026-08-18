@@ -10,7 +10,7 @@ spells:
 ---
 
 Dix-huit unités à 1 force chacune, et elles arrivent rarement seules : les packs 34, 38 et 39
-les associent à l'[Élu d'Ula'tek](#/d/altar-of-fangs/codex/mob/263109), dont le Mass Envenom est la
+les associent à l'[Élu d'Ula'tek](#/d/altar-of-fangs/codex/mob/263109), dont l'Envenimement de masse est la
 raison d'être de ces pulls.
 
 Seules, elles ne sont qu'un décompte de corps. L'éclatement à la mort est dissipable en poison

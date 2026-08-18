@@ -11,7 +11,7 @@ import {
   isRole,
   npcIdList,
 } from './content'
-import { dungeonList, getLookup } from './data'
+import { dungeonList, getLookup, getSpell } from './data'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
@@ -342,6 +342,66 @@ describe('Cross-links between cards', () => {
   }
 
   it('all address a mob card the router serves', () => {
+    expect([...offenders.values()]).toEqual([])
+  })
+})
+
+/**
+ * A spell a translation names must be named in the reader's language.
+ *
+ * The chip, the badge and the card's own spell row all take their label from `spells.json`, so
+ * a sentence that spells the name out in English disagrees with the row printed right next to
+ * it — which is the version the reader trusts. Wowhead already gives us the French, so this is
+ * a gap rather than a convention.
+ *
+ * **Emphasised spans, not any occurrence of the name.** Naming a spell in emphasis is the
+ * house style, which makes the span the unit worth checking — and it is the only unit that can
+ * be checked without false alarms. A bare substring sweep flags the `Disruption` inside
+ * `Essence Disruption`, a name Method's guide carries and `spells.json` does not: it stays
+ * English because we have nothing to replace it with, and a guard that cannot tell the
+ * difference would be a guard nobody keeps green.
+ */
+describe('Spell names in the French entries', () => {
+  /** English label -> French one, over every spell the pool can attach to a mob. */
+  const french = new Map<string, string>()
+  for (const summary of dungeonList) {
+    for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+      for (const { id } of enemy.spells) {
+        const en = getSpell(id, 'en')?.name
+        const fr = getSpell(id, 'fr')?.name
+        if (en && fr && en !== fr) french.set(en, fr)
+      }
+    }
+  }
+
+  const offenders = new Map<string, string>()
+  for (const summary of dungeonList) {
+    for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+      const content = getMobContent(summary.slug, enemy.id, 'fr')
+      if (!content) continue
+      // Only text the translation actually wrote. A field still falling back to the base is
+      // English on purpose, and naming its spells in English is the one thing it should do.
+      const rendered = [
+        content.fallback.prose ? '' : content.html,
+        content.fallback.trap ? '' : inlineMarkdown(content.trap),
+        ...(content.spells ?? [])
+          .filter((s) => !content.fallback.notes.includes(Number(s.id)))
+          .map((s) => inlineMarkdown(s.note)),
+      ].join('\n')
+
+      for (const [, , name] of rendered.matchAll(/<(strong|em)>([^<]+)<\/\1>/g)) {
+        const fr = french.get(name.trim())
+        if (!fr) continue
+        offenders.set(
+          `${summary.slug}/${enemy.id}/${name}`,
+          `content/${summary.slug}/${enemy.id}-*.fr.md emphasises "${name}",` +
+            ` which the card next to it labels "${fr}".`,
+        )
+      }
+    }
+  }
+
+  it('use the label the card itself shows', () => {
     expect([...offenders.values()]).toEqual([])
   })
 })

@@ -9,7 +9,7 @@ spells:
     note: "L'arrêter au contrôle. Six secondes de canalisation qui le soignent de 5 % par seconde, puis un bouclier d'absorption de 250k si elle va au bout."
 
   - id: 1307602
-    note: "Le résultat d'un Evolve mené à terme, pas une incantation à part."
+    note: "Le résultat d'une Évolution menée à terme, pas une incantation à part."
 
   - id: 1289416
     note: "58k Nature puis 24k par seconde pendant 8 s. Dissipable en poison si ça passe."
@@ -25,8 +25,8 @@ trap: "Arrêter **Évolution** au contrôle, pas à l'interruption. Laissé alle
 
 Le mob qui punit un groupe sans contrôle disponible.
 
-**Evolve** est une canalisation de six secondes, et la réponse est un étourdissement ou une
-incapacitation, pas un kick. Ses deux Envenom sont interruptibles et comptent moins : ils font
+**Évolution** est une canalisation de six secondes, et la réponse est un étourdissement ou une
+incapacitation, pas un kick. Ses deux Envenimer sont interruptibles et comptent moins : ils font
 mal, mais ils n'effacent pas les dégâts déjà posés.
 
 Noter l'asymétrie — la capacité qui vous coûte le pull est celle à laquelle votre interruption

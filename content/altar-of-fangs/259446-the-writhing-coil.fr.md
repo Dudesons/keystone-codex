@@ -10,7 +10,7 @@ spells:
   - id: 1299053
     note: "9,7k par seconde, et ça ajoute une application par seconde. Ça ne s'arrête pas tout seul : seule la scission du Coil y met fin."
   - id: 1287798
-    note: "Attache des joueurs au Coil. Ce sont les joueurs attachés qui s'éloignent de 10 mètres qui forcent l'Uncoil."
+    note: "Attache des joueurs au Coil. Ce sont les joueurs attachés qui s'éloignent de 10 mètres qui forcent le **Désentortillement**."
   - id: 1287811
     note: "145k à tout le monde, et le Coil se scinde en Tortilleurs déroulés."
   - id: 1299130
@@ -23,13 +23,13 @@ spells:
 
 Une seule mécanique décide de ce combat, et elle se lit facilement à l'envers.
 
-**Death Rattle** n'expire pas. Il ajoute une application par seconde et continue *jusqu'à ce
-que le Writhing Coil soit scindé*. La seule chose qui le scinde, c'est **Uncoil** — et Uncoil
-est déclenché par **Vine Grip** : les joueurs attachés qui s'éloignent de 10 mètres.
+**Cliquetis mortel** n'expire pas. Il ajoute une application par seconde et continue *jusqu'à ce
+que le Writhing Coil soit scindé*. La seule chose qui le scinde, c'est **Désentortillement** — et Désentortillement
+est déclenché par **Poigne de la vigne** : les joueurs attachés qui s'éloignent de 10 mètres.
 
 Les lianes ne sont donc pas une punition à fuir, elles sont l'outil. Rester en place laisse
-Death Rattle monter sans opposition ; s'écarter y met fin et scinde le boss en
-[Tortilleurs déroulés](#/d/altar-of-fangs/codex/mob/262398), dont le **Toxic Atrophy** doit ensuite
+Cliquetis mortel monter sans opposition ; s'écarter y met fin et scinde le boss en
+[Tortilleurs déroulés](#/d/altar-of-fangs/codex/mob/262398), dont l'**Atrophie toxique** doit ensuite
 être interrompu.
 
-**Tail Scythe**, c'est 678k sur le tank, le coup le plus dur d'Altar of Fangs.
+**Faucheuse caudale**, c'est 678k sur le tank, le coup le plus dur d'Altar of Fangs.

@@ -10,5 +10,5 @@ spells:
 ---
 
 Un second Tortilleur déroulé, en version réduite : il se réassemble et repousse à la mort, mais
-il ne porte ni Toxic Atrophy ni le fixate. Celui qui compte est le
+il ne porte ni l'Atrophie toxique ni le fixate. Celui qui compte est le
 [npc 262398](#/d/altar-of-fangs/codex/mob/262398).

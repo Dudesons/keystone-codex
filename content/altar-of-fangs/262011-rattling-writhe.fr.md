@@ -16,8 +16,8 @@ trap: "**Crochets corrosifs** laissent +20 % de dégâts subis pendant 20 s, et 
 
 Vingt-cinq forces par unité, et un mob dont les deux capacités ne sont dangereuses qu'ensemble.
 
-**Corrosive Fangs** est celle qui compte, pas pour ses 242k mais pour les vingt secondes de
-+20 % de dégâts subis qui suivent. **Rattle** pose ensuite 58k par seconde à travers l'armure,
+**Crochets corrosifs** sont ceux qui comptent, pas pour leurs 242k mais pour les vingt secondes de
++20 % de dégâts subis qui suivent. **Cliquetis** pose ensuite 58k par seconde à travers l'armure,
 et c'est la part à laquelle aucun cooldown de mitigation ne répond complètement.
 
 L'ordre compte plus que les chiffres bruts ici : nettoyer l'amplificateur, et le reste n'est

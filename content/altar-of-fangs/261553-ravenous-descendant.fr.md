@@ -18,9 +18,9 @@ Dix-neuf unités réparties sur neuf packs — le mob le plus omniprésent du do
 les dégâts sont les plus faciles à sous-estimer. Individuellement il vaut 5 forces ;
 collectivement, c'est lui qui tue les tanks.
 
-Les deux capacités racontent une seule histoire. **Ravenous Claws** ajoute 20 % de vitesse
+Les deux capacités racontent une seule histoire. **Griffes voraces** ajoute 20 % de vitesse
 d'attaque par coup et ne dure que 2 secondes : ça monte tant que le mob est au contact et ça
-retombe dès qu'il ne l'est plus. **Ravenous** l'enrage par-dessus. Aucune des deux n'est
+retombe dès qu'il ne l'est plus. **Vorace** l'enrage par-dessus. Aucune des deux n'est
 dangereuse seule ; ensemble, sur un pack qui en compte cinq, les dégâts subis par le tank
 grimpent plus vite que le heal ne s'y attend.
 

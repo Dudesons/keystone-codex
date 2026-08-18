@@ -10,5 +10,5 @@ spells:
 ---
 
 L'esprit que le [Chef du rituel](#/d/altar-of-fangs/codex/mob/270306) invoque. Il ne vaut aucune
-force, mais il porte l'absorption de soins qui rend le Dismember du chef létal : c'est le même
+force, mais il porte l'absorption de soins qui rend le Démembrer du chef létal : c'est le même
 problème qui arrive sur un second corps.

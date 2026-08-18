@@ -20,6 +20,6 @@ spells:
 Les serpents en lesquels [L'Ophidien ondulant](#/d/altar-of-fangs/codex/mob/259446) se scinde. Ils ne
 valent aucune force, et ils se réassemblent en boss via **Assimilation**.
 
-**Toxic Atrophy** est l'interruption qui compte : -20 % de dégâts et -20 % de déplacement sur
+**Atrophie toxique** est l'interruption qui compte : -20 % de dégâts et -20 % de déplacement sur
 tout le groupe, cumulable, sur une incantation de quatre secondes — pendant une phase où le
 groupe manque déjà de temps.
