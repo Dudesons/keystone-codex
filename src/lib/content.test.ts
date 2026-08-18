@@ -11,7 +11,7 @@ import {
   isRole,
   npcIdList,
 } from './content'
-import { dungeonList, getLookup, getSpell } from './data'
+import { dungeonList, getLookup, getNpcLabel, getSpell } from './data'
 
 /**
  * These tests read the real files under `content/`. Two entries serve as landmarks: one is
@@ -343,6 +343,63 @@ describe('Cross-links between cards', () => {
 
   it('all address a mob card the router serves', () => {
     expect([...offenders.values()]).toEqual([])
+  })
+
+  /**
+   * A link naming one mob must not point at another.
+   *
+   * The sweep above cannot see this: the address is well formed and the target really is in
+   * that dungeon, so everything checks out except which mob it is. The reader clicks a name and
+   * lands on a different card — and because both cards exist and both look plausible, nothing
+   * about the result says it went wrong.
+   *
+   * Only flagged when the link text is *exactly* another mob's name, in either language. A
+   * link whose text is a description ("the adds", "its cubs") is deliberate phrasing and is
+   * left alone.
+   *
+   * A name maps to a **set** of ids, because thirteen names in the pool belong to two mobs each
+   * — a boss and its encounter copy, Merektha as 133384 and 134487. Keeping one id per name
+   * reported six correct links as wrong on the first run. The cost is that this cannot catch a
+   * link to the wrong one of two mobs sharing a name; what it does catch is a link naming a mob
+   * that has nothing to do with the target.
+   */
+  it('name the mob they point at, not a different one', () => {
+    const named = new Map<string, Set<number>>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const locale of ['en', 'fr'] as const) {
+          const name = getNpcLabel(enemy, locale).name
+          const ids = named.get(name) ?? new Set<number>()
+          ids.add(enemy.id)
+          named.set(name, ids)
+        }
+      }
+    }
+
+    const mismatched = new Map<string, string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const locale of ['en', 'fr'] as const) {
+          const content = getMobContent(summary.slug, enemy.id, locale)
+          if (!content) continue
+          const source = [content.html, content.trap ?? ''].join('\n')
+
+          const ANCHOR = /<a href="#\/d\/[a-z0-9-]+\/codex\/mob\/(\d+)">([^<]+)<\/a>/g
+          for (const [, target, label] of source.matchAll(ANCHOR)) {
+            const text = label.trim()
+            const claimed = named.get(text)
+            if (!claimed || claimed.has(Number(target))) continue
+            mismatched.set(
+              `${summary.slug}/${enemy.id}/${text}`,
+              `content/${summary.slug}/${enemy.id}-* links "${text}" to mob ${target},` +
+                ` but that name belongs to ${[...claimed].join(' / ')}.`,
+            )
+          }
+        }
+      }
+    }
+
+    expect([...mismatched.values()]).toEqual([])
   })
 })
 
