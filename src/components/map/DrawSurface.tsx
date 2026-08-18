@@ -81,13 +81,18 @@ export default function DrawSurface({
         const g = gesture.current
         if (!g) return
         e.stopPropagation()
+        // Explicit, matching `DungeonMap`'s `endDrag` and `NoteLayer`'s pin release: a browser
+        // already releases capture implicitly once `pointerup` is dispatched, but every other
+        // capturing element in this codebase says so rather than leaning on that default.
+        e.currentTarget.releasePointerCapture?.(e.pointerId)
         gesture.current = null
         onProgress?.([])
         onCommit(g.points)
       }}
-      onPointerCancel={() => {
+      onPointerCancel={(e) => {
         // A cancelled gesture commits nothing: the browser took the pointer away mid-stroke, and
         // guessing what the hand meant is worse than losing it.
+        e.currentTarget.releasePointerCapture?.(e.pointerId)
         gesture.current = null
         onProgress?.([])
       }}
