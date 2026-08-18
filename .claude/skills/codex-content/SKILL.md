@@ -87,9 +87,9 @@ sibling carries `note`, `trap` and prose. See the [i18n skill](../i18n/SKILL.md)
 lists do not. A spell's Wowhead description is deliberately **not** rendered as markdown — it
 is their data, not our writing.
 
-**A cross-link between mob cards is written `#/d/<slug>/map/mob/<npcId>`.** `marked` emits
+**A cross-link between mob cards is written `#/d/<slug>/codex/mob/<npcId>`.** `marked` emits
 the href verbatim, and nothing in the app rewrites it, so the address has to be the one the
-router actually serves — a mob's card lives under the map route, not under the dungeon
+router actually serves — a mob's card lives under the codex route, not under the dungeon
 briefing at `/d/<slug>`.
 
 `tag: frontal` is a cone you avoid by not standing in front; `tag: dodge` is a patch of floor
