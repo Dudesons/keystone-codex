@@ -101,7 +101,10 @@ before you compare, and never conclude a dungeon changed from its size alone.
   A changed **`cc`** also lands here rather than at severity 3: the differ compares two data
   snapshots and cannot know which mobs have cards. Read those against the notes yourself — a
   note telling the group to stun something no longer stunnable is stale writing, and severity 6
-  is the only place it is named.
+  is the only place it is named. A mob reported as **moved on the map** needs nothing from
+  you: the map is drawn from the data, so wherever the mob now stands is already where it
+  renders. It is here only so you know the update repositioned something, not because there is
+  a line to change.
 - **For every `.fr.md` you touch**, read `i18n` first. A translation carries text only —
   `threat`, `role`, `tag` and `prio` stay in the base card.
 

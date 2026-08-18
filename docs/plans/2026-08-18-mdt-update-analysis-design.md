@@ -93,7 +93,7 @@ and the **audit** of the current generated JSON against `content/**.md` — base
 | 3 — writing possibly stale | An annotated spell whose `text[lang].description` or `castTime` changed between versions; a mob whose `cc` changed (**shipped at 6** — see below) | Notes quote tooltip numbers. Old and new are printed side by side for a human to judge |
 | 4 — to write | Mobs in the data with no card; whole dungeons that are new | `npm run scaffold` writes the stub; the report names them so none is missed |
 | 5 — dead weight | Cards, base and `.fr.md`, whose mob left MDT | Nothing breaks; the repository misstates its own contents |
-| 6 — informational | Mobs and clones added or removed, by count; pack regrouping (`g`); `totalCount`, `mdtIndex`, `mapID`, `teleportId`; rescaled health and level; `textureFolder` | A changed `textureFolder` forces `npm run build:maps`. Force coverage below 100% means extraction missed something |
+| 6 — informational | Mobs and clones added or removed, by count; pack regrouping (`g`); `totalCount`, `mdtIndex`, `mapID`, `teleportId`; rescaled health and level; `textureFolder`; a mob whose clones moved beyond a distance threshold (decision 4) | A changed `textureFolder` forces `npm run build:maps`. Force coverage below 100% means extraction missed something |
 
 Severity 1 is the reason the tool exists. Severity 6 exists because a human reading a report
 needs to know whether the update was small.
@@ -107,12 +107,30 @@ after.
 
 ### 4. No coordinate is ever diffed by value
 
-Clone `x` and `y` are floats that move whenever MDT recaptures a dungeon, and reporting them
-would bury everything else. Clones are reported as counts, and by which pack they belong to; a
-clone that appears or disappears is named, its position never is.
+**Measured, not assumed: the first real update, MDT 6.2.2 → 6.2.3 on The Blinding Vale, the one
+dungeon that pair touched.** Matching clones by `mdtIdx` — never by array position, which an
+inserted or removed clone would shift and so invent movement that never happened — 276 clones
+line up on both sides: 91 sit at the byte-identical position and 185 moved, the smallest nonzero
+move being well over half a unit. There is no sub-unit recapture jitter in this pair at all: MDT
+does not perturb a clone's position on export, and this design's earlier premise that it does
+was wrong. What actually happened is visible in the raw `.lua` diff too — round numbers like
+`["x"] = 344` are the signature of a mob dragged by hand in MDT's editor, not of floating-point
+noise.
+
+A float-by-float diff is still unreadable, and the conclusion stands: no coordinate is ever
+reported by value, because 185 raw pairs of numbers would bury every other finding in the same
+report. What changes is the reason and the rule that follows from it. Rather than reporting
+nothing about position, clones are matched by `mdtIdx`, the distance between matched pairs is
+measured, and a mob is reported — at severity 6, one finding for the whole mob, naming how many
+of its clones moved and how far the furthest one went — only when that distance exceeds a
+threshold of 20 units (MDT's frame is 840 by 560, so 20 units is a couple of percent of the
+map's width: enough that a mob changed corner, not that it was nudged by a pixel). A clone
+present on only one side is not movement; that is what the existing clone-count finding already
+covers.
 
 This is why a semantic differ earns its place over `git diff`, which on these files is
-unreadable for precisely this reason.
+unreadable for precisely this reason — the two real captures above are the strongest version of
+that claim, since clone movement is the bulk of what changed between them.
 
 ### 5. The report is a file, and it declines to overwrite itself
 
