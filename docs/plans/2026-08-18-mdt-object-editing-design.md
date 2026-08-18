@@ -69,6 +69,20 @@ avoids duplication, but moving or retexting an imported object becomes a per-fie
 the merge is paid on every read. Lazy adoption gets the same non-duplication with one list to
 reason about.
 
+**What laziness costs, and when.** The array is created under a `Y.Map` key, and a `Y.Map` key is
+last-writer-wins. So when two peers adopt in the same instant — each drawing their first object
+before either has heard from the other — both documents converge on one peer's array, and the
+loser's first edit disappears from their own screen having been visible there first. Verified
+against real Yjs. The adopted objects themselves are not duplicated, and every later edit merges
+normally: the loss is exactly one edit, on one side, once per session.
+
+It is a real cost at the most likely simultaneous moment there is, two people starting to draw at
+once, and it is recorded rather than fixed. The only way to remove it is to create the array
+eagerly whenever `source` is set, which breaks this decision's own promise — that a session which
+never draws leaves the document untouched — for every session, in exchange for one lost stroke in
+the rare one. Losing a first stroke is also visible and repeatable by the person who lost it,
+which a document quietly grown by a session that only read it is not.
+
 ### 2. Provenance, not the raw entry
 
 An object carries `from?: number` — the integer key of the entry it came from in `source`'s
