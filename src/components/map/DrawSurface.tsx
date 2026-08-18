@@ -41,6 +41,10 @@ export default function DrawSurface({
       className="absolute inset-0"
       style={{ cursor: 'crosshair' }}
       onPointerDown={(e) => {
+        // Matches the map's own pan starter (`DungeonMap`'s `onPointerDown`): only a left press
+        // starts a gesture. A right or middle press is not an escape hatch from whatever tool is
+        // active — it falls through untouched, the same as it does when no tool is active at all.
+        if (e.button !== 0) return
         // The container above owns panning and takes pointer capture past 4px of movement. Stopping
         // here is what keeps a stroke from becoming a pan — and it is why drag-to-pan is gone while
         // a tool is active. Escape drops the tool, which is the way back.

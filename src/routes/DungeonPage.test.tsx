@@ -529,6 +529,37 @@ describe('The drawing tools', () => {
     expect(within(pin).getByText('lust here')).toBeDefined()
   })
 
+  it('draws an arrow across the map on a drag', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    // Well clear of the start: a line-mode gesture reports two points however far this went.
+    fireEvent.pointerMove(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 120, clientY: 80, pointerId: 1 })
+
+    const stroke = container.querySelector('[data-testid="stroke-0"]')
+    expect(stroke).toBeTruthy()
+    // A plain stroke is a `<polyline>` alone; the `<polygon>` head is what an arrow adds, and
+    // what would disappear if `isArrow: true` were ever dropped from the committed object.
+    expect(stroke!.querySelector('polygon')).toBeTruthy()
+  })
+
+  it('draws no arrow when the tool is pressed and released without moving', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Arrow' }))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+
+    // A single point has no direction, so no stroke should have reached the map at all.
+    expect(container.querySelector('[data-testid="stroke-0"]')).toBeNull()
+  })
+
   it('leaves no hit target over the codex map after picking a tool and switching tabs', () => {
     const { container } = renderEn(at('/d/murder-row/codex'))
     fireEvent.click(screen.getByRole('link', { name: 'Route' }))

@@ -51,11 +51,20 @@ describe('DrawSurface', () => {
     fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
     // Well past the threshold.
     fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
-    // A hair away from the last one: dropped.
+    // A hair away from the last one: dropped. The reference point a dropped move is judged
+    // against must stay at 40, not silently advance to 41 — 46 is what tells the two apart:
+    // 46 - 40 = 6, not < 6, so kept (3 points); 46 - 41 = 5, which is < 6, so dropped (2 points).
     fireEvent.pointerMove(surface, { clientX: 41, clientY: 0, pointerId: 1 })
-    fireEvent.pointerMove(surface, { clientX: 80, clientY: 0, pointerId: 1 })
-    fireEvent.pointerUp(surface, { clientX: 80, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 46, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 46, clientY: 0, pointerId: 1 })
     expect(commits[0]).toHaveLength(3)
+  })
+
+  it('commits nothing on a right or middle press', () => {
+    const { surface, commits } = mount({ mode: 'point' })
+    fireEvent.pointerDown(surface, { clientX: 10, clientY: 10, pointerId: 1, button: 2 })
+    fireEvent.pointerUp(surface, { clientX: 10, clientY: 10, pointerId: 1, button: 2 })
+    expect(commits).toHaveLength(0)
   })
 
   it('reports progress while the gesture is live', () => {
