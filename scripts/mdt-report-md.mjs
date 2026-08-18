@@ -25,9 +25,21 @@ export function summariseFindings(findings) {
   return [...rows.values()].sort((a, b) => a.dungeon.localeCompare(b.dungeon))
 }
 
+/**
+ * One finding is one list item, whatever its detail quotes.
+ *
+ * A `detail` carries values straight out of the data, and a spell's `castTime`, `name` and
+ * `description` span several lines with a blank line between paragraphs -- 291 of the values in
+ * the committed `spells.json` do. A blank line inside a list item ends it: the rest of the old
+ * text would land as a top-level paragraph and the `→ action` line would attach to nothing. A
+ * description beginning `- ` or `# ` would go further and fabricate a checkbox or a heading in a
+ * document whose checkboxes are the worklist.
+ */
+const oneLine = (s) => String(s).replace(/\s+/g, ' ').trim()
+
 function renderFinding(f) {
   const lines = [`- [ ] **${f.subject}** — ${f.what}`]
-  if (f.detail) lines.push(`      ${f.detail}`)
+  if (f.detail) lines.push(`      ${oneLine(f.detail)}`)
   if (f.action) lines.push(`      → ${f.action}`)
   if (f.file) lines.push(`      \`${f.file}\``)
   return lines.join('\n')

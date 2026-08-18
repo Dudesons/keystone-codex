@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { renderReport, reportFileName, summariseFindings } from './mdt-report-md.mjs'
+import realSpells from '../src/data/generated/spells.json'
 
 const findings = [
   { severity: 1, dungeon: 'altar-of-fangs', subject: '1 A', what: 'annotates spell 9 it no longer has', file: 'content/altar-of-fangs/1-a.md', action: 'move the note' },
@@ -65,5 +66,36 @@ describe('renderReport', () => {
     expect(md).toContain('content/altar-of-fangs/1-a.md')
     expect(md).toContain('move the note')
     expect(md).toContain('4 -> 5')
+  })
+
+  it('keeps a real multi-line tooltip inside one list item', () => {
+    // A real value, not a hand-made one: `description` is what severity 3 diffs, and hundreds of
+    // the descriptions in the committed table span lines with a blank line between paragraphs.
+    // A blank line inside a list item ends it -- the rest of the text would land as a top-level
+    // paragraph and the `→ action` line would attach to nothing.
+    const spell = Object.entries(realSpells).find(([, e]) => /\n\s*\n/.test(e.text?.en?.description ?? ''))
+    expect(spell).toBeDefined()
+    const [id, entry] = spell
+    const description = entry.text.en.description
+
+    const out = renderReport({
+      ...context,
+      findings: [{
+        severity: 3,
+        dungeon: 'altar-of-fangs',
+        subject: `spell ${id}`,
+        what: 'description changed',
+        detail: `[en] (none) -> ${description}`,
+        action: 'reread the note',
+      }],
+    })
+
+    const lines = out.split('\n')
+    const bullet = lines.findIndex((l) => l.startsWith('- [ ] '))
+    expect(lines[bullet + 1].trimStart()).toMatch(/^\[en\] \(none\) -> /)
+    expect(lines[bullet + 1]).toContain(description.split(/\s*\n\s*/).join(' '))
+    expect(lines[bullet + 2].trimStart()).toBe('→ reread the note')
+    // Nothing from the tooltip escaped into a heading or a second checkbox.
+    expect((out.match(/- \[ \] /g) ?? [])).toHaveLength(1)
   })
 })
