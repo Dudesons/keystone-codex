@@ -170,6 +170,29 @@ const TEXT_FIELDS = ['name', 'castTime', 'description']
  * severity 3 — the note quotes numbers from it — while the same change on an unannotated spell is
  * a fact about the data and nothing more.
  */
+/**
+ * One finding, when the spell label table is byte-identical between two revisions.
+ *
+ * Severity 3 can only ever fire when a tooltip's text actually moved, and `fetch-assets.mjs`
+ * never re-fetches an already-cached spell -- only `FORCE=1 npm run fetch:assets` rebuilds the
+ * table. An unchanged table between two revisions is therefore not the same fact as "no tooltip
+ * moved": it may equally mean no tooltip was even looked at, and a reader who only sees an empty
+ * severity 3 cannot tell the two apart. Takes the raw text each revision's `spells.json` was
+ * written as, not the parsed table, and compares it byte for byte -- that is the only fact this
+ * finding reports, and it is cheaper and more honest than deep-comparing parsed objects to reach
+ * the same conclusion.
+ */
+export function labelTableFindings(beforeRaw, afterRaw) {
+  if (beforeRaw !== afterRaw) return []
+  return [finding({
+    dungeon: '',
+    subject: 'spell label table',
+    what: 'did not change between these two revisions, so nothing at severity 3 could be found',
+    action:
+      'FORCE=1 npm run fetch:assets is what re-fetches tooltips; a game patch, not an MDT update, is what moves them',
+  })]
+}
+
 export function diffSpells(before, after, annotatedIds) {
   const out = []
 

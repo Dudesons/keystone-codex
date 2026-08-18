@@ -4,7 +4,7 @@
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { diffDungeon, diffSpells } from './mdt-diff.mjs'
+import { diffDungeon, diffSpells, labelTableFindings } from './mdt-diff.mjs'
 import { parseDungeon } from './mdt-dungeon.mjs'
 import realSpells from '../src/data/generated/spells.json'
 
@@ -195,5 +195,29 @@ describe('diffSpells', () => {
     const after = structuredClone(realSpells)
     after[anyId].text.fr.description = 'Autre chose.'
     expect(diffSpells(realSpells, after, new Set([anyId]))[0].detail).toContain('fr')
+  })
+})
+
+describe('labelTableFindings', () => {
+  // These take the raw text a revision's spells.json was written as, not the parsed table:
+  // severity 3 can only ever fire when the label table was actually re-fetched, and this is the
+  // one place that fact -- rather than the table's content -- is what gets reported.
+
+  it('finds nothing when the two tables differ', () => {
+    expect(labelTableFindings('{"a":1}', '{"a":2}')).toEqual([])
+  })
+
+  it('reports one finding, at severity 6, when the two tables are byte-identical', () => {
+    const [only] = labelTableFindings('{"a":1}', '{"a":1}')
+    expect(only.severity).toBe(6)
+    expect(only.dungeon).toBe('')
+    expect(only.what).toContain('did not change')
+    expect(only.action).toMatch(/FORCE=1 npm run fetch:assets/)
+  })
+
+  it('says nothing when the tables are merely equal after parsing but differ byte for byte', () => {
+    // Key order or whitespace differing is still evidence a refetch touched the file, even if it
+    // produced the same values -- this finding is about the bytes, not about the parsed content.
+    expect(labelTableFindings('{"a":1,"b":2}', '{"b":2,"a":1}')).toEqual([])
   })
 })

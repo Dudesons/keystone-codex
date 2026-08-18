@@ -18,7 +18,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { CONTENT_DIR, GENERATED_DIR, ROOT, WOWHEAD_LOCALES } from './config.mjs'
-import { diffDungeon, diffSpells } from './mdt-diff.mjs'
+import { diffDungeon, diffSpells, labelTableFindings } from './mdt-diff.mjs'
 import { annotatedSpellIds, auditDungeon, readCardFacts } from './card-audit.mjs'
 import { autoFieldFindings, refreshAutoFields } from './card-auto-fields.mjs'
 import { renderReport, reportFileName, summariseFindings } from './mdt-report-md.mjs'
@@ -152,9 +152,12 @@ function main() {
   }
 
   const annotated = annotatedSpellIds(allCards)
-  const baseSpells = readJsonAtRev(args.base, 'src/data/generated/spells.json')
-  if (baseSpells) {
-    findings.push(...diffSpells(baseSpells, readJson(path.join(GENERATED_DIR, 'spells.json')), annotated))
+  const baseSpellsRaw = showAtRev(args.base, 'src/data/generated/spells.json')
+  if (baseSpellsRaw) {
+    const spellsPath = path.join(GENERATED_DIR, 'spells.json')
+    const afterSpellsRaw = fs.readFileSync(spellsPath, 'utf8')
+    findings.push(...labelTableFindings(baseSpellsRaw, afterSpellsRaw))
+    findings.push(...diffSpells(JSON.parse(baseSpellsRaw), readJson(spellsPath), annotated))
   } else {
     console.warn(
       `  ! ${args.base} has no src/data/generated/spells.json: spell labels could not be compared.`,
