@@ -36,3 +36,10 @@ Then run `npm test`. The tests assert real values read from this dungeon — 21 
 clones, 46 packs, 817 required forces — so a patch that changes the dungeon will fail them.
 That is the point: the failure tells you the pool moved, and you update the numbers
 deliberately rather than discovering the drift months later in the app.
+
+## MythicDungeonTools.toc
+
+The addon's own `.toc`, copied verbatim from a 6.2.2 install. It is the input
+`parseTocVersion` claims to read, and the version line's exact spelling — `## Version:`, double
+hash, one space — is the whole subject of that parser. A hand-written stand-in would assert our
+guess about a file format instead of testing it.
