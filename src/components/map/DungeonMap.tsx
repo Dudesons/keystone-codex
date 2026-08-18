@@ -9,8 +9,9 @@ import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
-import type { MdtNote, MdtObject } from '../../lib/mdt/objects'
+import type { MdtNote, MdtObject, MdtStroke } from '../../lib/mdt/objects'
 import NoteLayer from './NoteLayer'
+import ObjectLayer from './ObjectLayer'
 import PeerCursors from './PeerCursors'
 import PoiLayer, { PoiTooltip } from './PoiLayer'
 import {
@@ -229,6 +230,9 @@ export default function DungeonMap({
               />
             </g>
           ))}
+
+          {/* The preset's own drawings: over the route's outline, under the mobs. */}
+          {objects && <ObjectLayer strokes={objects.filter((o): o is MdtStroke => o.kind === 'stroke')} />}
 
           {lookup.dungeon.enemies.flatMap((enemy) =>
             enemy.clones

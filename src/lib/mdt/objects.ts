@@ -26,7 +26,21 @@ export interface MdtNote {
   text: string
 }
 
-export type MdtObject = MdtNote
+export interface MdtStroke {
+  kind: 'stroke'
+  points: Point[]
+  sublevel: number
+  /** MDT's hex colour, without the leading hash. */
+  color: string
+  /** MDT's brush size; the drawn width is `size * 0.3 * MAP_SCALE`. */
+  size: number
+  smooth: boolean
+  /** `d[6]`, MDT's stacking order. Absent counts as 0, as a nil layerSublevel does in game. */
+  layer: number
+  isArrow: boolean
+}
+
+export type MdtObject = MdtNote | MdtStroke
 
 const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
 
@@ -37,7 +51,8 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
   const raw = asTable(preset.get('objects'))
   if (!raw) return []
 
-  const out: MdtObject[] = []
+  const strokes: MdtStroke[] = []
+  const notes: MdtNote[] = []
   for (const key of intKeys(raw)) {
     const obj = asTable(raw.get(key))
     const d = obj ? asTable(obj.get('d')) : undefined
@@ -55,13 +70,42 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
       const y = Number(d.get(2))
       if (!Number.isFinite(x) || !Number.isFinite(y)) continue
       const text = d.get(5)
-      out.push({
+      notes.push({
         kind: 'note',
         at: toPixels(x, y),
         sublevel,
         text: typeof text === 'string' ? text : '',
       })
+      continue
     }
+
+    const l = asTable(obj.get('l'))
+    if (!l) continue
+    const flat = intKeys(l).map((k) => Number(l.get(k)))
+    // `l` is x1,y1,x2,y2,…: an odd tail means a stroke still being drawn when it was saved.
+    const points: Point[] = []
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      if (!Number.isFinite(flat[i]) || !Number.isFinite(flat[i + 1])) continue
+      points.push(toPixels(flat[i], flat[i + 1]))
+    }
+    if (points.length < 2) continue
+
+    // MDT's own fallbacks (`Modules/PresetObjects.lua:184` and `:187-189`), copied rather
+    // than invented: an invalid colour becomes white, a missing size becomes 5.
+    const color = d.get(5)
+    strokes.push({
+      kind: 'stroke',
+      points,
+      sublevel,
+      color: typeof color === 'string' && /^[0-9a-fA-F]{6}$/.test(color) ? color : 'ffffff',
+      size: Number(d.get(1)) || 5,
+      smooth: d.get(7) === true,
+      layer: Number(d.get(6)) || 0,
+      isArrow: asTable(obj.get('t')) != null,
+    })
   }
-  return out
+
+  // Strokes first, in MDT's stacking order; notes are drawn by their own layer anyway.
+  strokes.sort((a, b) => a.layer - b.layer)
+  return [...strokes, ...notes]
 }
