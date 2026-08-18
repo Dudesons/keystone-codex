@@ -190,6 +190,75 @@ describe('Pull list', () => {
   })
 })
 
+describe('Reordering pulls by dragging', () => {
+  /** Four pulls, so a drag can cross more than one position — the arrows only ever move one. */
+  const four = () => mount({ route: routeWith(4) })
+  const items = (container: HTMLElement) => container.querySelectorAll('ol > li')
+
+  const drag = (container: HTMLElement, from: number, to: number) => {
+    const list = items(container)
+    fireEvent.dragStart(list[from])
+    fireEvent.dragOver(list[to])
+    fireEvent.drop(list[to])
+  }
+
+  it('moves a pull to where it was dropped, in one call', () => {
+    const { container, calls } = four()
+    drag(container, 0, 2)
+    expect(calls).toContain('movePull(0, 2)')
+  })
+
+  it('moves a pull backwards with a negative delta', () => {
+    const { container, calls } = four()
+    drag(container, 3, 1)
+    expect(calls).toContain('movePull(3, -2)')
+  })
+
+  it('follows the pull that moved, so the selection does not jump to a neighbour', () => {
+    const picked: number[] = []
+    const { container } = mount({
+      route: routeWith(4),
+      onCurrentPullChange: (i: number) => picked.push(i),
+    })
+    drag(container, 0, 2)
+    expect(picked).toContain(2)
+  })
+
+  it('does nothing when a pull is dropped on itself', () => {
+    const { container, calls } = four()
+    drag(container, 1, 1)
+    expect(calls.filter((c) => c.startsWith('movePull'))).toEqual([])
+  })
+
+  it('does nothing when a drop arrives with no drag in progress', () => {
+    const { container, calls } = four()
+    fireEvent.drop(items(container)[2])
+    expect(calls.filter((c) => c.startsWith('movePull'))).toEqual([])
+  })
+
+  it('marks the row the pull would land on, and stops marking it once dropped', () => {
+    const { container } = four()
+    const list = items(container)
+    fireEvent.dragStart(list[0])
+    fireEvent.dragOver(list[2])
+    expect(list[2].getAttribute('data-drop-target')).toBe('true')
+    expect(list[1].getAttribute('data-drop-target')).toBeNull()
+    fireEvent.drop(list[2])
+    expect(container.querySelector('[data-drop-target]')).toBeNull()
+  })
+
+  it('forgets the drag when it is abandoned outside the list', () => {
+    const { container, calls } = four()
+    const list = items(container)
+    fireEvent.dragStart(list[0])
+    fireEvent.dragOver(list[2])
+    fireEvent.dragEnd(list[0])
+    expect(container.querySelector('[data-drop-target]')).toBeNull()
+    fireEvent.drop(list[2])
+    expect(calls.filter((c) => c.startsWith('movePull'))).toEqual([])
+  })
+})
+
 describe('Pull actions', () => {
   it('adds a pull', () => {
     const { calls } = mount()

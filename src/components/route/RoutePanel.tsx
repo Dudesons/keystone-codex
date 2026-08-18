@@ -104,6 +104,14 @@ export default function RoutePanel({
   const [importText, setImportText] = useState('')
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [expanded, setExpanded] = useState<number | null>(null)
+  /** The pull being dragged, and the row it would land on. Both null when nothing is dragging. */
+  const [dragFrom, setDragFrom] = useState<number | null>(null)
+  const [dropOver, setDropOver] = useState<number | null>(null)
+
+  const endDrag = () => {
+    setDragFrom(null)
+    setDropOver(null)
+  }
 
   const stats = routeStats(route, lookup)
   const standing = forcesStanding(stats.percent)
@@ -223,14 +231,43 @@ export default function RoutePanel({
             const forces = stats.cumulative[i] - (i > 0 ? stats.cumulative[i - 1] : 0)
             const mobs = pullMobs[i]
             const isOpen = expanded === i
+            const isDropTarget = dragFrom != null && dragFrom !== i && dropOver === i
 
             return (
               <li
                 key={i}
+                draggable
+                data-drop-target={isDropTarget ? 'true' : undefined}
+                onDragStart={(e) => {
+                  setDragFrom(i)
+                  // Firefox refuses to start a drag without payload, and `effectAllowed`
+                  // is what makes the cursor say "move" rather than "copy".
+                  e.dataTransfer?.setData?.('text/plain', String(i))
+                  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+                }}
+                onDragOver={(e) => {
+                  if (dragFrom == null) return
+                  // Without this the browser refuses the drop outright.
+                  e.preventDefault()
+                  setDropOver(i)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  // One call, whatever the distance: `movePull` takes an arbitrary delta, so
+                  // dropping four rows down is a single edit rather than four replicated ones.
+                  if (dragFrom != null && dragFrom !== i) {
+                    actions.movePull(dragFrom, i - dragFrom)
+                    onCurrentPullChange(i)
+                  }
+                  endDrag()
+                }}
+                onDragEnd={endDrag}
                 onClick={() => onCurrentPullChange(i)}
                 onMouseEnter={() => onHoverPull(i)}
                 onMouseLeave={() => onHoverPull(null)}
                 className={`cursor-pointer rounded border transition ${
+                  dragFrom === i ? 'opacity-40 ' : ''
+                }${isDropTarget ? 'ring-1 ring-gold-500 ' : ''}${
                   active
                     ? 'border-gold-500 bg-gold-500/10'
                     : hoveredPull === i
