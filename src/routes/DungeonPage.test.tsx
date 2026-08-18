@@ -465,6 +465,37 @@ describe('The mob panel', () => {
   })
 })
 
+describe('The drawing tools', () => {
+  it('are absent from the codex tab', () => {
+    renderEn(at('/d/murder-row/codex'))
+    expect(screen.queryByRole('button', { name: 'Draw' })).toBeNull()
+  })
+
+  it('replace the mob panel while a tool is active, and give it back', () => {
+    renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    // The mob panel's empty state is what the column shows with no tool active.
+    expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    expect(screen.queryByText(/Hover a mob on the map/)).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
+  })
+
+  it('drops the active tool on Escape', () => {
+    renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    expect(screen.getByRole('button', { name: 'Note' }).dataset.active).toBe('true')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.getByRole('button', { name: 'Note' }).dataset.active).toBeUndefined()
+  })
+})
+
 describe('Remounting per dungeon', () => {
   it('starts a separate document for each dungeon', () => {
     // The `key={slug}` on DungeonView is what guarantees this: mob indices mean different

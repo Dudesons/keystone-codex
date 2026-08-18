@@ -10,6 +10,7 @@ import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
 import MobPanel from '../components/route/MobPanel'
+import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
 import { cloneKey, getLookup } from '../lib/data'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
@@ -74,10 +75,32 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
       `suppressCloneTooltip` below. */
   const [cursorNpc, setCursorNpc] = useState<number | null>(null)
 
-  const { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor } = useRouteDoc(
-    slug,
-    lookup.dungeon.mdtIndex,
-  )
+  /** The active drawing tool, or null when the map is just a map. */
+  const [tool, setTool] = useState<Tool | null>(null)
+
+  const {
+    route,
+    actions,
+    collab,
+    joinRoom,
+    leaveRoom,
+    resumeRoom,
+    setIdentity,
+    setCursor,
+    canUndo,
+    canRedo,
+  } = useRouteDoc(slug, lookup.dungeon.mdtIndex)
+
+  // Escape drops the active tool, so there is always a keyboard way back to panning. Only
+  // listens in Route mode: the codex tab never has a tool to drop.
+  useEffect(() => {
+    if (mode !== 'route') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTool(null)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mode])
 
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.
@@ -231,15 +254,27 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
         {mode === 'route' && (
           <aside
             data-testid="mob-panel"
-            className="thin-scroll w-[360px] shrink-0 overflow-y-auto border-r border-ink-800 bg-ink-900 p-3"
+            className="thin-scroll w-[360px] shrink-0 space-y-2 overflow-y-auto border-r border-ink-800 bg-ink-900 p-3"
           >
-            <MobPanel
-              slug={slug}
-              dungeon={lookup.dungeon}
-              enemy={panelEnemy}
-              frozen={frozenNpc != null}
-              onUnfreeze={() => setFrozenNpc(null)}
+            <ObjectToolbar
+              tool={tool}
+              onTool={setTool}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={actions.undo}
+              onRedo={actions.redo}
             />
+            {/* Weighing a pack and marking the map are different tasks; 360px shared between
+                them would serve neither. The toolbar stays, so there is always a way back. */}
+            {tool == null ? (
+              <MobPanel
+                slug={slug}
+                dungeon={lookup.dungeon}
+                enemy={panelEnemy}
+                frozen={frozenNpc != null}
+                onUnfreeze={() => setFrozenNpc(null)}
+              />
+            ) : null}
           </aside>
         )}
         <div className="min-w-0 flex-1">
