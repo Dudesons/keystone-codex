@@ -16,6 +16,7 @@
     "build:maps": "node scripts/build-maps.mjs",
     "fetch:assets": "node scripts/fetch-assets.mjs",
     "scaffold": "node scripts/scaffold-content.mjs",
+    "mdt:report": "node scripts/mdt-report.mjs",
     "data": "npm run extract && npm run build:maps && npm run fetch:assets && npm run scaffold",
     "test": "vitest run"
   },
