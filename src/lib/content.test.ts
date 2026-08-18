@@ -251,6 +251,69 @@ describe('Annotated spell ids', () => {
   })
 })
 
+/**
+ * Every cross-link a card writes must address a card the router actually serves.
+ *
+ * `marked` emits the href verbatim and nothing in the app rewrites it, so a wrong address is
+ * not a degraded link: `App.tsx` serves no `/d/:slug/mob/:npcId`, and its catch-all sends the
+ * reader to the home page instead. That is the quietest kind of broken link — it still looks
+ * and behaves like a link, it simply arrives somewhere else.
+ *
+ * The target is checked as well as the shape. A link naming a mob that no longer sits in that
+ * dungeon opens a codex with nothing focused, which is wrong in the same silent way.
+ */
+describe('Cross-links between cards', () => {
+  /** The one address a mob card has, from the route table in `App.tsx`. */
+  const CARD = /^#\/d\/([a-z0-9-]+)\/codex\/mob\/(\d+)$/
+  const isExternal = (href: string) => /^(https?:|mailto:)/.test(href)
+
+  // Keyed by mob and href so a link a translation inherits from its base is reported once.
+  const offenders = new Map<string, string>()
+
+  for (const summary of dungeonList) {
+    const lookup = getLookup(summary.slug)
+    if (!lookup) continue
+    for (const enemy of lookup.dungeon.enemies) {
+      for (const locale of ['en', 'fr'] as const) {
+        const content = getMobContent(summary.slug, enemy.id, locale)
+        if (!content) continue
+        // Everything a card renders as markdown: the prose body, the trap, and every note.
+        const rendered = [
+          content.html,
+          inlineMarkdown(content.trap),
+          ...(content.spells ?? []).map((s) => inlineMarkdown(s.note)),
+        ].join('\n')
+
+        for (const [, href] of rendered.matchAll(/href="([^"]+)"/g)) {
+          if (isExternal(href)) continue
+          const where = `content/${summary.slug}/${enemy.id}-*`
+          const key = `${summary.slug}/${enemy.id}/${href}`
+          const m = CARD.exec(href)
+          if (!m) {
+            offenders.set(
+              key,
+              `${where} links to "${href}", which no route serves.` +
+                ' A mob card is at #/d/<slug>/codex/mob/<npcId>.',
+            )
+            continue
+          }
+          const [, targetSlug, npcId] = m
+          const target = getLookup(targetSlug)
+          if (!target) {
+            offenders.set(key, `${where} links to "${href}": no dungeon named ${targetSlug}.`)
+          } else if (!target.enemyById.has(Number(npcId))) {
+            offenders.set(key, `${where} links to "${href}": ${targetSlug} has no mob ${npcId}.`)
+          }
+        }
+      }
+    }
+  }
+
+  it('all address a mob card the router serves', () => {
+    expect([...offenders.values()]).toEqual([])
+  })
+})
+
 describe('contentProgress', () => {
   it('only counts entries carrying actual writing', () => {
     expect(contentProgress(SLUG, [WRITTEN])).toEqual({ written: 1, total: 1 })

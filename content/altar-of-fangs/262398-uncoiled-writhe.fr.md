@@ -17,7 +17,7 @@ spells:
     note: "Les Writhes qui convergent pour reformer L'Ophidien ondulant. Rien à quoi réagir."
 ---
 
-Les serpents en lesquels [L'Ophidien ondulant](#/d/altar-of-fangs/mob/259446) se scinde. Ils ne
+Les serpents en lesquels [L'Ophidien ondulant](#/d/altar-of-fangs/codex/mob/259446) se scinde. Ils ne
 valent aucune force, et ils se réassemblent en boss via **Assimilation**.
 
 **Toxic Atrophy** est l'interruption qui compte : -20 % de dégâts et -20 % de déplacement sur

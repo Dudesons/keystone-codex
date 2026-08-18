@@ -10,4 +10,4 @@ spells:
 ---
 
 Moins un mob qu'un générateur, et il ne vaut aucune force. Ce qui en sort, c'est le
-[Jeune](#/d/altar-of-fangs/mob/261556), qui se fixe.
+[Jeune](#/d/altar-of-fangs/codex/mob/261556), qui se fixe.

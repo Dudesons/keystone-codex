@@ -29,7 +29,7 @@ est déclenché par **Vine Grip** : les joueurs attachés qui s'éloignent de 10
 
 Les lianes ne sont donc pas une punition à fuir, elles sont l'outil. Rester en place laisse
 Death Rattle monter sans opposition ; s'écarter y met fin et scinde le boss en
-[Tortilleurs déroulés](#/d/altar-of-fangs/mob/262398), dont le **Toxic Atrophy** doit ensuite
+[Tortilleurs déroulés](#/d/altar-of-fangs/codex/mob/262398), dont le **Toxic Atrophy** doit ensuite
 être interrompu.
 
 **Tail Scythe**, c'est 678k sur le tank, le coup le plus dur d'Altar of Fangs.

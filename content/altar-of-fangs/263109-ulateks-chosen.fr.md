@@ -27,7 +27,7 @@ Le caster qui décide de la tournure d'un pull, à 25 forces par unité pour seu
 unités dans tout le donjon.
 
 **Mass Envenom** en est la raison. C'est l'incantation qui mérite un kick avant tout le reste
-ici, et elle tombe pendant que les adds [Venin vivant](#/d/altar-of-fangs/mob/263112) sont
+ici, et elle tombe pendant que les adds [Venin vivant](#/d/altar-of-fangs/codex/mob/263112) sont
 vivants — les packs 34, 38 et 39 associent les deux. Le pack 43 fait exception : il y côtoie le
 Chef du rituel et des Lames de l'autel, ce qui change ce à quoi vos interruptions sont
 disputées.
