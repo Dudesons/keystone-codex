@@ -1,10 +1,11 @@
 // ABOUTME: A dungeon's briefing page: the shared header, the dungeon's written summary if it
-// ABOUTME: has one, its mobs table, its trap list, and a placeholder sentence when the codex holds nothing at all.
+// ABOUTME: has one, its mobs table, its trap list, its boss cards, and a placeholder when the codex holds nothing at all.
 
 import { Link, useParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
 import MobTable from '../components/highlights/MobTable'
 import TrapList from '../components/highlights/TrapList'
+import BossStrip from '../components/highlights/BossStrip'
 import { getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { getHighlights } from '../lib/highlights'
@@ -56,6 +57,14 @@ export default function HighlightsPage() {
                 {t('highlights.traps')}
               </h2>
               <TrapList slug={slug} traps={highlights.traps} />
+            </section>
+          )}
+          {highlights.bosses.length > 0 && (
+            <section className="mb-10">
+              <h2 className="mb-3 text-xs font-semibold tracking-[0.2em] text-gold-500">
+                {t('highlights.bosses')}
+              </h2>
+              <BossStrip slug={slug} bosses={highlights.bosses} />
             </section>
           )}
           {empty && <p className="text-sm text-ink-400">{t('highlights.empty')}</p>}

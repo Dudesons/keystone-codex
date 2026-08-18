@@ -49,3 +49,21 @@ describe('Header', () => {
     expect(container.querySelector('header')!.textContent).toContain('Carte')
   })
 })
+
+describe('The three blocks', () => {
+  it('assembles the headings the dungeon has content for', () => {
+    renderEn(at(`/d/${SLUG}`))
+    expect(screen.getByText('MOBS TO KNOW')).toBeDefined()
+    expect(screen.getByText('TRAPS')).toBeDefined()
+    expect(screen.getByText('BOSSES')).toBeDefined()
+  })
+
+  // Every dungeon in the pool has at least one boss, and a boss is pushed into the
+  // derivation regardless of what its codex entry holds — so `highlights.empty` has no real
+  // dungeon to be true for. This pins the negative instead: the placeholder does not leak
+  // onto a dungeon that has content.
+  it('does not show the empty placeholder for a dungeon that has content', () => {
+    renderEn(at(`/d/${SLUG}`))
+    expect(screen.queryByText('Nothing has been written for this dungeon yet.')).toBeNull()
+  })
+})
