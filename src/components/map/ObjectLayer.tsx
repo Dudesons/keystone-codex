@@ -7,11 +7,16 @@ import type { MdtStroke } from '../../lib/mdt/objects'
 /** MDT draws a stroke at `size * 0.3`; the scale carries that from its frame to our image. */
 const widthOf = (stroke: MdtStroke) => stroke.size * 0.3 * MAP_SCALE
 
-/** How much longer than wide an arrow head reads. */
-const HEAD_RATIO = 1.6
-
 /**
- * The head, as a triangle at the stroke's last point.
+ * The head, as a triangle filling the square texture MDT rotates onto the stroke's last point.
+ *
+ * Two things about it are MDT's, not ours, and both are why an arrow drawn here used to read as a
+ * nub beside the same arrow in game (`Modules/PresetObjects.lua`):
+ *
+ *   - it is sized `d[1] * scale`, where the shaft is only `d[1] * 0.3 * scale`, so the head is
+ *     over three times the width of its own line rather than a shade wider than it;
+ *   - `DrawTriangle` anchors that texture `CENTER` on the end point, so the tip overhangs the
+ *     line by half a box instead of stopping where the line stops.
  *
  * Its direction comes from the last segment rather than from MDT's stored rotation: that angle
  * was measured in a frame whose Y axis points up, and transposing it is sign-juggling nothing
@@ -20,14 +25,14 @@ const HEAD_RATIO = 1.6
 function arrowHead(stroke: MdtStroke): string {
   const [from, to] = stroke.points.slice(-2)
   const angle = Math.atan2(to.y - from.y, to.x - from.x)
-  const length = widthOf(stroke) * HEAD_RATIO
-  const half = widthOf(stroke)
-  const back = { x: to.x - Math.cos(angle) * length, y: to.y - Math.sin(angle) * length }
-  const normal = { x: -Math.sin(angle) * half, y: Math.cos(angle) * half }
+  const half = (stroke.size * MAP_SCALE) / 2
+  const along = { x: Math.cos(angle) * half, y: Math.sin(angle) * half }
+  const across = { x: -Math.sin(angle) * half, y: Math.cos(angle) * half }
+  const base = { x: to.x - along.x, y: to.y - along.y }
   return [
-    `${to.x},${to.y}`,
-    `${back.x + normal.x},${back.y + normal.y}`,
-    `${back.x - normal.x},${back.y - normal.y}`,
+    `${to.x + along.x},${to.y + along.y}`,
+    `${base.x + across.x},${base.y + across.y}`,
+    `${base.x - across.x},${base.y - across.y}`,
   ].join(' ')
 }
 

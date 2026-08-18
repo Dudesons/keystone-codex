@@ -60,17 +60,57 @@ describe('ObjectLayer', () => {
     expect(container.querySelectorAll('polygon')).toHaveLength(1)
   })
 
-  it('points the head along the last segment, not along a stored angle', () => {
-    // Straight to the right: the head's tip is the last point, whatever MDT recorded.
-    const right: MdtStroke = { ...line, points: [{ x: 0, y: 0 }, { x: 100, y: 0 }], isArrow: true }
-    const { container } = renderEn(<ObjectLayer strokes={[right]} />, { wrapper: svg })
-    const [tip] = container.querySelector('polygon')!.getAttribute('points')!.split(' ')
-    expect(tip).toBe('100,0')
-  })
-
   it('draws nothing at all when there is no stroke', () => {
     const { container } = renderEn(<ObjectLayer strokes={[]} />, { wrapper: svg })
     expect(container.querySelector('polyline')).toBeNull()
+  })
+})
+
+describe('An arrow’s head', () => {
+  const arrow: MdtStroke = { ...line, points: [{ x: 0, y: 0 }, { x: 100, y: 0 }], isArrow: true }
+
+  /** The head's three corners, tip first, as numbers rather than as an attribute string. */
+  const corners = (stroke: MdtStroke) => {
+    const { container } = renderEn(<ObjectLayer strokes={[stroke]} />, { wrapper: svg })
+    return container
+      .querySelector('polygon')!
+      .getAttribute('points')!
+      .split(' ')
+      .map((pair) => {
+        const [x, y] = pair.split(',').map(Number)
+        return { x, y }
+      })
+  }
+
+  it('is as wide as MDT’s triangle box, not as wide as the shaft it caps', () => {
+    // MDT draws the head from `d[1] * scale` and the shaft from `d[1] * 0.3 * scale`
+    // (`Modules/PresetObjects.lua`, `DrawTriangle` on a size × size texture), so the head is
+    // more than three times the width of its own line. Deriving it from the shaft width is what
+    // made it read as a nub on a stick.
+    const [, left, right] = corners(arrow)
+    expect(Math.hypot(right.x - left.x, right.y - left.y)).toBeCloseTo(5 * MAP_SCALE, 6)
+  })
+
+  it('is centred on the last point, so its tip overhangs the line', () => {
+    // MDT anchors the texture "CENTER" on the stroke's end rather than resting its tip there.
+    const [tip, left, right] = corners(arrow)
+    const base = { x: (left.x + right.x) / 2, y: (left.y + right.y) / 2 }
+    expect((tip.x + base.x) / 2).toBeCloseTo(100, 6)
+    expect((tip.y + base.y) / 2).toBeCloseTo(0, 6)
+    expect(tip.x).toBeGreaterThan(100)
+  })
+
+  it('points along the last segment, not along a stored angle', () => {
+    const [tip] = corners(arrow)
+    expect(tip.y).toBeCloseTo(0, 6)
+    expect(tip.x).toBeGreaterThan(100)
+  })
+
+  it('turns with the line, so a head is never left pointing the old way', () => {
+    const down: MdtStroke = { ...arrow, points: [{ x: 0, y: 0 }, { x: 0, y: 100 }] }
+    const [tip] = corners(down)
+    expect(tip.x).toBeCloseTo(0, 6)
+    expect(tip.y).toBeGreaterThan(100)
   })
 })
 
