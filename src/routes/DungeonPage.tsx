@@ -283,7 +283,11 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             hoveredPull={hoveredPull}
             selectedPack={mode === 'codex' ? selectedPack : null}
             onCloneClick={handleCloneClick}
-            onHoverClone={handleHoverClone}
+            // Route mode only: in the codex tab nothing reads `cursorNpc`/`panelNpc`, so
+            // wiring this unconditionally would re-render `DungeonView` — and with it an
+            // unmemoised `CodexPanel` full of `MobCard`s — on every blip enter and leave for no
+            // reader at all.
+            onHoverClone={mode === 'route' ? handleHoverClone : undefined}
             onCloneContextMenu={mode === 'route' ? handleCloneContextMenu : undefined}
             // Hidden whenever nothing is frozen (the column already follows the hover), and
             // also while the cursor sits on the very mob just frozen by a right-click — that
