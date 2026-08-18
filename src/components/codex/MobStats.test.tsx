@@ -53,4 +53,17 @@ describe('MobStats', () => {
     // fr-FR uses a comma and a narrow no-break space before the sign.
     expect(screen.getByTestId('mob-share').textContent).toContain(',')
   })
+
+  it('hides the forces count when told to, keeping the share and the score', () => {
+    renderEn(<MobStats enemy={byName('Bribed Captain')} dungeon={dungeon} showForces={false} />)
+    expect(screen.queryByText('35 forces')).toBeNull()
+    expect(screen.getByTestId('mob-share')).toBeDefined()
+    expect(screen.getByTestId('mob-score')).toBeDefined()
+  })
+
+  it('shows nothing for a forceless mob once the count is hidden, rather than repeating the same sentence a `MobCard` header below already says', () => {
+    const free = dungeon.enemies.find((e) => e.count === 0)!
+    const { container } = renderEn(<MobStats enemy={free} dungeon={dungeon} showForces={false} />)
+    expect(container.textContent).toBe('')
+  })
 })

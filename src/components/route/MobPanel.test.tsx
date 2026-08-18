@@ -43,6 +43,21 @@ describe('MobPanel', () => {
     expect(screen.getByTestId('mob-score').textContent).toBe('4.2')
   })
 
+  it('does not repeat the forces count `MobCard`’s own header already gives, just below', () => {
+    mount()
+    expect(screen.queryByText('35 forces')).toBeNull()
+    // The share and the score are still `MobStats`'s business — only the raw count moves.
+    expect(screen.getByTestId('mob-share')).toBeDefined()
+    expect(screen.getByTestId('mob-score')).toBeDefined()
+  })
+
+  it('says a mob gives nothing only once, in `MobCard`’s header, not twice', () => {
+    mount({ enemy: byName('Xathuux the Annihilator') })
+    // `MobCard`'s header folds "no forces" into one longer sentence, so a substring match
+    // (not `getByText`'s default exact match) is what finds it there.
+    expect(screen.getAllByText(/no forces/)).toHaveLength(1)
+  })
+
   it('shows the same codex entry the codex tab shows', () => {
     const { container } = mount()
     // MobCard renders the mob's portrait; its absence means the card is not mounted.

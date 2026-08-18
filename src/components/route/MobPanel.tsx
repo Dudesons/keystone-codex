@@ -48,7 +48,9 @@ export default function MobPanel({
           </button>
         </div>
       )}
-      <MobStats enemy={enemy} dungeon={dungeon} />
+      {/* `showForces` is false here: `MobCard`'s own header, mounted right below, already
+          gives the forces count — this block is only for the share and the score. */}
+      <MobStats enemy={enemy} dungeon={dungeon} showForces={false} />
       <MobCard slug={slug} enemy={enemy} />
     </div>
   )
