@@ -7,9 +7,13 @@
  * The shape is the addon's own, documented at `Modules/PresetObjects.lua:174`:
  *
  *     d: size, lineFactor, sublevel, shown, colorstring, drawLayer, [smooth]
- *     l: x1,y1,x2,y2,…
+ *     l: x1,y1,x2,y2 per segment — four values at a time, not a flat polyline
  *     t: triangle rotation
  *     n: true   →  the object is a note, and d = { x, y, sublevel, shown, text }
+ *
+ * `l` is the one that reads as something it is not. MDT consumes it in disjoint groups of four,
+ * so a stroke's interior vertices each appear twice: once ending a segment and once starting the
+ * next. `luaToObjects` collapses those repeats and `strokeToLua` puts them back.
  *
  * Positions come out in map pixels: no component should have to know that MDT's Y axis points
  * up. An entry this app did not touch survives a round trip through `objectsToLua` unchanged,
@@ -40,6 +44,7 @@ export interface MdtNote {
 
 export interface MdtStroke {
   kind: 'stroke'
+  /** A plain polyline: each point once, however many times MDT's own `l` repeats it. */
   points: Point[]
   sublevel: number
   /** MDT's hex colour, without the leading hash. */
@@ -111,7 +116,13 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
     const points: Point[] = []
     for (let i = 0; i + 1 < flat.length; i += 2) {
       if (!Number.isFinite(flat[i]) || !Number.isFinite(flat[i + 1])) continue
-      points.push(toPixels(flat[i], flat[i + 1]))
+      const point = toPixels(flat[i], flat[i + 1])
+      // Every interior vertex arrives twice — see `strokeToLua` for why MDT writes it that way.
+      // Collapsing the repeat is what turns those segment pairs back into the plain polyline the
+      // rest of the app works in, and it is the exact inverse of what the encoder does.
+      const last = points[points.length - 1]
+      if (last && last.x === point.x && last.y === point.y) continue
+      points.push(point)
     }
     if (points.length < 2) continue
 
@@ -268,14 +279,34 @@ function strokeToLua(stroke: MdtStroke): LuaTable {
   // An arrow carries no `smooth` key in MDT's own output, so absent is not the same as false here.
   if (stroke.smooth) d.set(7, true)
 
+  // Strings at one decimal: what the game writes in `l`, and unlike a note, which stores its
+  // position as a full-precision number. The asymmetry is MDT's.
+  const coords = stroke.points.map((p) => {
+    const m = toMdtCoords(p.x, p.y)
+    return { x: m.x.toFixed(1), y: m.y.toFixed(1) }
+  })
+
+  /**
+   * `l` holds one segment per four values, not one point per two.
+   *
+   * MDT's renderer (`Modules/PresetObjects.lua`) fills x1,y1,x2,y2, draws that segment, then
+   * clears all four and reads the next group — so it paints (p1→p2), (p3→p4), (p5→p6) and never
+   * the joins between them. Its own writer therefore repeats every interior vertex, and a flat
+   * polyline handed to it comes out as every other segment: a line drawn solid here that reads
+   * as dashed in game.
+   */
   const l: LuaTable = new Map()
   let i = 1
-  for (const p of stroke.points) {
-    const m = toMdtCoords(p.x, p.y)
-    // Strings at one decimal: what the game writes in `l`, and unlike a note, which stores its
-    // position as a full-precision number. The asymmetry is MDT's.
-    l.set(i++, m.x.toFixed(1))
-    l.set(i++, m.y.toFixed(1))
+  for (let s = 0; s + 1 < coords.length; s++) {
+    const from = coords[s]
+    const to = coords[s + 1]
+    // A segment whose ends round to the same place draws nothing, and with `smooth` set MDT still
+    // stamps a circle at each end of it — a blob on the line rather than nothing at all.
+    if (from.x === to.x && from.y === to.y) continue
+    l.set(i++, from.x)
+    l.set(i++, from.y)
+    l.set(i++, to.x)
+    l.set(i++, to.y)
   }
 
   const obj: LuaTable = new Map()
