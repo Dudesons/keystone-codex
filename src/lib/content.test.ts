@@ -404,6 +404,61 @@ describe('Spell names in the French entries', () => {
   it('use the label the card itself shows', () => {
     expect([...offenders.values()]).toEqual([])
   })
+
+  /**
+   * The same rule, for the half of it a reader cannot see.
+   *
+   * Wowhead's French labels carry real typography: a non-breaking space before `!` or `:`, a
+   * typographic apostrophe in `d’os`. Retyping a name by hand produces the lookalike — a plain
+   * space, a straight quote — and the result is indistinguishable on screen from the label it
+   * no longer matches. Every occurrence found when this was written had been introduced by
+   * hand, in files whose visible text was already correct, so nothing but a byte comparison
+   * was ever going to catch it.
+   *
+   * Only labels carrying one of those two characters are checked, and only their degraded
+   * form: an ordinary French sentence has no reason to reproduce a spell's name exactly.
+   */
+  it('spell the label byte for byte, invisible characters included', () => {
+    const NBSP = ' '
+    const APOSTROPHE = '’'
+    const degrade = (s: string) => s.replaceAll(NBSP, ' ').replaceAll(APOSTROPHE, "'")
+
+    const tricky = new Set<string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        for (const { id } of enemy.spells) {
+          const fr = getSpell(id, 'fr')?.name
+          if (fr && degrade(fr) !== fr) tricky.add(fr)
+        }
+      }
+    }
+
+    const degraded = new Map<string, string>()
+    for (const summary of dungeonList) {
+      for (const enemy of getLookup(summary.slug)?.dungeon.enemies ?? []) {
+        const content = getMobContent(summary.slug, enemy.id, 'fr')
+        if (!content) continue
+        const written = [
+          content.fallback.prose ? '' : content.html,
+          content.fallback.trap ? '' : (content.trap ?? ''),
+          ...(content.spells ?? [])
+            .filter((s) => !content.fallback.notes.includes(Number(s.id)))
+            .map((s) => s.note ?? ''),
+        ].join('\n')
+
+        for (const label of tricky) {
+          if (!written.includes(degrade(label))) continue
+          degraded.set(
+            `${summary.slug}/${enemy.id}/${label}`,
+            `content/${summary.slug}/${enemy.id}-*.fr.md writes "${degrade(label)}"` +
+              ` where the label is "${label}".`,
+          )
+        }
+      }
+    }
+
+    expect([...degraded.values()]).toEqual([])
+  })
 })
 
 describe('contentProgress', () => {

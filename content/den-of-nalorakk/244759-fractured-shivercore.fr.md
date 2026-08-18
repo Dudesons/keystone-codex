@@ -21,7 +21,7 @@ Découvert quand la Pointe de givre fracassante de la
 [Sentinelle de l'hiver](#/d/den-of-nalorakk/codex/mob/244100) éclate, il apporte les deux
 mécaniques que la boss elle-même n'a pas.
 
-**Voile de l'hiver** cumule +10 % de dégâts de Givre subis dans un combat où toute source de
+**Voile de l’hiver** cumule +10 % de dégâts de Givre subis dans un combat où toute source de
 dégâts est du Givre. Laissé tranquille, il multiplie tout le reste dans la salle, ce qui le place
 au-dessus de tout le reste pour l'interruption.
 

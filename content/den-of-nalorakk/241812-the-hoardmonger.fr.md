@@ -10,7 +10,7 @@ spells:
   - id: 1234021
     note: "485k dans un cône frontal. Quatre secondes d'incantation — la version de base, avant qu'il ne ramasse des os."
   - id: 1232012
-    note: "Le tas d'os : il fait passer Heurt de brise-terre en Heurt de pics d'os."
+    note: "Le tas d'os : il fait passer Heurt de brise-terre en Heurt de pics d’os."
   - id: 1235129
     note: "Le même frontal à 485k, mais il laisse des pics d'os plantés pendant 45 s. Le sol ne s'en remet plus pour le reste du combat."
   - id: 1235405
@@ -36,7 +36,7 @@ trap: "**Mesures ingénieuses** font dépendre le combat du tas qu'il atteint. I
 Un combat que le groupe choisit en partie, et le choix se fait avant les incantations.
 
 **Mesures ingénieuses** l'envoie vers un tas de ressources, et chaque tas améliore une capacité
-différente : les **os** font passer Heurt de brise-terre en **Heurt de pics d'os**, qui laisse
+différente : les **os** font passer Heurt de brise-terre en **Heurt de pics d’os**, qui laisse
 45 secondes de sol hérissé ; la **viande** fait passer Rugissement dévorant en **Beuglement
 généreux**, en ajoutant un recul ; les **champignons** font lancer davantage de Fournitures
 gâtées. Il ne peut en porter qu'**une à la fois**, donc l'infobulle dit au groupe que le combat

@@ -31,7 +31,7 @@ ajoutant des projections. Et **Courroux du blizzard** est ce qui attend au bord 
 être.
 
 **Pointe de givre fracassante** ajoute des corps :
-des [Frémicoeurs fracturés](#/d/den-of-nalorakk/codex/mob/244759) dont le Voile de l'hiver doit être
+des [Frémicoeurs fracturés](#/d/den-of-nalorakk/codex/mob/244759) dont le Voile de l’hiver doit être
 interrompu et dont le Fracassement givré, s'il n'est pas absorbé, enracine tout le groupe.
 
 À retenir du trash : l'Éclat de glace du
