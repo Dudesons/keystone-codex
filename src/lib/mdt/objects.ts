@@ -217,9 +217,12 @@ function sameObject(a: MdtObject, b: MdtObject): boolean {
  * `__fixtures__/real-export-strokes.txt`. We copy these rather than choose them: `layer` is `-8`
  * on every object in that export and we do not know what the number means, and a freehand stroke
  * is smoothed by default while an arrow carries no `smooth` key at all.
+ *
+ * Frozen: "this is what MDT wrote" is a fact about that fixture, not a starting point to adjust.
+ * Callers spread them into an object of their own, which a frozen source supports.
  */
-export const MDT_STROKE_DEFAULTS = { size: 5, smooth: true, layer: -8 }
-export const MDT_ARROW_DEFAULTS = { size: 13, smooth: false, layer: -8 }
+export const MDT_STROKE_DEFAULTS = Object.freeze({ size: 5, smooth: true, layer: -8 })
+export const MDT_ARROW_DEFAULTS = Object.freeze({ size: 13, smooth: false, layer: -8 })
 
 /**
  * The angle MDT stores in an arrow's `t`, in radians and in MDT's own coordinate space.
