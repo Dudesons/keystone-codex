@@ -43,3 +43,13 @@ The addon's own `.toc`, copied verbatim from a 6.2.2 install. It is the input
 `parseTocVersion` claims to read, and the version line's exact spelling — `## Version:`, double
 hash, one space — is the whole subject of that parser. A hand-written stand-in would assert our
 guess about a file format instead of testing it.
+
+## altar-of-fangs.with-affix.json / .without-affix.json
+
+Two real versions of one generated dungeon, taken from both sides of commit `e520646`, which
+dropped the seasonal affix from the extraction. Eleven mobs lose spell `1221063` between them.
+
+Both sides are output of the real pipeline, and the change they carry is exactly the case the
+report exists for: a spell leaving a mob takes the card's note off the site with it. A
+hand-written pair would encode our own idea of what an MDT update does to a dungeon, which is the
+one thing a differ must not be tested against.
