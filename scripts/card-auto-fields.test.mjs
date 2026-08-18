@@ -45,6 +45,15 @@ describe('refreshAutoFields', () => {
     expect(changes.find((c) => c.field === 'count')).toMatchObject({ before: '20', after: '25' })
   })
 
+  it('parses a marked value containing a literal "#" without being fooled by it', () => {
+    // The `\bauto\b` requirement is what should stop the lazy value match from treating this
+    // embedded '#' as the marker; pinned directly rather than reasoned about by hand.
+    const text = 'name: "Boss #2"   # auto\n'
+    const { text: out, changes } = refreshAutoFields(text, enemy)
+    expect(out).toBe('name: "Ritual Chieftain"   # auto\n')
+    expect(changes).toEqual([{ field: 'name', before: 'Boss #2', after: 'Ritual Chieftain' }])
+  })
+
   it('touches nothing outside a marked line', () => {
     const { text } = refreshAutoFields(card, enemy)
     expect(text).toContain('Prose that mentions count: 20 and must not be touched.')
@@ -104,14 +113,28 @@ describe('autoFieldFindings', () => {
   it('reports an isBoss line that should appear, and does not apply it', () => {
     const promoted = { ...enemy, isBoss: true }
     const findings = autoFieldFindings(card, promoted, 'content/x/1.md', 'x')
-    expect(findings.some((f) => f.what.includes('isBoss'))).toBe(true)
+    expect(findings).toMatchObject([{
+      severity: 6,
+      dungeon: 'x',
+      subject: '270306 Ritual Chieftain',
+      what: 'isBoss disagrees with the data: the card says false, MDT says true',
+      action: 'add `isBoss: true   # auto` under npcId',
+      file: 'content/x/1.md',
+    }])
     expect(refreshAutoFields(card, promoted).text).not.toContain('isBoss')
   })
 
   it('reports an isBoss line that should go away', () => {
     const withBoss = card.replace('npcId: 270306', 'npcId: 270306\nisBoss: true   # auto')
     const findings = autoFieldFindings(withBoss, enemy, 'content/x/1.md', 'x')
-    expect(findings.some((f) => f.what.includes('isBoss'))).toBe(true)
+    expect(findings).toMatchObject([{
+      severity: 6,
+      dungeon: 'x',
+      subject: '270306 Ritual Chieftain',
+      what: 'isBoss disagrees with the data: the card says true, MDT says false',
+      action: 'remove the `isBoss: true   # auto` line',
+      file: 'content/x/1.md',
+    }])
   })
 
   it('says nothing when isBoss already agrees with the data', () => {
