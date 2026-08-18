@@ -53,9 +53,18 @@ describe('Header', () => {
 
 describe('The three blocks', () => {
   it('assembles the headings the dungeon has content for', () => {
-    renderEn(at(`/d/${SLUG}`))
+    // Altar of Fangs itself has no heading left to assert on here: every one of its non-boss
+    // traps now sits on a mob's row instead of the trap list (0 leftovers, matching the
+    // measured table), so its own page never renders "OTHER TRAPS" at all. Murder Row still
+    // has 16 leftovers and proves the heading renders where content warrants it.
+    renderEn(at('/d/murder-row'))
     expect(screen.getByText('MOBS TO KNOW')).toBeDefined()
-    expect(screen.getByText('TRAPS')).toBeDefined()
+    expect(screen.getByText('OTHER TRAPS')).toBeDefined()
     expect(screen.getByText('BOSSES')).toBeDefined()
+  })
+
+  it("shows no trap heading for a dungeon whose shortlist claims every trap", () => {
+    renderEn(at(`/d/${SLUG}`))
+    expect(screen.queryByText('OTHER TRAPS')).toBeNull()
   })
 })

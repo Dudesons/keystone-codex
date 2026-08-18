@@ -1,5 +1,5 @@
-// ABOUTME: Checks every written trap sentence reaches the page, with its mob and its markdown.
-// ABOUTME: Runs against the real Altar of Fangs derivation.
+// ABOUTME: Checks the trap sentences of mobs that earned no row reach the page, each with its
+// ABOUTME: mob. Runs against the real Murder Row derivation, whose shortlist leaves 16 of them.
 
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
@@ -11,13 +11,18 @@ import { renderEn } from '../../test/render'
 
 afterEach(cleanup)
 
-const SLUG = 'altar-of-fangs'
+// Altar of Fangs was the derivation's landmark dungeon before every one of its non-boss traps
+// started earning a row: it now has zero leftover traps, so its trap list would render nothing
+// at all. Murder Row keeps 16, and Unleashed Imp (234849, `threat: low`) is one of them — a
+// mob rated harmless earns no row, but its written trap must still surface here.
+const SLUG = 'murder-row'
+const UNLEASHED_IMP = 234849
 const traps = getHighlights(SLUG).traps
 
 const mount = () => renderEn(<TrapList slug={SLUG} traps={traps} />, { wrapper: MemoryRouter })
 
 describe('TrapList', () => {
-  it('shows every trap the dungeon has written', () => {
+  it('shows every trap of a mob that earned no row', () => {
     const { container } = mount()
     expect(traps.length).toBeGreaterThan(0)
     expect(container.querySelectorAll('[data-trap]')).toHaveLength(traps.length)
@@ -31,18 +36,9 @@ describe('TrapList', () => {
 
   it('names the mob and links it into the codex', () => {
     const { container } = mount()
-    const twinfang = container.querySelector('[data-trap="261554"]')!
-    expect(twinfang.textContent).toContain('Twinfang Harrower')
-    expect(twinfang.querySelector(`a[href="/d/${SLUG}/codex/mob/261554"]`)).not.toBeNull()
-  })
-
-  it('renders the trap sentence as markdown', () => {
-    const { container } = mount()
-    // Ritual Chieftain (270306) is the only Altar of Fangs trap written with bold markdown:
-    // content/altar-of-fangs/270306-ritual-chieftain.md's `trap:` wraps Blood Sacrifice and
-    // Dismember in `**…**`. Twinfang Harrower's trap carries no markdown to assert on.
-    const chieftain = container.querySelector('[data-trap="270306"]')!
-    expect(chieftain.querySelector('strong')).not.toBeNull()
+    const imp = container.querySelector(`[data-trap="${UNLEASHED_IMP}"]`)!
+    expect(imp.textContent).toContain('Unleashed Imp')
+    expect(imp.querySelector(`a[href="/d/${SLUG}/codex/mob/${UNLEASHED_IMP}"]`)).not.toBeNull()
   })
 
   it('renders nothing at all when nothing is written', () => {
@@ -61,10 +57,10 @@ describe('TrapList', () => {
     // jsdom does implement the native disclosure toggle: clicking <summary> flips the parent
     // <details>'s `open`, confirmed against a standalone case before writing this assertion.
     const { container } = mount()
-    const twinfang = container.querySelector('[data-trap="261554"]') as HTMLDetailsElement
-    expect(twinfang.open).toBe(false)
-    fireEvent.click(twinfang.querySelector('summary')!)
-    expect(twinfang.open).toBe(true)
-    expect(twinfang.querySelector('p')?.textContent).not.toHaveLength(0)
+    const imp = container.querySelector(`[data-trap="${UNLEASHED_IMP}"]`) as HTMLDetailsElement
+    expect(imp.open).toBe(false)
+    fireEvent.click(imp.querySelector('summary')!)
+    expect(imp.open).toBe(true)
+    expect(imp.querySelector('p')?.textContent).not.toHaveLength(0)
   })
 })

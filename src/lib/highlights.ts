@@ -36,7 +36,8 @@ export interface HighlightMob {
   displayId?: number
   threat?: Threat
   role?: string
-  /** The `trap:` sentence as inline HTML. Filled for bosses, whose card shows it. */
+  /** The `trap:` sentence as inline HTML. Filled for bosses and shortlisted mobs, whose card
+   *  or row shows it. */
   trapHtml?: string
   spells: HighlightSpell[]
 }
@@ -54,7 +55,10 @@ export interface DungeonHighlights {
    * dangerous first. Smaller than the set of mobs carrying a trap.
    */
   mobs: HighlightMob[]
-  /** Non-boss mobs holding a `trap:` sentence — a different population from `mobs`. */
+  /**
+   * Non-boss mobs holding a `trap:` sentence whose mob did **not** earn a row — a shortlisted
+   * mob's trap sits on its row instead (`HighlightMob.trapHtml`), so nothing is shown twice.
+   */
   traps: HighlightTrap[]
   /** Every boss, in the declared or the `mdtIdx` order. */
   bosses: HighlightMob[]
@@ -191,18 +195,21 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
       continue
     }
 
-    if (spells.length && earnsARow(content?.threat, content?.role)) {
+    const hasRow = spells.length > 0 && earnsARow(content?.threat, content?.role)
+
+    if (hasRow) {
       mobs.push({
         npcId: enemy.id,
         name,
         displayId: enemy.displayId,
         threat: content?.threat,
         role: content?.role,
+        trapHtml: inlineMarkdown(content?.trap) || undefined,
         spells,
       })
     }
 
-    if (content?.trap) {
+    if (content?.trap && !hasRow) {
       traps.push({
         npcId: enemy.id,
         mobName: name,

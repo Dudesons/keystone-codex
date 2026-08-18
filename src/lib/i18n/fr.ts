@@ -50,8 +50,11 @@ export const fr: Dictionary = {
 
   // Highlights page
   'highlights.mobs': 'MOBS À CONNAÎTRE',
-  'highlights.traps': 'PIÈGES',
+  // Le piège d'un mob du tableau ci-dessus est passé sur sa ligne ; ce qui reste ici appartient
+  // aux mobs écartés du tableau, d'où ce titre plutôt qu'une liste de tout.
+  'highlights.traps': 'AUTRES PIÈGES',
   'highlights.bosses': 'BOSS',
+  'highlights.trap': 'Piège',
 
   // Codex panel
   'codex.pack': 'Pack {n}',

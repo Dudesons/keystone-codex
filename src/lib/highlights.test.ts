@@ -6,20 +6,26 @@ import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
 
 /**
- * Two landmarks, both real:
+ * Landmarks, all real:
  *
  * - Twinfang Harrower (Altar of Fangs) carries five spell entries under three names —
  *   `Duostrike`, `Paralyzing Shots`, and `Toxic Breath` — of which only `Duostrike` and
  *   `Paralyzing Shots` are `prio: 1`. It is the case that shows a row carrying every one of
- *   the mob's prio-1 spells while the filter drops the rest.
+ *   the mob's prio-1 spells while the filter drops the rest. It is also `threat: medium` and
+ *   `role: miniboss` with a written `trap:`, which is what makes it earn a row and carry its
+ *   trap there instead of in the trap list.
  * - Agitated Voidscythe (Voidscar Arena) carries `Rip and Slice` under two ids, 1311778
  *   tagged `tank` and 1233472 tagged `dodge` — the only kind of case where deduplication
  *   changes anything, and it must merge the tags rather than pick one.
+ * - Unleashed Imp (Murder Row) is `threat: low`, so it earns no row, yet it carries a written
+ *   `trap:` — the case that must still surface in the trap list rather than vanish with it.
  */
 const ALTAR = 'altar-of-fangs'
 const VOIDSCAR = 'voidscar-arena'
+const MURDER_ROW = 'murder-row'
 const TWINFANG = 261554
 const VOIDSCYTHE = 263228
+const UNLEASHED_IMP = 234849
 
 describe('getHighlights mobs', () => {
   it('makes a row of the mob, carrying every prio-1 spell it has', () => {
@@ -28,6 +34,15 @@ describe('getHighlights mobs', () => {
     expect(row.name).toBe('Twinfang Harrower')
     expect(row.threat).toBe('medium')
     expect(row.spells.map((s) => s.name).sort()).toEqual(['Duostrike', 'Paralyzing Shots'])
+  })
+
+  it('fills the row with its trap, and keeps that mob out of the trap list', () => {
+    const highlights = getHighlights(ALTAR)
+    const row = highlights.mobs.find((m) => m.npcId === TWINFANG)!
+    expect(row.trapHtml).toContain('Duostrike')
+    // Inline markdown: emphasis becomes a tag, and no <p> wrapper fights the layout.
+    expect(row.trapHtml).not.toContain('<p>')
+    expect(highlights.traps.map((t) => t.npcId)).not.toContain(TWINFANG)
   })
 
   it('merges the ids that share a name into one chip, keeping both tags', () => {
@@ -103,7 +118,10 @@ describe('getHighlights mobs', () => {
   it('localizes the boss names and the mob names in the trap list too', () => {
     const fr = getHighlights(ALTAR, 'fr')
     expect(fr.bosses.map((b) => b.name)).toContain("L'Ophidien ondulant")
-    expect(fr.traps.map((t) => t.mobName)).toContain('Persécuteur crochet-double')
+    // Altar of Fangs has no leftover trap left to name (every one of its non-boss traps now
+    // earns a row), so the trap-list landmark comes from Murder Row instead.
+    const frMurderRow = getHighlights(MURDER_ROW, 'fr')
+    expect(frMurderRow.traps.map((t) => t.mobName)).toContain('Diablotin déchaîné')
   })
 
   it('returns empty lists for a dungeon that does not exist', () => {
@@ -112,14 +130,21 @@ describe('getHighlights mobs', () => {
 })
 
 describe('getHighlights traps', () => {
-  it('collects the written trap sentences, rendered as inline HTML', () => {
-    const traps = getHighlights(ALTAR).traps
+  it('collects the written trap sentences of mobs that earned no row, as inline HTML', () => {
+    const highlights = getHighlights(MURDER_ROW)
+    const traps = highlights.traps
     expect(traps.length).toBeGreaterThan(0)
-    const twinfang = traps.find((t) => t.npcId === TWINFANG)!
-    expect(twinfang.mobName).toBe('Twinfang Harrower')
-    expect(twinfang.html).toContain('Duostrike')
+    const imp = traps.find((t) => t.npcId === UNLEASHED_IMP)!
+    expect(imp.mobName).toBe('Unleashed Imp')
+    expect(imp.html).toContain('Fifty-eight imps')
     // Inline markdown: emphasis becomes a tag, and no <p> wrapper fights the layout.
-    expect(twinfang.html).not.toContain('<p>')
+    expect(imp.html).not.toContain('<p>')
+    // Unleashed Imp is `threat: low`, so it never earns a row in the first place.
+    expect(highlights.mobs.map((m) => m.npcId)).not.toContain(UNLEASHED_IMP)
+  })
+
+  it('leaves out a mob that did earn a row: its trap sits there instead', () => {
+    expect(getHighlights(ALTAR).traps.map((t) => t.npcId)).not.toContain(TWINFANG)
   })
 
   it('leaves the bosses out: their trap is on their own card', () => {
@@ -131,7 +156,7 @@ describe('getHighlights traps', () => {
 
   it('puts the most dangerous first', () => {
     const rank = { lethal: 0, high: 1, medium: 2, low: 3 } as Record<string, number>
-    const ranks = getHighlights(ALTAR).traps.map((t) => (t.threat ? rank[t.threat] : 4))
+    const ranks = getHighlights(MURDER_ROW).traps.map((t) => (t.threat ? rank[t.threat] : 4))
     expect([...ranks].sort((a, b) => a - b)).toEqual(ranks)
   })
 })

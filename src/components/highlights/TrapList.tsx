@@ -1,5 +1,5 @@
-// ABOUTME: Every written trap sentence of the dungeon, two columns, most dangerous first.
-// ABOUTME: Each mob is folded behind a disclosure control; the sentence shows once expanded.
+// ABOUTME: The trap sentences of mobs that earned no row in MobTable, two columns, most
+// ABOUTME: dangerous first. Each mob is folded behind a disclosure; expanding shows the sentence.
 
 import { Link } from 'react-router-dom'
 import type { HighlightTrap } from '../../lib/highlights'

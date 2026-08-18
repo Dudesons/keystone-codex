@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import MobTable from './MobTable'
 import { getHighlights } from '../../lib/highlights'
@@ -69,6 +69,46 @@ describe('MobTable', () => {
   it('renders nothing at all when there is nothing to show', () => {
     const { container } = renderEn(<MobTable slug={SLUG} mobs={[]} />, { wrapper: MemoryRouter })
     expect(container.querySelector('[data-mob]')).toBeNull()
+  })
+
+  it("folds a mob's trap under a disclosure on its own row, collapsed by default", () => {
+    const { container } = mount()
+    // Twinfang Harrower is `threat: medium` / `role: miniboss`, so it earns a row, and it
+    // carries a written trap — the row's disclosure is what shows it.
+    const twinfang = container.querySelector('[data-mob="261554"]')!
+    const disclosure = twinfang.querySelector('details[data-trap]') as HTMLDetailsElement | null
+    expect(disclosure).not.toBeNull()
+    expect(disclosure!.open).toBe(false)
+  })
+
+  it("reveals the row's trap sentence once its disclosure is opened", () => {
+    const { container } = mount()
+    const twinfang = container.querySelector('[data-mob="261554"]')!
+    const disclosure = twinfang.querySelector('details[data-trap]') as HTMLDetailsElement
+    fireEvent.click(disclosure.querySelector('summary')!)
+    expect(disclosure.open).toBe(true)
+    expect(disclosure.querySelector('p')?.textContent).toContain(
+      'Duostrike is a genuine tank buster',
+    )
+  })
+
+  it('renders the trap sentence as markdown', () => {
+    const { container } = mount()
+    // Ritual Chieftain (270306) is `threat: high`, so it earns a row too, and its trap is the
+    // only one in the codex written with bold markdown — around the two spells that chain
+    // into a kill (content/altar-of-fangs/270306-ritual-chieftain.md).
+    const chieftain = container.querySelector('[data-mob="270306"]')!
+    const disclosure = chieftain.querySelector('details[data-trap]')!
+    expect(disclosure.querySelector('strong')).not.toBeNull()
+  })
+
+  it('shows no trap disclosure for a row whose mob has none written', () => {
+    // Ascendant Serpent (261573) is `threat: high` / `role: miniboss` with one prio-1 spell —
+    // it earns a row — but its `trap:` is left empty in
+    // content/altar-of-fangs/261573-ascendant-serpent.md, so its row shows no disclosure.
+    const { container } = mount()
+    const serpent = container.querySelector('[data-mob="261573"]')!
+    expect(serpent.querySelector('details[data-trap]')).toBeNull()
   })
 
   it('speaks French when the reader does, spell names and tags alike', () => {

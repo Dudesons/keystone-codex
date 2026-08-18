@@ -49,8 +49,11 @@ export const en = {
 
   // Highlights page
   'highlights.mobs': 'MOBS TO KNOW',
-  'highlights.traps': 'TRAPS',
+  // A shortlisted mob's trap moved onto its row; what is left here belongs to the mobs the
+  // shortlist dropped, so the heading says so rather than reading as a list of everything.
+  'highlights.traps': 'OTHER TRAPS',
   'highlights.bosses': 'BOSSES',
+  'highlights.trap': 'Trap',
 
   // Codex panel
   'codex.pack': 'Pack {n}',
