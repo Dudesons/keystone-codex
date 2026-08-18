@@ -989,3 +989,87 @@ describe('Objects in the document', () => {
     expect(result.current.route.objects).toEqual([])
   })
 })
+
+describe('Undoing my own object edits', () => {
+  it('takes back the object I just added', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'oops' }),
+    )
+    expect(result.current.canUndo).toBe(true)
+
+    act(() => result.current.actions.undo())
+
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'oops')).toBe(false)
+  })
+
+  runDrawn('undoing the very first edit gives back the derived state', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    const derived = result.current.route.objects.length
+
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'x' }),
+    )
+    act(() => result.current.actions.undo())
+
+    // The adoption went with it: every object is derived from `source` again, and a derived
+    // object never carries an id — the same signal `runDrawn('does not touch the document
+    // until something is edited', …)` above uses, since the hook exposes no `doc` to inspect
+    // the key directly.
+    expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+    expect(result.current.route.objects.length).toBe(derived)
+  })
+
+  it('redoes what it undid', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 2, y: 2 }, sublevel: 1, text: 'back' }),
+    )
+    act(() => result.current.actions.undo())
+    act(() => result.current.actions.redo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'back')).toBe(true)
+  })
+
+  it('does not undo a pull change, which carries no origin', () => {
+    const { result } = mount()
+    act(() => result.current.actions.addPull())
+    const pulls = result.current.route.pulls.length
+    // Nothing of ours has happened, so there is nothing to undo…
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.actions.undo())
+    // …and calling it anyway leaves the pulls alone.
+    expect(result.current.route.pulls.length).toBe(pulls)
+  })
+
+  /**
+   * Two peers, connected the way `'replicates an object to a peer'` above connects them: two
+   * mounted hooks joining the same room code over `BroadcastChannel`, no relay involved. The
+   * room code is not reused by any other `describe` block in this file — see the note on
+   * `SilentSocket` about a stale peer bleeding across blocks that share one.
+   */
+  it('does not undo a peer’s object', async () => {
+    const host = mount()
+    act(() => host.result.current.joinRoom('UNDOSYNC', 'host'))
+    const guest = mount()
+    act(() => guest.result.current.joinRoom('UNDOSYNC', 'guest'))
+
+    act(() =>
+      guest.result.current.actions.addObject({ kind: 'note', at: { x: 3, y: 3 }, sublevel: 1, text: 'theirs' }),
+    )
+    await waitFor(() =>
+      expect(host.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'theirs')).toBe(
+        true,
+      ),
+    )
+
+    act(() => host.result.current.actions.undo())
+
+    expect(host.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'theirs')).toBe(
+      true,
+    )
+
+    host.unmount()
+    guest.unmount()
+  })
+})

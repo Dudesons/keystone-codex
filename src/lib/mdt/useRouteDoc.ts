@@ -79,10 +79,10 @@ const HIDDEN_PAUSE_MS = 5 * 60_000
 const IDLE_PAUSE_MS = 15 * 60_000
 
 /**
- * The origin every object edit passes to `doc.transact`. Undo (plan 2) is scoped to it, which
- * is how the pull actions — which pass no origin at all — stay outside undo without being
- * touched: a bare `doc.transact(fn)` has a null origin, and `Y.UndoManager`'s `trackedOrigins`
- * must name this one explicitly to exclude them.
+ * The origin every object edit passes to `doc.transact`. The `Y.UndoManager` below is scoped to
+ * it, which is how the pull actions — which pass no origin at all — stay outside undo without
+ * being touched: a bare `doc.transact(fn)` has a null origin, and `Y.UndoManager`'s
+ * `trackedOrigins` must name this one explicitly to exclude them.
  */
 export const OBJECT_EDIT = 'object-edit'
 
@@ -205,6 +205,10 @@ export interface RouteActions {
   /** Replaces one object by identity. */
   updateObject(id: string, object: MdtObject): void
   removeObject(id: string): void
+  /** Takes back this session's own last object edit. Does nothing to a peer's or a pull's. */
+  undo(): void
+  /** Reapplies this session's own last undone object edit. */
+  redo(): void
 }
 
 export interface CollabState {
@@ -467,6 +471,42 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     [doc, nextObjectId],
   )
 
+  /**
+   * Undo covers this session's own object edits and nothing else.
+   *
+   * Scoped to `root`, not to the object array: the array does not exist until the first edit, so
+   * there would be nothing to scope to here, and the transaction that creates it must itself be
+   * undoable — undoing the very first edit has to remove the adoption along with it, which falls
+   * out for free once the manager watches the document root rather than a key that might not
+   * exist yet. Isolation therefore comes from the origin, not the scope: `trackedOrigins` names
+   * `OBJECT_EDIT` explicitly, because the default, `new Set([null])`, would also capture every
+   * pull action and every peer's incoming change, none of which pass an origin at all.
+   */
+  const undoManager = useMemo(
+    () => new Y.UndoManager(doc.getMap('route'), { trackedOrigins: new Set([OBJECT_EDIT]) }),
+    [doc],
+  )
+
+  const [undoState, setUndoState] = useState({ canUndo: false, canRedo: false })
+  useEffect(() => {
+    const sync = () =>
+      setUndoState({
+        canUndo: undoManager.undoStack.length > 0,
+        canRedo: undoManager.redoStack.length > 0,
+      })
+    undoManager.on('stack-item-added', sync)
+    undoManager.on('stack-item-popped', sync)
+    sync()
+    return () => {
+      undoManager.off('stack-item-added', sync)
+      undoManager.off('stack-item-popped', sync)
+      // The manager holds its own listener on the doc; leaving it running past this hook's
+      // interest in `undoManager` is the same class of leak `closeSession` exists to avoid for
+      // the provider and its awareness instance.
+      undoManager.destroy()
+    }
+  }, [undoManager])
+
   const actions = useMemo<RouteActions>(
     () => ({
       setName: (name) => doc.transact(() => doc.getMap('route').set('name', name)),
@@ -572,8 +612,11 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const index = indexOfObject(objects, id)
           if (index >= 0) objects.delete(index, 1)
         }),
+
+      undo: () => undoManager.undo(),
+      redo: () => undoManager.redo(),
     }),
-    [doc, withPulls, withObjects, nextObjectId],
+    [doc, withPulls, withObjects, nextObjectId, undoManager],
   )
 
   const joinRoom = useCallback(
@@ -688,7 +731,19 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
     sessionRef.current?.provider.awareness.setLocalStateField('user', { name: trimmed })
   }, [])
 
-  return { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor }
+  return {
+    route,
+    actions,
+    collab,
+    joinRoom,
+    leaveRoom,
+    resumeRoom,
+    setIdentity,
+    setCursor,
+    /** Whether there is anything of this session's own to undo, for a button's disabled state. */
+    canUndo: undoState.canUndo,
+    canRedo: undoState.canRedo,
+  }
 }
 
 const IDENTITY_KEY = 'midnight-codex:identity'
