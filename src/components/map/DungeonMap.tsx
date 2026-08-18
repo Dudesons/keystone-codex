@@ -125,7 +125,15 @@ export default function DungeonMap({
   const [hoverPack, setHoverPack] = useState<number | null>(null)
   const [hoverClone, setHoverClone] = useState<string | null>(null)
   const [hoverPoi, setHoverPoi] = useState<number | null>(null)
-  const [showLegend, setShowLegend] = useState(false)
+  /**
+   * Open from the start: a pip's letter and a ring's colour are what a reader needs *before* they
+   * would know to go looking for the key to them, so the map explains itself rather than waiting
+   * to be asked. The button stays, because someone who has learnt the code wants the map bare.
+   *
+   * It sits top-right, which nothing else claims — both tooltips and the relay notice sit along
+   * the top-left and centre, and the zoom cluster along the bottom-right.
+   */
+  const [showLegend, setShowLegend] = useState(true)
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
 

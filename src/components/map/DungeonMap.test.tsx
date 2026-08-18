@@ -550,23 +550,28 @@ describe('Heads-up display', () => {
     expect(screen.getByTitle('Fit')).toBeDefined()
   })
 
-  it('opens and closes the legend', () => {
+  it('shows the legend without being asked', () => {
+    // What the pips and rings mean is what a reader needs before they know to go looking for
+    // it, so the map arrives explaining itself rather than waiting to be asked.
     const { container } = mount()
-    expect(container.textContent).not.toContain('PIPS')
-
-    fireEvent.click(screen.getByText('Legend'))
     expect(container.textContent).toContain('PIPS')
     expect(container.textContent).toContain('Spell to interrupt (from MDT)')
     expect(container.textContent).toContain('Frontal cone (declared in the card)')
     expect(container.textContent).toContain('Threat not assessed')
+  })
+
+  it('still closes and reopens on the button, for a reader who wants the map bare', () => {
+    const { container } = mount()
 
     fireEvent.click(screen.getByText('Legend'))
     expect(container.textContent).not.toContain('PIPS')
+
+    fireEvent.click(screen.getByText('Legend'))
+    expect(container.textContent).toContain('PIPS')
   })
 
   it('explains every ring colour, including the one that means "not judged"', () => {
     const { container } = mount()
-    fireEvent.click(screen.getByText('Legend'))
     for (const label of ['Lethal threat', 'Dangerous', 'Watch out', 'Harmless', 'Boss']) {
       expect(container.textContent, label).toContain(label)
     }
