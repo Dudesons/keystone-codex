@@ -35,6 +35,8 @@ export default function ObjectLayer({
   strokes,
   colorOverride,
   testIdPrefix = 'stroke',
+  selectedId,
+  onSelect,
 }: {
   strokes: MdtStroke[]
   /**
@@ -51,13 +53,56 @@ export default function ObjectLayer({
    * reusing that prefix would make the count ambiguous the moment a gesture is in flight.
    */
   testIdPrefix?: string
+  /** The object the page is editing, so the matching stroke can mark itself. */
+  selectedId?: string | null
+  /**
+   * Clicking a stroke. Supplied only while the select tool is active — see decision 8, the hit
+   * target below. Absent otherwise, which is what keeps this layer inert to the pointer the rest
+   * of the time.
+   */
+  onSelect?: (id: string) => void
 }) {
   return (
     <g className="pointer-events-none">
       {strokes.map((stroke, index) => {
         const color = colorOverride ?? `#${stroke.color}`
+        // `undefined === undefined` would otherwise read as a match: a preset's untouched
+        // strokes carry no id at all until the document adopts them (see `useRouteDoc.ts`), so
+        // comparing against `selectedId` unset must never mark one of them as selected.
+        const selected = stroke.id != null && stroke.id === selectedId
         return (
-          <g key={`${testIdPrefix}-${index}`} data-testid={`${testIdPrefix}-${index}`}>
+          <g
+            key={`${testIdPrefix}-${index}`}
+            data-testid={`${testIdPrefix}-${index}`}
+            data-selected={selected ? 'true' : undefined}
+          >
+            {selected && (
+              // A wider, gold halo behind the stroke — the same colour the app already uses for
+              // a selected pull row (`RoutePanel`) and an active pack outline (`PackOutline`).
+              <polyline
+                points={stroke.points.map((p) => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="var(--color-gold-400)"
+                strokeWidth={widthOf(stroke) + 8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+            {onSelect && stroke.id && (
+              // Wider than the stroke and invisible: a 1.5px line is otherwise unhittable. The
+              // layer stays `pointer-events-none`; this single path opts back in, exactly as a
+              // note's pin does. It exists only while something can select it.
+              <polyline
+                data-hit={stroke.id}
+                points={stroke.points.map((p) => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={Math.max(widthOf(stroke) * 3, 16)}
+                className="pointer-events-auto"
+                style={{ cursor: 'pointer' }}
+                onClick={() => onSelect(stroke.id!)}
+              />
+            )}
             <polyline
               points={stroke.points.map((p) => `${p.x},${p.y}`).join(' ')}
               fill="none"

@@ -81,6 +81,12 @@ interface Props {
   previewStroke?: MdtStroke | null
   /** Hide the hover tooltip: something else on the page is already showing the hovered mob. */
   suppressCloneTooltip?: boolean
+  /** The object the page is editing, so the layers can mark it. */
+  selectedObjectId?: string | null
+  /** Clicking an object. Supplied only while something can select one — see the note on hit targets. */
+  onSelectObject?: (id: string) => void
+  /** Dragging an object to a new position, in map pixels. */
+  onMoveObject?: (id: string, at: Point) => void
   /** The gesture a tool wants, or absent when the map is just a map. */
   drawing?: {
     mode: 'point' | 'line' | 'freehand'
@@ -108,6 +114,9 @@ export default function DungeonMap({
   objects,
   previewStroke,
   suppressCloneTooltip,
+  selectedObjectId,
+  onSelectObject,
+  onMoveObject,
   drawing,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -269,7 +278,13 @@ export default function DungeonMap({
           ))}
 
           {/* The preset's own drawings: over the route's outline, under the mobs. */}
-          {objects && <ObjectLayer strokes={objects.filter((o): o is MdtStroke => o.kind === 'stroke')} />}
+          {objects && (
+            <ObjectLayer
+              strokes={objects.filter((o): o is MdtStroke => o.kind === 'stroke')}
+              selectedId={selectedObjectId}
+              onSelect={onSelectObject}
+            />
+          )}
 
           {/* The local gesture in progress, at the same depth as a finished stroke. Its own
               `data-testid` prefix, so it can never be counted among the committed strokes
@@ -411,6 +426,9 @@ export default function DungeonMap({
         <NoteLayer
           notes={objects.filter((o): o is MdtNote => o.kind === 'note')}
           transform={transform}
+          selectedId={selectedObjectId}
+          onSelect={onSelectObject}
+          onMove={onMoveObject}
         />
       )}
       {notice}

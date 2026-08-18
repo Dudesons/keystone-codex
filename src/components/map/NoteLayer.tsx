@@ -2,9 +2,15 @@
 // ABOUTME: Outside the transformed layer, so a pin keeps its size and its text stays legible.
 
 import { useEffect, useRef, useState } from 'react'
+import type { Point } from '../../lib/geometry'
 import type { MdtNote } from '../../lib/mdt/objects'
 import { useI18n } from '../../lib/i18n/context'
-import { toContainerPoint, type Transform } from './viewport'
+import { toContainerPoint, toMapPoint, type Transform } from './viewport'
+
+/** How far a press must travel, in container pixels, before it reads as a drag rather than a
+    click. Matches `DungeonMap`'s own pan threshold, for the same reason: below it, a hand is not
+    yet steady enough to mean "move this", and a plain click must still land as one. */
+const DRAG_THRESHOLD = 4
 
 /**
  * A route's notes.
@@ -18,12 +24,41 @@ import { toContainerPoint, type Transform } from './viewport'
  * is active, including a hand-built route and a dungeon with no notes at all, so it must never
  * become a full-surface hit target that steals clicks meant for a mob blip, a pull outline or a
  * POI underneath it. Only a pin itself opts back in with `pointer-events-auto`.
+ *
+ * While the select tool supplies `onSelect`/`onMove`, a plain click on a pin selects it instead
+ * of opening it, and a drag moves it. Both are gated on the note already carrying an id — see
+ * the note on `selected` below.
  */
-export default function NoteLayer({ notes, transform }: { notes: MdtNote[]; transform: Transform }) {
+export default function NoteLayer({
+  notes,
+  transform,
+  selectedId,
+  onSelect,
+  onMove,
+}: {
+  notes: MdtNote[]
+  transform: Transform
+  /** The object the page is editing, so the matching pin can mark itself. */
+  selectedId?: string | null
+  /** Clicking a pin. Supplied only while the select tool is active. */
+  onSelect?: (id: string) => void
+  /** Dragging a pin to a new position, in map pixels. Fires once, on release. */
+  onMove?: (id: string, at: Point) => void
+}) {
   const { t } = useI18n()
   const [hovered, setHovered] = useState<number | null>(null)
   const [pinned, setPinned] = useState<number | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+
+  // The gesture in flight on a pin, if any. A single ref serves every pin: only one gesture can
+  // be in progress at a time, and `id` is what a stray event from a different pin is checked
+  // against below.
+  const drag = useRef<{ id: string; x: number; y: number; moved: boolean } | null>(null)
+  // A drag's own release also fires a `click` — the browser's own sequencing, not something a
+  // handler can opt out of. Left unguarded, that click would reopen or close the very note the
+  // drag just moved. Set once a drag actually moved, and cleared by the click it is there to
+  // catch.
+  const justDragged = useRef(false)
 
   // A click outside the layer closes whatever note is pinned open (the design's "a click
   // elsewhere closes it"). Attached only while something is pinned, and detached the moment
@@ -47,6 +82,10 @@ export default function NoteLayer({ notes, transform }: { notes: MdtNote[]; tran
       {notes.map((note, index) => {
         const at = toContainerPoint(transform, note.at)
         const open = pinned === index || (pinned == null && hovered === index)
+        // `undefined === undefined` would otherwise read as a match: a preset's untouched notes
+        // carry no id at all until the document adopts them, so comparing against `selectedId`
+        // unset must never mark one of them as selected.
+        const selected = note.id != null && note.id === selectedId
         return (
           // A single element, not the pin nested in a positioned wrapper: the transform, the
           // testid and the hover/click handlers all have to land on what `note-pin-{index}`
@@ -54,10 +93,61 @@ export default function NoteLayer({ notes, transform }: { notes: MdtNote[]; tran
           <button
             key={`note-${index}`}
             data-testid={`note-pin-${index}`}
+            data-selected={selected ? 'true' : undefined}
             title={t('map.note')}
             onMouseEnter={() => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
-            onClick={() => setPinned((p) => (p === index ? null : index))}
+            onPointerDown={(e) => {
+              // Only while something can move this note — the select tool being active, and the
+              // note having an id at all (see the note on `selected` above). Without the guard, a
+              // press here would also stop the map's own pan from starting for no reason.
+              if (!onMove || !note.id) return
+              e.stopPropagation()
+              drag.current = { id: note.id, x: e.clientX, y: e.clientY, moved: false }
+            }}
+            onPointerMove={(e) => {
+              const d = drag.current
+              if (!d || d.id !== note.id) return
+              const dx = e.clientX - d.x
+              const dy = e.clientY - d.y
+              if (!d.moved && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+                d.moved = true
+                // Captured only once a drag is confirmed, exactly as `DungeonMap`'s own pan
+                // does: capturing any earlier would not change whether a plain click still
+                // lands, but there is no reason to hold the pointer before there is a gesture
+                // to hold it for.
+                ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+              }
+            }}
+            onPointerUp={(e) => {
+              const d = drag.current
+              if (!d || d.id !== note.id) return
+              drag.current = null
+              if (!d.moved) return
+              ;(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId)
+              justDragged.current = true
+              const root = rootRef.current
+              if (!root) return
+              const rect = root.getBoundingClientRect()
+              const container = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+              onMove!(d.id, toMapPoint(transform, container))
+            }}
+            onClick={() => {
+              if (justDragged.current) {
+                // The click a drag's own release fires: it moved the note already, and must not
+                // also toggle it open or closed.
+                justDragged.current = false
+                return
+              }
+              // While something can select this note, a plain click selects it rather than
+              // opening it — the two are different tasks, and the pin's hover already shows the
+              // text without needing to pin it open.
+              if (onSelect && note.id) {
+                onSelect(note.id)
+                return
+              }
+              setPinned((p) => (p === index ? null : index))
+            }}
             className="pointer-events-auto absolute top-0 left-0 flex items-start gap-1"
             style={{ transform: `translate(${at.x}px, ${at.y}px)` }}
           >
@@ -66,7 +156,7 @@ export default function NoteLayer({ notes, transform }: { notes: MdtNote[]; tran
                 open
                   ? 'border-gold-400 bg-gold-500 text-ink-950'
                   : 'border-gold-500/70 bg-ink-900/90 text-gold-400 hover:bg-gold-500 hover:text-ink-950'
-              }`}
+              } ${selected ? 'ring-2 ring-gold-400 ring-offset-1 ring-offset-ink-950' : ''}`}
             >
               !
             </span>

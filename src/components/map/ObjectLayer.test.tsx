@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import type { ReactNode } from 'react'
-import { cleanup } from '@testing-library/react'
+import { cleanup, fireEvent } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { MAP_SCALE } from '../../lib/geometry'
 import type { MdtStroke } from '../../lib/mdt/objects'
@@ -71,5 +71,73 @@ describe('ObjectLayer', () => {
   it('draws nothing at all when there is no stroke', () => {
     const { container } = renderEn(<ObjectLayer strokes={[]} />, { wrapper: svg })
     expect(container.querySelector('polyline')).toBeNull()
+  })
+})
+
+describe('Selecting a stroke', () => {
+  const stroke = (id: string): MdtStroke => ({
+    kind: 'stroke',
+    points: [{ x: 0, y: 0 }, { x: 100, y: 100 }],
+    sublevel: 1,
+    color: 'ff365c',
+    size: 5,
+    smooth: true,
+    layer: -8,
+    isArrow: false,
+    id,
+  })
+
+  it('is inert to the pointer when nothing can select it', () => {
+    const { container } = renderEn(
+      <svg>
+        <ObjectLayer strokes={[stroke('a')]} />
+      </svg>,
+    )
+    expect(container.querySelector('[data-hit="a"]')).toBeNull()
+  })
+
+  it('grows a hit target once selection is possible', () => {
+    const { container } = renderEn(
+      <svg>
+        <ObjectLayer strokes={[stroke('a')]} onSelect={() => {}} />
+      </svg>,
+    )
+    const hit = container.querySelector('[data-hit="a"]')!
+    expect(hit).toBeTruthy()
+    // Wider than the stroke, or a thin line would be impossible to hit.
+    expect(Number(hit.getAttribute('stroke-width'))).toBeGreaterThan(5 * 0.3)
+  })
+
+  it('reports which stroke was clicked', () => {
+    const picked: string[] = []
+    const { container } = renderEn(
+      <svg>
+        <ObjectLayer strokes={[stroke('a')]} onSelect={(id) => picked.push(id)} />
+      </svg>,
+    )
+    fireEvent.click(container.querySelector('[data-hit="a"]')!)
+    expect(picked).toEqual(['a'])
+  })
+
+  it('marks the selected stroke, so a reader can see which it is', () => {
+    const { container } = renderEn(
+      <svg>
+        <ObjectLayer strokes={[stroke('a')]} selectedId="a" onSelect={() => {}} />
+      </svg>,
+    )
+    expect(container.querySelector('[data-selected="true"]')).toBeTruthy()
+  })
+
+  it('does not mark a stroke with no id as selected, even when selectedId is unset', () => {
+    // Covers decision 8b: an untouched preset object carries no id at all, so `selectedId ===
+    // stroke.id` (`undefined === undefined`) must not read as a match.
+    const untouched: MdtStroke = { ...stroke('placeholder'), id: undefined }
+    const { container } = renderEn(
+      <svg>
+        <ObjectLayer strokes={[untouched]} onSelect={() => {}} />
+      </svg>,
+    )
+    expect(container.querySelector('[data-selected="true"]')).toBeNull()
+    expect(container.querySelector('[data-hit]')).toBeNull()
   })
 })

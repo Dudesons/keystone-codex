@@ -178,16 +178,41 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     if (mode !== 'route') setTool(null)
   }, [mode])
 
-  // Escape drops the active tool, so there is always a keyboard way back to panning. Only
-  // listens in Route mode: the codex tab never has a tool to drop.
+  // Escape drops the active tool and the current selection, Delete removes the selected object,
+  // and Ctrl/Cmd+Z undoes or redoes the last one. Only listens in Route mode: the codex tab
+  // never has a tool, a selection or an object edit to act on.
   useEffect(() => {
     if (mode !== 'route') return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setTool(null)
+      // A key pressed in a text field is text, not a command. Without this, Delete eats the
+      // object whose text you are editing and Ctrl+Z fights the field's own undo.
+      const target = e.target as HTMLElement | null
+      const typing =
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'INPUT' ||
+        target?.isContentEditable === true
+      if (typing) return
+
+      if (e.key === 'Escape') {
+        setTool(null)
+        setSelectedObject(null)
+        return
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject) {
+        e.preventDefault()
+        actions.removeObject(selectedObject)
+        setSelectedObject(null)
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) actions.redo()
+        else actions.undo()
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [mode])
+  }, [mode, selectedObject, actions])
 
   // A tool change starts with no preview, for this session and for every peer. Most gestures
   // already publish their own clear on release or cancel, but dropping the tool mid-drag
@@ -410,6 +435,16 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             // on purpose — the column already shows that enemy's numbers, so repeating them in
             // a tooltip would be the same redundancy this suppression exists to prevent.
             suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
+            selectedObjectId={tool === 'select' ? selectedObject : null}
+            onSelectObject={tool === 'select' ? setSelectedObject : undefined}
+            onMoveObject={
+              tool === 'select'
+                ? (id: string, at: Point) => {
+                    const object = route.objects.find((o) => o.id === id)
+                    if (object?.kind === 'note') actions.updateObject(id, { ...object, at })
+                  }
+                : undefined
+            }
             drawing={drawing}
             previewStroke={
               progress.length > 1

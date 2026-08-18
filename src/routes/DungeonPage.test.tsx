@@ -54,6 +54,10 @@ beforeAll(() => {
     disconnect() {}
   }
   globalThis.WebSocket = SilentSocket as unknown as typeof WebSocket
+  // jsdom implements neither of these either. Dragging a note's pin captures the pointer once
+  // the gesture is confirmed, the same way the map's own pan does (see `DungeonMap.test.tsx`).
+  Element.prototype.setPointerCapture = () => {}
+  Element.prototype.releasePointerCapture = () => {}
 })
 
 beforeEach(() => {
@@ -594,6 +598,137 @@ describe('The drawing tools', () => {
     // map: nothing in the codex tab ever hands `drawing` a gesture to report, so a surface
     // here would only ever sit between the cursor and the blips beneath it.
     expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
+  })
+
+  it('deletes the selected object with the Delete key', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    fireEvent.keyDown(document, { key: 'Delete' })
+
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(0)
+  })
+
+  it('leaves Delete alone while a note’s text has focus', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+
+    const field = screen.getByLabelText('Note text')
+    field.focus()
+    fireEvent.keyDown(field, { key: 'Delete' })
+
+    // Still there: a Delete in a text field is a text edit, not a command.
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+  })
+
+  it('deselects and drops the tool on Escape, leaving the object itself untouched', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-testid="note-pin-0"]')!)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    // The tool is gone, the way it already was before this task...
+    expect(screen.getByRole('button', { name: 'Select' }).dataset.active).toBeUndefined()
+    // …and Escape did not also reach for the Delete branch: the note is still on the map.
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+  })
+
+  it('does nothing on Delete when nothing is selected', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    // Placing a note leaves it open for editing (Task 2's own behaviour): Escape is what drops
+    // both the tool and that selection, which is what "nothing selected" actually requires here.
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    fireEvent.keyDown(document, { key: 'Delete' })
+
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+  })
+
+  it('moves a note by dragging its pin with the select tool active', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    const pin = container.querySelector('[data-testid="note-pin-0"]') as HTMLElement
+    const before = pin.style.transform
+
+    fireEvent.pointerDown(pin, { clientX: 20, clientY: 20, pointerId: 2 })
+    fireEvent.pointerMove(pin, { clientX: 90, clientY: 20, pointerId: 2 })
+    fireEvent.pointerUp(pin, { clientX: 90, clientY: 20, pointerId: 2 })
+
+    expect(container.querySelector('[data-testid="note-pin-0"]')!.getAttribute('style')).not.toBe(
+      `transform: ${before};`,
+    )
+  })
+
+  it('has no object selectable outside the select tool', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    // Still on the freehand tool, never switched to Select: nothing hands the stroke an
+    // `onSelect`, so there is no `[data-hit]` for a stray click to land on.
+    expect(container.querySelector('[data-hit]')).toBeNull()
+  })
+
+  it('undoes the last object edit with Ctrl+Z', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+
+    fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
+
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeNull()
+  })
+
+  it('redoes with Ctrl+Shift+Z what Ctrl+Z just undid', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 20, clientY: 20, pointerId: 1 })
+    fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeNull()
+
+    fireEvent.keyDown(document, { key: 'z', ctrlKey: true, shiftKey: true })
+
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
   })
 })
 
