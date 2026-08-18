@@ -86,6 +86,20 @@ function main() {
     )
   }
 
+  // Checked before anything on disk is touched: a refusal that fires after --apply has already
+  // rewritten cards is not a refusal.
+  const date = new Date().toISOString().slice(0, 10)
+  const name = reportFileName({ date, from: baseMeta.version, to: currentMeta.version })
+  const out = path.join(REPORT_DIR, name)
+
+  fs.mkdirSync(REPORT_DIR, { recursive: true })
+  if (fs.existsSync(out) && !args.force) {
+    throw new Error(
+      `${path.relative(ROOT, out)} already exists.\n` +
+        `Its ticked checkboxes are a human mark, not derived output. Pass --force to replace it.`,
+    )
+  }
+
   const findings = []
   const allCards = []
 
@@ -124,17 +138,9 @@ function main() {
   const baseSpells = readJsonAtRev(args.base, 'src/data/generated/spells.json')
   if (baseSpells) {
     findings.push(...diffSpells(baseSpells, readJson(path.join(GENERATED_DIR, 'spells.json')), annotated))
-  }
-
-  const date = new Date().toISOString().slice(0, 10)
-  const name = reportFileName({ date, from: baseMeta.version, to: currentMeta.version })
-  const out = path.join(REPORT_DIR, name)
-
-  fs.mkdirSync(REPORT_DIR, { recursive: true })
-  if (fs.existsSync(out) && !args.force) {
-    throw new Error(
-      `${path.relative(ROOT, out)} already exists.\n` +
-        `Its ticked checkboxes are a human mark, not derived output. Pass --force to replace it.`,
+  } else {
+    console.warn(
+      `  ! ${args.base} has no src/data/generated/spells.json: spell and creature labels could not be compared.`,
     )
   }
 
