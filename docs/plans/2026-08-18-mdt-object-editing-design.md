@@ -73,8 +73,10 @@ reason about.
 last-writer-wins. So when two peers adopt in the same instant — each drawing their first object
 before either has heard from the other — both documents converge on one peer's array, and the
 loser's first edit disappears from their own screen having been visible there first. Verified
-against real Yjs. The adopted objects themselves are not duplicated, and every later edit merges
-normally: the loss is exactly one edit, on one side, once per session.
+against real Yjs. The adopted objects themselves are not duplicated, and every edit after the merge
+merges normally. What is lost is everything the losing peer drew into its own array before the merge
+reached it: one edit at the literally simultaneous instant this describes, and more when the merge is
+a relay round trip away rather than a local `BroadcastChannel` away. Once per session, either way.
 
 It is a real cost at the most likely simultaneous moment there is, two people starting to draw at
 once, and it is recorded rather than fixed. The only way to remove it is to create the array
