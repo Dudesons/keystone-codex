@@ -30,6 +30,7 @@ GPL-2.0. keystone-codex is licensed the same way because it redistributes MDT ma
 | `scripts/__fixtures__/MythicDungeonTools.toc` | the addon's own metadata file, copied **verbatim** as a test fixture |
 | `src/data/generated/*.json` | mob, clone, pack and force data extracted from MDT's dungeon files |
 | `scripts/__fixtures__/altar-of-fangs.with-affix.json`, `.without-affix.json` | two git-history revisions of `altar-of-fangs.json` above, committed as a diff-testing fixture |
+| `scripts/__fixtures__/TheBlindingVale-6.2.2.lua`, `TheBlindingVale-6.2.3.lua` | two real, consecutive versions of one MDT dungeon file, both copied **verbatim** as a diff-testing fixture |
 
 `src/lib/mdt/` reimplements MDT's share-string format (CBOR over raw deflate) so that routes
 can be exchanged with the addon. It is an independent implementation written from the
