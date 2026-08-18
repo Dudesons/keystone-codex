@@ -209,7 +209,12 @@ export default function DungeonMap({
 
           {/* Pull outlines: this is how MDT reads as an itinerary. */}
           {pullShapes?.map((shape) => (
-            <g key={`pull-${shape.index}`} onClick={() => onPullClick?.(shape.index)} style={{ cursor: 'pointer' }}>
+            <g
+              key={`pull-${shape.index}`}
+              data-pull={shape.index}
+              onClick={() => onPullClick?.(shape.index)}
+              style={{ cursor: 'pointer' }}
+            >
               <path
                 d={roundedPolygonPath(shape.hull)}
                 fill={shape.color}
