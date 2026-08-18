@@ -107,10 +107,18 @@ do not replace this module with a library.
 
 ### Never lose what we cannot edit
 
-An MDT preset carries drawings, notes, rift offsets, assignments. We only know how to edit
-`value.pulls`. [route.ts](../../../src/lib/mdt/route.ts) therefore keeps the original Lua
-table in `Route.source`, and `routeToLua()` starts from that table: re-exporting an imported
-route hands it back to the game intact.
+An MDT preset carries drawings, notes, rift offsets, assignments. We know how to edit
+`value.pulls` and, since the object editing slice, `objects`.
+[route.ts](../../../src/lib/mdt/route.ts) therefore keeps the original Lua table in
+`Route.source`, and `routeToLua()` starts from that table: re-exporting an imported route hands
+back everything we never learned to edit, byte for byte.
+
+`objects` is the one key that is rebuilt rather than copied, because deleting a drawing means it
+must stop being exported. The promise there is narrower and is held by the same principle: an
+entry no object claims through its `from` index is re-emitted verbatim, and only an entry this app
+actually edited passes through the encoder. See
+[the object editing design](../../../docs/plans/2026-08-18-mdt-object-editing-design.md) for why a
+whole-model rebuild is not an option.
 
 **Any change to the route model must preserve that property.** If you add a field, write it
 into the copy of the source table; do not rebuild the table from scratch.
