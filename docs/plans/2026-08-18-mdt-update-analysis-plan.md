@@ -90,7 +90,7 @@ formats it. Defined here because tasks 2 through 6 all depend on it.
  * @property {string} subject         What the finding is about: '270306 Ritual Chieftain'.
  * @property {string} what            One sentence, present tense, stating the fact.
  * @property {string} [detail]        Optional second line: old and new values, ids, counts.
- * @property {string} [action]        What a human has to do about it. Absent for severity 6.
+ * @property {string} [action]        Present whenever a concrete follow-up is known; at severity 6 that means a command to run, not a card to write.
  * @property {string} [file]          Repository-relative path, when one card is implicated.
  */
 ```

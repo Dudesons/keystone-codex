@@ -20,6 +20,9 @@ describe('diffDungeon', () => {
     expect(lost).toHaveLength(11)
     expect(lost[0].dungeon).toBe('altar-of-fangs')
     expect(lost[0].severity).toBe(6)
+    // No action here: the card audit (a later module) reports this same fact against the
+    // actual content/ file, if one exists, which this module has no way to know about.
+    expect(lost[0].action).toBeUndefined()
   })
 
   it('reports a gained spell in the other direction', () => {
@@ -43,7 +46,11 @@ describe('diffDungeon', () => {
     const gone = withoutAffix.enemies[0]
 
     const removed = diffDungeon(withoutAffix, trimmed)
-    expect(removed.some((f) => f.subject === `${gone.id} ${gone.name}` && f.what.includes('left'))).toBe(true)
+    const left = removed.find((f) => f.subject === `${gone.id} ${gone.name}` && f.what.includes('left'))
+    expect(left).toBeDefined()
+    // No action here either, for the same reason: only the card audit knows whether
+    // content/altar-of-fangs/ actually has a now-dead card for this mob.
+    expect(left.action).toBeUndefined()
 
     const added = diffDungeon(trimmed, withoutAffix)
     expect(added.some((f) => f.subject === `${gone.id} ${gone.name}` && f.what.includes('is new'))).toBe(true)

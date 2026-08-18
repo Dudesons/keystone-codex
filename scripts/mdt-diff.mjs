@@ -34,12 +34,7 @@ function diffOneMob(slug, before, after) {
   const beforeSpells = (before.spells ?? []).map((s) => s.id)
   const afterSpells = (after.spells ?? []).map((s) => s.id)
   for (const id of missing(beforeSpells, afterSpells)) {
-    out.push(finding({
-      dungeon: slug,
-      subject,
-      what: `lost spell ${id}`,
-      action: `check content/${slug}/ for a note on ${id}: it no longer renders`,
-    }))
+    out.push(finding({ dungeon: slug, subject, what: `lost spell ${id}` }))
   }
   for (const id of missing(afterSpells, beforeSpells)) {
     out.push(finding({ dungeon: slug, subject, what: `gained spell ${id}` }))
@@ -139,7 +134,6 @@ export function diffDungeon(before, after) {
         dungeon: slug,
         subject: subjectOf(enemy),
         what: 'left the dungeon',
-        action: `its card in content/${slug}/ is now dead weight`,
       }))
     }
   }
