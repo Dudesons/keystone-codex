@@ -90,13 +90,20 @@ and the **audit** of the current generated JSON against `content/**.md` — base
 | --- | --- | --- |
 | 1 — writing lost | A `note:` or `tag:` on a spell ID no longer in that mob's `spells`; a card whose `npcId` is no longer among the dungeon's `enemies` | The writing leaves the site without a word (`MobCard.tsx:45`, `:49`) |
 | 2 — writing incomplete | A mob whose card is written (`isStub === false`, `content.ts:283-288`) and whose data gained spells carrying no `note:` | The spell renders with its Wowhead description alone |
-| 3 — writing possibly stale | An annotated spell whose `text[lang].description` or `castTime` changed between versions; a mob whose `cc` changed | Notes quote tooltip numbers. Old and new are printed side by side for a human to judge |
+| 3 — writing possibly stale | An annotated spell whose `text[lang].description` or `castTime` changed between versions; a mob whose `cc` changed (**shipped at 6** — see below) | Notes quote tooltip numbers. Old and new are printed side by side for a human to judge |
 | 4 — to write | Mobs in the data with no card; whole dungeons that are new | `npm run scaffold` writes the stub; the report names them so none is missed |
 | 5 — dead weight | Cards, base and `.fr.md`, whose mob left MDT | Nothing breaks; the repository misstates its own contents |
 | 6 — informational | Mobs and clones added or removed, by count; pack regrouping (`g`); `totalCount`, `mdtIndex`, `mapID`, `teleportId`; rescaled health and level; `textureFolder` | A changed `textureFolder` forces `npm run build:maps`. Force coverage below 100% means extraction missed something |
 
 Severity 1 is the reason the tool exists. Severity 6 exists because a human reading a report
 needs to know whether the update was small.
+
+**Deviation, as implemented: a changed `cc` is reported at severity 6, not 3.** Grading it at 3
+would mean knowing whether any card annotates that mob, and `diffDungeon` compares two generated
+snapshots and knows nothing about `content/` — threading the card set into it buys one severity
+number at the price of a coupling nothing else in that module has. The change is still named, in
+the section a human is told to read for the shape of the update, which is what the row above was
+after.
 
 ### 4. No coordinate is ever diffed by value
 
@@ -184,10 +191,20 @@ The alternative — mutating the existing fixture to manufacture an "old" side �
 own idea of what an MDT update does, which is the failure mode the repository's testing rules
 name outright.
 
+**Substitution, as implemented.** Two captures of `AltarOfFangs.lua` cannot both exist before the
+update is installed, so this decision was unachievable at the moment the differ was written. What
+shipped is two git revisions of the real generated `altar-of-fangs.json`, taken from either side of
+commit `e520646`, which dropped the seasonal affix from the extraction: eleven mobs lose spell
+`1221063` between them — a real spell loss, which is the case the differ exists to catch. Both
+sides are output of the real pipeline, so the reasoning above survives intact: neither is
+hand-made, and nothing here tests our own idea of what an update does. They are committed as
+`scripts/__fixtures__/altar-of-fangs.with-affix.json` and `.without-affix.json`, and documented in
+`scripts/__fixtures__/README.md`.
+
 | Module | Test artefact |
 | --- | --- |
 | `mdt-version.mjs` | The real `MythicDungeonTools.toc`, committed as a fixture |
-| `mdt-diff.mjs` | Two real captures of `AltarOfFangs.lua`, one per MDT version |
+| `mdt-diff.mjs` | Two real versions of the generated `altar-of-fangs.json` (**substituted** — see above) |
 | `card-audit.mjs` | `content/__fixtures__/`, which already holds real cards and one base/`fr` pair |
 | `card-auto-fields.mjs` | Real card text in, expected text out, plus an idempotence test |
 | Report rendering | A pure function from findings to markdown, asserted on structure |

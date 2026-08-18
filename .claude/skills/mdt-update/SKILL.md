@@ -76,6 +76,10 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
   change, but two kinds name a concrete follow-up rather than nothing — a changed
   `textureFolder` means the committed map no longer matches the tiles (`npm run build:maps`),
   and an `isBoss` line that should now appear or disappear names which line to add or remove.
+  A changed **`cc`** also lands here rather than at severity 3: the differ compares two data
+  snapshots and cannot know which mobs have cards. Read those against the notes yourself — a
+  note telling the group to stun something no longer stunnable is stale writing, and severity 6
+  is the only place it is named.
 - **For every `.fr.md` you touch**, read `i18n` first. A translation carries text only —
   `threat`, `role`, `tag` and `prio` stay in the base card.
 
