@@ -494,6 +494,40 @@ describe('The drawing tools', () => {
 
     expect(screen.getByRole('button', { name: 'Note' }).dataset.active).toBeUndefined()
   })
+
+  it('places a note where the map was clicked, and opens it for writing', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 40, clientY: 60 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 60 })
+
+    // The pin is on the map…
+    expect(container.querySelector('[data-testid="note-pin-0"]')).toBeTruthy()
+    // …and the column is ready for its text.
+    expect(screen.getByLabelText('Note text')).toBeDefined()
+  })
+
+  it('writes what is typed into the placed note', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 40, clientY: 60 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 60 })
+
+    fireEvent.change(screen.getByLabelText('Note text'), { target: { value: 'lust here' } })
+
+    // The pin's own hover text is the note's, so the map is what proves the write landed.
+    // Scoped to the pin itself: the column's own textarea carries the same value, and a
+    // controlled textarea's value shows up in its text content in jsdom, so an unscoped
+    // `getByText` here matches both and throws on the ambiguity.
+    const pin = container.querySelector('[data-testid="note-pin-0"]') as HTMLElement
+    fireEvent.mouseEnter(pin)
+    expect(within(pin).getByText('lust here')).toBeDefined()
+  })
 })
 
 describe('Remounting per dungeon', () => {

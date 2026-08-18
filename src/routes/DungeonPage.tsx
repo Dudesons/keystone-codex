@@ -11,10 +11,11 @@ import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
 import MobPanel from '../components/route/MobPanel'
 import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
+import ObjectEditor from '../components/route/ObjectEditor'
 import { cloneKey, getLookup } from '../lib/data'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
-import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
+import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels, type Point } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
 import type { CloneRef, Enemy } from '../lib/types'
 
@@ -77,6 +78,8 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   /** The active drawing tool, or null when the map is just a map. */
   const [tool, setTool] = useState<Tool | null>(null)
+  /** The object being edited, by the id plan 1 puts on a stored object. */
+  const [selectedObject, setSelectedObject] = useState<string | null>(null)
 
   const {
     route,
@@ -90,6 +93,14 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     canUndo,
     canRedo,
   } = useRouteDoc(slug, lookup.dungeon.mdtIndex)
+
+  const editing = route.objects.find((o) => o.id === selectedObject) ?? null
+
+  // `sublevel: 1` is hardcoded: every committed dungeon's objects are on sublevel 1, and
+  // nothing in the app reads `sublevel` yet.
+  const placeNote = (at: Point) => {
+    setSelectedObject(actions.addObject({ kind: 'note', at, sublevel: 1, text: '' }))
+  }
 
   // Escape drops the active tool, so there is always a keyboard way back to panning. Only
   // listens in Route mode: the codex tab never has a tool to drop.
@@ -274,7 +285,16 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
                 frozen={frozenNpc != null}
                 onUnfreeze={() => setFrozenNpc(null)}
               />
-            ) : null}
+            ) : (
+              <ObjectEditor
+                object={editing}
+                onChange={(o) => o.id && actions.updateObject(o.id, o)}
+                onDelete={() => {
+                  if (editing?.id) actions.removeObject(editing.id)
+                  setSelectedObject(null)
+                }}
+              />
+            )}
           </aside>
         )}
         <div className="min-w-0 flex-1">
@@ -302,6 +322,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             // on purpose — the column already shows that enemy's numbers, so repeating them in
             // a tooltip would be the same redundancy this suppression exists to prevent.
             suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
+            onMapClick={tool === 'note' ? placeNote : undefined}
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
