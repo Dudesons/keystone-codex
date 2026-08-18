@@ -146,20 +146,26 @@ describe('diffDungeon over two real MDT versions', () => {
 
     // Measured by matching every clone on mdtIdx (never by array position -- see
     // .claude/lessons.md): 18 of the dungeon's mobs have at least one clone that moved more
-    // than the 20-unit threshold between these two real captures.
+    // than the 20-unit threshold between these two real captures. The gate looks at the
+    // furthest clone; the count in the sentence below is a different, narrower population.
     expect(moved).toHaveLength(18)
     expect(moved.every((f) => f.severity === 6)).toBe(true)
     expect(moved.every((f) => f.action === undefined)).toBe(true)
 
     const spiritMoonkin = moved.find((f) => f.subject === '246371 Spirit Moonkin')
     expect(spiritMoonkin).toBeDefined()
-    expect(spiritMoonkin.detail).toContain('1 of 1 clones moved')
-    expect(spiritMoonkin.detail).toContain('131 units')
+    expect(spiritMoonkin.detail).toBe('1 of 1 clones moved more than 20 units, the furthest by 131')
+  })
 
-    const lasher = moved.find((f) => f.subject === '245410 Lasher')
+  it('counts only the clones that themselves cleared the threshold, not every clone that moved at all', () => {
+    // Lasher has 115 clones: 71 moved by some nonzero amount, but only 21 moved past the
+    // 20-unit threshold. Reporting the 71 would say the whole pack relocated when most of it
+    // was nudged by a few units -- this is the real mob the distinction actually changes, so
+    // no hand-built fixture is needed to pin it.
+    const findings = diffDungeon(blindingVale622, blindingVale623)
+    const lasher = findings.find((f) => f.subject === '245410 Lasher' && f.what === 'moved on the map')
     expect(lasher).toBeDefined()
-    expect(lasher.detail).toContain('71 of 115 clones moved')
-    expect(lasher.detail).toContain('64 units')
+    expect(lasher.detail).toBe('21 of 115 clones moved more than 20 units, the furthest by 64')
   })
 
   it('does not report a mob whose furthest clone stays at or under the threshold', () => {

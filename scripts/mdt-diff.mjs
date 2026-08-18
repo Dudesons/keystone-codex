@@ -113,15 +113,20 @@ function diffOneMob(slug, before, after) {
   }
 
   // One finding for the whole mob, not one per clone: a human deciding whether to care needs
-  // how many clones moved and how far the worst of them went, not a line each.
+  // how many clones moved and how far the worst of them went, not a line each. The mob is
+  // reported when its furthest clone clears the threshold, but the count in the sentence must
+  // count the same population -- clones that themselves moved more than the threshold -- or a
+  // mob with one clone dragged across the map and eleven others nudged by half a unit would
+  // read as "12 of 12 clones moved", overstating how much of it actually relocated.
   const distances = movedClones(before, after)
   const furthest = distances.length ? Math.max(...distances) : 0
   if (furthest > MOVEMENT_THRESHOLD) {
+    const movedBeyondThreshold = distances.filter((d) => d > MOVEMENT_THRESHOLD).length
     out.push(finding({
       dungeon: slug,
       subject,
       what: 'moved on the map',
-      detail: `${distances.length} of ${(after.clones ?? []).length} clones moved, the furthest by ${Math.round(furthest)} units`,
+      detail: `${movedBeyondThreshold} of ${(after.clones ?? []).length} clones moved more than ${MOVEMENT_THRESHOLD} units, the furthest by ${Math.round(furthest)}`,
     }))
   }
 
