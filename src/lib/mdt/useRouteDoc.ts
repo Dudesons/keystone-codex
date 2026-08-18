@@ -525,6 +525,15 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const pulls = new Y.Array<PullMap>()
           root.set('pulls', pulls)
           pulls.push(imported.pulls.map((p) => makePull(p.color, p.clones.map(refKey))))
+          // An adopted array is only ever a reading of the *previous* `source`. Left in place,
+          // it would outlive the preset it was adopted from: an entry whose `from` happened to
+          // collide with one of the new preset's own keys would be claimed and silently
+          // synthesised over that preset's own object. Deleting it here, in the same
+          // transaction, means a peer can never observe a route whose `source` and `objects`
+          // disagree about which preset they came from — `objects` goes back to being derived
+          // from the new `source`, exactly as it would for a document that had never adopted at
+          // all.
+          root.delete('objects')
         })
         return imported
       },
@@ -537,6 +546,11 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
           const pulls = new Y.Array<PullMap>()
           root.set('pulls', pulls)
           pulls.push([makePull(nextColor(0))])
+          // Same reasoning as `importRoute`: an adopted array is a reading of the source that no
+          // longer exists after this. Left behind, every adopted object would vanish from export
+          // anyway (there is no `source` left for it to claim a key in), but silently — this
+          // makes the model agree with that outcome instead of disagreeing with it.
+          root.delete('objects')
         }),
 
       addObject: (object) => withObjects((objects) => objects.push([storeObject(object, nextObjectId())])),

@@ -118,6 +118,17 @@ const drawingsFixture = path.join(__dirname, '__fixtures__', 'real-export-stroke
 const drawn = fs.existsSync(drawingsFixture) ? fs.readFileSync(drawingsFixture, 'utf8').trim() : ''
 const runDrawn = drawn ? it : it.skip
 
+/**
+ * A second, unrelated real export — five notes, no strokes — used to exercise importing a
+ * different preset onto a document that has already adopted the first one's objects. Its
+ * `objects` table has keys `1..5`, overlapping the first fixture's `1..11`, which is what makes
+ * the corruption case constructible: an adopted object whose `from` is, say, `3` would otherwise
+ * be compared against and synthesised over this preset's own entry at key `3`.
+ */
+const plainFixture = path.join(__dirname, '__fixtures__', 'real-export.txt')
+const plain = fs.existsSync(plainFixture) ? fs.readFileSync(plainFixture, 'utf8').trim() : ''
+const runBothFixtures = drawn && plain ? it : it.skip
+
 beforeEach(() => {
   localStorage.clear()
 })
@@ -929,5 +940,52 @@ describe('Objects in the document', () => {
 
     host.unmount()
     guest.unmount()
+  })
+
+  runBothFixtures(
+    'forgets a previously adopted objects array on re-import, so the new preset’s own objects are not silently rewritten',
+    () => {
+      const { result } = mount()
+      act(() => void result.current.actions.importRoute(drawn))
+      // Adoption is what makes the stale array able to outlive this import: without an edit,
+      // `objects` stays derived and there would be nothing left over to survive re-import at all.
+      act(() =>
+        result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 3, y: 3 },
+          sublevel: 1,
+          text: 'belongs only to the first preset',
+        }),
+      )
+
+      act(() => void result.current.actions.importRoute(plain))
+
+      // The sharpest form of this assertion: the second preset's own `objects` table must come
+      // back byte-identical, the same guard `codec.test.ts` already holds a preset to. Both
+      // fixtures' `objects` tables share overlapping integer keys (`1..11` and `1..5`), so if the
+      // first import's adopted array survived, an object whose `from` collided with one of this
+      // preset's own keys would be claimed and synthesised over that preset's own entry — not
+      // merely alongside it, but in its place.
+      const out = routeToLua(result.current.route)
+      expect(out.get('objects')).toEqual(decodeMdtString(plain).table.get('objects'))
+
+      // And the model itself is back to deriving from the new source: nothing here carries an
+      // id forward from the adoption the first import triggered.
+      expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
+    },
+  )
+
+  runDrawn('leaves the objects derived from whatever reset leaves as the source — nothing, since reset clears it', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 4, y: 4 }, sublevel: 1, text: 'adopted' }),
+    )
+    expect(result.current.route.objects.length).toBeGreaterThan(0)
+
+    act(() => result.current.actions.reset())
+
+    // No source, therefore none: a stale adopted array must not outlive the source it came from.
+    expect(result.current.route.objects).toEqual([])
   })
 })
