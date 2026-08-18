@@ -176,7 +176,14 @@ export function routeToLua(route: Route): LuaTable {
   // an object read from `source` always brings a source that already has the key). A preset that
   // never had `objects` — and a route with neither a source nor any objects — must not gain an
   // empty one it never carried.
-  if (route.source?.has('objects') || route.objects.length > 0) {
+  //
+  // And an `objects` that is present but is not a table at all is not ours to rebuild: it rides
+  // through in the shallow copy above, untouched. `objectsToLua` would read nothing from it and
+  // hand back an empty table in its place — destroying a value for the sole reason that we could
+  // not read it, which is exactly what the verbatim rule refuses to do elsewhere.
+  const hasObjects = route.source?.has('objects') === true
+  const unreadableObjects = hasObjects && asTable(route.source!.get('objects')) === undefined
+  if (!unreadableObjects && (hasObjects || route.objects.length > 0)) {
     table.set('objects', objectsToLua(route.source, route.objects))
   }
   if (route.difficulty !== undefined) table.set('difficulty', route.difficulty)

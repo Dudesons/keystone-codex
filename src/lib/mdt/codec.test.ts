@@ -249,6 +249,14 @@ describe('MDT route', () => {
     expect(out.get('objects')).toEqual(seq(lua(['t', 'note'])))
   })
 
+  it('hands back an objects value that is not a table at all', () => {
+    // Not something MDT writes — and therefore not something to replace with an empty table
+    // because we could make nothing of it. The same reasoning as a hidden object riding through.
+    const odd = new Map(preset)
+    odd.set('objects', 'this is not a table')
+    expect(routeToLua(luaToRoute(odd)).get('objects')).toBe('this is not a table')
+  })
+
   it('gives no objects table to a preset that never carried one', () => {
     // `routeToLua` writes `objects` only when the source already had the key or the route holds an
     // object of its own. Guarding on `route.source` instead — which is the whole preset table, and

@@ -1,5 +1,5 @@
-// ABOUTME: Tests reading a preset's drawn objects, against the real in-game export fixture.
-// ABOUTME: That export carries five notes; strokes wait for a fixture that has some.
+// ABOUTME: Tests reading a preset's drawn objects and rebuilding that table, against two real
+// ABOUTME: in-game exports: one carrying five notes, one carrying freehand strokes and two arrows.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -171,6 +171,19 @@ describe('objectsToLua — what it refuses to touch', () => {
   it('is empty for a preset with no objects at all', () => {
     expect(objectsToLua(undefined, []).size).toBe(0)
     expect(objectsToLua(new Map(), []).size).toBe(0)
+  })
+
+  it('copies a key it cannot interpret straight through', () => {
+    // MDT indexes this table 1..n, so a string key is not something it writes — which is the
+    // reason to keep it rather than to drop it. Renumbering only concerns the integer keys.
+    const source: LuaTable = new Map()
+    const raw: LuaTable = new Map()
+    raw.set('somethingWeHaveNeverSeen', 'keep me')
+    raw.set(1, new Map<number | string, LuaValue>([['n', true]]))
+    source.set('objects', raw)
+
+    const out = objectsToLua(source, luaToObjects(source))
+    expect(out.get('somethingWeHaveNeverSeen')).toBe('keep me')
   })
 })
 

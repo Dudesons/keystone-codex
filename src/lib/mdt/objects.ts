@@ -167,6 +167,11 @@ export function objectsToLua(source: LuaTable | undefined, objects: MdtObject[])
 
   let next = 1
   if (raw) {
+    // A key `intKeys` skips is not ours to interpret. MDT indexes this table 1..n and writes no
+    // other key, so a string-keyed entry is something we have simply failed to recognise — and
+    // dropping what we do not understand is the one thing the verbatim rule exists to prevent.
+    for (const [key, value] of raw) if (typeof key !== 'number') out.set(key, value)
+
     for (const key of intKeys(raw)) {
       const object = claimed.get(key)
       if (object) {
