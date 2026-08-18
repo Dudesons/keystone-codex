@@ -57,6 +57,13 @@ describe('renderReport', () => {
     }
   })
 
+  it('describes severity 2 as a fact about the card, not something the update caused', () => {
+    // "gained" would claim the update introduced the spell; the audit reports the mob's current
+    // spells against the card's current annotations, whatever version introduced them.
+    expect(md).toContain('carries spells nobody has annotated')
+    expect(md).not.toMatch(/gained spells/)
+  })
+
   it('orders severities from 1, and groups by dungeon inside each', () => {
     expect(md.indexOf('## Severity 1')).toBeLessThan(md.indexOf('## Severity 4'))
     expect(md.indexOf('### altar-of-fangs')).toBeLessThan(md.indexOf('## Severity 4'))

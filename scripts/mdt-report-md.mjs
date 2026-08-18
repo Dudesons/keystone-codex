@@ -4,7 +4,7 @@
 /** What each severity means, in the order the report presents them. */
 const SEVERITIES = [
   [1, 'Writing already lost', 'The site has stopped showing this writing. Nothing else reports it.'],
-  [2, 'Writing incomplete', 'A written card whose mob gained spells nobody has annotated.'],
+  [2, 'Writing incomplete', 'A written card whose mob carries spells nobody has annotated.'],
   [3, 'Writing possibly stale', 'A tooltip moved under a note that may quote its numbers.'],
   [4, 'To write', 'New mobs and new dungeons, with no card yet.'],
   [5, 'Dead weight', 'Cards whose mob left MDT. Nothing breaks; the repository misstates itself.'],

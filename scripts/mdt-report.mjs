@@ -157,7 +157,7 @@ function main() {
     const spellsPath = path.join(GENERATED_DIR, 'spells.json')
     const afterSpellsRaw = fs.readFileSync(spellsPath, 'utf8')
     findings.push(...labelTableFindings(baseSpellsRaw, afterSpellsRaw))
-    findings.push(...diffSpells(JSON.parse(baseSpellsRaw), readJson(spellsPath), annotated))
+    findings.push(...diffSpells(JSON.parse(baseSpellsRaw), JSON.parse(afterSpellsRaw), annotated))
   } else {
     console.warn(
       `  ! ${args.base} has no src/data/generated/spells.json: spell labels could not be compared.`,

@@ -6,7 +6,7 @@ description: Read before installing an MDT update, re-running npm run data, or b
 # Installing an MDT update
 
 `npm run mdt:report` says what the generated data cost the cards: a spell that vanished
-under a note, a mob that gained abilities nobody has annotated, a dungeon with no cards at
+under a note, a mob that carries abilities nobody has annotated, a dungeon with no cards at
 all. It cannot say what to write instead. That half is judgement, and this skill carries it.
 
 ## The one-way door
@@ -65,9 +65,12 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
   carries, or a whole card's mob left the dungeon. Move the note to the spell that replaced
   it, or delete it. Deleting writing is a decision, not a tidy-up: state it in the commit
   message. Read `codex-content` first — it owns what a card may claim.
-- **Severity 2 — writing incomplete.** A written card whose mob gained spells nobody has
-  annotated. Annotate the new spells, or leave `tag: todo` deliberately. Both are answers; an
-  unread finding is not.
+- **Severity 2 — writing incomplete.** A written card whose mob carries spells nobody has
+  annotated — the audit reads the current state of the card against the current data, not what
+  the update changed, so these may predate it. Annotate the spells, or leave `tag: todo`
+  deliberately. Both are answers; an unread finding is not. Working one is codex work rather than
+  update work, so deferring one deliberately — to raise separately, or to leave for whoever knows
+  what the spell does — is a legitimate answer here too, as long as it is deliberate.
 - **Severity 3 — writing possibly stale.** A tooltip changed under a note that may quote its
   numbers. Reread the note against the new tooltip — a changed description usually means a
   changed sentence, since a note's figures are quoted from it. An **empty** severity 3 means
