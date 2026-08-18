@@ -152,9 +152,11 @@ describe('diffDungeon over two real MDT versions', () => {
     expect(moved.every((f) => f.severity === 6)).toBe(true)
     expect(moved.every((f) => f.action === undefined)).toBe(true)
 
+    // A single-clone mob carries no count -- "1 of 1 clones moved" says nothing a plain
+    // distance doesn't, so the detail drops the count entirely for this case.
     const spiritMoonkin = moved.find((f) => f.subject === '246371 Spirit Moonkin')
     expect(spiritMoonkin).toBeDefined()
-    expect(spiritMoonkin.detail).toBe('1 of 1 clones moved more than 20 units, the furthest by 131')
+    expect(spiritMoonkin.detail).toBe('by 131 units')
   })
 
   it('counts only the clones that themselves cleared the threshold, not every clone that moved at all', () => {

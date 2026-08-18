@@ -121,13 +121,15 @@ function diffOneMob(slug, before, after) {
   const distances = movedClones(before, after)
   const furthest = distances.length ? Math.max(...distances) : 0
   if (furthest > MOVEMENT_THRESHOLD) {
-    const movedBeyondThreshold = distances.filter((d) => d > MOVEMENT_THRESHOLD).length
-    out.push(finding({
-      dungeon: slug,
-      subject,
-      what: 'moved on the map',
-      detail: `${movedBeyondThreshold} of ${(after.clones ?? []).length} clones moved more than ${MOVEMENT_THRESHOLD} units, the furthest by ${Math.round(furthest)}`,
-    }))
+    const total = (after.clones ?? []).length
+    // A mob with exactly one clone has no count worth stating -- "1 of 1 clones moved" says
+    // nothing a plain distance doesn't, and every phrasing of that count reads awkwardly for a
+    // single clone. Rather than reach for pluralisation, the one-clone case drops the count
+    // entirely; a mob with several keeps naming how many cleared the threshold.
+    const detail = total === 1
+      ? `by ${Math.round(furthest)} units`
+      : `${distances.filter((d) => d > MOVEMENT_THRESHOLD).length} of ${total} clones moved more than ${MOVEMENT_THRESHOLD} units, the furthest by ${Math.round(furthest)}`
+    out.push(finding({ dungeon: slug, subject, what: 'moved on the map', detail }))
   }
 
   return out

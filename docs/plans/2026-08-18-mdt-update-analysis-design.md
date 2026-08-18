@@ -110,12 +110,13 @@ after.
 **Measured, not assumed: the first real update, MDT 6.2.2 → 6.2.3 on The Blinding Vale, the one
 dungeon that pair touched.** Matching clones by `mdtIdx` — never by array position, which an
 inserted or removed clone would shift and so invent movement that never happened — 276 clones
-line up on both sides: 91 sit at the byte-identical position and 185 moved, the smallest nonzero
-move being well over half a unit. There is no sub-unit recapture jitter in this pair at all: MDT
-does not perturb a clone's position on export, and this design's earlier premise that it does
-was wrong. What actually happened is visible in the raw `.lua` diff too — round numbers like
-`["x"] = 344` are the signature of a mob dragged by hand in MDT's editor, not of floating-point
-noise.
+line up on both sides: 91 sit at the byte-identical position and 185 moved. The smallest nonzero
+move is over half a unit, and the next-smallest jumps straight to about 2.4 — nothing sits
+anywhere near the thousandth-of-a-unit scale that floating-point serialisation noise would
+produce. MDT does not perturb a clone's position on export, and this design's earlier premise
+that it does was wrong. What actually happened is visible in the raw `.lua` diff too — round
+numbers like `["x"] = 344` are the signature of a mob dragged by hand in MDT's editor, not of
+floating-point noise.
 
 A float-by-float diff is still unreadable, and the conclusion stands: no coordinate is ever
 reported by value, because 185 raw pairs of numbers would bury every other finding in the same
