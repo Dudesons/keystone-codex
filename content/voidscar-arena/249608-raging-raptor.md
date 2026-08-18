@@ -19,7 +19,7 @@ trap: "It does nothing but enrage its neighbours. Soothe it and there is nothing
 ---
 
 One unit at 5 forces with a single ability, and that ability is
-[the dungeon's shared enrage](#/d/voidscar-arena/map/mob/243988).
+[the dungeon's shared enrage](#/d/voidscar-arena/codex/mob/243988).
 
 There is nothing else here: no cast to interrupt, no ground to avoid, no debuff to clear. A
 soothe removes its entire contribution to the fight.

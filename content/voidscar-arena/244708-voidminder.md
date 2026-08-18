@@ -27,7 +27,7 @@ Six units at 7 forces each, and the dungeon's healer.
 
 **Mending Void** is a twenty-second channel restoring 3% of maximum health every 2 seconds —
 30% of a full bar if it runs to the end. The
-[Devouring Brutalizer](#/d/voidscar-arena/map/mob/268184) casts the identical spell, so a pack
+[Devouring Brutalizer](#/d/voidscar-arena/codex/mob/268184) casts the identical spell, so a pack
 holding both can undo a great deal of the group's damage between them.
 
 **Dimensional Shred** is a small instant and needs no plan.

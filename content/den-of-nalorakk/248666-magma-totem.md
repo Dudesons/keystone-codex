@@ -23,7 +23,7 @@ spells:
 trap: "0.7 million health, and about 120k a second to the whole group while it stands. Nothing in the dungeon repays a global faster."
 ---
 
-The [Ruthless Totemcaller](#/d/den-of-nalorakk/map/mob/245143)'s totem, and the clearest
+The [Ruthless Totemcaller](#/d/den-of-nalorakk/codex/mob/245143)'s totem, and the clearest
 cost-benefit calculation in Den of Nal'orakk.
 
 **Searing Magma** pulses every 0.3 seconds to every player, regardless of range or position.

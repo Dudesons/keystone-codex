@@ -22,7 +22,7 @@ spells:
 trap: "Each mirror image channels its own Felstorm, and each channel is interruptible. Spread the kicks across them rather than piling onto one."
 ---
 
-The copies [Kystia](#/d/murder-row/map/mob/234648) creates with **Mirror Images**, tracked by MDT
+The copies [Kystia](#/d/murder-row/codex/mob/234648) creates with **Mirror Images**, tracked by MDT
 as their own NPC with 5.4 million health.
 
 **Felstorm** is only 10k a second per image — modest until several are channelling together,

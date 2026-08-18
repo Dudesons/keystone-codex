@@ -23,9 +23,9 @@ spells:
 trap: "Break the eggs before they hatch. A Toxic Viper or Storm Serpent is far more work than the egg was."
 ---
 
-The eggs in [Merektha](#/d/temple-of-sethraliss/map/mob/133384)'s chamber, and the source of the
-[Toxic Vipers](#/d/temple-of-sethraliss/map/mob/134389) and
-[Storm Serpents](#/d/temple-of-sethraliss/map/mob/134390).
+The eggs in [Merektha](#/d/temple-of-sethraliss/codex/mob/133384)'s chamber, and the source of the
+[Toxic Vipers](#/d/temple-of-sethraliss/codex/mob/134389) and
+[Storm Serpents](#/d/temple-of-sethraliss/codex/mob/134390).
 
 The trade is the usual one for spawners: an egg costs a few globals, a snake costs a fight.
 

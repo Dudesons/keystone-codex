@@ -19,7 +19,7 @@ spells:
 trap: "The Bouncer role is what removes them. MDT also records the state as interruptible and soothable, which is worth knowing if the punting is not working."
 ---
 
-The troublemaker of the [Illicit Rain](#/d/murder-row/map/mob/263940) sequence. Belath's
+The troublemaker of the [Illicit Rain](#/d/murder-row/codex/mob/263940) sequence. Belath's
 description is clear about the intended handling: *punt rowdy patrons towards the exit to force
 them to leave*.
 

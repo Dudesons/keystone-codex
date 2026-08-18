@@ -50,7 +50,7 @@ Kystia's pet, and the switch the fight turns on.
 
 The loop is stated plainly across two tooltips: **Illicit Infusion** turns her hostile *while
 she is above 20% health*, and **Light Infusion** — cast once she is drained of fel — is what
-stuns [Kystia](#/d/murder-row/map/mob/234648) into **Chaotic Burst** at +115% damage taken.
+stuns [Kystia](#/d/murder-row/codex/mob/234648) into **Chaotic Burst** at +115% damage taken.
 
 So damage on Nibbles is not damage wasted on an add. It is the mechanic.
 

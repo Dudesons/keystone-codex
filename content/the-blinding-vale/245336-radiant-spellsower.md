@@ -39,7 +39,7 @@ Fourteen units at 7 forces each, and the mob whose interrupts need ranking. It h
 kickable casts**, and spending the interrupt on the wrong one is the mistake.
 
 **Frantic Blooming** comes first, and it is not a damage cast at all: eight seconds of channel
-that wakes every dormant [Lasher](#/d/the-blinding-vale/map/mob/245410) within 20 yards. The Vale
+that wakes every dormant [Lasher](#/d/the-blinding-vale/codex/mob/245410) within 20 yards. The Vale
 is full of them — 115 units — so a channel that finishes turns a measured pull into an
 unmeasured one.
 

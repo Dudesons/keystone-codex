@@ -24,7 +24,7 @@ spells:
 trap: "Fel Lightning stacks and never stops while the axe is on the ground. It is 1 million health of pure profit to clear."
 ---
 
-The axe [Xathuux](#/d/murder-row/map/mob/234647) leaves behind after an **Axe Toss**, with 1
+The axe [Xathuux](#/d/murder-row/codex/mob/234647) leaves behind after an **Axe Toss**, with 1
 million health.
 
 **Fel Lightning** is 5k a second to every player, at any range, **stacking**. Per tick it is

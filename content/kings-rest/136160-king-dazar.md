@@ -86,7 +86,7 @@ trap: "Gilded Destruction is not just party damage — it empowers his melee int
 ---
 
 The last fight in King's Rest, fought alongside his mount
-[T'zala](#/d/kings-rest/map/mob/136976), and it has two states.
+[T'zala](#/d/kings-rest/codex/mob/136976), and it has two states.
 
 Before **Gilded Destruction**, the tank handles **Blade Combo** — a chain of strikes with
 increasing damage, so the danger is at the end of the sequence rather than the start — while

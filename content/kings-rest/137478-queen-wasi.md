@@ -30,7 +30,7 @@ trap: "Bind Soul turns a player against the group for ten seconds. It is kickabl
 ---
 
 The casting half of the royal pair, sharing a health pool with
-[King Timalji](#/d/kings-rest/map/mob/137474) through **Eternal Bond**.
+[King Timalji](#/d/kings-rest/codex/mob/137474) through **Eternal Bond**.
 
 **Bind Soul** is the reason her side of the fight needs attention. A charmed player is not
 merely absent — they are attacking their own group, for ten seconds, in a fight that already

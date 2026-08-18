@@ -23,8 +23,8 @@ trap:
 ---
 
 A stalker — one of the invisible units encounter scripting attaches effects to. It is where
-[Charonus](#/d/voidscar-arena/map/mob/239167)'s singularities are anchored, not something anyone
+[Charonus](#/d/voidscar-arena/codex/mob/239167)'s singularities are anchored, not something anyone
 fights.
 
 It has a card because MDT places it on the map. The mechanic it carries is described on the
-boss's entry, and on the [Gravitic Orb](#/d/voidscar-arena/map/mob/255001)'s.
+boss's entry, and on the [Gravitic Orb](#/d/voidscar-arena/codex/mob/255001)'s.

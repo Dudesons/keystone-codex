@@ -32,5 +32,5 @@ adds 39k to its swings and that is the whole of its offence.
 
 **Imprison** is worth a note only because it is easy to misread. The tooltip describes the
 *demon* being imprisoned — this is the ability that keeps the felhunter leashed, shared with
-[Felmaster Lucsei](#/d/murder-row/map/mob/236905), who is the one doing the imprisoning. It is not
+[Felmaster Lucsei](#/d/murder-row/codex/mob/236905), who is the one doing the imprisoning. It is not
 a crowd control aimed at the group.

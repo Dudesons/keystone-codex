@@ -55,7 +55,7 @@ trap: "Storm Blessed makes one of the pair immune, and it moves between them. Wa
 ---
 
 Half of the **Adderis and Aspix** encounter, alongside
-[Aspix](#/d/temple-of-sethraliss/map/mob/262822).
+[Aspix](#/d/temple-of-sethraliss/codex/mob/262822).
 
 **Storm Blessed** is the mechanic that defines it: the pair share an immunity to damage and
 *transfer it between themselves as they get injured*. So this is a target-swapping fight, and

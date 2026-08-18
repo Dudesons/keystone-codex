@@ -11,7 +11,7 @@ role: add
 trap: "0.4 million health against 10% of a pack's health every 2.5 seconds for thirty seconds. Killing it is never the wrong call."
 ---
 
-The [Spectral Shaman](#/d/kings-rest/map/mob/135239)'s totem. MDT carries **no spell list** for the
+The [Spectral Shaman](#/d/kings-rest/codex/mob/135239)'s totem. MDT carries **no spell list** for the
 totem itself — the healing is recorded on the shaman's cast, which is where the numbers are.
 
 What matters is on this side: 0.4 million health, thirty seconds of duration, and it dies to a

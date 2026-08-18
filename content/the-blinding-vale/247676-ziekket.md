@@ -88,7 +88,7 @@ Nothing removes those stacks. Miss orbs early and the boss is hitting harder for
 the fight while taking longer to kill.
 
 **Concentrated Lightbeam** is the fight's one piece of nuance in the group's favour: it
-liquifies any dormant [Lightspawn Lasher](#/d/the-blinding-vale/map/mob/247755) it crosses. That
+liquifies any dormant [Lightspawn Lasher](#/d/the-blinding-vale/codex/mob/247755) it crosses. That
 removes an add — but leaves **Lightsap** on the floor at 155k every 2 seconds, so it is a
 trade, not a free win.
 

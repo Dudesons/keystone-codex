@@ -23,7 +23,7 @@ spells:
 trap: "Range does not help and position does not help. The only answer is killing it."
 ---
 
-The [Enthralled Shaman](#/d/voidscar-arena/map/mob/241496)'s totem, and the same object that
+The [Enthralled Shaman](#/d/voidscar-arena/codex/mob/241496)'s totem, and the same object that
 appears in Den of Nal'orakk — MDT gives both dungeons the identical NPC.
 
 **Searing Magma** pulses to every player every 0.3 seconds with no range or position clause,

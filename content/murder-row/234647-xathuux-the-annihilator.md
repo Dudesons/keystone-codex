@@ -75,5 +75,5 @@ none of it can be healed through.
 he **takes 30% more damage** while it is up. It is an enrage the group should want.
 
 **Axe Toss** leaves his axe on the ground — tracked separately as
-[Legion Axe](#/d/murder-row/map/mob/235520) — and its 200-yard variant interrupts everyone near the
+[Legion Axe](#/d/murder-row/codex/mob/235520) — and its 200-yard variant interrupts everyone near the
 impact. **Burning Steps** means where he is tanked is a running decision.

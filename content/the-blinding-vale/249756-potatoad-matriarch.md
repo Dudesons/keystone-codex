@@ -43,7 +43,7 @@ A single unit worth 30 forces, and the one mob in the Vale that hands the group 
 actually beat.
 
 **Toadspawn** lays **Potadpole Eggs**, and each egg spends **ten seconds** casting *Hatch*
-before it becomes a [Newborn Potadpole](#/d/the-blinding-vale/map/mob/250202). Ten seconds is a
+before it becomes a [Newborn Potadpole](#/d/the-blinding-vale/codex/mob/250202). Ten seconds is a
 long time. Cleaving the eggs down costs almost nothing; letting them through means fighting
 the adds and their knockbacks on top of everything else.
 

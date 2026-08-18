@@ -23,7 +23,7 @@ spells:
 trap: "They do not expire quickly and they do not stay still. By the third cast the arena has several drifting through it — track them, or get knocked into the blizzard."
 ---
 
-The [Sentinel of Winter](#/d/den-of-nalorakk/map/mob/244100)'s wandering hazard, and the reason her
+The [Sentinel of Winter](#/d/den-of-nalorakk/codex/mob/244100)'s wandering hazard, and the reason her
 fight gets harder rather than staying level.
 
 Ninety seconds is longer than her cast cycle, so they accumulate. Each one hits for 145k and

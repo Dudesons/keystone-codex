@@ -65,8 +65,8 @@ long time at four players.
 
 Meanwhile the floor is filling with **Burning Ground** from Burn Corruption at 145k a second,
 **Awakening Slam** is opening crypts to release
-[Half-Finished Mummies](#/d/kings-rest/map/mob/270502) whose party-wide disease must be kicked, and
-**Command Constructs** is sending [Interment Constructs](#/d/kings-rest/map/mob/137969) to embalm
+[Half-Finished Mummies](#/d/kings-rest/codex/mob/270502) whose party-wide disease must be kicked, and
+**Command Constructs** is sending [Interment Constructs](#/d/kings-rest/codex/mob/137969) to embalm
 whoever is left.
 
 Every mechanic in the fight subtracts a player or subtracts floor. Neither comes back.

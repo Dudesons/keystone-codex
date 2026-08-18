@@ -30,7 +30,7 @@ spells:
 trap: "Kill them before Ziekket reawakens them. A reawakened lasher cannot be kicked or controlled at all — the interrupt only works once."
 ---
 
-[Ziekket](#/d/the-blinding-vale/map/mob/247676)'s adds, and the reason his cast timer matters.
+[Ziekket](#/d/the-blinding-vale/codex/mob/247676)'s adds, and the reason his cast timer matters.
 
 On their first life they are ordinary: **Lightspore Shot** is a modest cast and it can be
 interrupted. **Awaken the Lightbloom** revives the dormant ones with **Vicious Regrowth**, and

@@ -24,8 +24,8 @@ spells:
 trap: "They hunt the healer during the Avatar fight, stripping 5% of healing per hit. In an encounter built on surviving Corruption stacks, that is the wrong thing to ignore."
 ---
 
-Four of the [trash Tormentors](#/d/temple-of-sethraliss/map/mob/268317) inside the
-[Avatar](#/d/temple-of-sethraliss/map/mob/133392) encounter, at 0.5 million health each.
+Four of the [trash Tormentors](#/d/temple-of-sethraliss/codex/mob/268317) inside the
+[Avatar](#/d/temple-of-sethraliss/codex/mob/133392) encounter, at 0.5 million health each.
 
 They do the same thing — fixate the healer, take 5% of their healing per strike, stacking — and
 the timing makes it worse. The Avatar fight asks a player to carry **Corruption** at +300%

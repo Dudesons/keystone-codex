@@ -41,5 +41,5 @@ than fought.
 **Scouring Sand** is a 4.5-second frontal for 291k plus a **4-second disorient**, and the
 disorient is the dangerous half: a disoriented player cannot walk out of the next one.
 
-**Swarming Krolusks** adds bodies. The [Dutiful Tamer](#/d/temple-of-sethraliss/map/mob/139422)
+**Swarming Krolusks** adds bodies. The [Dutiful Tamer](#/d/temple-of-sethraliss/codex/mob/139422)
 casts the same summon.

@@ -22,8 +22,8 @@ Nineteen units at 5 forces each, and one instant ability with no counterplay of 
 
 **Shred Defense** raises the target's damage taken by 20% for 10 seconds. On its own that is
 nothing. In a dungeon where the neighbours are hitting for 679k
-([Agitated Voidscythe](#/d/voidscar-arena/map/mob/263228)) and 873k
-([Watchful Harrower](#/d/voidscar-arena/map/mob/245950)), 20% is a large number attached to
+([Agitated Voidscythe](#/d/voidscar-arena/codex/mob/263228)) and 873k
+([Watchful Harrower](#/d/voidscar-arena/codex/mob/245950)), 20% is a large number attached to
 someone else's cast.
 
 Which is why it belongs in the pull order rather than in the tank's reaction list.

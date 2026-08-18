@@ -19,7 +19,7 @@ trap: "Back to Work! triples the attack speed of every Warehouse Worker nearby f
 ---
 
 Two units at 7 forces each, with one cast — and that cast is +200% attack speed on the
-[Warehouse Workers](#/d/murder-row/map/mob/236893) around it.
+[Warehouse Workers](#/d/murder-row/codex/mob/236893) around it.
 
 Twenty seconds of a pack swinging three times as fast is more damage than anything the
 Taskmaster could do itself. MDT flags it as an **enrage**, so a soothe removes it outright,

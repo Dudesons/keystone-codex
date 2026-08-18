@@ -25,7 +25,7 @@ spells:
 trap: "Every Storm Catalyst leaves a pool. Merektha's chamber is sealed — there is nowhere to retreat to when it fills up."
 ---
 
-The other snake from [Merektha](#/d/temple-of-sethraliss/map/mob/133384)'s eggs, at 3 million
+The other snake from [Merektha](#/d/temple-of-sethraliss/codex/mob/133384)'s eggs, at 3 million
 health.
 
 **Storm Catalyst** matters more for what it leaves than for the 291k: **Lingering Storm** pools

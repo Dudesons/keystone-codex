@@ -32,7 +32,7 @@ trap:
 ---
 
 A single unit, distinguished from the
-[common Keen-Eyed Striker](#/d/den-of-nalorakk/map/mob/241816) by two abilities the others do not
+[common Keen-Eyed Striker](#/d/den-of-nalorakk/codex/mob/241816) by two abilities the others do not
 have: **Greater Invisibility** and **Scavenge**.
 
 Neither is dangerous. Together they describe a bird that disappears, reappears and flies off

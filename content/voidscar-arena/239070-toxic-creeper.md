@@ -30,7 +30,7 @@ trap: "Sickening Bite lasts five minutes and stacks. Two bites and the whole fig
 ---
 
 Worth no forces and 0.9 million health, and the most dangerous thing in the
-[Atroxus](#/d/voidscar-arena/map/mob/239008) encounter.
+[Atroxus](#/d/voidscar-arena/codex/mob/239008) encounter.
 
 **Sickening Bite** raises Nature damage taken by 50% for **five minutes**, and it stacks.
 Everything Atroxus does is Nature. A five-minute debuff in a fight that will not last five

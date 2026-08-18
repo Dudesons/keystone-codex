@@ -50,6 +50,6 @@ Ranged players who assume distance keeps them safe are exactly the ones it hits.
 **Blade Dance** is three strikes across 1.2 seconds hitting everyone — brief enough that it is
 healed rather than avoided.
 
-Two of his spells are about the [Trained Felhunters](#/d/murder-row/map/mob/235261) rather than the
+Two of his spells are about the [Trained Felhunters](#/d/murder-row/codex/mob/235261) rather than the
 group: **Imprison** keeps them leashed, and **Release Demon** carries no tooltip text at all,
 so what it does is not established here.

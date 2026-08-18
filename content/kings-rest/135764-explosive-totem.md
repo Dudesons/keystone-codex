@@ -23,7 +23,7 @@ spells:
 trap: "Nine seconds, 0.4 million health, 397k to everyone if it finishes. This is the first totem to die, every time."
 ---
 
-The one of [Zanazal](#/d/kings-rest/map/mob/269810)'s three totems that ends runs.
+The one of [Zanazal](#/d/kings-rest/codex/mob/269810)'s three totems that ends runs.
 
 The numbers make the priority obvious: 0.4 million health against 397k party-wide damage, on a
 nine-second timer. Compared with the Disruption Totem's four-second lockout and the Torrent

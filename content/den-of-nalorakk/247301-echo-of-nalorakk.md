@@ -32,7 +32,7 @@ spells:
 trap: "Every Echo left standing charges again on the next Fury of the War God. They are not a phase — they are a growing count."
 ---
 
-Left behind by [Nalorakk](#/d/den-of-nalorakk/map/mob/246404)'s **Echoing Maul**, and the reason
+Left behind by [Nalorakk](#/d/den-of-nalorakk/codex/mob/246404)'s **Echoing Maul**, and the reason
 the fight escalates.
 
 An Echo does not vanish when it has charged. The tooltip is specific: each one *remains for

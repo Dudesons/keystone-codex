@@ -57,7 +57,7 @@ spells:
 trap: "Chaotic Burst is a 20-second window at +115% damage taken. Everything the group has goes there — the rest of the fight is about reaching it."
 ---
 
-A two-part fight with [Nibbles](#/d/murder-row/map/mob/234660), and the pair run a loop.
+A two-part fight with [Nibbles](#/d/murder-row/codex/mob/234660), and the pair run a loop.
 
 **Illicit Infusion** fills Nibbles with fel and turns her hostile. Drained of it, she reverts
 to her light form and casts **Light Infusion** back at Kystia — which triggers
@@ -69,4 +69,4 @@ available, as often as possible.
 
 In between, **Fel Nova** teleports to a player before exploding, **Chaos Barrage** chains off
 the tank, and **Mirror Images** puts up copies whose
-[Felstorm channels](#/d/murder-row/map/mob/255050) can be interrupted.
+[Felstorm channels](#/d/murder-row/codex/mob/255050) can be interrupted.

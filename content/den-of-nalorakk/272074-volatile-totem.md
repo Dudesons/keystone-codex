@@ -19,7 +19,7 @@ spells:
 trap: "Unlimited range means backing off does nothing. It is 0.7 million health — kill it rather than out-heal it."
 ---
 
-[Loa Speaker Nanea](#/d/den-of-nalorakk/map/mob/244889) plants several of these at a time.
+[Loa Speaker Nanea](#/d/den-of-nalorakk/codex/mob/244889) plants several of these at a time.
 
 **Volatile Flames** has no range limit, so the usual answer to ground damage — move away —
 does not apply. With 0.7 million health each, killing them is quick; the mistake is treating

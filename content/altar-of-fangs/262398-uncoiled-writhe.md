@@ -39,7 +39,7 @@ spells:
 trap:
 ---
 
-The snakes [The Writhing Coil](#/d/altar-of-fangs/map/mob/259446) breaks apart into. Worth no
+The snakes [The Writhing Coil](#/d/altar-of-fangs/codex/mob/259446) breaks apart into. Worth no
 forces, and they reassemble into the boss through **Assimilation**.
 
 **Toxic Atrophy** is the interrupt that matters: -20% damage and -20% movement on the whole

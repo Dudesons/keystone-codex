@@ -35,6 +35,6 @@ gets progressively worse.
 
 Method's tracker names two abilities MDT does not carry — **Lightning Spire** and
 **Consume Charge**. Both are recorded here rather than written into the spell list, and MDT
-does place a [Lightning Spire](#/d/temple-of-sethraliss/map/mob/135445) unit with 21.6 million
+does place a [Lightning Spire](#/d/temple-of-sethraliss/codex/mob/135445) unit with 21.6 million
 health in the dungeon, which suggests the mechanic exists and its spell simply was not
 extracted.
