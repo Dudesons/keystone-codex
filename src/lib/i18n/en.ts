@@ -102,6 +102,8 @@ export const en = {
   'map.item': 'usable item',
   'map.dungeonEntrance': 'Dungeon entrance',
   'map.note': 'note',
+  'map.share': 'of the dungeon',
+  'map.score': 'efficiency',
   'legend.pips': 'PIPS',
   'legend.ring': 'RING',
   'legend.kick': 'Spell to interrupt (from MDT)',

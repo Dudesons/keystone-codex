@@ -103,6 +103,8 @@ export const fr: Dictionary = {
   'map.item': 'objet utilisable',
   'map.dungeonEntrance': 'Entrée du donjon',
   'map.note': 'note',
+  'map.share': 'du donjon',
+  'map.score': 'efficacité',
   'legend.pips': 'PASTILLES',
   'legend.ring': 'ANNEAU',
   'legend.kick': 'Sort à interrompre (source MDT)',

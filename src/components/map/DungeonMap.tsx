@@ -10,6 +10,7 @@ import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
 import type { MdtNote, MdtObject, MdtStroke } from '../../lib/mdt/objects'
+import MobStats from '../codex/MobStats'
 import NoteLayer from './NoteLayer'
 import ObjectLayer from './ObjectLayer'
 import PeerCursors from './PeerCursors'
@@ -571,7 +572,7 @@ function CloneTooltip({
   lookup: DungeonLookup
   cloneKeyStr: string
 }) {
-  const { t, plural, locale } = useI18n()
+  const { t, locale } = useI18n()
   const entry = lookup.cloneByKey.get(cloneKeyStr)
   if (!entry) return null
   const { enemy, clone } = entry
@@ -584,9 +585,9 @@ function CloneTooltip({
         <span className="font-semibold text-ink-100">{enemy.name}</span>
         {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
       </div>
+      <MobStats enemy={enemy} dungeon={lookup.dungeon} />
       <div className="mt-0.5 text-xs text-ink-400">
-        {enemy.count > 0 ? plural('common.forces', enemy.count) : t('common.noForce')}
-        {pack && ` · ${t('map.pack', { g: pack.g, n: pack.count })}`}
+        {pack && t('map.pack', { g: pack.g, n: pack.count })}
         {clone.patrol?.length ? ` · ${t('map.patrol')}` : ''}
       </div>
       {(ind.kick || ind.tankBuster || ind.dispel.length) && (
