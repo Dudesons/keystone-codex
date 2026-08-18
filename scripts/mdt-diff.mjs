@@ -12,6 +12,9 @@
 
 const META_FIELDS = ['mdtIndex', 'mapID', 'teleportId', 'totalCount', 'sublevelCount', 'englishName']
 
+/** The per-mob scalar fields diffOneMob compares directly, field by field. */
+const MOB_SCALAR_FIELDS = ['count', 'health', 'level', 'isBoss', 'scale']
+
 const finding = (f) => ({ severity: 6, ...f })
 
 /** Set difference on ids, order-independent and hole-tolerant. */
@@ -47,7 +50,7 @@ function diffOneMob(slug, before, after) {
     out.push(finding({ dungeon: slug, subject, what: `is now subject to ${cc}` }))
   }
 
-  for (const field of ['count', 'health', 'level', 'isBoss']) {
+  for (const field of MOB_SCALAR_FIELDS) {
     if (before[field] !== after[field]) {
       out.push(finding({
         dungeon: slug,

@@ -5,10 +5,14 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { diffDungeon, diffSpells } from './mdt-diff.mjs'
+import { parseDungeon } from './mdt-dungeon.mjs'
 import realSpells from '../src/data/generated/spells.json'
 
 const read = (name) =>
   JSON.parse(fs.readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8'))
+
+const readText = (name) =>
+  fs.readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8')
 
 /** Two real versions of the same dungeon: 11 mobs lost spell 1221063 between them. */
 const withAffix = read('altar-of-fangs.with-affix.json')
@@ -88,6 +92,50 @@ describe('diffDungeon', () => {
     expect(findings).toHaveLength(1)
     expect(findings[0].what).toContain('new dungeon')
     expect(findings[0].severity).toBe(4)
+  })
+})
+
+/**
+ * MDT 6.2.2 -> 6.2.3 touched only one dungeon of the season pool, The Blinding Vale, and only
+ * two ways: clone x/y jitter from MDT recapturing positions (which diffDungeon must stay blind
+ * to), and enemy `scale`. This is the first real update these fixtures pin the differ against,
+ * so the mob-scalar loop's coverage is checked against real data instead of a constructed one.
+ *
+ * The other seven dungeons in the season pool are byte-identical between these two versions
+ * (checked by hand, with line endings normalised) and are not exercised by this pair at all:
+ * nothing here says anything about them.
+ */
+describe('diffDungeon over two real MDT versions', () => {
+  const warnings = []
+  const onWarn = (message) => warnings.push(message)
+  const blindingVale622 = parseDungeon(
+    readText('TheBlindingVale-6.2.2.lua'), 'TheBlindingVale-6.2.2.lua', onWarn,
+  )
+  const blindingVale623 = parseDungeon(
+    readText('TheBlindingVale-6.2.3.lua'), 'TheBlindingVale-6.2.3.lua', onWarn,
+  )
+
+  it('parses both fixtures without warning', () => {
+    expect(warnings).toEqual([])
+  })
+
+  it('reports every changed scale', () => {
+    const findings = diffDungeon(blindingVale622, blindingVale623)
+    const scaleChanges = findings.filter((f) => f.what === 'scale changed')
+    expect(scaleChanges).toHaveLength(21)
+    expect(scaleChanges.every((f) => f.severity === 6)).toBe(true)
+
+    const meittik = scaleChanges.find((f) => f.subject === '243028 Meittik')
+    expect(meittik).toBeDefined()
+    expect(meittik.detail).toBe('1 -> 1.5')
+  })
+
+  it('never surfaces a coordinate, on the pair whose diff is mostly coordinates', () => {
+    // Clone x/y jitter on every recapture is the bulk of what actually changed between these
+    // two real versions, which makes this the strongest version of the guarantee: two real
+    // consecutive MDT exports, mostly coordinate churn, must produce not one float from it.
+    const serialised = JSON.stringify(diffDungeon(blindingVale622, blindingVale623))
+    expect(serialised).not.toMatch(/\d+\.\d{6}/)
   })
 })
 
