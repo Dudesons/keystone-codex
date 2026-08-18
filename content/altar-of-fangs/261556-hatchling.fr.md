@@ -9,5 +9,5 @@ spells:
     note: "Se fixe sur un joueur au hasard. Il ne change pas de cible : il faut le tuer ou le distancer."
 ---
 
-Il vaut zéro force : il sort des [Oeufs imprégnés](#/d/altar-of-fangs/mob/264798) au lieu d'être
+Il vaut zéro force : il sort des [Oeufs imprégnés](#/d/altar-of-fangs/codex/mob/264798) au lieu d'être
 pull, donc le tuer ne fait avancer que la survie du joueur fixé.

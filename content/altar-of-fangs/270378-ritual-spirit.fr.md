@@ -9,6 +9,6 @@ spells:
     note: "87k physique et absorption des 180k soins suivants — la même incantation que celle du Chef du rituel."
 ---
 
-L'esprit que le [Chef du rituel](#/d/altar-of-fangs/mob/270306) invoque. Il ne vaut aucune
-force, mais il porte l'absorption de soins qui rend le Dismember du chef létal : c'est le même
+L'esprit que le [Chef du rituel](#/d/altar-of-fangs/codex/mob/270306) invoque. Il ne vaut aucune
+force, mais il porte l'absorption de soins qui rend le Démembrer du chef létal : c'est le même
 problème qui arrive sur un second corps.

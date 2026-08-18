@@ -8,7 +8,7 @@ spells:
   - id: 1295055
     note: "291k Nature dans les 6 mètres de chaque impact, puis les toxines s'élèvent en Virulent Twisters."
   - id: 1309415
-    note: "34k Nature toutes les 0,3 s — ce que Virulent Whirl laisse derrière lui."
+    note: "34k Nature toutes les 0,3 s — ce que Tourbillon virulent laisse derrière lui."
   - id: 1294934
     note: "Frontal sur sa cible : 68k Nature par seconde pendant 5 s."
   - id: 1308864
@@ -21,5 +21,5 @@ Trente forces pour une seule unité, la plus grosse contribution d'un seul corps
 avec la panoplie qui va avec : un frontal sur le tank, un tourbillon à 291k qui laisse des
 twisters derrière lui, et un DoT qui éclate à l'expiration.
 
-**Evolution Ritual** le rend inciblable et immunisé le temps de sa durée : les dégâts dépensés
+**Rituel d’évolution** le rend inciblable et immunisé le temps de sa durée : les dégâts dépensés
 dessus pendant cette fenêtre sont jetés.

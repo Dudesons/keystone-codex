@@ -11,6 +11,7 @@ afterEach(cleanup)
 import type { Enemy } from '../../lib/types'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
+import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
 import { renderEn, renderFr } from '../../test/render'
 import MobCard from './MobCard'
 
@@ -162,6 +163,68 @@ describe('The trap', () => {
   it('shows no trap block when nothing is written', () => {
     renderEn(<MobCard slug="dungeon-without-content" enemy={unknown} />)
     expect(screen.queryByText('THE TRAP')).toBeNull()
+  })
+})
+
+/**
+ * The base-language mark, on the one entry guaranteed to keep needing it.
+ *
+ * `__fixtures__` is no dungeon in the pool, so there is no lookup to take a mob out of — which
+ * is the point. The real cards get translated; the fixture stays half translated on purpose,
+ * and it is what keeps this behaviour covered afterwards. The mark's text is read out of
+ * `DEFAULT_LOCALE` rather than typed, so it follows the base language instead of asserting it.
+ */
+describe('Text still in the base language', () => {
+  const FIXTURES = '__fixtures__'
+  const MARK = DEFAULT_LOCALE.toUpperCase()
+
+  /** The partially translated fixture entry, as an Enemy of the real shape. */
+  const halfTranslated: Enemy = {
+    mdtIdx: 1,
+    id: 263_109,
+    name: "Ula'tek's Chosen",
+    count: 25,
+    health: 1000,
+    level: 80,
+    scale: 1,
+    cc: [],
+    spells: [{ id: 1_307_567 }, { id: 1_306_852 }, { id: 1_306_853 }],
+    clones: [{ mdtIdx: 1, x: 0, y: 0, g: null, sublevel: 1 }],
+  }
+
+  const markedRow = (container: HTMLElement, spellId: number) =>
+    container.querySelector(`[data-spell="${spellId}"]`)!.textContent!.includes(MARK)
+
+  it('marks the note the translation has not reached, and leaves the translated one alone', () => {
+    const { container } = renderFr(<MobCard slug={FIXTURES} enemy={halfTranslated} />)
+    // The fixture translates 1307567's note and not 1306852's.
+    expect(markedRow(container, 1_306_852)).toBe(true)
+    expect(markedRow(container, 1_307_567)).toBe(false)
+  })
+
+  it('leaves a spell with no written note unmarked: its description is already localized', () => {
+    // Nothing of ours is being served in the wrong language — the row shows Wowhead's French.
+    const { container } = renderFr(<MobCard slug={FIXTURES} enemy={halfTranslated} />)
+    expect(markedRow(container, 1_306_853)).toBe(false)
+  })
+
+  it('marks the untranslated prose and spares the translated trap', () => {
+    const { container } = renderFr(<MobCard slug={FIXTURES} enemy={halfTranslated} />)
+    // Two marks and no more: the untranslated note and the untranslated prose. The trap is
+    // translated, and counting proves it carries none without having to select its block.
+    expect(screen.queryAllByText(MARK)).toHaveLength(2)
+    expect(container.querySelector('.prose-codex')).not.toBeNull()
+    expect(container.querySelector('.border-threat-lethal')!.textContent).not.toContain(MARK)
+  })
+
+  it('marks nothing at all for a reader of the base language', () => {
+    renderEn(<MobCard slug={FIXTURES} enemy={halfTranslated} />)
+    expect(screen.queryAllByText(MARK)).toHaveLength(0)
+  })
+
+  it('marks nothing on an entry translated all the way through', () => {
+    renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(screen.queryAllByText(MARK)).toHaveLength(0)
   })
 })
 

@@ -117,6 +117,46 @@ from the base, which preserves the "a mob with no entry still renders" invariant
 `.fr.md` are the reference pair, and serve as the fixture for
 [content.test.ts](../../../src/lib/content.test.ts).
 
+### The fallback says so on screen
+
+`MobContent` carries a `fallback: MobFallback` naming which of `trap`, `prose` and the spell
+notes resolved out of the base rather than out of the translation, and `MobCard` marks each one
+with the base locale's own code — `EN`, from `DEFAULT_LOCALE`, not the word "English".
+
+It exists because of the **spell note specifically**. A row shows our note *instead of*
+Wowhead's description, so an untranslated note hides a French description that was already
+there. The note stays anyway — it is a judgement about the pull, the description is a tooltip —
+and the mark is what stops that being a silent swap. Conditioned on the note actually being
+what the row shows: a compact row hides notes, and a row showing only the description is
+already in the reader's language.
+
+`fallbackOf` mirrors the expressions that picked each value, so the two cannot disagree. A
+missing `.fr.md` and a `.fr.md` that omits the field are the same condition — `?.` collapses
+them, and there is no second branch to cover. A field empty on both sides is not a fallback.
+
+### Two sweeps guard the French entries, and both need the fixtures
+
+[content.test.ts](../../../src/lib/content.test.ts) sweeps all of `content/` for two failures
+that are invisible in review:
+
+- **Cross-links.** `marked` emits the href verbatim, so `#/d/<slug>/mob/<npcId>` is not a
+  degraded link — no route serves it and the catch-all sends the reader home. The sweep checks
+  the shape *and* that the target mob is in that dungeon.
+- **Spell names.** A French sentence naming a spell in English disagrees with the row printed
+  beside it. The sweep reads **emphasised spans**, not any occurrence: naming a spell in
+  emphasis is the house style, and it is the only unit that can be checked without flagging the
+  `Disruption` inside `Essence Disruption` — a name from Method's guide that `spells.json` does
+  not carry, so it stays English on purpose. It also **skips fields still falling back**, which
+  is only possible because of `fallback` above.
+
+Both sweeps, and the fallback tests, take their subjects from `content/__fixtures__/` rather
+than from the pool. The subjects used to be *found* by scanning for content nobody had
+translated, which works only while the translation is unfinished — the one thing it is meant to
+stop being. `263109-*` there is a written base with a deliberately half-finished `.fr.md` (trap
+translated, one of two notes translated, no prose), and `_dungeon.md` is a plan with no
+translation. **Keep them partial.** `270306-ritual-chieftain.md` in the same folder is a
+different fixture — the untouched scaffold stub, byte-checked by `content-stub.test.mjs`.
+
 ### A closed frontmatter vocabulary gets keys; free text does not
 
 `threat` and `role` are both written by hand in the frontmatter, and both come from a fixed

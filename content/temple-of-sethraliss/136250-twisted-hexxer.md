@@ -53,4 +53,4 @@ everyone within 10 yards *on removal*. The carrier chooses whether that lands on
 **Flame Shock** is the interruptible cast, and worth about 860k if it runs.
 
 A version of this mob also appears during the
-[Avatar of Sethraliss](#/d/temple-of-sethraliss/codex/mob/268491).
+[Avatar of Sethraliss](#/d/temple-of-sethraliss/codex/mob/133392).

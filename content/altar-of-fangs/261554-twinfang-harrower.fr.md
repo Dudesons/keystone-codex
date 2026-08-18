@@ -23,6 +23,6 @@ trap: "**Bifrappe** est un vrai tank buster sur un mob qui a l'air d'être du tr
 Vingt-cinq forces par unité pour quatre unités — il est tarifé comme un miniboss et il frappe
 comme un miniboss, d'où son classement.
 
-**Paralyzing Shots** dure vingt secondes et retire 10 % de vitesse de déplacement à chaque
-tick : mieux vaut le nettoyer avant que **Toxic Breath** ne parte. Un joueur ralenti dans un
+**Tirs paralysants** durent vingt secondes et retire 10 % de vitesse de déplacement à chaque
+tick : mieux vaut les nettoyer avant que **Souffle toxique** ne parte. Un joueur ralenti dans un
 frontal qui tape 68k toutes les demi-secondes, c'est comme ça que ce pack tourne mal.
