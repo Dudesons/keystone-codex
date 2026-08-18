@@ -100,6 +100,26 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
   `npm run build:maps`; the report names this, but only running the command fixes it.
 - **CI runs no extraction.** The generated files and the rebuilt maps have to be committed, or
   the live site does not move.
+- **`npm run build:maps` re-encodes every map, and the output is not byte-stable.** On one real
+  run, six of the eight committed WebPs came out a few dozen bytes different even though only
+  one dungeon's data had changed and the report named no `textureFolder` finding. That is
+  encoder variance, not new artwork — nothing about the encoder promises the same tiles produce
+  the same bytes twice. The report, not the file size, is what tells you a map genuinely needs
+  rebuilding: a real tile change moves a WebP's size substantially, encoder variance moves it by
+  tens of bytes. `git checkout -- public/maps/` discards the noise before it is mistaken for a
+  change and committed as one.
+- **`npm run fetch:assets` prints an "Unresolved spells" line, and it must be read.** On one real
+  run it read `Unresolved spells (rendered with their raw ID): 1300666` — one spell Wowhead has
+  no page for, which the site then renders as a bare number. That particular id was pre-existing,
+  from a dungeon the update did not touch, but a **newly** unresolved id means a label the site
+  is now missing, and nothing else in this procedure surfaces it. Compare the line against what
+  the run before it said.
+- **Do not try to read the `.lua` diff yourself.** Coordinate floats drown the real change, and a
+  naive line-by-line diff silently hides a changed scalar whose new value occurs anywhere else in
+  the file — `["count"] = 0,` exists for dozens of other mobs, so six bosses losing thirty forces
+  each was invisible to it on a real run. The semantic differ compares mob by mob, by id, and is
+  the only thing here that can be trusted with this question. Run the report; do not eyeball the
+  addon.
 - **A game patch can require refreshing the codec fixture**,
   `src/lib/mdt/__fixtures__/real-export.txt`. It is patched in place by
   `scripts/patch-fixture-name.mjs`, never re-encoded from scratch — re-encoding it with our own
