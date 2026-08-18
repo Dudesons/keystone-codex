@@ -137,3 +137,44 @@ describe('Following the map', () => {
     expect(container.textContent).toContain('BOSSES')
   })
 })
+
+/**
+ * A chip on the briefing links to `…/codex/mob/<npc>#spell-<id>`. The browser cannot act on
+ * that fragment — under a hash router the whole route already lives in the document's one
+ * fragment — so the panel is what brings the named row into view.
+ */
+describe('Landing on a spell', () => {
+  /** Records which elements were scrolled, in place of the `beforeAll` no-op stub. */
+  function recordScrolls(run: () => HTMLElement) {
+    const scrolled: Element[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function () {
+      scrolled.push(this as Element)
+    }
+    try {
+      return { container: run(), scrolled }
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  }
+
+  it('scrolls to the named spell inside the selected mob', () => {
+    const { container, scrolled } = recordScrolls(
+      () =>
+        renderEn(<CodexPanel {...props({ selectedMob: 261554, focusSpell: 1294572 })} />)
+          .container,
+    )
+    const row = container.querySelector('[data-spell="1294572"]')
+    expect(row).not.toBeNull()
+    expect(scrolled).toContain(row)
+  })
+
+  it('scrolls nothing when the spell is not on the card', () => {
+    const { scrolled } = recordScrolls(
+      () =>
+        renderEn(<CodexPanel {...props({ selectedMob: 261554, focusSpell: 999_999 })} />)
+          .container,
+    )
+    expect(scrolled).toEqual([])
+  })
+})

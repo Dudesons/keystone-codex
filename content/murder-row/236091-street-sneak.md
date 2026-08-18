@@ -35,4 +35,4 @@ applies 194k of poison damage *and removes 5% of maximum health*, stacking. The 
 component is the dangerous half, because nothing on screen indicates it beyond the debuff
 itself.
 
-[Zaen Bladesorrow](#/d/murder-row/mob/234649) uses the same poison, at 30% per application.
+[Zaen Bladesorrow](#/d/murder-row/codex/mob/234649) uses the same poison, at 30% per application.

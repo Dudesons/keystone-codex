@@ -2,46 +2,36 @@
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import DungeonHeader from '../components/DungeonHeader'
+import UnknownDungeon from '../components/UnknownDungeon'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
 import { cloneKey, getLookup } from '../lib/data'
-import { getDungeonContent } from '../lib/content'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
-import LocaleSwitcher from '../components/LocaleSwitcher'
 import type { CloneRef } from '../lib/types'
 
 type Mode = 'codex' | 'route'
 
-export default function DungeonPage() {
+export default function DungeonPage({ mode }: { mode: Mode }) {
   const { slug = '', npcId } = useParams()
-  const { t } = useI18n()
   const lookup = getLookup(slug)
 
-  if (!lookup) {
-    return (
-      <div className="p-8">
-        <p className="text-ink-300">{t('dungeon.unknown')}</p>
-        <Link to="/" className="text-gold-400 hover:underline">
-          {t('dungeon.backHome')}
-        </Link>
-      </div>
-    )
-  }
+  if (!lookup) return <UnknownDungeon />
 
   // The key forces a full remount when the dungeon changes: the route document and the
   // selections start from scratch, with no state left over from one dungeon to the next.
-  return <DungeonView key={slug} slug={slug} npcId={npcId} />
+  return <DungeonView key={slug} slug={slug} npcId={npcId} mode={mode} />
 }
 
-function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
+function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode: Mode }) {
   const navigate = useNavigate()
-  const { t, plural, locale } = useI18n()
+  const { t } = useI18n()
   const lookup = getLookup(slug)!
 
   // The room a join link carries. `?room=` stays in the URL after arrival, so a reload offers
@@ -55,16 +45,17 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const room = searchParams.get('room')
   const pendingRoom = room && room !== declined ? room : null
 
-  const [mode, setMode] = useState<Mode>(pendingRoom ? 'route' : 'codex')
-
-  // A join link pasted into a tab already on this dungeon only changes the hash, which does
-  // not remount `DungeonPage` — the `useState` above only seeds the initial mode. Reacting to
-  // `pendingRoom` here is what makes the invitation appear without a reload. It only ever
-  // turns route mode *on*: once `pendingRoom` stops changing, a reader who clicks back to
-  // Codex stays there.
+  // `mode` is which address you're on, not state — an invitation must still reach the route
+  // panel no matter which tab it arrived on, so a codex address carrying `?room=` redirects to
+  // the route one, keeping the room in the query. A join link pasted into a tab already on this
+  // dungeon only changes the hash, which does not remount `DungeonPage` — reacting to
+  // `pendingRoom` here is what makes the invitation appear without a reload. It only ever pushes
+  // you onto the route address: once there, choosing another tab is not undone by this effect.
   useEffect(() => {
-    if (pendingRoom) setMode('route')
-  }, [pendingRoom])
+    if (pendingRoom && mode !== 'route') {
+      navigate(`/d/${slug}/route?room=${pendingRoom}`, { replace: true })
+    }
+  }, [pendingRoom, mode, navigate, slug])
 
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
@@ -86,6 +77,11 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
 
   const selectedMob = npcId ? Number(npcId) : null
   const hasRoute = route.pulls.some((p) => p.clones.length > 0)
+
+  // A briefing chip links to `…/codex/mob/<npc>#spell-<id>`. Reading the fragment here rather
+  // than in the panel keeps the panel router-free, the same split as `selectedMob` above.
+  const { hash } = useLocation()
+  const focusSpell = Number(/^#spell-(\d+)$/.exec(hash)?.[1]) || null
 
   const pullMarks = useMemo(() => {
     const map = new Map<string, PullMark>()
@@ -167,7 +163,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         setSelectedPack(entry.clone.g ?? null)
         // The panel scrolls to the clicked unit rather than leaving you to look for it.
         setFocusNpc(entry.enemy.id)
-        if (selectedMob != null) navigate(`/d/${slug}`)
+        if (selectedMob != null) navigate(`/d/${slug}/codex`)
         return
       }
 
@@ -178,46 +174,20 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
-  const content = getDungeonContent(slug, locale)
-  const tab = (value: Mode, label: string) => (
-    <button
-      onClick={() => setMode(value)}
-      className={`rounded px-3 py-1 text-xs font-semibold transition ${
-        mode === value ? 'bg-gold-500/15 text-gold-400' : 'text-ink-400 hover:text-ink-100'
-      }`}
-    >
-      {label}
-    </button>
-  )
-
   return (
     <div className="flex h-full flex-col">
-      <header className="flex shrink-0 items-center gap-4 border-b border-ink-800 px-4 py-2.5">
-        <Link to="/" className="text-sm text-ink-400 hover:text-gold-400">
-          ←
-        </Link>
-        <div className="min-w-0">
-          <h1 className="truncate font-semibold text-ink-100">{lookup.dungeon.englishName}</h1>
-          <p className="text-[11px] text-ink-400">
-            {plural('common.forces', lookup.dungeon.totalCount)} ·{' '}
-            {plural('common.packs', lookup.packs.size)}
-            {content?.timer ? ` · ${t('common.minutes', { n: content.timer })}` : ''}
-            {hasRoute && ` · ${t('dungeon.route', { name: route.name })}`}
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {collab.status !== 'off' && (
-            <span className="rounded border border-threat-low/40 bg-threat-low/10 px-2 py-1 text-[11px] text-threat-low">
-              {collab.room} · {collab.peers.length}
-            </span>
-          )}
-          <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
-            {tab('codex', t('tab.codex'))}
-            {tab('route', t('tab.route'))}
-          </div>
-          <LocaleSwitcher />
-        </div>
-      </header>
+      <DungeonHeader
+        slug={slug}
+        lookup={lookup}
+        view={mode}
+        note={hasRoute ? t('dungeon.route', { name: route.name }) : undefined}
+      >
+        {collab.status !== 'off' && (
+          <span className="rounded border border-threat-low/40 bg-threat-low/10 px-2 py-1 text-[11px] text-threat-low">
+            {collab.room} · {collab.peers.length}
+          </span>
+        )}
+      </DungeonHeader>
 
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1">
@@ -255,10 +225,11 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               selectedPack={selectedPack}
               selectedMob={selectedMob}
               focusNpc={focusNpc}
+              focusSpell={focusSpell}
               pullByNpc={pullByNpc}
               onSelectMob={(id) => {
                 setFocusNpc(id)
-                navigate(id == null ? `/d/${slug}` : `/d/${slug}/mob/${id}`)
+                navigate(id == null ? `/d/${slug}/codex` : `/d/${slug}/codex/mob/${id}`)
               }}
               onHoverMob={setHoveredNpc}
               onClearSelection={() => {
@@ -277,9 +248,8 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               hoveredPull={hoveredPull}
               onHoverPull={setHoveredPull}
               onFocusMob={(id) => {
-                setMode('codex')
                 setFocusNpc(id)
-                navigate(`/d/${slug}/mob/${id}`)
+                navigate(`/d/${slug}/codex/mob/${id}`)
               }}
               collab={collab}
               onJoinRoom={joinRoom}

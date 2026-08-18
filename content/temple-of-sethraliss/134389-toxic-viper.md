@@ -20,7 +20,7 @@ trap:
 ---
 
 One of the snakes that emerge from the eggs during
-[Merektha](#/d/temple-of-sethraliss/mob/133384)'s **Hatch**, with 1.4 million health.
+[Merektha](#/d/temple-of-sethraliss/codex/mob/133384)'s **Hatch**, with 1.4 million health.
 
 **Poison Spit** is a four-second cast worth about 350k, and MDT flags it both interruptible and
 dispellable as a poison — generous, for an add.

@@ -22,9 +22,9 @@ trap: "It channels into the Avatar, not at the group. Nothing it does hurts anyo
 Two units of 4.3 million health each, and neither deals any damage.
 
 **Defiling Taint** channels dark energy into the
-[Avatar](#/d/temple-of-sethraliss/mob/133392), *preventing all external healing* on her. In an
+[Avatar](#/d/temple-of-sethraliss/codex/mob/133392), *preventing all external healing* on her. In an
 encounter where the Avatar heals herself by consuming
-[Lifeforce](#/d/temple-of-sethraliss/mob/268364), that is a mechanic pointed at the fight's own
+[Lifeforce](#/d/temple-of-sethraliss/codex/mob/268364), that is a mechanic pointed at the fight's own
 internal economy rather than at the players.
 
 It has no offensive ability at all, which is unusual enough to be worth stating plainly: the

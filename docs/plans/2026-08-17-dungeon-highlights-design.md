@@ -5,7 +5,7 @@ two screens — the spells to know, the traps, the bosses — before the map and
 ever loaded.
 
 **Why now:** the material already exists and nobody reads it in aggregate. The codex holds
-**419 spells marked `prio: 1`** across 226 mob files, **215 written `trap:` sentences**, plus
+**419 spells marked `prio: 1`** across 226 mob files, **214 written `trap:` sentences**, plus
 `threat`, `role` and the `tag` on every annotated spell. Today all of it is reachable only one
 mob at a time, through a 400px panel, after picking the right blip on a map. A derived page
 turns the same content into a briefing, and costs no new writing: filling in a mob card
@@ -43,9 +43,14 @@ through: `sessionLink()`
 `#/d/:slug?room=XXX`, which under the new table is the highlights page — a reading page with
 no route editor and nothing that reads `?room=`. It emits `#/d/:slug/map?room=XXX` instead.
 
-An invitation or a mob link sent before this change lands on `*` and goes home. That is
-accepted, not overlooked. **If this app ever ships a link people keep, the same move will
-need the redirect that is deliberately absent here.**
+A mob link sent before this change lands on `*` and goes home. That is accepted, not
+overlooked. An old **invitation** does not: `?room=` is a query string, which route matching
+never looks at, so `#/d/:slug?room=XXX` still matches `/d/:slug` and renders the highlights
+page — a page that does not read `room` at all. The invitee sees an ordinary briefing, with
+no join card and no error, and never learns the link was stale. That failure is silent and
+strictly worse than the mob link's `*`, and is accepted for the same reason: the app has no
+users yet. **If this app ever ships a link people keep, the same move will need the redirect
+that is deliberately absent here.**
 
 ### 2. The page is a briefing, not a copy of the guide
 
@@ -115,11 +120,15 @@ as a value to trust.
 So: order by `mdtIdx`, unless `_dungeon.md` declares `bosses: [npcId, npcId, …]`, which wins.
 Nothing has to be written for the page to work; one line makes King's Rest correct.
 
-### 5. Boss traps live on the boss card, not in the trap list
+### 5. A trap lives on its mob's card or row; the trap list covers only what is left
 
-The trap list covers non-boss mobs only. A boss's `trap:` sentence appears on its card in the
-boss block, where its spells already are. Printing it in both places would be the same
-sentence twice on one screen.
+A boss's `trap:` sentence appears on its card in the boss block, where its spells already are.
+A non-boss mob that earned a row in the spells table gets the same treatment: its trap sits on
+that row, behind its own disclosure, rather than in the trap list. The trap list is left with
+only the mobs that hold a trap but earned no row anywhere else on the page — a different,
+smaller population than "every trap in the dungeon". Printing a sentence in two places would be
+the same wipe-avoiding advice shown twice on one screen, so each trap appears in exactly one
+place: the boss card, the mob row, or the trap list, in that order of precedence.
 
 ## The derivation layer — `src/lib/highlights.ts`
 
@@ -150,7 +159,8 @@ interface HighlightMob {
   displayId?: number
   threat?: Threat
   role?: string
-  /** The `trap:` sentence, already through `inlineMarkdown`. Carried for the boss cards. */
+  /** The `trap:` sentence, already through `inlineMarkdown`. Carried for the boss cards and
+   *  for a shortlisted mob's own row. */
   trapHtml?: string
   spells: HighlightSpell[]
 }
@@ -165,7 +175,8 @@ interface HighlightTrap {
 interface DungeonHighlights {
   /** Non-boss mobs holding at least one `prio: 1` spell, most dangerous first. */
   mobs: HighlightMob[]
-  /** Non-boss mobs holding a `trap:` sentence — a different population from `mobs`. */
+  /** Non-boss mobs holding a `trap:` sentence whose mob earned no row — the mobs the
+   *  shortlist dropped, not every trap in the dungeon. */
   traps: HighlightTrap[]
   /** Every boss, in the declared or the `mdtIdx` order. */
   bosses: HighlightMob[]
@@ -192,8 +203,8 @@ is empty-tolerant by construction, and grows as the codex is written.
 
 | Component | Renders |
 | --- | --- |
-| `MobTable` | one row per mob: name and threat pip on the left, its `prio: 1` spells as chips (icon · name with a Wowhead link · tag badge) on the right. The mob name links into its codex entry. |
-| `TrapList` | two columns; mob name in bold, threat pip, the sentence. |
+| `MobTable` | one row per mob: name and threat pip on the left, its `prio: 1` spells as chips (icon · name with a Wowhead link · tag badge) on the right. The mob name links into its codex entry. A mob carrying a trap gets a folded disclosure under its name, on the same row. |
+| `TrapList` | two columns; mob name in bold, threat pip, the sentence — for the mobs that earned no row in `MobTable`. |
 | `BossStrip` | one card per boss: portrait, name, its trap, its `prio: 1` spells. |
 
 `ThreatBadge`, `TagBadge` and `DispelBadges` from
@@ -239,7 +250,13 @@ does. Nothing here needs a network or a WoW install.
   Trash"). Neither MDT nor the codex knows which segment a mob belongs to, and inventing the
   grouping by position would be a guess presented as fact.
 - **Affixes**, route plans, and anything else `_dungeon.md` currently stubs out.
-- **Any interface state.** The page is read-only: no folding, no filtering, no selection.
+- **Selection.** Nothing on the page is clicked to compare, pin, or carry into another view.
+  A shortlist filter landed in `f26640f` (narrowing `MobTable` to what a group has to plan
+  around) and later moved each shortlisted mob's trap onto its own row instead of the trap
+  list, leaving the list with only the mobs the shortlist drops. Every trap sentence, whether
+  on a mob's row or in that list, folds behind a `<details>` disclosure so it is not printed
+  unread. All of this is interface state, and all of it is read-only in the sense that matters
+  here: neither changes what is derived, only what is currently shown and where.
 - **New generated data.** The extraction chain is untouched.
 
 ## What this makes possible next

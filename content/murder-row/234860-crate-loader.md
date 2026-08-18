@@ -23,8 +23,8 @@ spells:
 trap: "The crates that hurt on the way down are the same crates that block Murder in a Row. Dodge the delivery, then use what it left."
 ---
 
-The workers [Zaen](#/d/murder-row/mob/234649) calls on to throw
-[Forbidden Freight](#/d/murder-row/mob/234852) into the arena.
+The workers [Zaen](#/d/murder-row/codex/mob/234649) calls on to throw
+[Forbidden Freight](#/d/murder-row/codex/mob/234852) into the arena.
 
 The delivery is 388k and a knockback where it lands, so it is dodged — but it is also how the
 fight replenishes its cover after Fire Bombs have destroyed some. Read as damage it is a

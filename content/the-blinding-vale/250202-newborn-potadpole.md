@@ -23,7 +23,7 @@ spells:
 trap: "The knockback is the whole ability. Several of these at once will move the group out of position rather than kill anyone."
 ---
 
-What a [Potadpole Egg](#/d/the-blinding-vale/mob/249783) becomes when nobody breaks it.
+What a [Potadpole Egg](#/d/the-blinding-vale/codex/mob/249783) becomes when nobody breaks it.
 
 **Potad-Toss** deals 48k, which is nothing, and knocks the target back, which is not. Method
 flags it as an ability to stop for that reason. A handful of these leaping at the group during

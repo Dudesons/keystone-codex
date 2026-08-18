@@ -19,7 +19,7 @@ spells:
 trap: "Half a million health against twenty seconds of a player doing nothing. Break it immediately — it does not release on its own."
 ---
 
-[Merektha](#/d/temple-of-sethraliss/mob/133384)'s binding, tracked by MDT as a unit precisely
+[Merektha](#/d/temple-of-sethraliss/codex/mob/133384)'s binding, tracked by MDT as a unit precisely
 because it has a health bar someone has to remove.
 
 Twenty seconds of a player unable to act, in a sealed chamber where Storm Strikes are landing

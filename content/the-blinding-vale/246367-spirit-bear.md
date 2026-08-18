@@ -35,7 +35,7 @@ spells:
 trap: "The spirit's Pulverizing Strikes stacks Pulverized with Ruia's own. Two sources, one multiplier — this is what makes Spirits of the Vale dangerous."
 ---
 
-Called by [Lightwarden Ruia](#/d/the-blinding-vale/mob/245912)'s **Spirits of the Vale**, and
+Called by [Lightwarden Ruia](#/d/the-blinding-vale/codex/mob/245912)'s **Spirits of the Vale**, and
 carrying his bear-form abilities.
 
 It matters for one reason: **Pulverized** does not distinguish between the boss's frontal and

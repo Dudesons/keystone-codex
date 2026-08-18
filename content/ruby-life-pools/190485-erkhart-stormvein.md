@@ -54,7 +54,7 @@ spells:
 trap: "Stormslam stacks +100% Nature damage taken on the tank. Dispelling it is what keeps the second one survivable."
 ---
 
-The other half of the fight with [Kyrakka](#/d/ruby-life-pools/mob/190484), and the half that
+The other half of the fight with [Kyrakka](#/d/ruby-life-pools/codex/mob/190484), and the half that
 punishes reacting late.
 
 **Stormslam** is a tank buster with a multiplier attached: +100% Nature damage taken for 30

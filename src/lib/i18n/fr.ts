@@ -44,8 +44,17 @@ export const fr: Dictionary = {
   'dungeon.unknown': 'Donjon inconnu.',
   'dungeon.backHome': 'Retour à l’accueil',
   'dungeon.route': 'route « {name} »',
+  'tab.overview': 'Résumé',
   'tab.codex': 'Codex',
   'tab.route': 'Route',
+
+  // Highlights page
+  'highlights.mobs': 'MOBS À CONNAÎTRE',
+  // Le piège d'un mob du tableau ci-dessus est passé sur sa ligne ; ce qui reste ici appartient
+  // aux mobs écartés du tableau, d'où ce titre plutôt qu'une liste de tout.
+  'highlights.traps': 'AUTRES PIÈGES',
+  'highlights.bosses': 'BOSS',
+  'highlights.trap': 'Piège',
 
   // Codex panel
   'codex.pack': 'Pack {n}',

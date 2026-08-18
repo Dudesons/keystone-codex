@@ -9,6 +9,7 @@ import {
   getMobContent,
   inlineMarkdown,
   isRole,
+  npcIdList,
 } from './content'
 import { dungeonList, getLookup } from './data'
 
@@ -288,5 +289,39 @@ describe('inlineMarkdown', () => {
   it('is empty for nothing, so callers can render it unconditionally', () => {
     expect(inlineMarkdown(undefined)).toBe('')
     expect(inlineMarkdown('')).toBe('')
+  })
+})
+
+describe('npcIdList', () => {
+  it('reads a hand-written list of ids', () => {
+    expect(npcIdList([135322, 134993])).toEqual([135322, 134993])
+  })
+
+  it('drops anything that is not a list of ids, rather than trusting it', () => {
+    // `bosses:` is typed by hand in YAML. An empty field parses to null, a typo to a string;
+    // neither must reach the ordering code as a half-valid array.
+    expect(npcIdList(null)).toBeUndefined()
+    expect(npcIdList(undefined)).toBeUndefined()
+    expect(npcIdList('135322')).toBeUndefined()
+    expect(npcIdList([])).toBeUndefined()
+    expect(npcIdList(['nope', 0, -3])).toBeUndefined()
+  })
+
+  it('keeps the ids it recognises and discards the rest of the list', () => {
+    expect(npcIdList([135322, 'nope'])).toEqual([135322])
+  })
+})
+
+describe('getDungeonContent bosses', () => {
+  it('reads the order a dungeon declares', () => {
+    // King's Rest is the one dungeon whose mdtIdx order is wrong: King Dazar, its last boss,
+    // sits at index 25 while the Council of Tribes was re-added at 34-36.
+    expect(getDungeonContent('kings-rest')?.bosses).toEqual([
+      135322, 134993, 269808, 269810, 269811, 136160,
+    ])
+  })
+
+  it('leaves it undefined where no order is declared, so mdtIdx stands', () => {
+    expect(getDungeonContent('altar-of-fangs')?.bosses).toBeUndefined()
   })
 })

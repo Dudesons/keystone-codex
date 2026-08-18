@@ -33,12 +33,12 @@ ability.
 
 **Feral Rage** is a 30-yard, +20% melee haste enrage on **every ally nearby**, and it belongs
 to eight different mobs in Voidscar Arena: the Saberon, the
-[Longtooth Tuskarr](#/d/voidscar-arena/mob/243985),
-[Sycophantic Tarasek](#/d/voidscar-arena/mob/243983),
-[Chitigoth](#/d/voidscar-arena/mob/244260), [Brutok](#/d/voidscar-arena/mob/244309),
-[Raging Raptor](#/d/voidscar-arena/mob/249608),
-[Protective Turtle](#/d/voidscar-arena/mob/249603) and
-[Abducted Drakonid](#/d/voidscar-arena/mob/249461).
+[Longtooth Tuskarr](#/d/voidscar-arena/codex/mob/243985),
+[Sycophantic Tarasek](#/d/voidscar-arena/codex/mob/243983),
+[Chitigoth](#/d/voidscar-arena/codex/mob/244260), [Brutok](#/d/voidscar-arena/codex/mob/244309),
+[Raging Raptor](#/d/voidscar-arena/codex/mob/249608),
+[Protective Turtle](#/d/voidscar-arena/codex/mob/249603) and
+[Abducted Drakonid](#/d/voidscar-arena/codex/mob/249461).
 
 That is the fact worth carrying into every pull here: soothes are not a reaction in this
 dungeon, they are a rotation.

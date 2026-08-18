@@ -20,7 +20,7 @@ trap: "Dispelling Bound by Shadow kills it. In an encounter, that is the fastest
 ---
 
 The second MDT entry for the Minion of Zul, distinguished from
-[the trash version](#/d/kings-rest/mob/133943) by being immune to every crowd control listed,
+[the trash version](#/d/kings-rest/codex/mob/133943) by being immune to every crowd control listed,
 and by having a single placement rather than thirteen.
 
 Same ability, same trick: **Bound by Shadow** kills the minion when it is dispelled.

@@ -200,6 +200,13 @@ describe('Applicable crowd control', () => {
 })
 
 describe('Spells', () => {
+  it('marks each row with its spell id, so a briefing chip can land on one', () => {
+    const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    // A data attribute rather than an `id`: the panel's list view renders forty cards at
+    // once, and two mobs sharing a spell would otherwise share a document id.
+    expect(container.querySelector('[data-spell="1306911"]')).not.toBeNull()
+  })
+
   it('floats what needs an immediate reaction: kick before tank', () => {
     const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     // Read the order off the spell links rather than off the prose: the notes and the trap
@@ -309,7 +316,9 @@ describe('Markdown in the one-line fields', () => {
   it('renders emphasis in the trap in every language', () => {
     cleanup()
     const { container } = renderFr(<MobCard slug={SLUG} enemy={chieftain} />)
-    expect(trapText(container)).toContain('<strong>Blood Sacrifice</strong>')
+    // A different string from the English case on purpose: a trap names its spells with the
+    // label the chips beside it use, so the French entry emphasises the French name.
+    expect(trapText(container)).toContain('<strong>Sacrifice de sang</strong>')
   })
 
   it('leaves a Wowhead description alone: it is data, not our writing', () => {

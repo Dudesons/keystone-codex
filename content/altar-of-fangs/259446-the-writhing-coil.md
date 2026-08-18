@@ -59,7 +59,7 @@ Uncoil is triggered by **Vine Grip**: the attached players walking 10 yards out.
 
 So the vines are not a punishment to escape, they are the tool. Staying put lets Death Rattle
 ramp unopposed; running out ends it and splits the boss into
-[Uncoiled Writhes](#/d/altar-of-fangs/mob/262398), whose **Toxic Atrophy** then has to be
+[Uncoiled Writhes](#/d/altar-of-fangs/codex/mob/262398), whose **Toxic Atrophy** then has to be
 interrupted.
 
 **Tail Scythe** is 678k on the tank, the hardest hit in Altar of Fangs.

@@ -28,8 +28,10 @@ so both pages share it. No new generated data, no network, no new runtime depend
 - **English** for code, comments, commit messages and test names. The `content/**.md` and the
   UI strings are the two exceptions, and both go through i18n.
 - **Every new file starts with two `// ABOUTME: ` lines** saying what it does.
-- **Component test files carry `// @vitest-environment jsdom` on line 1** and declare their own
-  `afterEach(cleanup)` — `globals: true` is off, so nothing cleans up for you.
+- **Component test files open with the two `// ABOUTME: ` lines, then a blank line, then
+  `// @vitest-environment jsdom`** — the order every existing test file in the repository uses
+  (`CodexPanel.test.tsx`, `DungeonMap.test.tsx`, `Home.test.tsx` and the rest). They also declare
+  their own `afterEach(cleanup)`: `globals: true` is off, so nothing cleans up for you.
 - **Mount components through `renderEn` / `renderFr`** from `src/test/render.tsx`, never
   Testing Library's bare `render`: components read the locale from `LocaleProvider`.
 - **No mocks.** Tests read the real generated JSON and the real `content/*.md`.
@@ -980,9 +982,10 @@ After this task the app is navigable end to end, with the three content blocks s
 Create `src/routes/HighlightsPage.test.tsx`:
 
 ```tsx
-// @vitest-environment jsdom
 // ABOUTME: Mounts the highlights page against the real Altar of Fangs pool, in both languages.
 // ABOUTME: Checks the page exists, names the dungeon, and offers the way to the map.
+
+// @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, screen, within } from '@testing-library/react'
@@ -1297,9 +1300,10 @@ The Playwright suite moves too, at the four sites that name the map. The two tha
 Create `src/components/highlights/MobTable.test.tsx`:
 
 ```tsx
-// @vitest-environment jsdom
 // ABOUTME: Checks a row is a mob, carries its spell chips, and links into the codex.
 // ABOUTME: Runs against the real Altar of Fangs derivation, not a hand-built list.
+
+// @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, screen } from '@testing-library/react'
@@ -1519,9 +1523,10 @@ A chip with no hand-written tag still shows what MDT knows about interruptibilit
 Create `src/components/highlights/TrapList.test.tsx`:
 
 ```tsx
-// @vitest-environment jsdom
 // ABOUTME: Checks every written trap sentence reaches the page, with its mob and its markdown.
 // ABOUTME: Runs against the real Altar of Fangs derivation.
+
+// @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
@@ -1677,9 +1682,10 @@ None is folded away behind a control. A trap the reader has to click to discover
 Create `src/components/highlights/BossStrip.test.tsx`:
 
 ```tsx
-// @vitest-environment jsdom
 // ABOUTME: Checks the boss cards appear in order, each with its trap and its own spells.
 // ABOUTME: Altar of Fangs falls back to mdtIdx; King's Rest declares its order.
+
+// @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'

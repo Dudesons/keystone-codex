@@ -20,7 +20,7 @@ trap:
 
 A second MDT entry for the Trained Felhunter, worth no forces and recorded with **0 health**,
 carrying one of the two Shadow Bite spells the
-[trash version](#/d/murder-row/mob/235261) has.
+[trash version](#/d/murder-row/codex/mob/235261) has.
 
 The missing health figure suggests a placeholder or a scripted spawn rather than a mob anyone
 fights. It has a card because MDT places it.

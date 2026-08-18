@@ -21,8 +21,8 @@ trap:
 Eight units at 5 forces each, with one charge and nothing else.
 
 **Serrated Charge** is the dungeon's shared bleed — the
-[Sand-Sworn Rider](#/d/temple-of-sethraliss/mob/134629) and the
-[Dutiful Tamer](#/d/temple-of-sethraliss/mob/139422) both cast it too. Six seconds at 39k is
+[Sand-Sworn Rider](#/d/temple-of-sethraliss/codex/mob/134629) and the
+[Dutiful Tamer](#/d/temple-of-sethraliss/codex/mob/139422) both cast it too. Six seconds at 39k is
 modest alone and adds up across a pack.
 
 Unusually for a beast here, MDT lists **no Taunt** among its applicable CC — Stun, Silence,

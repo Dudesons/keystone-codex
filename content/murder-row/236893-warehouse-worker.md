@@ -33,7 +33,7 @@ Six units at 2 forces each — nearly worthless for the count, and carrying two 
 matter.
 
 **Back to Work!** is the same +200% attack speed enrage the
-[Keen Taskmaster](#/d/murder-row/mob/236897) casts, and the Workers cast it on each other. So
+[Keen Taskmaster](#/d/murder-row/codex/mob/236897) casts, and the Workers cast it on each other. So
 one soothe does not necessarily settle it.
 
 **Workplace Accident** is 242k and a **3-second stun**, at unlimited range. Being stunned in

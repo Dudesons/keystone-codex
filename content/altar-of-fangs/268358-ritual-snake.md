@@ -19,6 +19,6 @@ spells:
 trap:
 ---
 
-Not trash: part of the [Zul'jan](#/d/altar-of-fangs/mob/259447) encounter. The snake heads
+Not trash: part of the [Zul'jan](#/d/altar-of-fangs/codex/mob/259447) encounter. The snake heads
 focus beams into him for 8 seconds, and Fang Empowered stacks at 116k Nature per second to
 the whole group.

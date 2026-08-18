@@ -23,11 +23,11 @@ spells:
 trap:
 ---
 
-The least urgent of [Zanazal](#/d/kings-rest/mob/269810)'s three totems: a 3-yard radius means
+The least urgent of [Zanazal](#/d/kings-rest/codex/mob/269810)'s three totems: a 3-yard radius means
 avoiding it costs a step, not a cooldown.
 
 The knockback is the part worth remembering rather than the 158k — in a fight where
-[Aka'ali](#/d/kings-rest/mob/269808)'s charge has to be soaked as a group, anything that
+[Aka'ali](#/d/kings-rest/codex/mob/269808)'s charge has to be soaked as a group, anything that
 scatters people has a cost beyond its damage.
 
 Kill order among the three: Explosive first, Disruption second, this one last.

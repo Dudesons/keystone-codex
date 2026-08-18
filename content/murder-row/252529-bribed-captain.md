@@ -37,5 +37,5 @@ less area damage. The second half is the one that decides pull length, since Mur
 clear packs with area damage. And MDT gives it **no dispel type**, so there is no shortcut —
 the Captain has to die.
 
-Its other two abilities are the [Bribed Guard's](#/d/murder-row/mob/236071), and both carry
+Its other two abilities are the [Bribed Guard's](#/d/murder-row/codex/mob/236071), and both carry
 unscaled tooltip figures.

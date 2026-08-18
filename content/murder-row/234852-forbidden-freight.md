@@ -34,7 +34,7 @@ spells:
 trap: "It is the cover for Murder in a Row and it explodes for 291k when destroyed. Stand behind it, not beside it, and watch what Zaen aims at."
 ---
 
-The crates in the [Zaen Bladesorrow](#/d/murder-row/mob/234649) fight, and they are three
+The crates in the [Zaen Bladesorrow](#/d/murder-row/codex/mob/234649) fight, and they are three
 things at once.
 
 **Cover**: they block line of sight for **Murder in a Row**, which is the only defence against

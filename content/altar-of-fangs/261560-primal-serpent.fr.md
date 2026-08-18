@@ -11,7 +11,7 @@ spells:
   - id: 1306381
     note: "58k Nature, non interruptible. Du remplissage à côté de Piercing Hiss."
 
-trap: "Le débuff de hâte de Piercing Hiss se cumule. En laisser passer deux ou trois et le débit de dégâts et de soins du groupe s'effondre au pire moment — le kicker à chaque fois, pas quand ça arrange."
+trap: "Le débuff de hâte de **Sifflement perçant** se cumule. En laisser passer deux ou trois et le débit de dégâts et de soins du groupe s'effondre au pire moment — le kicker à chaque fois, pas quand ça arrange."
 ---
 
 Quatorze unités à 7 forces chacune, et le seul mob d'ici dont le danger est cumulatif plutôt

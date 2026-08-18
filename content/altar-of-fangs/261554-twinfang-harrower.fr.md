@@ -17,7 +17,7 @@ spells:
   - id: 1306669
     note: "Frontal, 68k Nature toutes les demi-secondes sur qui reste dedans."
 
-trap: "Duostrike est un vrai tank buster sur un mob qui a l'air d'être du trash. À traiter comme un miniboss : il faut un cooldown au tank, pas un haussement d'épaules."
+trap: "**Bifrappe** est un vrai tank buster sur un mob qui a l'air d'être du trash. À traiter comme un miniboss : il faut un cooldown au tank, pas un haussement d'épaules."
 ---
 
 Vingt-cinq forces par unité pour quatre unités — il est tarifé comme un miniboss et il frappe

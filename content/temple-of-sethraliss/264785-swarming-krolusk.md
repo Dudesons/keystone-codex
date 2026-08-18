@@ -11,8 +11,8 @@ role: add
 trap: "Worth nothing and MDT gives it no abilities — pure added time. Killing the summoner is what stops them."
 ---
 
-What the [Sand-Sworn Rider](#/d/temple-of-sethraliss/mob/134629) and the
-[Dutiful Tamer](#/d/temple-of-sethraliss/mob/139422) call in with **Swarming Krolusks**. Four
+What the [Sand-Sworn Rider](#/d/temple-of-sethraliss/codex/mob/134629) and the
+[Dutiful Tamer](#/d/temple-of-sethraliss/codex/mob/139422) call in with **Swarming Krolusks**. Four
 placements, 0.8 million health each, and **no spells at all** in MDT.
 
 So they are body count with no mechanic: no forces gained for killing them, and time lost

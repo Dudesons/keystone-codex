@@ -30,7 +30,7 @@ Four units at 7 forces each, and the healing check of the dungeon's trash.
 in range, every 2.5 seconds, for 30 seconds. That is potentially 120% of a pack's health
 restored from one instant cast.
 
-Instant means no interrupt. The [totem](#/d/kings-rest/mob/137591) itself has 0.4 million
+Instant means no interrupt. The [totem](#/d/kings-rest/codex/mob/137591) itself has 0.4 million
 health and has to be killed — which is why this mob outranks its 7 forces by a distance.
 
 MDT lists Stun, Silence, Slow and Disorient as applicable, so a silence before the totem lands
