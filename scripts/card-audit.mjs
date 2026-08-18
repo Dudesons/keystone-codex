@@ -66,3 +66,110 @@ export function readCardFacts(text, file) {
 
   return { file, npcId, locale: cardLocale(file), spells, written }
 }
+
+/** A spell carries writing when it has a note, or a tag that is not the scaffold's placeholder. */
+const isAnnotated = (spell) => Boolean(spell.note || (spell.tag && spell.tag !== 'todo'))
+
+/**
+ * Every spell id some card annotates.
+ *
+ * `diffSpells` grades a moved tooltip by this set: under a note the change dates the writing,
+ * elsewhere it is only a fact about the data.
+ */
+export function annotatedSpellIds(cards) {
+  const ids = new Set()
+  for (const card of cards) {
+    for (const spell of card.spells) if (isAnnotated(spell)) ids.add(spell.id)
+  }
+  return ids
+}
+
+/**
+ * What the current data costs the cards of one dungeon.
+ *
+ * Severity 1 is writing the site has already stopped showing: `MobCard.tsx:49` renders a mob's
+ * spells from the MDT data and looks each note up by id, so an id the data dropped takes its note
+ * out of the page with no diagnostic anywhere. The same holds for a whole card whose mob left.
+ *
+ * Severity 2 is the opposite direction: a card a human has written, which the data has since
+ * given spells nobody has annotated.
+ */
+export function auditDungeon(dungeon, cards) {
+  const out = []
+  const slug = dungeon.slug
+  const byId = new Map(dungeon.enemies.map((e) => [e.id, e]))
+
+  for (const card of cards) {
+    const enemy = byId.get(card.npcId)
+
+    if (!enemy) {
+      // A written card losing its mob is writing lost; a stub losing its mob is only clutter.
+      // The design lists the situation at both severities, and `written` is what separates them.
+      out.push(
+        card.written
+          ? {
+              severity: 1,
+              dungeon: slug,
+              subject: `npcId ${card.npcId}`,
+              what: 'is claimed by a written card, but no mob in the dungeon carries it',
+              action: 'the card never renders: move its writing or delete the file',
+              file: card.file,
+            }
+          : {
+              severity: 5,
+              dungeon: slug,
+              subject: `npcId ${card.npcId}`,
+              what: 'is claimed by an unwritten card, and no mob in the dungeon carries it',
+              action: 'delete the file, and its sibling in every other language',
+              file: card.file,
+            },
+      )
+      continue
+    }
+
+    const known = new Set(enemy.spells.map((s) => s.id))
+    for (const spell of card.spells) {
+      if (known.has(spell.id) || !isAnnotated(spell)) continue
+      out.push({
+        severity: 1,
+        dungeon: slug,
+        subject: `${enemy.id} ${enemy.name}`,
+        what: `annotates spell ${spell.id}, which the mob no longer has`,
+        detail: spell.note ? `note: ${spell.note}` : `tag: ${spell.tag}`,
+        action: 'the note no longer renders: move it to the right spell or drop it',
+        file: card.file,
+      })
+    }
+
+    if (!card.written) continue
+    const annotated = new Set(card.spells.filter(isAnnotated).map((s) => s.id))
+    const bare = enemy.spells.map((s) => s.id).filter((id) => !annotated.has(id))
+    if (bare.length) {
+      out.push({
+        severity: 2,
+        dungeon: slug,
+        subject: `${enemy.id} ${enemy.name}`,
+        what: `is written but leaves ${bare.length} spell(s) un-annotated`,
+        detail: `spells ${bare.join(', ')}`,
+        action: 'they render with their Wowhead description alone',
+        file: card.file,
+      })
+    }
+  }
+
+  const covered = new Set(cards.map((c) => c.npcId))
+  const reported = new Set()
+  for (const enemy of dungeon.enemies) {
+    if (covered.has(enemy.id) || reported.has(enemy.id)) continue
+    reported.add(enemy.id)
+    out.push({
+      severity: 4,
+      dungeon: slug,
+      subject: `${enemy.id} ${enemy.name}`,
+      what: 'has no card in any language',
+      action: 'run npm run scaffold, then write it',
+    })
+  }
+
+  return out
+}
