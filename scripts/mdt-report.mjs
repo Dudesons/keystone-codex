@@ -39,6 +39,22 @@ function parseArgs(argv) {
   return args
 }
 
+/**
+ * Refuses a revision git does not know, before anything is read or written.
+ *
+ * `showAtRev` cannot tell a mistyped revision from a file that genuinely did not exist there:
+ * both come back null. Left unchecked, a typo in `--base` makes every one of the eight dungeons
+ * look new, names the base version `unknown`, and produces a confident report about an update
+ * that was never compared to anything.
+ */
+function requireRev(rev) {
+  try {
+    execFileSync('git', ['rev-parse', '--verify', rev], { cwd: ROOT, stdio: 'pipe' })
+  } catch {
+    throw new Error(`--base ${rev}: git does not know that revision. Nothing was read or written.`)
+  }
+}
+
 /** A tracked file as of `rev`, or null when it did not exist there. */
 function showAtRev(rev, repoPath) {
   try {
@@ -72,6 +88,7 @@ function readCards(slug) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2))
+  requireRev(args.base)
 
   const index = readJson(path.join(GENERATED_DIR, 'dungeons.json'))
   const currentMeta = fs.existsSync(path.join(GENERATED_DIR, 'mdt.json'))
