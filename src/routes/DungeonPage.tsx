@@ -1,7 +1,7 @@
 // ABOUTME: A dungeon's page: the map beside either the codex panel or the route panel.
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
 import UnknownDungeon from '../components/UnknownDungeon'
@@ -108,6 +108,14 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   // `undefined` outside a session, the same guard `onCursorMove` uses below: a solo session
   // must publish nothing.
   const publishDrawing = collab.status === 'off' ? undefined : setDrawing
+
+  // A stand-in for `publishDrawing` that the tool-change effect below can read without
+  // depending on it. `publishDrawing` flips between `undefined` and `setDrawing` whenever a
+  // session opens, pauses or closes — an identity change that effect must not react to, since
+  // nothing about a session status flip is a reason to clear the current selection. Updated
+  // every render, so the effect always reaches the latest value despite reading through a ref.
+  const publishDrawingRef = useRef(publishDrawing)
+  publishDrawingRef.current = publishDrawing
 
   const editing = route.objects.find((o) => o.id === selectedObject) ?? null
 
@@ -227,11 +235,17 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   // but over the wire it is worse: with nothing else left to publish the clear, the last
   // non-empty stroke stays on awareness indefinitely, and every teammate keeps rendering the
   // abandoned half-stroke until this session starts a whole new gesture.
+  //
+  // Keyed on `tool` alone, not `[tool, publishDrawing]`: `publishDrawing` changes identity on
+  // every session status flip (see its own definition above), and a session opening or closing
+  // mid-edit is not a tool change — it must not wipe a selection nobody asked to drop. Reading
+  // it through `publishDrawingRef` is what lets this effect skip that dependency while still
+  // reaching whichever `publishDrawing` is current at the moment the tool actually changes.
   useEffect(() => {
     setProgress([])
-    publishDrawing?.([])
+    publishDrawingRef.current?.([])
     setSelectedObject(null)
-  }, [tool, publishDrawing])
+  }, [tool])
 
   // A session that just ended must not offer its room right back — whether left from the
   // panel or from the relay notice, both go through here.

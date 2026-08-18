@@ -833,6 +833,35 @@ describe('Publishing the stroke in progress', () => {
   })
 })
 
+describe('A tool-change effect that must not fire on a session status flip', () => {
+  it('keeps the current selection when a session opens mid-edit', () => {
+    // `publishDrawing` (the tool-clear effect's other dependency, before this fix) swaps from
+    // `undefined` to `setDrawing` the moment a session opens — an identity change that has
+    // nothing to do with which tool is active, and must not be read as one.
+    const { container } = renderEn(at(`/d/${SLUG}/route`))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    expect(container.querySelector('[data-testid="stroke-0"]')!.getAttribute('data-selected')).toBe(
+      'true',
+    )
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.click(screen.getByText('Open a session with this route'))
+
+    // The tool never changed, so the selection — and the halo it draws — must survive.
+    expect(container.querySelector('[data-testid="stroke-0"]')!.getAttribute('data-selected')).toBe(
+      'true',
+    )
+  })
+})
+
 describe('Remounting per dungeon', () => {
   it('starts a separate document for each dungeon', () => {
     // The `key={slug}` on DungeonView is what guarantees this: mob indices mean different

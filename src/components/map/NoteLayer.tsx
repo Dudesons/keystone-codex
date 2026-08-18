@@ -35,6 +35,7 @@ export default function NoteLayer({
   selectedId,
   onSelect,
   onMove,
+  drawingActive,
 }: {
   notes: MdtNote[]
   transform: Transform
@@ -44,6 +45,11 @@ export default function NoteLayer({
   onSelect?: (id: string) => void
   /** Dragging a pin to a new position, in map pixels. Fires once, on release. */
   onMove?: (id: string, at: Point) => void
+  /** Whether a note/arrow/freehand tool wants the map's own drawing surface right now — the
+      surface sits under this layer, so a press that lands on a pin instead would otherwise
+      fall through to the map container and start a pan in the middle of a gesture. Select is
+      not one of these: it already gets its own protection from `onMove` below. */
+  drawingActive?: boolean
 }) {
   const { t } = useI18n()
   const [hovered, setHovered] = useState<number | null>(null)
@@ -98,11 +104,15 @@ export default function NoteLayer({
             onMouseEnter={() => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
             onPointerDown={(e) => {
-              // Only while something can move this note — the select tool being active, and the
-              // note having an id at all (see the note on `selected` above). Without the guard, a
-              // press here would also stop the map's own pan from starting for no reason.
-              if (!onMove || !note.id) return
+              // With neither the select tool nor another drawing tool active, there is nothing
+              // here that needs this press — letting it fall through is what lets the map's own
+              // pan start for no reason other than "the hand happened to land on a pin".
+              if (!onMove && !drawingActive) return
               e.stopPropagation()
+              // Only the select tool can actually move this note, and only once it carries an id
+              // (see the note on `selected` above) — a drawing tool still needed the stop above,
+              // but has nothing to start a drag with.
+              if (!onMove || !note.id) return
               drag.current = { id: note.id, x: e.clientX, y: e.clientY, moved: false }
             }}
             onPointerMove={(e) => {

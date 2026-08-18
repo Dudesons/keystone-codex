@@ -701,4 +701,37 @@ describe('Preset notes', () => {
     renderEn(<DungeonMap slug="altar-of-fangs" lookup={getLookup('altar-of-fangs')!} />)
     expect(screen.queryByTestId('note-pin-0')).toBeNull()
   })
+
+  it('does not let a drawing tool pan the map when a press lands on an existing pin', () => {
+    // NoteLayer's pins sit above DrawSurface so the select tool can click them. But a press
+    // with another tool active (line mode here, standing in for Arrow or Draw) must not fall
+    // through past both layers and bubble to the map container's own pan starter. `captured`
+    // (see the `beforeAll` stub above) is what `Panning`'s own tests use to prove a pan
+    // actually started — empty here is the fix; the container's pan starter otherwise treats
+    // this exactly like a press on open water and starts one.
+    mount({
+      objects: [note],
+      drawing: { mode: 'line', onCommit: () => {} },
+    })
+    const pin = screen.getByTestId('note-pin-0')
+    fireEvent.pointerDown(pin, { button: 0, pointerId: 3, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(pin, { pointerId: 3, clientX: 160, clientY: 140 })
+    expect(captured).toEqual([])
+  })
+})
+
+describe('Drawing surface stacking', () => {
+  it('keeps the HUD above the draw surface, so its buttons are not swallowed by the drawing hit target', () => {
+    // No element in DungeonMap, MapHud or Legend sets a z-index, so with a tool active
+    // (`drawing` supplied) paint and hit order follow DOM order alone: whichever element is
+    // later in the document sits on top. `compareDocumentPosition` reads that order directly,
+    // which a plain "does the button exist" or "does clicking it fire" assertion cannot: jsdom
+    // dispatches `fireEvent.click` straight at its target and performs no hit-testing, so such
+    // an assertion would pass whether the surface sat above the HUD or below it.
+    const { container } = mount({ drawing: { mode: 'point', onCommit: () => {} } })
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    const fitButton = screen.getByTitle('Fit')
+    const position = surface.compareDocumentPosition(fitButton)
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
 })

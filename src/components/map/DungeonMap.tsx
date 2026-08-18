@@ -388,6 +388,20 @@ export default function DungeonMap({
         </svg>
       </div>
 
+      {/* Mounted before the HUD and legend below: neither of those carries a z-index, so with
+          no `z-index` anywhere in this file, paint (and hit) order simply follows DOM order.
+          A drawing tool's surface has to be *hittable* — it is the drawing target — so it must
+          not become the top-most element while a tool is active, or it swallows every click
+          meant for the zoom, fit and legend buttons that come after it. */}
+      {drawing && (
+        <DrawSurface
+          transform={transform}
+          mode={drawing.mode}
+          onProgress={drawing.onProgress}
+          onCommit={drawing.onCommit}
+        />
+      )}
+
       <MapHud
         transform={transform}
         onFit={fit}
@@ -412,14 +426,6 @@ export default function DungeonMap({
         <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
       )}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
-      {drawing && (
-        <DrawSurface
-          transform={transform}
-          mode={drawing.mode}
-          onProgress={drawing.onProgress}
-          onCommit={drawing.onCommit}
-        />
-      )}
       {/* An explicit predicate, not a bare `o.kind === 'note'`: once Task 6 puts a second
           member in the union, `filter` alone hands back `MdtObject[]`. */}
       {objects && (
@@ -429,6 +435,7 @@ export default function DungeonMap({
           selectedId={selectedObjectId}
           onSelect={onSelectObject}
           onMove={onMoveObject}
+          drawingActive={!!drawing}
         />
       )}
       {notice}
