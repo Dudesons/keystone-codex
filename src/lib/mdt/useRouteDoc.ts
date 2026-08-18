@@ -625,14 +625,26 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
 
       updateObject: (id, object) =>
         withObjects((objects) => {
-          const index = indexOfObject(objects, id)
-          if (index < 0) return
-          // Y.Array has no replace: delete, then reinsert at the same index, as `movePull` does.
-          // The same wart applies here — a peer's concurrent edit to this object is lost, not
-          // merged — and matching the existing pattern is right for now rather than inventing a
-          // different one for this one caller.
-          objects.delete(index, 1)
-          objects.insert(index, [storeObject(object, id)])
+          const stored = objects.toArray().find((map) => map.get('id') === id)
+          if (!stored) return
+          // Set the fields on the map that is already there, rather than deleting the entry and
+          // reinserting a copy the way `movePull` has to. Y.Array has no replace, and delete-then-
+          // insert does not merge: two peers doing it to the same object at once leaves **two**
+          // entries — both deletes are idempotent, both inserts survive — and both carry the same
+          // `id`, so selection becomes ambiguous and a created object exports twice. Writing the
+          // fields in place merges per field instead, which is what a `Y.Map` is for.
+          //
+          // `id` is left alone: this map was found by it, and it is bookkeeping the caller has no
+          // business changing.
+          for (const [key, value] of Object.entries(object)) {
+            if (key !== 'id') stored.set(key, value)
+          }
+          // A key the incoming object does not carry has to go, or a field that should disappear
+          // would linger — provenance dropped from an object, or the fields of the other kind after
+          // a note became a stroke.
+          for (const key of [...stored.keys()]) {
+            if (key !== 'id' && !(key in object)) stored.delete(key)
+          }
         }),
 
       removeObject: (id) =>

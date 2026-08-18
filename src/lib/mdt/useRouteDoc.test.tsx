@@ -942,6 +942,107 @@ describe('Objects in the document', () => {
     guest.unmount()
   })
 
+  it('rewrites an object where it stands, keeping its identity', () => {
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 2 }, sublevel: 1, text: 'draft' }),
+    )
+    const before = result.current.route.objects[0] as MdtNote
+
+    act(() => result.current.actions.updateObject(before.id!, { ...before, text: 'final' }))
+
+    expect(result.current.route.objects).toHaveLength(1)
+    const after = result.current.route.objects[0] as MdtNote
+    expect(after.text).toBe('final')
+    expect(after.id).toBe(before.id)
+  })
+
+  runDrawn('lets a field the edited object no longer carries disappear', () => {
+    const { result } = mount()
+    act(() => void result.current.actions.importRoute(drawn))
+    // Adoption is what gives an object both an id to address it by and a `from` to lose.
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 8, y: 8 }, sublevel: 1, text: 'seed' }),
+    )
+    const adopted = result.current.route.objects.find(
+      (o): o is MdtNote => o.kind === 'note' && o.from != null,
+    )!
+
+    act(() =>
+      result.current.actions.updateObject(adopted.id!, {
+        kind: 'note',
+        at: adopted.at,
+        sublevel: adopted.sublevel,
+        text: adopted.text,
+      }),
+    )
+
+    // Writing the incoming fields over the stored ones is not enough on its own: a key the object
+    // has stopped carrying must go too, or provenance an edit deliberately dropped would linger and
+    // the object would still claim a source entry it no longer comes from.
+    expect(result.current.route.objects.find((o) => o.id === adopted.id)!.from).toBeUndefined()
+  })
+
+  /**
+   * Two peers editing the same object at the same instant, connected over `BroadcastChannel` the
+   * way `'replicates an object to a peer'` connects them. The room code is used by no other
+   * `describe` block — see the note on `SilentSocket`.
+   *
+   * Staging a genuinely simultaneous edit in one tab takes a propagation gap, and this is where
+   * that costs something: `lib0`'s broadcast channel hands a published message to every subscriber
+   * in the same process **synchronously**, on top of the real `BroadcastChannel` it also posts to.
+   * So two edits written back to back — even inside one `act` — are sequential, not simultaneous:
+   * the second peer has already applied the first's operation before making its own, and deletes
+   * the entry the first inserted. Pausing both sessions unsubscribes them from that channel
+   * (`provider.disconnect()` does `disconnectBc()`), and resuming publishes each side's full state
+   * to the other, which is what makes the pair concurrent in Y.js's sense.
+   */
+  it('leaves one object, not two, when two peers edit the same one at once', () => {
+    vi.useFakeTimers()
+    try {
+      const host = mount()
+      act(() => host.result.current.joinRoom('UPDDUP', 'host'))
+      const guest = mount()
+      act(() => guest.result.current.joinRoom('UPDDUP', 'guest'))
+
+      act(() =>
+        host.result.current.actions.addObject({
+          kind: 'note',
+          at: { x: 7, y: 7 },
+          sublevel: 1,
+          text: 'ours',
+        }),
+      )
+      expect(guest.result.current.route.objects).toHaveLength(1)
+
+      act(() => setVisibility('hidden'))
+      act(() => void vi.advanceTimersByTime(5 * 60_000))
+      expect(host.result.current.collab.status).toBe('paused')
+      expect(guest.result.current.collab.status).toBe('paused')
+
+      const target = host.result.current.route.objects[0] as MdtNote
+      act(() => host.result.current.actions.updateObject(target.id!, { ...target, text: 'mine' }))
+      act(() => guest.result.current.actions.updateObject(target.id!, { ...target, text: 'theirs' }))
+
+      act(() => host.result.current.resumeRoom())
+      act(() => guest.result.current.resumeRoom())
+
+      // Replacing an object by deleting it and reinserting a copy leaves two entries here: both
+      // deletes are idempotent and both inserts survive. Worse than a lost edit, because the
+      // duplicate carries the same `id` — selection by id becomes ambiguous, and a created object
+      // exports twice. Setting the fields on the existing map merges per field instead, and the
+      // text the two settle on is Y.js's business, not this test's.
+      expect(host.result.current.route.objects).toHaveLength(1)
+      expect(guest.result.current.route.objects).toHaveLength(1)
+
+      host.unmount()
+      guest.unmount()
+    } finally {
+      setVisibility('visible')
+      vi.useRealTimers()
+    }
+  })
+
   runBothFixtures(
     'forgets a previously adopted objects array on re-import, so the new preset’s own objects are not silently rewritten',
     () => {
