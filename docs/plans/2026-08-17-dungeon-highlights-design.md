@@ -244,7 +244,11 @@ does. Nothing here needs a network or a WoW install.
   Trash"). Neither MDT nor the codex knows which segment a mob belongs to, and inventing the
   grouping by position would be a guess presented as fact.
 - **Affixes**, route plans, and anything else `_dungeon.md` currently stubs out.
-- **Any interface state.** The page is read-only: no folding, no filtering, no selection.
+- **Selection.** Nothing on the page is clicked to compare, pin, or carry into another view.
+  A shortlist filter landed in `f26640f` (narrowing `MobTable` to what a group has to plan
+  around), and trap rows fold behind a `<details>` disclosure so the sentence that avoids the
+  wipe is not printed 29 times unread — both are interface state, and both are read-only in
+  the sense that matters here: neither changes what is derived, only what is currently shown.
 - **New generated data.** The extraction chain is untouched.
 
 ## What this makes possible next

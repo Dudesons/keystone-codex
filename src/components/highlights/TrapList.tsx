@@ -1,5 +1,5 @@
 // ABOUTME: Every written trap sentence of the dungeon, two columns, most dangerous first.
-// ABOUTME: The trap is the line that avoids the wipe, so none of them is folded away.
+// ABOUTME: Each mob is folded behind a disclosure control; the sentence shows once expanded.
 
 import { Link } from 'react-router-dom'
 import type { HighlightTrap } from '../../lib/highlights'
@@ -11,12 +11,13 @@ export default function TrapList({ slug, traps }: { slug: string; traps: Highlig
   return (
     <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
       {traps.map((trap) => (
-        <div
+        <details
           key={trap.npcId}
           data-trap={trap.npcId}
-          className="border-l-2 border-ink-700 pl-3 hover:border-gold-500"
+          className="group border-l-2 border-ink-700 pl-3 hover:border-gold-500"
         >
-          <div className="flex items-center gap-2">
+          <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+            <span className="text-ink-500 transition-transform group-open:rotate-90">▸</span>
             <Link
               to={`/d/${slug}/codex/mob/${trap.npcId}`}
               className="text-xs font-semibold text-ink-100 hover:text-gold-400"
@@ -24,13 +25,13 @@ export default function TrapList({ slug, traps }: { slug: string; traps: Highlig
               {trap.mobName}
             </Link>
             <ThreatBadge threat={trap.threat} />
-          </div>
+          </summary>
           {/* Authored markdown, already inline-rendered by the derivation. */}
           <p
-            className="mt-0.5 text-xs leading-relaxed text-ink-400"
+            className="mt-0.5 pl-5 text-xs leading-relaxed text-ink-400"
             dangerouslySetInnerHTML={{ __html: trap.html }}
           />
-        </div>
+        </details>
       ))}
     </div>
   )

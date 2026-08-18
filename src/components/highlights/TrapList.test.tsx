@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import TrapList from './TrapList'
 import { getHighlights } from '../../lib/highlights'
@@ -48,5 +48,23 @@ describe('TrapList', () => {
   it('renders nothing at all when nothing is written', () => {
     const { container } = renderEn(<TrapList slug={SLUG} traps={[]} />, { wrapper: MemoryRouter })
     expect(container.querySelector('[data-trap]')).toBeNull()
+  })
+
+  it('collapses every row by default', () => {
+    const { container } = mount()
+    const rows = [...container.querySelectorAll('[data-trap]')] as HTMLDetailsElement[]
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.every((row) => row.tagName === 'DETAILS' && !row.open)).toBe(true)
+  })
+
+  it('reveals its sentence once its summary is clicked', () => {
+    // jsdom does implement the native disclosure toggle: clicking <summary> flips the parent
+    // <details>'s `open`, confirmed against a standalone case before writing this assertion.
+    const { container } = mount()
+    const twinfang = container.querySelector('[data-trap="261554"]') as HTMLDetailsElement
+    expect(twinfang.open).toBe(false)
+    fireEvent.click(twinfang.querySelector('summary')!)
+    expect(twinfang.open).toBe(true)
+    expect(twinfang.querySelector('p')?.textContent).not.toHaveLength(0)
   })
 })
