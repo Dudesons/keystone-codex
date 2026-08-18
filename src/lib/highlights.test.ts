@@ -49,6 +49,28 @@ describe('getHighlights mobs', () => {
     for (const mob of getHighlights(ALTAR).mobs) expect(mob.spells.length).toBeGreaterThan(0)
   })
 
+  it('keeps only the mobs a group has to plan around', () => {
+    // The shortlist: lethal, high, medium, or a miniboss. Everything else is out, including a
+    // mob nobody has rated — the codex fills in gradually, and an unrated mob comes back the
+    // day someone writes its threat.
+    for (const mob of getHighlights(VOIDSCAR).mobs) {
+      const kept =
+        mob.threat === 'lethal' ||
+        mob.threat === 'high' ||
+        mob.threat === 'medium' ||
+        mob.role === 'miniboss'
+      expect(kept, `${mob.name} (threat ${mob.threat}, role ${mob.role})`).toBe(true)
+    }
+  })
+
+  it('drops a mob rated harmless even though it has a prio-1 spell', () => {
+    // Blistercreep is `threat: low` and carries one, so it proves the cut fires rather than
+    // merely never having anything to cut.
+    const all = getLookup(VOIDSCAR)!.enemyById
+    expect(all.has(243736)).toBe(true)
+    expect(getHighlights(VOIDSCAR).mobs.map((m) => m.npcId)).not.toContain(243736)
+  })
+
   it('puts the most dangerous first', () => {
     const rank = { lethal: 0, high: 1, medium: 2, low: 3 } as Record<string, number>
     const ranks = getHighlights(VOIDSCAR).mobs.map((m) => (m.threat ? rank[m.threat] : 4))

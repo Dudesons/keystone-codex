@@ -49,7 +49,10 @@ export interface HighlightTrap {
 }
 
 export interface DungeonHighlights {
-  /** Non-boss mobs holding at least one `prio: 1` spell, most dangerous first. */
+  /**
+   * The shortlist: non-boss mobs with a `prio: 1` spell that also clear `earnsARow`, most
+   * dangerous first. Smaller than the set of mobs carrying a trap.
+   */
   mobs: HighlightMob[]
   /** Non-boss mobs holding a `trap:` sentence — a different population from `mobs`. */
   traps: HighlightTrap[]
@@ -60,6 +63,21 @@ export interface DungeonHighlights {
 const THREAT_RANK: Record<Threat, number> = { lethal: 0, high: 1, medium: 2, low: 3 }
 
 /** An unassessed mob sorts last: "not judged yet" is not "harmless". */
+
+/**
+ * Whether a mob earns a row on the briefing, once it has a `prio: 1` spell to show.
+ *
+ * The table is a shortlist, not a census: it keeps the mobs a group has to plan around and
+ * drops the rest. `low` is dropped because it was judged harmless, and an unrated mob is
+ * dropped with it — measured over the pool that is 36 and 54 mobs respectively, and without
+ * both cuts the shortlist is 191 rows rather than 104.
+ *
+ * A mob nobody has rated therefore does not appear here at all. That is deliberate and it is
+ * the price of the shortlist: writing its `threat` is what brings it back.
+ */
+function earnsARow(threat?: Threat, role?: string): boolean {
+  return threat === 'lethal' || threat === 'high' || threat === 'medium' || role === 'miniboss'
+}
 const rankOf = (threat?: Threat) => (threat ? THREAT_RANK[threat] : 4)
 
 /**
@@ -173,7 +191,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
       continue
     }
 
-    if (spells.length) {
+    if (spells.length && earnsARow(content?.threat, content?.role)) {
       mobs.push({
         npcId: enemy.id,
         name,
