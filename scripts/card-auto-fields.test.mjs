@@ -1,6 +1,8 @@
 // ABOUTME: Tests the in-place refresh of a card's `# auto` marker lines.
 // ABOUTME: Pins the narrow rule: marked values only, never a line added or removed.
 
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { autoFieldFindings, refreshAutoFields } from './card-auto-fields.mjs'
 
@@ -72,6 +74,29 @@ describe('refreshAutoFields', () => {
     const { text } = refreshAutoFields(crlf, enemy)
     expect(text).toContain('name: "Ritual Chieftain"   # auto\r\n')
     expect(text.includes('\n\n')).toBe(false)
+  })
+
+  // Real card, not hand-built: it is the only file in the repository that pins the shape a
+  // regression here would break -- an indented, per-spell `name:   # auto` line, written by
+  // content-stub.mjs alongside the mob's own unindented `name:`. A regex that anchors on the
+  // marker alone cannot tell those two apart; this is the test that would have caught it.
+  it('never touches an indented spell name, only the mob-level name and count', () => {
+    const real = fs.readFileSync(
+      fileURLToPath(new URL('../content/altar-of-fangs/259445-ravi.md', import.meta.url)),
+      'utf8',
+    )
+    const spellNameLines = real.split('\n').filter((line) => /^\s+name:.*#\s*auto\b/.test(line))
+    expect(spellNameLines.length).toBeGreaterThan(0) // sanity: the fixture still has spells
+
+    const mismatched = { id: 259445, name: 'Something Else', count: 3, isBoss: true, cc: [] }
+    const { text, changes } = refreshAutoFields(real, mismatched)
+
+    for (const line of spellNameLines) expect(text).toContain(line)
+    expect(text).toContain('name: "Something Else"   # auto')
+    expect(text).toContain('count: 3   # auto — forces per unit')
+    expect(text).not.toContain('"Rav\'i"')
+
+    expect(changes.map((c) => c.field).sort()).toEqual(['count', 'name'])
   })
 })
 

@@ -17,8 +17,15 @@
  * deleting a line in a hand-written file is a different act from correcting a value on one.
  */
 
-/** `name: "X"   # auto` and `count: 5   # auto — trailing comment` — value replaced, marker kept. */
-const MARKED = /^(\s*(name|count):\s*)(.*?)(\s+#\s*auto\b.*)$/
+/**
+ * `name: "X"   # auto` and `count: 5   # auto — trailing comment` — value replaced, marker kept.
+ *
+ * Anchored to column 0 on purpose: `content-stub.mjs` also writes an indented `name:` under each
+ * spell (its label from Wowhead), also marked `# auto`. That line is not this mob's name -- it
+ * belongs to a spell this function never sees -- so a leading `\s*` here would overwrite every
+ * spell's name with the mob's. Only the unindented, top-level `name:`/`count:` may match.
+ */
+const MARKED = /^((name|count):\s*)(.*?)(\s+#\s*auto\b.*)$/
 
 /** The CC comment the scaffold writes, whose whole payload is the list. */
 const CC_COMMENT = /^(\s*#\s*Applicable CC \(auto, from MDT\):\s*)(.*)$/
