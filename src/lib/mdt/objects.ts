@@ -1,5 +1,5 @@
-// ABOUTME: Reads an MDT preset's `objects` — the notes and strokes drawn over a route.
-// ABOUTME: Read-only, so a re-export still hands the game back its own table untouched.
+// ABOUTME: Reads an MDT preset's `objects` — the notes and strokes drawn over a route — and
+// ABOUTME: rebuilds that table on export, re-emitting byte for byte what this app did not edit.
 
 /**
  * The objects an MDT preset carries beside its pulls.
@@ -12,8 +12,8 @@
  *     n: true   →  the object is a note, and d = { x, y, sublevel, shown, text }
  *
  * Positions come out in map pixels: no component should have to know that MDT's Y axis points
- * up. Nothing here writes, which is what keeps `routeToLua` free to hand the original table
- * back with everything we cannot edit still inside it.
+ * up. An entry this app did not touch survives a round trip through `objectsToLua` unchanged,
+ * which is what keeps `routeToLua` free to hand back everything we cannot edit.
  */
 
 import type { LuaTable, LuaValue } from './cbor'
@@ -24,6 +24,12 @@ export interface MdtNote {
   at: Point
   sublevel: number
   text: string
+  /**
+   * The integer key this object came from in the preset's `objects` table. Absent when the app
+   * created it. This is what lets `objectsToLua` hand an untouched entry back byte for byte
+   * instead of rebuilding it — see the slice C design, decision 2.
+   */
+  from?: number
 }
 
 export interface MdtStroke {
@@ -38,6 +44,12 @@ export interface MdtStroke {
   /** `d[6]`, MDT's stacking order. Absent counts as 0, as a nil layerSublevel does in game. */
   layer: number
   isArrow: boolean
+  /**
+   * The integer key this object came from in the preset's `objects` table. Absent when the app
+   * created it. This is what lets `objectsToLua` hand an untouched entry back byte for byte
+   * instead of rebuilding it — see the slice C design, decision 2.
+   */
+  from?: number
 }
 
 export type MdtObject = MdtNote | MdtStroke
@@ -75,6 +87,7 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
         at: toPixels(x, y),
         sublevel,
         text: typeof text === 'string' ? text : '',
+        from: key,
       })
       continue
     }
@@ -102,10 +115,88 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
       smooth: d.get(7) === true,
       layer: Number(d.get(6)) || 0,
       isArrow: asTable(obj.get('t')) != null,
+      from: key,
     })
   }
 
   // Strokes first, in MDT's stacking order; notes are drawn by their own layer anyway.
   strokes.sort((a, b) => a.layer - b.layer)
   return [...strokes, ...notes]
+}
+
+/**
+ * Rebuilds a preset's `objects` table from the objects the app now holds.
+ *
+ * One rule, applied to the source's entries in key order:
+ *
+ *   - an entry some object claims through `from` is re-emitted **verbatim** when that object still
+ *     equals what `luaToObjects` read from it, and synthesised when it does not;
+ *   - an entry nobody claims is **omitted** if `luaToObjects` had parsed it — that is a deletion —
+ *     and re-emitted verbatim if it had not, because an entry we never understood is not ours to
+ *     rewrite;
+ *   - objects with no `from` are synthesised and appended.
+ *
+ * The output is renumbered `1..n`: MDT walks this table as a Lua array, so a deletion must not
+ * leave a hole for `ipairs` to stop at.
+ *
+ * Both "was it parsed" and "was it modified" are recomputed from `source` here rather than carried
+ * as a flag on the object. A flag can go stale between the edit and the export; a comparison
+ * cannot, and there are never enough objects for the cost to matter.
+ */
+export function objectsToLua(source: LuaTable | undefined, objects: MdtObject[]): LuaTable {
+  const out: LuaTable = new Map()
+  const raw = source ? asTable(source.get('objects')) : undefined
+
+  const claimed = new Map<number, MdtObject>()
+  for (const o of objects) if (o.from != null) claimed.set(o.from, o)
+
+  const asRead = new Map<number, MdtObject>()
+  if (source) for (const o of luaToObjects(source)) if (o.from != null) asRead.set(o.from, o)
+
+  let next = 1
+  if (raw) {
+    for (const key of intKeys(raw)) {
+      const object = claimed.get(key)
+      if (object) {
+        const original = asRead.get(key)
+        out.set(next++, original && sameObject(object, original) ? raw.get(key)! : objectToLua(object))
+        continue
+      }
+      if (!asRead.has(key)) out.set(next++, raw.get(key)!)
+    }
+  }
+
+  for (const o of objects) if (o.from == null) out.set(next++, objectToLua(o))
+  return out
+}
+
+/**
+ * Whether an object still says what the preset said, ignoring the two fields the app added. `from`
+ * is provenance and the identifier is ours; neither reaches MDT, so neither can make an entry
+ * dirty.
+ */
+function sameObject(a: MdtObject, b: MdtObject): boolean {
+  if (a.kind !== b.kind) return false
+  if (a.kind === 'note' && b.kind === 'note') {
+    return a.at.x === b.at.x && a.at.y === b.at.y && a.sublevel === b.sublevel && a.text === b.text
+  }
+  if (a.kind === 'stroke' && b.kind === 'stroke') {
+    return (
+      a.sublevel === b.sublevel &&
+      a.color === b.color &&
+      a.size === b.size &&
+      a.smooth === b.smooth &&
+      a.layer === b.layer &&
+      a.isArrow === b.isArrow &&
+      a.points.length === b.points.length &&
+      a.points.every((p, i) => p.x === b.points[i].x && p.y === b.points[i].y)
+    )
+  }
+  return false
+}
+
+function objectToLua(_object: MdtObject): LuaTable {
+  // Task 2 of the object write path replaces this. Until then, nothing may reach it: every test in
+  // this task covers an object that is either untouched or absent.
+  throw new Error('objectToLua: synthesising an object is not implemented yet')
 }

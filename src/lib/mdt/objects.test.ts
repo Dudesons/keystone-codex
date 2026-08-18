@@ -6,9 +6,12 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { MAP_SCALE } from '../geometry'
 import { decodeMdtString } from './string'
-import { luaToObjects } from './objects'
+import { luaToObjects, objectsToLua } from './objects'
 import type { MdtNote, MdtStroke } from './objects'
 import type { LuaTable, LuaValue } from './cbor'
+
+/** A second, local copy of `objects.ts`'s module-private helper — see the file's own note on why. */
+const asTable = (v: LuaValue | undefined): LuaTable | undefined => (v instanceof Map ? v : undefined)
 
 /** Skipped rather than failed when absent, so the repository stays testable without it. */
 const fixture = path.join(__dirname, '__fixtures__', 'real-export.txt')
@@ -108,5 +111,58 @@ describe('luaToObjects — what it refuses to break on', () => {
   it('skips a note whose position is not a number', () => {
     const d = table([[1, 'nope'], [2, -10], [3, 1], [4, true], [5, 'text']])
     expect(luaToObjects(preset(table([[1, table([['d', d], ['n', true]])]])))).toEqual([])
+  })
+})
+
+describe('objectsToLua — what it refuses to touch', () => {
+  const preset = () => decodeMdtString(drawn).table
+
+  runDrawn('records where every object came from', () => {
+    const objects = luaToObjects(preset())
+    // Eleven entries, every one of them parseable in this fixture.
+    expect(objects.every((o) => typeof o.from === 'number')).toBe(true)
+    expect(new Set(objects.map((o) => o.from)).size).toBe(objects.length)
+  })
+
+  runDrawn('re-emits an untouched preset identically', () => {
+    const source = preset()
+    const out = objectsToLua(source, luaToObjects(source))
+    expect(out).toEqual(source.get('objects'))
+  })
+
+  runDrawn('omits an object that no longer claims its entry', () => {
+    const source = preset()
+    const objects = luaToObjects(source)
+    const dropped = objects.find((o) => o.kind === 'note')!
+    const out = objectsToLua(
+      source,
+      objects.filter((o) => o !== dropped),
+    )
+    const before = asTable(source.get('objects'))!
+    expect(out.size).toBe(before.size - 1)
+    // Every surviving entry is the original object, not a copy of one.
+    const survivors = [...out.values()]
+    expect(survivors).not.toContain(before.get(dropped.from!))
+  })
+
+  runDrawn('keeps an entry it never understood, even though nothing claims it', () => {
+    // MDT writes `shown: false` for a stroke its author undid, and keeps the object in case they
+    // redo it. `luaToObjects` skips it, so no object can claim it — and it must survive anyway.
+    const source = preset()
+    const raw = asTable(source.get('objects'))!
+    const hiddenKey = [...raw.keys()].find((k): k is number => typeof k === 'number')!
+    const hidden = asTable(raw.get(hiddenKey))!
+    asTable(hidden.get('d'))!.set(4, false)
+
+    const objects = luaToObjects(source)
+    expect(objects.some((o) => o.from === hiddenKey)).toBe(false)
+
+    const out = objectsToLua(source, objects)
+    expect([...out.values()]).toContain(hidden)
+  })
+
+  it('is empty for a preset with no objects at all', () => {
+    expect(objectsToLua(undefined, []).size).toBe(0)
+    expect(objectsToLua(new Map(), []).size).toBe(0)
   })
 })
