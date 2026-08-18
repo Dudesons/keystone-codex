@@ -18,7 +18,7 @@ import type { CloneRef } from '../lib/types'
 
 type Mode = 'codex' | 'route'
 
-export default function DungeonPage() {
+export default function DungeonPage({ mode }: { mode: Mode }) {
   const { slug = '', npcId } = useParams()
   const lookup = getLookup(slug)
 
@@ -26,10 +26,10 @@ export default function DungeonPage() {
 
   // The key forces a full remount when the dungeon changes: the route document and the
   // selections start from scratch, with no state left over from one dungeon to the next.
-  return <DungeonView key={slug} slug={slug} npcId={npcId} />
+  return <DungeonView key={slug} slug={slug} npcId={npcId} mode={mode} />
 }
 
-function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
+function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode: Mode }) {
   const navigate = useNavigate()
   const { t } = useI18n()
   const lookup = getLookup(slug)!
@@ -45,16 +45,17 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const room = searchParams.get('room')
   const pendingRoom = room && room !== declined ? room : null
 
-  const [mode, setMode] = useState<Mode>(pendingRoom ? 'route' : 'codex')
-
-  // A join link pasted into a tab already on this dungeon only changes the hash, which does
-  // not remount `DungeonPage` — the `useState` above only seeds the initial mode. Reacting to
-  // `pendingRoom` here is what makes the invitation appear without a reload. It only ever
-  // turns route mode *on*: once `pendingRoom` stops changing, a reader who clicks back to
-  // Codex stays there.
+  // `mode` is which address you're on, not state — an invitation must still reach the route
+  // panel no matter which tab it arrived on, so a codex address carrying `?room=` redirects to
+  // the route one, keeping the room in the query. A join link pasted into a tab already on this
+  // dungeon only changes the hash, which does not remount `DungeonPage` — reacting to
+  // `pendingRoom` here is what makes the invitation appear without a reload. It only ever pushes
+  // you onto the route address: once there, choosing another tab is not undone by this effect.
   useEffect(() => {
-    if (pendingRoom) setMode('route')
-  }, [pendingRoom])
+    if (pendingRoom && mode !== 'route') {
+      navigate(`/d/${slug}/route?room=${pendingRoom}`, { replace: true })
+    }
+  }, [pendingRoom, mode, navigate, slug])
 
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
@@ -157,7 +158,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
         setSelectedPack(entry.clone.g ?? null)
         // The panel scrolls to the clicked unit rather than leaving you to look for it.
         setFocusNpc(entry.enemy.id)
-        if (selectedMob != null) navigate(`/d/${slug}/map`)
+        if (selectedMob != null) navigate(`/d/${slug}/codex`)
         return
       }
 
@@ -168,23 +169,12 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
     [lookup, mode, currentPull, actions, navigate, slug, selectedMob],
   )
 
-  const tab = (value: Mode, label: string) => (
-    <button
-      onClick={() => setMode(value)}
-      className={`rounded px-3 py-1 text-xs font-semibold transition ${
-        mode === value ? 'bg-gold-500/15 text-gold-400' : 'text-ink-400 hover:text-ink-100'
-      }`}
-    >
-      {label}
-    </button>
-  )
-
   return (
     <div className="flex h-full flex-col">
       <DungeonHeader
         slug={slug}
         lookup={lookup}
-        view="map"
+        view={mode}
         note={hasRoute ? t('dungeon.route', { name: route.name }) : undefined}
       >
         {collab.status !== 'off' && (
@@ -192,10 +182,6 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             {collab.room} · {collab.peers.length}
           </span>
         )}
-        <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
-          {tab('codex', t('tab.codex'))}
-          {tab('route', t('tab.route'))}
-        </div>
       </DungeonHeader>
 
       <div className="flex min-h-0 flex-1">
@@ -237,7 +223,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               pullByNpc={pullByNpc}
               onSelectMob={(id) => {
                 setFocusNpc(id)
-                navigate(id == null ? `/d/${slug}/map` : `/d/${slug}/map/mob/${id}`)
+                navigate(id == null ? `/d/${slug}/codex` : `/d/${slug}/codex/mob/${id}`)
               }}
               onHoverMob={setHoveredNpc}
               onClearSelection={() => {
@@ -256,9 +242,8 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
               hoveredPull={hoveredPull}
               onHoverPull={setHoveredPull}
               onFocusMob={(id) => {
-                setMode('codex')
                 setFocusNpc(id)
-                navigate(`/d/${slug}/map/mob/${id}`)
+                navigate(`/d/${slug}/codex/mob/${id}`)
               }}
               collab={collab}
               onJoinRoom={joinRoom}

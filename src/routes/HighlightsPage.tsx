@@ -24,7 +24,7 @@ export default function HighlightsPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <DungeonHeader slug={slug} lookup={lookup} view="highlights" />
+      <DungeonHeader slug={slug} lookup={lookup} view="overview" />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-6 py-8">

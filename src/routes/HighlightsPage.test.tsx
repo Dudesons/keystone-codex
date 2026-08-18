@@ -1,5 +1,5 @@
 // ABOUTME: Mounts the highlights page against the real Altar of Fangs pool, in both languages.
-// ABOUTME: Checks the page exists, names the dungeon, and offers the way to the map.
+// ABOUTME: Checks the page exists, names the dungeon, and offers the way to the codex and route.
 
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
@@ -39,14 +39,15 @@ describe('Header', () => {
     expect(header.textContent).toContain(`${lookup.dungeon.totalCount} forces`)
   })
 
-  it('offers the map, at its own address', () => {
+  it('offers the codex and the route, each at its own address', () => {
     const { container } = renderEn(at(`/d/${SLUG}`))
-    expect(container.querySelector(`a[href="/d/${SLUG}/map"]`)).not.toBeNull()
+    expect(container.querySelector(`a[href="/d/${SLUG}/codex"]`)).not.toBeNull()
+    expect(container.querySelector(`a[href="/d/${SLUG}/route"]`)).not.toBeNull()
   })
 
   it('speaks French when the reader does', () => {
     const { container } = renderFr(at(`/d/${SLUG}`))
-    expect(container.querySelector('header')!.textContent).toContain('Carte')
+    expect(container.querySelector('header')!.textContent).toContain('Résumé')
   })
 })
 

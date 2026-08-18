@@ -27,7 +27,7 @@ export default function BossStrip({ slug, bosses }: { slug: string; bosses: High
               />
             )}
             <h3 className="min-w-0 text-sm font-semibold text-ink-100">
-              <Link to={`/d/${slug}/map/mob/${boss.npcId}`} className="hover:text-gold-400">
+              <Link to={`/d/${slug}/codex/mob/${boss.npcId}`} className="hover:text-gold-400">
                 {boss.name}
               </Link>
             </h3>

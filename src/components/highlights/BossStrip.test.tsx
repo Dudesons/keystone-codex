@@ -29,7 +29,7 @@ describe('BossStrip', () => {
 
   it('links each boss into its codex entry', () => {
     const { container } = mount(SLUG)
-    expect(container.querySelector(`a[href="/d/${SLUG}/map/mob/259445"]`)).not.toBeNull()
+    expect(container.querySelector(`a[href="/d/${SLUG}/codex/mob/259445"]`)).not.toBeNull()
   })
 
   it('gives a boss its own prio-1 spells', () => {

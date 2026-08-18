@@ -33,7 +33,7 @@ describe('TrapList', () => {
     const { container } = mount()
     const twinfang = container.querySelector('[data-trap="261554"]')!
     expect(twinfang.textContent).toContain('Twinfang Harrower')
-    expect(twinfang.querySelector(`a[href="/d/${SLUG}/map/mob/261554"]`)).not.toBeNull()
+    expect(twinfang.querySelector(`a[href="/d/${SLUG}/codex/mob/261554"]`)).not.toBeNull()
   })
 
   it('renders the trap sentence as markdown', () => {

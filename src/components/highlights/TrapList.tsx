@@ -18,7 +18,7 @@ export default function TrapList({ slug, traps }: { slug: string; traps: Highlig
         >
           <div className="flex items-center gap-2">
             <Link
-              to={`/d/${slug}/map/mob/${trap.npcId}`}
+              to={`/d/${slug}/codex/mob/${trap.npcId}`}
               className="text-xs font-semibold text-ink-100 hover:text-gold-400"
             >
               {trap.mobName}

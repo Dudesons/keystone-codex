@@ -1,5 +1,5 @@
-// ABOUTME: The bar both dungeon pages wear: name, forces, packs, timer, and the page toggle.
-// ABOUTME: Page-specific controls come in as children, between the statistics and the switcher.
+// ABOUTME: The bar every dungeon page wears: name, forces, packs, timer, and the fixed tab menu
+// ABOUTME: (Overview, Codex, Route). Page-specific controls come in as children.
 
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -7,6 +7,9 @@ import type { DungeonLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from './LocaleSwitcher'
+
+/** Which of the three fixed tabs is current. */
+export type DungeonTab = 'overview' | 'codex' | 'route'
 
 export default function DungeonHeader({
   slug,
@@ -17,12 +20,25 @@ export default function DungeonHeader({
 }: {
   slug: string
   lookup: DungeonLookup
-  view: 'highlights' | 'map'
+  view: DungeonTab
   note?: string
   children?: ReactNode
 }) {
   const { t, plural, locale } = useI18n()
   const content = getDungeonContent(slug, locale)
+
+  // Reused by every tab: the active one carries the gold treatment, the rest stay dim until
+  // hovered. Real links, not buttons — a tab is an address, so it has to be one.
+  const tab = (value: DungeonTab, to: string, label: string) => (
+    <Link
+      to={to}
+      className={`rounded px-3 py-1 text-xs font-semibold transition ${
+        view === value ? 'bg-gold-500/15 text-gold-400' : 'text-ink-400 hover:text-ink-100'
+      }`}
+    >
+      {label}
+    </Link>
+  )
 
   return (
     <header className="flex shrink-0 items-center gap-4 border-b border-ink-800 px-4 py-2.5">
@@ -40,12 +56,11 @@ export default function DungeonHeader({
       </div>
       <div className="ml-auto flex items-center gap-2">
         {children}
-        <Link
-          to={view === 'map' ? `/d/${slug}` : `/d/${slug}/map`}
-          className="rounded border border-ink-700 px-3 py-1 text-xs font-semibold text-ink-300 transition hover:border-gold-500 hover:text-gold-400"
-        >
-          {view === 'map' ? t('dungeon.toHighlights') : t('dungeon.toMap')}
-        </Link>
+        <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
+          {tab('overview', `/d/${slug}`, t('tab.overview'))}
+          {tab('codex', `/d/${slug}/codex`, t('tab.codex'))}
+          {tab('route', `/d/${slug}/route`, t('tab.route'))}
+        </div>
         <LocaleSwitcher />
       </div>
     </header>
