@@ -68,6 +68,22 @@ describe('getHighlights mobs', () => {
     expect(fr.spells.map((s) => s.name)).toContain('Déchirure et taillade')
   })
 
+  it('names the mobs in the reader’s language, as every other view does', () => {
+    // MDT only knows English names; Wowhead supplies the rest, and `getNpcLabel` is what the
+    // codex, the map and the route panel all call. A briefing naming its mobs in English beside
+    // a French codex would be the one place the app disagreed with itself.
+    const en = getHighlights(ALTAR, 'en').mobs.find((m) => m.npcId === TWINFANG)!
+    const fr = getHighlights(ALTAR, 'fr').mobs.find((m) => m.npcId === TWINFANG)!
+    expect(en.name).toBe('Twinfang Harrower')
+    expect(fr.name).toBe('Persécuteur crochet-double')
+  })
+
+  it('localizes the boss names and the mob names in the trap list too', () => {
+    const fr = getHighlights(ALTAR, 'fr')
+    expect(fr.bosses.map((b) => b.name)).toContain("L'Ophidien ondulant")
+    expect(fr.traps.map((t) => t.mobName)).toContain('Persécuteur crochet-double')
+  })
+
   it('returns empty lists for a dungeon that does not exist', () => {
     expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [] })
   })

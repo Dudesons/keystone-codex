@@ -14,7 +14,7 @@
  */
 
 import type { Enemy } from './types'
-import { getLookup, getSpell } from './data'
+import { getLookup, getNpcLabel, getSpell } from './data'
 import { getDungeonContent, getMobContent, inlineMarkdown, type SpellTag, type Threat } from './content'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 
@@ -153,12 +153,17 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
   for (const enemy of lookup.enemyById.values()) {
     const content = getMobContent(slug, enemy.id, locale)
     const spells = chipsOf(slug, enemy, locale)
+    // Wowhead localizes creature names; MDT only has English. Every other view goes through
+    // getNpcLabel, so a briefing naming its mobs in English beside a French codex would be the
+    // one place the two disagree. The alphabetical tie-break below sorts on this name, which is
+    // why it is resolved here rather than in the components.
+    const { name } = getNpcLabel(enemy, locale)
 
     if (enemy.isBoss) {
       bossOrder.push(enemy.id)
       bosses.push({
         npcId: enemy.id,
-        name: enemy.name,
+        name,
         displayId: enemy.displayId,
         threat: content?.threat,
         role: content?.role,
@@ -171,7 +176,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
     if (spells.length) {
       mobs.push({
         npcId: enemy.id,
-        name: enemy.name,
+        name,
         displayId: enemy.displayId,
         threat: content?.threat,
         role: content?.role,
@@ -182,7 +187,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
     if (content?.trap) {
       traps.push({
         npcId: enemy.id,
-        mobName: enemy.name,
+        mobName: name,
         threat: content.threat,
         html: inlineMarkdown(content.trap),
       })
