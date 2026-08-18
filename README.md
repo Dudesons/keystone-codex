@@ -95,6 +95,8 @@ A dungeon's **Route** tab lets you:
   clicking again removes it);
 - reorder and color the pulls, following the cumulative forces;
 - unfold a pull's **briefing**: its mobs, what to interrupt there, and their traps;
+- hover a mob on the map to read its entry and its worth in a column beside the map, without
+  leaving the tab; right-click a mob to hold that entry in place while you compare another;
 - copy an MDT string that reimports in game.
 
 When a route exists, the codex cards carry a pip with the pull number, and hovering a pull

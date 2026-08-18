@@ -127,9 +127,12 @@ not an imitation of the addon's.
 
 ### 6. Missing health is guarded, though it does not occur
 
-Zero of the 260 committed mobs lack a `health` value. The guard is one branch — `score: null`,
-rendered as an em dash — and a test pins it, so that a future extraction changing the field
-produces a visible gap rather than an `Infinity` displayed with confidence.
+Zero of the 260 committed mobs lack a `health` value. The guard is one branch — `score: null`
+— and `MobStats` omits the score element entirely rather than rendering a placeholder for it:
+the forces count and the share are still known and shown, only the ratio that needs health as
+its denominator is missing. The guard that matters is the unit test in `contribution.test.ts`,
+not something a reader can see: no committed mob reaches this branch, so there is nothing to
+show by eye either way.
 
 ### 7. Right-click freezes; the tooltip becomes the comparison surface
 
