@@ -11,6 +11,7 @@ import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from 
 import type { Peer } from '../../lib/collab/presence'
 import type { MdtNote, MdtObject, MdtStroke } from '../../lib/mdt/objects'
 import MobStats from '../codex/MobStats'
+import DrawSurface from './DrawSurface'
 import NoteLayer from './NoteLayer'
 import ObjectLayer from './ObjectLayer'
 import PeerCursors from './PeerCursors'
@@ -62,8 +63,12 @@ interface Props {
   objects?: MdtObject[]
   /** Hide the hover tooltip: something else on the page is already showing the hovered mob. */
   suppressCloneTooltip?: boolean
-  /** A click on the map surface, in map pixels. Wired only while a tool wants one. */
-  onMapClick?: (at: Point) => void
+  /** The gesture a tool wants, or absent when the map is just a map. */
+  drawing?: {
+    mode: 'point' | 'line' | 'freehand'
+    onProgress?: (points: Point[]) => void
+    onCommit: (points: Point[]) => void
+  }
 }
 
 export default function DungeonMap({
@@ -84,7 +89,7 @@ export default function DungeonMap({
   notice,
   objects,
   suppressCloneTooltip,
-  onMapClick,
+  drawing,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
@@ -350,18 +355,12 @@ export default function DungeonMap({
         <PoiTooltip poi={lookup.dungeon.pois[hoverPoi]} />
       )}
       {cursors && <PeerCursors peers={cursors} transform={transform} />}
-      {onMapClick && (
-        <div
-          data-testid="draw-surface"
-          className="absolute inset-0"
-          onPointerDown={(e) => {
-            // The container above owns panning and takes pointer capture after 4px. Stopping the
-            // event here is what keeps a drawing gesture from becoming a pan; the cost is that
-            // drag-to-pan is unavailable while a tool is active, and Escape is the way out.
-            e.stopPropagation()
-            const rect = e.currentTarget.getBoundingClientRect()
-            onMapClick(toMapPoint(transform, { x: e.clientX - rect.left, y: e.clientY - rect.top }))
-          }}
+      {drawing && (
+        <DrawSurface
+          transform={transform}
+          mode={drawing.mode}
+          onProgress={drawing.onProgress}
+          onCommit={drawing.onCommit}
         />
       )}
       {/* An explicit predicate, not a bare `o.kind === 'note'`: once Task 6 puts a second

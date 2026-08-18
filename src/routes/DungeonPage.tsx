@@ -13,6 +13,7 @@ import MobPanel from '../components/route/MobPanel'
 import ObjectToolbar, { type Tool } from '../components/route/ObjectToolbar'
 import ObjectEditor from '../components/route/ObjectEditor'
 import { cloneKey, getLookup } from '../lib/data'
+import { MDT_ARROW_DEFAULTS } from '../lib/mdt/objects'
 import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels, type Point } from '../lib/geometry'
@@ -20,6 +21,13 @@ import { useI18n } from '../lib/i18n/context'
 import type { CloneRef, Enemy } from '../lib/types'
 
 type Mode = 'codex' | 'route'
+
+/**
+ * What a stroke this app draws is coloured. MDT lets its author pick; we do not offer that yet, so
+ * one value beats a colour picker nobody asked for. It is the colour every stroke in the real
+ * export we have carries.
+ */
+const STROKE_COLOR = 'ff365c'
 
 export default function DungeonPage({ mode }: { mode: Mode }) {
   const { slug = '', npcId } = useParams()
@@ -101,6 +109,35 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   const placeNote = (at: Point) => {
     setSelectedObject(actions.addObject({ kind: 'note', at, sublevel: 1, text: '' }))
   }
+
+  /**
+   * The gesture the active tool wants. One surface serves every tool: a note's click is just the
+   * degenerate case of a drag that never moved. `'freehand'` falls through to `undefined` on
+   * purpose — that tool has no gesture wired yet.
+   */
+  const drawing = useMemo(() => {
+    if (tool === 'note') {
+      return { mode: 'point' as const, onCommit: (points: Point[]) => placeNote(points[0]) }
+    }
+    if (tool === 'arrow') {
+      return {
+        mode: 'line' as const,
+        onCommit: (points: Point[]) => {
+          // A press that never moved has no direction, so there is no arrow to make.
+          if (points.length < 2) return
+          actions.addObject({
+            kind: 'stroke',
+            points,
+            sublevel: 1,
+            color: STROKE_COLOR,
+            isArrow: true,
+            ...MDT_ARROW_DEFAULTS,
+          })
+        },
+      }
+    }
+    return undefined
+  }, [tool, actions])
 
   // Escape drops the active tool, so there is always a keyboard way back to panning. Only
   // listens in Route mode: the codex tab never has a tool to drop.
@@ -322,7 +359,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             // on purpose — the column already shows that enemy's numbers, so repeating them in
             // a tooltip would be the same redundancy this suppression exists to prevent.
             suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
-            onMapClick={tool === 'note' ? placeNote : undefined}
+            drawing={drawing}
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
