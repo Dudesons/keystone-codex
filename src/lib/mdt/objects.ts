@@ -124,6 +124,11 @@ export function luaToObjects(preset: LuaTable): MdtObject[] {
       if (last && last.x === point.x && last.y === point.y) continue
       points.push(point)
     }
+    // A stroke whose coordinates all collapse to one point is a dot, and a dot is something MDT
+    // draws: `smooth` has it stamp a circle at each end of every segment, both of which sit here.
+    // Kept as the degenerate two-point stroke the rest of the app can hold, rather than dropped —
+    // dropping it would stop showing a mark the author left, and `strokeToLua` writes it back.
+    if (points.length === 1 && flat.length >= 4) points.push(points[0])
     if (points.length < 2) continue
 
     // MDT's own fallbacks (`Modules/PresetObjects.lua:184` and `:187-189`), copied rather
@@ -231,6 +236,10 @@ function sameObject(a: MdtObject, b: MdtObject): boolean {
  *
  * Frozen: "this is what MDT wrote" is a fact about that fixture, not a starting point to adjust.
  * Callers spread them into an object of their own, which a frozen source supports.
+ *
+ * `size` is the one field a caller is expected to override: the page draws at whatever width the
+ * brush is set to. What stays authoritative here is `smooth` and `layer` — including the fact
+ * that an arrow carries no `smooth` key at all, which is not a thing anyone would guess.
  */
 export const MDT_STROKE_DEFAULTS = Object.freeze({ size: 5, smooth: true, layer: -8 })
 export const MDT_ARROW_DEFAULTS = Object.freeze({ size: 13, smooth: false, layer: -8 })
@@ -307,6 +316,19 @@ function strokeToLua(stroke: MdtStroke): LuaTable {
     l.set(i++, from.y)
     l.set(i++, to.x)
     l.set(i++, to.y)
+  }
+
+  // Never empty. A stroke every segment of which collapsed is a dot, which MDT draws, and the
+  // arrow gesture can make one: it has no sampling threshold, so a drag of a pixel at full zoom
+  // is under the tenth of a unit `l` stores and both ends round together. Emitting nothing would
+  // leave an object the game cannot draw and `luaToObjects` cannot read — and an entry the reader
+  // cannot read is one `objectsToLua` hands back verbatim from then on, so it would never leave.
+  if (l.size === 0 && coords.length > 0) {
+    const only = coords[0]
+    l.set(1, only.x)
+    l.set(2, only.y)
+    l.set(3, only.x)
+    l.set(4, only.y)
   }
 
   const obj: LuaTable = new Map()

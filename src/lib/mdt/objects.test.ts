@@ -120,6 +120,17 @@ describe('luaToObjects — what it refuses to break on', () => {
     expect(luaToObjects(preset(table([[1, table([['n', true]])]])))).toEqual([])
   })
 
+  it('keeps a stroke MDT drew as a single dot, rather than dropping it', () => {
+    // One zero-length segment is a dot on the map, not nothing: `smooth` makes MDT stamp a circle
+    // at each end of every segment it draws. Collapsing the repeated vertex must not collapse the
+    // object with it, or the app quietly stops showing a mark its author left.
+    const d = table([[1, 5], [2, 1.1], [3, 1], [4, true], [5, 'ff365c'], [6, -8], [7, true]])
+    const l = table([[1, '100.0'], [2, '-200.0'], [3, '100.0'], [4, '-200.0']])
+    const [stroke] = luaToObjects(preset(table([[1, table([['d', d], ['l', l]])]])))
+    expect(stroke).toBeDefined()
+    expect(stroke.kind === 'stroke' && stroke.points).toHaveLength(2)
+  })
+
   it('skips a note whose position is not a number', () => {
     const d = table([[1, 'nope'], [2, -10], [3, 1], [4, true], [5, 'text']])
     expect(luaToObjects(preset(table([[1, table([['d', d], ['n', true]])]])))).toEqual([])
@@ -312,6 +323,39 @@ describe('objectsToLua — synthesising', () => {
       '10.0', '-20.0', '20.0', '-30.0',
       '20.0', '-30.0', '30.0', '-40.0',
     ])
+  })
+
+  it('writes a stroke that collapses to a dot as one segment, never as an empty `l`', () => {
+    // Reachable from the arrow tool, whose gesture has no sampling threshold: a drag of a pixel
+    // or two at full zoom is less than the tenth of an MDT unit `l` stores, so both ends round to
+    // the same place. An empty `l` would leave an object MDT cannot draw and our own reader
+    // cannot parse — and an entry the reader cannot parse is one `objectsToLua` then hands back
+    // verbatim for ever, so the preset would carry it around permanently.
+    const dot: MdtStroke = {
+      kind: 'stroke',
+      points: [toPixels(100, -200), toPixels(100.02, -200.01)],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const l = asTable(asTable(objectsToLua(undefined, [dot]).get(1))!.get('l'))!
+    expect([...l.values()]).toEqual(['100.0', '-200.0', '100.0', '-200.0'])
+  })
+
+  it('reads back a dot it wrote, so the entry cannot decay into one nothing understands', () => {
+    const dot: MdtStroke = {
+      kind: 'stroke',
+      points: [toPixels(100, -200), toPixels(100, -200)],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const preset: LuaTable = new Map()
+    preset.set('objects', objectsToLua(undefined, [dot]))
+    const [read] = luaToObjects(preset)
+    expect(read?.kind).toBe('stroke')
   })
 
   runDrawn('re-emits a modified freehand stroke with the coordinates the game wrote', () => {

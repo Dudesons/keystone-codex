@@ -204,6 +204,34 @@ describe('Selecting and moving a note', () => {
     expect(screen.queryByText('Lust, a lot of kicks to do')).toBeNull()
   })
 
+  it('keeps the press to itself whenever a tool can act on the pin', () => {
+    // The map starts a pan from any press it hears and takes pointer capture a few pixels later,
+    // which retargets the click away from the pin. The eraser supplies `onSelect` and nothing
+    // else, so a guard that only knows about dragging and drawing hands it the press instead —
+    // and a hand that wobbles between down and up erases nothing and pans the map.
+    const heard: string[] = []
+    renderEn(
+      <div onPointerDown={() => heard.push('map')}>
+        <NoteLayer notes={notesWithIds} transform={transform} onSelect={() => {}} />
+      </div>,
+    )
+    fireEvent.pointerDown(screen.getByTestId('note-pin-0'), { clientX: 100, clientY: 200, pointerId: 1 })
+    expect(heard).toEqual([])
+  })
+
+  it('lets the press through when nothing can act on the pin', () => {
+    // The other half of the same rule: with no tool active a pin is decoration, and swallowing
+    // the press would cost the map a pan for no reason but where the hand landed.
+    const heard: string[] = []
+    renderEn(
+      <div onPointerDown={() => heard.push('map')}>
+        <NoteLayer notes={notesWithIds} transform={transform} />
+      </div>,
+    )
+    fireEvent.pointerDown(screen.getByTestId('note-pin-0'), { clientX: 100, clientY: 200, pointerId: 1 })
+    expect(heard).toEqual(['map'])
+  })
+
   it('still opens on a plain click that never moved, once a drag is possible', () => {
     // Same wiring as the hazard test above, but with no movement: a click that was never a drag
     // must still behave like one, or `onMove` being wired at all would silently break clicks.
