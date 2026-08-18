@@ -2,10 +2,10 @@
 // ABOUTME: A row is a mob because that is the unit a player thinks in, and it halves the length.
 
 import { Link } from 'react-router-dom'
-import type { HighlightMob, HighlightSpell } from '../../lib/highlights'
-import { iconUrl, wowheadUrl } from '../../lib/data'
+import type { HighlightMob } from '../../lib/highlights'
 import { useI18n } from '../../lib/i18n/context'
-import { DispelBadges, TagBadge, ThreatBadge } from '../codex/Badges'
+import { ThreatBadge } from '../codex/Badges'
+import SpellChip from './SpellChip'
 
 export default function MobTable({ slug, mobs }: { slug: string; mobs: HighlightMob[] }) {
   if (!mobs.length) return null
@@ -43,42 +43,9 @@ function MobRow({ slug, mob }: { slug: string; mob: HighlightMob }) {
       </div>
       <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5">
         {mob.spells.map((spell) => (
-          <SpellChip key={spell.name} spell={spell} />
+          <SpellChip key={spell.name} spell={spell} variant="row" />
         ))}
       </div>
     </div>
-  )
-}
-
-function SpellChip({ spell }: { spell: HighlightSpell }) {
-  const { locale } = useI18n()
-
-  return (
-    <span className="flex items-center gap-1.5 rounded border border-ink-700 bg-ink-900 py-0.5 pl-0.5 pr-1.5">
-      {spell.icon ? (
-        <img
-          src={iconUrl(spell.icon)}
-          alt=""
-          loading="lazy"
-          className="h-5 w-5 rounded-sm border border-ink-600"
-        />
-      ) : (
-        <span className="h-5 w-5 rounded-sm border border-ink-700 bg-ink-800" />
-      )}
-      <a
-        href={wowheadUrl(spell.ids[0], locale)}
-        target="_blank"
-        rel="noreferrer"
-        className="text-xs font-medium text-ink-200 hover:text-gold-400"
-      >
-        {spell.name}
-      </a>
-      {spell.tags.map((tag) => (
-        <TagBadge key={tag} tag={tag} />
-      ))}
-      {/* With no hand-written tag, what MDT knows is still worth showing. */}
-      {!spell.tags.length && spell.interruptible && <TagBadge tag="kick" />}
-      <DispelBadges dispel={spell.dispel} />
-    </span>
   )
 }

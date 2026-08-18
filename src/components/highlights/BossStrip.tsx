@@ -2,10 +2,9 @@
 // ABOUTME: A boss's trap lives here rather than in the trap list, so it is not shown twice.
 
 import { Link } from 'react-router-dom'
-import type { HighlightMob, HighlightSpell } from '../../lib/highlights'
-import { iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
-import { useI18n } from '../../lib/i18n/context'
-import { DispelBadges, TagBadge } from '../codex/Badges'
+import type { HighlightMob } from '../../lib/highlights'
+import { portraitUrl } from '../../lib/data'
+import SpellChip from './SpellChip'
 
 export default function BossStrip({ slug, bosses }: { slug: string; bosses: HighlightMob[] }) {
   if (!bosses.length) return null
@@ -45,45 +44,12 @@ export default function BossStrip({ slug, bosses }: { slug: string; bosses: High
           {boss.spells.length > 0 && (
             <ul className="mt-2 space-y-1">
               {boss.spells.map((spell) => (
-                <SpellItem key={spell.name} spell={spell} />
+                <SpellChip key={spell.name} spell={spell} variant="card" />
               ))}
             </ul>
           )}
         </article>
       ))}
     </div>
-  )
-}
-
-function SpellItem({ spell }: { spell: HighlightSpell }) {
-  const { locale } = useI18n()
-
-  return (
-    <li className="flex flex-wrap items-center gap-1.5">
-      {spell.icon ? (
-        <img
-          src={iconUrl(spell.icon)}
-          alt=""
-          loading="lazy"
-          className="h-4 w-4 shrink-0 rounded-sm border border-ink-600"
-        />
-      ) : (
-        <span className="h-4 w-4 shrink-0 rounded-sm border border-ink-700 bg-ink-800" />
-      )}
-      <a
-        href={wowheadUrl(spell.ids[0], locale)}
-        target="_blank"
-        rel="noreferrer"
-        className="truncate text-xs text-ink-200 hover:text-gold-400"
-      >
-        {spell.name}
-      </a>
-      {spell.tags.map((tag) => (
-        <TagBadge key={tag} tag={tag} />
-      ))}
-      {/* With no hand-written tag, what MDT knows is still worth showing. */}
-      {!spell.tags.length && spell.interruptible && <TagBadge tag="kick" />}
-      <DispelBadges dispel={spell.dispel} />
-    </li>
   )
 }
