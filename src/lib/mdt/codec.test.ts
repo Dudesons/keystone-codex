@@ -249,13 +249,28 @@ describe('MDT route', () => {
     expect(out.get('objects')).toEqual(seq(lua(['t', 'note'])))
   })
 
+  it('gives no objects table to a preset that never carried one', () => {
+    // `routeToLua` writes `objects` only when the source already had the key or the route holds an
+    // object of its own. Guarding on `route.source` instead — which is the whole preset table, and
+    // truthy for every import — would plant an empty `objects = {}` into presets like this one,
+    // which has never had that key.
+    expect(routeToLua(luaToRoute(preset)).has('objects')).toBe(false)
+  })
+
   // The guard that mattered before objects were editable, and still has to hold: importing and
   // re-exporting without touching anything must not rewrite a single object.
   runDrawn('still hands back an objects table it was not asked to change', () => {
     const preset = decodeMdtString(drawn).table
-    const before = preset.get('objects')
+    const before = asTable(preset.get('objects'))!
     const out = routeToLua(luaToRoute(preset))
     expect(out.get('objects')).toEqual(before)
+    // And identically *by reference*, which is what "byte for byte" actually means here. `toEqual`
+    // alone is far weaker than it looks: most of this fixture's entries are indistinguishable from
+    // their synthesised replacement under it, so a wholesale abandonment of the verbatim branch
+    // would only be caught by the two arrows (whose angle is recomputed) and the two notes whose
+    // coordinates drift by one ULP. The same entry object, not an equal one, is the invariant.
+    const emitted = [...asTable(out.get('objects'))!.values()]
+    for (const entry of before.values()) expect(emitted).toContain(entry)
   })
 
   runDrawn('drops an object the route no longer holds', () => {

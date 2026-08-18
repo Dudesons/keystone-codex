@@ -126,8 +126,15 @@ describe('objectsToLua — what it refuses to touch', () => {
 
   runDrawn('re-emits an untouched preset identically', () => {
     const source = preset()
+    const before = asTable(source.get('objects'))!
     const out = objectsToLua(source, luaToObjects(source))
-    expect(out).toEqual(source.get('objects'))
+    expect(out).toEqual(before)
+    // By reference, entry by entry. `toEqual` is the weaker half of this guard: most of these
+    // entries survive a round trip through the synthesiser without changing shape, so equality
+    // would go on passing over a verbatim branch that had stopped running. Handing back the same
+    // table object is the invariant the design states.
+    const emitted = [...out.values()]
+    for (const entry of before.values()) expect(emitted).toContain(entry)
   })
 
   runDrawn('omits an object that no longer claims its entry', () => {
