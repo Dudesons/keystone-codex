@@ -175,13 +175,13 @@ export function diffSpells(before, after, annotatedIds) {
     const severity = annotated ? 3 : 6
 
     if (!after[id]) {
-      out.push({
+      out.push(finding({
         severity,
         dungeon: '',
         subject: `spell ${id}`,
         what: 'left the data',
-        action: annotated ? 'a card annotates it: the note no longer renders' : undefined,
-      })
+        ...(annotated ? { action: 'a card annotates it: the note no longer renders' } : {}),
+      }))
       continue
     }
 
@@ -190,14 +190,14 @@ export function diffSpells(before, after, annotatedIds) {
       const is = after[id].text?.[lang] ?? {}
       for (const field of TEXT_FIELDS) {
         if (was[field] === is[field]) continue
-        out.push({
+        out.push(finding({
           severity,
           dungeon: '',
           subject: `spell ${id}`,
           what: `${field} changed`,
           detail: `[${lang}] ${was[field] ?? '(none)'} -> ${is[field] ?? '(none)'}`,
-          action: annotated ? 'reread the note: it may quote numbers from the old text' : undefined,
-        })
+          ...(annotated ? { action: 'reread the note: it may quote numbers from the old text' } : {}),
+        }))
       }
     }
   }

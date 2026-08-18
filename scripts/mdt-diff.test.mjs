@@ -1,5 +1,5 @@
-// ABOUTME: Tests the semantic diff of two generated snapshots against two real versions.
-// ABOUTME: Pins that coordinates never surface and that lost spells always do.
+// ABOUTME: Tests the semantic diff of two generated dungeon snapshots, and of the spell table.
+// ABOUTME: Runs on two real versions of one dungeon and on the real committed spells.json.
 
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -127,6 +127,14 @@ describe('diffSpells', () => {
     const after = structuredClone(realSpells)
     delete after[anyId]
     expect(diffSpells(realSpells, after, new Set())[0].what).toContain('left the data')
+  })
+
+  it('omits the action key rather than carrying it as undefined', () => {
+    // Every optional field in this module is absent when it does not apply; an `action: undefined`
+    // key reads as a finding that has an action and forgot to say what it is.
+    const after = structuredClone(realSpells)
+    delete after[anyId]
+    expect(diffSpells(realSpells, after, new Set())[0]).not.toHaveProperty('action')
   })
 
   it('says nothing about a spell that is merely new: the mob diff already named it', () => {
