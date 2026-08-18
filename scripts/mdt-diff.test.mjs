@@ -4,7 +4,8 @@
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { diffDungeon } from './mdt-diff.mjs'
+import { diffDungeon, diffSpells } from './mdt-diff.mjs'
+import realSpells from '../src/data/generated/spells.json'
 
 const read = (name) =>
   JSON.parse(fs.readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8'))
@@ -87,5 +88,56 @@ describe('diffDungeon', () => {
     expect(findings).toHaveLength(1)
     expect(findings[0].what).toContain('new dungeon')
     expect(findings[0].severity).toBe(4)
+  })
+})
+
+describe('diffSpells', () => {
+  // The real committed table is the input shape; each case constructs the change it is about.
+  // spells.json is 560 KB, so a second copy as a fixture would cost more than it proves.
+  const anyId = Number(Object.keys(realSpells)[0])
+
+  it('finds nothing between the real table and itself', () => {
+    expect(diffSpells(realSpells, realSpells, new Set())).toEqual([])
+  })
+
+  it('raises a changed description to severity 3 when a card annotates the spell', () => {
+    const after = structuredClone(realSpells)
+    after[anyId].text.en.description = 'Something else entirely.'
+
+    const [finding] = diffSpells(realSpells, after, new Set([anyId]))
+    expect(finding.severity).toBe(3)
+    expect(finding.what).toContain('description')
+    expect(finding.detail).toContain('Something else entirely.')
+    expect(finding.action).toMatch(/note/)
+  })
+
+  it('leaves a changed description at severity 6 when no card annotates it', () => {
+    const after = structuredClone(realSpells)
+    after[anyId].text.en.description = 'Something else entirely.'
+    expect(diffSpells(realSpells, after, new Set())[0].severity).toBe(6)
+  })
+
+  it('reports a changed cast time, which notes quote as often as damage', () => {
+    const after = structuredClone(realSpells)
+    after[anyId].text.en.castTime = '9 sec cast'
+    expect(diffSpells(realSpells, after, new Set([anyId]))[0].what).toContain('castTime')
+  })
+
+  it('reports a spell that left the table', () => {
+    const after = structuredClone(realSpells)
+    delete after[anyId]
+    expect(diffSpells(realSpells, after, new Set())[0].what).toContain('left the data')
+  })
+
+  it('says nothing about a spell that is merely new: the mob diff already named it', () => {
+    const before = structuredClone(realSpells)
+    delete before[anyId]
+    expect(diffSpells(before, realSpells, new Set())).toEqual([])
+  })
+
+  it('names the language a change happened in', () => {
+    const after = structuredClone(realSpells)
+    after[anyId].text.fr.description = 'Autre chose.'
+    expect(diffSpells(realSpells, after, new Set([anyId]))[0].detail).toContain('fr')
   })
 })

@@ -153,3 +153,54 @@ export function diffDungeon(before, after) {
 
   return out
 }
+
+/** The tooltip fields a card's note quotes, and which therefore date it when they move. */
+const TEXT_FIELDS = ['name', 'castTime', 'description']
+
+/**
+ * What changed in the spell table.
+ *
+ * A spell **appearing** is not reported: the mob diff already says which mob gained it, which is
+ * the actionable half. A spell **leaving** is reported, because a note may still point at it.
+ *
+ * `annotatedIds` carries the spell ids some card annotates. A tooltip that moves under a note is
+ * severity 3 — the note quotes numbers from it — while the same change on an unannotated spell is
+ * a fact about the data and nothing more.
+ */
+export function diffSpells(before, after, annotatedIds) {
+  const out = []
+
+  for (const id of Object.keys(before)) {
+    const annotated = annotatedIds.has(Number(id))
+    const severity = annotated ? 3 : 6
+
+    if (!after[id]) {
+      out.push({
+        severity,
+        dungeon: '',
+        subject: `spell ${id}`,
+        what: 'left the data',
+        action: annotated ? 'a card annotates it: the note no longer renders' : undefined,
+      })
+      continue
+    }
+
+    for (const lang of Object.keys(before[id].text ?? {})) {
+      const was = before[id].text[lang] ?? {}
+      const is = after[id].text?.[lang] ?? {}
+      for (const field of TEXT_FIELDS) {
+        if (was[field] === is[field]) continue
+        out.push({
+          severity,
+          dungeon: '',
+          subject: `spell ${id}`,
+          what: `${field} changed`,
+          detail: `[${lang}] ${was[field] ?? '(none)'} -> ${is[field] ?? '(none)'}`,
+          action: annotated ? 'reread the note: it may quote numbers from the old text' : undefined,
+        })
+      }
+    }
+  }
+
+  return out
+}
