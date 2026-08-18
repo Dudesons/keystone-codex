@@ -41,6 +41,12 @@ pre-update data exists nowhere: no later step in this procedure can recover it.
    tooltip: MDT ships which mob casts what, and Blizzard ships what the spell says. A **patch**
    is what rewrites descriptions and cast times, and this command is the only way the report
    sees it. Skipping it means severity 3 is empty by construction, not by evidence.
+
+   **A full pass rebuilds the table from nothing, so a fetch that fails drops the label instead
+   of leaving the old one.** The run says how many: `N spells cached, M unresolved`. Read that
+   count, then `git diff --stat src/data/generated/spells.json` — deletions outweighing
+   insertions means labels are gone, not that tooltips got shorter. Re-run the command. A table
+   that shrank must never be committed: the app loses those labels with it.
 5. `npm run mdt:report`
    → verify: the report's title names both MDT versions, neither as `unknown`. The newer one
    renders `unknown` when `src/data/generated/mdt.json` is missing or the `.toc` carried no
