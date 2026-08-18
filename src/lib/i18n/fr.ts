@@ -53,7 +53,6 @@ export const fr: Dictionary = {
   'highlights.mobs': 'MOBS À CONNAÎTRE',
   'highlights.traps': 'PIÈGES',
   'highlights.bosses': 'BOSS',
-  'highlights.empty': 'Rien n’est encore écrit pour ce donjon.',
 
   // Codex panel
   'codex.pack': 'Pack {n}',

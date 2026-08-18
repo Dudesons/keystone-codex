@@ -27,7 +27,6 @@ export interface HighlightSpell {
   /** From MDT, exactly as the codex badges use it. */
   interruptible: boolean
   dispel: string[]
-  note?: string
 }
 
 /** A row of the table, and equally a card of the boss block — the shape is the same. */
@@ -95,14 +94,12 @@ function chipsOf(slug: string, enemy: Enemy, locale: Locale): HighlightSpell[] {
         tags: tag ? [tag] : [],
         interruptible: mdt.get(id)?.interruptible === true,
         dispel: [...(mdt.get(id)?.dispel ?? [])],
-        note: note.note,
       })
       continue
     }
 
     chip.ids.push(id)
     if (tag && !chip.tags.includes(tag)) chip.tags.push(tag)
-    if (!chip.note && note.note) chip.note = note.note
     if (mdt.get(id)?.interruptible) chip.interruptible = true
     for (const d of mdt.get(id)?.dispel ?? []) if (!chip.dispel.includes(d)) chip.dispel.push(d)
   }

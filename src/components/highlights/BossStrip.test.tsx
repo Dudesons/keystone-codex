@@ -1,8 +1,7 @@
 // ABOUTME: Checks the boss cards appear in order, each with its trap and its own spells.
-// ABOUTME: Order and dispel/kick fallback are unit-tested on the derivation; this file checks rendering.
+// ABOUTME: Order is unit-tested on the derivation; this file checks rendering, including dispel.
 
 // @vitest-environment jsdom
-
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'

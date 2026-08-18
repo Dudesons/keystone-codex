@@ -2,8 +2,9 @@
 // ABOUTME: Holds the selection and hover state that ties the two halves together.
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
+import UnknownDungeon from '../components/UnknownDungeon'
 import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
@@ -19,19 +20,9 @@ type Mode = 'codex' | 'route'
 
 export default function DungeonPage() {
   const { slug = '', npcId } = useParams()
-  const { t } = useI18n()
   const lookup = getLookup(slug)
 
-  if (!lookup) {
-    return (
-      <div className="p-8">
-        <p className="text-ink-300">{t('dungeon.unknown')}</p>
-        <Link to="/" className="text-gold-400 hover:underline">
-          {t('dungeon.backHome')}
-        </Link>
-      </div>
-    )
-  }
+  if (!lookup) return <UnknownDungeon />
 
   // The key forces a full remount when the dungeon changes: the route document and the
   // selections start from scratch, with no state left over from one dungeon to the next.

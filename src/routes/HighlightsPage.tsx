@@ -1,8 +1,9 @@
 // ABOUTME: A dungeon's briefing page: the shared header, the dungeon's written summary if it
-// ABOUTME: has one, its mobs table, its trap list, its boss cards, and a placeholder when the codex holds nothing at all.
+// ABOUTME: has one, its mobs table, its trap list, and its boss cards.
 
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
+import UnknownDungeon from '../components/UnknownDungeon'
 import MobTable from '../components/highlights/MobTable'
 import TrapList from '../components/highlights/TrapList'
 import BossStrip from '../components/highlights/BossStrip'
@@ -16,21 +17,10 @@ export default function HighlightsPage() {
   const { t, locale } = useI18n()
   const lookup = getLookup(slug)
 
-  if (!lookup) {
-    return (
-      <div className="p-8">
-        <p className="text-ink-300">{t('dungeon.unknown')}</p>
-        <Link to="/" className="text-gold-400 hover:underline">
-          {t('dungeon.backHome')}
-        </Link>
-      </div>
-    )
-  }
+  if (!lookup) return <UnknownDungeon />
 
   const content = getDungeonContent(slug, locale)
   const highlights = getHighlights(slug, locale)
-  const empty =
-    !highlights.mobs.length && !highlights.traps.length && !highlights.bosses.length
 
   return (
     <div className="flex h-full flex-col">
@@ -67,7 +57,6 @@ export default function HighlightsPage() {
               <BossStrip slug={slug} bosses={highlights.bosses} />
             </section>
           )}
-          {empty && <p className="text-sm text-ink-400">{t('highlights.empty')}</p>}
         </div>
       </div>
     </div>

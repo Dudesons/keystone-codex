@@ -2,7 +2,6 @@
 // ABOUTME: Runs against the real Altar of Fangs derivation.
 
 // @vitest-environment jsdom
-
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
