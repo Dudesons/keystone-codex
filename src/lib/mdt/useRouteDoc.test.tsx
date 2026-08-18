@@ -942,6 +942,26 @@ describe('Objects in the document', () => {
     guest.unmount()
   })
 
+  it('hands back the id it minted, which names the object that appeared', () => {
+    // Every creation gesture needs this: place a note, then open the editor on the note you just
+    // placed. Taking the last element of `route.objects` instead would name a peer's object the
+    // moment one arrives between the insert and the read.
+    const { result } = mount()
+    let id = ''
+    act(() => {
+      id = result.current.actions.addObject({
+        kind: 'note',
+        at: { x: 6, y: 6 },
+        sublevel: 1,
+        text: 'just made',
+      })
+    })
+
+    expect(id).not.toBe('')
+    const created = result.current.route.objects.find((o) => o.id === id)
+    expect(created).toMatchObject({ kind: 'note', text: 'just made' })
+  })
+
   it('rewrites an object where it stands, keeping its identity', () => {
     const { result } = mount()
     act(() =>

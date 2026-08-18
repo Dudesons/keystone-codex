@@ -200,8 +200,15 @@ export interface RouteActions {
   toggleClones(pullIndex: number, refs: CloneRef[]): void
   importRoute(mdtString: string): Route
   reset(): void
-  /** Places an object. Adopts the preset's objects into the document first, if it has not happened yet. */
-  addObject(object: MdtObject): void
+  /**
+   * Places an object and returns the id it was given. Adopts the preset's objects into the document
+   * first, if that has not happened yet.
+   *
+   * The id is returned rather than looked up afterwards because every creation gesture needs to
+   * know what it just made — placing a note then opening the editor on it — and the last element of
+   * `route.objects` is the wrong answer the moment a peer inserts concurrently.
+   */
+  addObject(object: MdtObject): string
   /** Replaces one object by identity. */
   updateObject(id: string, object: MdtObject): void
   removeObject(id: string): void
@@ -621,7 +628,16 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
         undoManager.clear()
       },
 
-      addObject: (object) => withObjects((objects) => objects.push([storeObject(object, nextObjectId())])),
+      addObject: (object) => {
+        // Minted inside the transaction, so the adopted objects still take the ids before it: the
+        // counter's order is not load-bearing, but changing it for no reason is not either.
+        let id = ''
+        withObjects((objects) => {
+          id = nextObjectId()
+          objects.push([storeObject(object, id)])
+        })
+        return id
+      },
 
       updateObject: (id, object) =>
         withObjects((objects) => {
