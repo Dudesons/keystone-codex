@@ -375,6 +375,8 @@ describe('The mob panel', () => {
    * clone of the first enemy to land on one.
    */
   const otherEnemyBlipIndex = getLookup('murder-row')!.dungeon.enemies[0].clones.length
+  const firstEnemyName = getLookup('murder-row')!.dungeon.enemies[0].name
+  const otherEnemyName = getLookup('murder-row')!.dungeon.enemies[1].name
 
   it('is absent from the codex tab, where the right-hand panel already shows entries', () => {
     const { container } = renderEn(at('/d/murder-row'))
@@ -392,6 +394,9 @@ describe('The mob panel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Route' }))
     const blip = hoverFirstBlip(container)
     const panel = screen.getByTestId('mob-panel')
+    // Positive proof the hover actually reached the panel, not merely that its text is stable
+    // — the empty state is stable too, and would satisfy the check below on its own.
+    expect(panel.textContent).toContain(firstEnemyName)
     const named = panel.textContent
     fireEvent.mouseLeave(blip)
     // The entry would clear at the exact moment you moved the mouse toward it.
@@ -434,8 +439,11 @@ describe('The mob panel', () => {
     const blips = container.querySelectorAll('[data-clone]')
     fireEvent.contextMenu(blips[0])
     fireEvent.click(screen.getByRole('button', { name: 'Stop holding this mob' }))
-    fireEvent.mouseEnter(blips[1])
+    // A genuinely different mob, not another clone of the one just unpinned — see
+    // `otherEnemyBlipIndex` above.
+    fireEvent.mouseEnter(blips[otherEnemyBlipIndex])
     expect(screen.queryByRole('button', { name: 'Stop holding this mob' })).toBeNull()
+    expect(screen.getByTestId('mob-panel').textContent).toContain(otherEnemyName)
   })
 
   it('does not add the right-clicked mob to the current pull', () => {

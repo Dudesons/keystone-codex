@@ -5,7 +5,7 @@
 import { cleanup, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { getLookup } from '../../lib/data'
-import { scoreColor } from '../../lib/contribution'
+import { contribution, scoreColor } from '../../lib/contribution'
 import { renderEn, renderFr } from '../../test/render'
 import MobStats from './MobStats'
 import type { Enemy } from '../../lib/types'
@@ -33,9 +33,12 @@ describe('MobStats', () => {
   it('paints the score in MDT’s colour for it', () => {
     renderEn(<MobStats enemy={byName('Bribed Captain')} dungeon={dungeon} />)
     const score = screen.getByTestId('mob-score')
-    // Not a literal: the colour is Task 1's business, and duplicating it here would let the
-    // two drift apart while both stayed green.
-    expect(score.style.color).toBe(hexToRgb(scoreColor(4.235930681818182)))
+    // Derived from `contribution` itself, not a printed-and-pasted literal: the two channels
+    // land on different colour bytes for the unrounded score (4.235844...) than they would for
+    // the rounded display value (4.2), so this only passes if MobStats hands scoreColor the
+    // unrounded number.
+    const { score: exact } = contribution(byName('Bribed Captain'), dungeon)
+    expect(score.style.color).toBe(hexToRgb(scoreColor(exact!)))
   })
 
   it('says a mob gives nothing rather than printing a zero score', () => {

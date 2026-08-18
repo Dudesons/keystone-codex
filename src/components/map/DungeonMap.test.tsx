@@ -2,13 +2,13 @@
 // ABOUTME: jsdom lays everything out at zero, so this asserts structure rather than geometry.
 
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
-import { cloneKey, getLookup, mapUrl } from '../../lib/data'
+import { cloneKey, getLookup, mapUrl, type DungeonLookup } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
-import type { CloneRef } from '../../lib/types'
+import type { Clone, CloneRef, Dungeon, Enemy } from '../../lib/types'
 import { renderEn } from '../../test/render'
 import DungeonMap, { type PullMark, type PullShape } from './DungeonMap'
 
@@ -454,13 +454,20 @@ describe('Tooltip', () => {
     expect(container.textContent).not.toContain(firstEnemy.name)
   })
 
-  it('names the hovered mob and sums up its forces and pack', () => {
+  it('names the hovered mob, sums up its pack, and mounts MobStats for the numbers', () => {
     const { container } = mount()
     fireEvent.mouseEnter(blips(container)[0])
     expect(container.textContent).toContain(firstEnemy.name)
     if (firstClone.g != null) {
       expect(container.textContent).toContain(`pack ${firstClone.g}`)
     }
+    // The forces/share/score readout is `MobStats`, mounted here as the tooltip's half of the
+    // "one component, two places" split (decision 4) — this only passes if that mount is real.
+    // `firstEnemy` (altar-of-fangs' first enemy) grants forces and has a health value, so
+    // `MobStats` renders the share and score testids rather than the zero-force message.
+    const tooltip = screen.getByTestId('clone-tooltip')
+    expect(within(tooltip).getByTestId('mob-share')).toBeDefined()
+    expect(within(tooltip).getByTestId('mob-score')).toBeDefined()
   })
 
   it('disappears when the pointer leaves', () => {
@@ -468,6 +475,35 @@ describe('Tooltip', () => {
     fireEvent.mouseEnter(blips(container)[0])
     fireEvent.mouseLeave(blips(container)[0])
     expect(container.textContent).not.toContain(firstEnemy.name)
+  })
+
+  it('does not strand a leading separator for a patrolling clone with no pack', () => {
+    // No committed clone is both patrolling and pack-less — the one patrol in the pool has a
+    // pack — so this doctors a real lookup rather than inventing one from nothing: same
+    // dungeon, same enemy, one clone's `g` and `patrol` overridden. `[pack, patrol]`, joined
+    // naively without dropping the missing fragment, used to print a leading " · " with
+    // nothing before it (commit 6bdb164).
+    const real = getLookup(SLUG)!
+    const targetEnemy = real.dungeon.enemies[0]
+    const doctoredClone: Clone = { ...targetEnemy.clones[0], g: null, patrol: [{ x: 0, y: 0 }] }
+    const doctoredEnemy: Enemy = { ...targetEnemy, clones: [doctoredClone, ...targetEnemy.clones.slice(1)] }
+    const doctoredDungeon: Dungeon = {
+      ...real.dungeon,
+      enemies: [doctoredEnemy, ...real.dungeon.enemies.slice(1)],
+    }
+    const doctoredCloneByKey = new Map(real.cloneByKey)
+    doctoredCloneByKey.set(cloneKey(doctoredEnemy.mdtIdx, doctoredClone.mdtIdx), {
+      enemy: doctoredEnemy,
+      clone: doctoredClone,
+    })
+    const doctoredLookup: DungeonLookup = { ...real, dungeon: doctoredDungeon, cloneByKey: doctoredCloneByKey }
+
+    const { container } = mount({ lookup: doctoredLookup })
+    fireEvent.mouseEnter(blips(container)[0])
+
+    // `getByText` matches the element's whole normalised text exactly by default: a stranded
+    // " · patrol" would not equal "patrol" and this would fail.
+    expect(screen.getByText('patrol')).toBeDefined()
   })
 })
 
