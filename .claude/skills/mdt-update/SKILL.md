@@ -16,6 +16,19 @@ revision — `HEAD` by default — against the working tree, and that only works
 pre-update state is already in git. Extract over an uncommitted `src/data/generated/` and the
 pre-update data exists nowhere: no later step in this procedure can recover it.
 
+The addon's own files, on the other hand, **are** recoverable, which matters if you installed the
+update before thinking about any of this. MDT tags every release, named as a bare version with no
+`v` — so one dungeon's pre-update file comes back with:
+
+```bash
+gh api "repos/Nnoggie/MythicDungeonTools/contents/Midnight/AltarOfFangs.lua?ref=6.2.2" -H "Accept: application/vnd.github.raw"
+```
+
+That is how the two-version fixture pair in `scripts/__fixtures__/` was made. Beware one trap when
+comparing what you get against a live install: the tagged file has LF endings and the installed one
+CRLF, so their byte sizes differ by roughly one per line while their content is identical. Normalise
+before you compare, and never conclude a dungeon changed from its size alone.
+
 ## The procedure
 
 1. Install the update, then read `## Version:` from `MythicDungeonTools.toc`.
