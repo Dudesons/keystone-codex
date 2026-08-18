@@ -107,7 +107,7 @@ describe('renderReport', () => {
     // so this one case pins both halves of the guarantee at once.
     const entry = realSpells['263958']
     const description = entry.text.fr.description
-    expect(description).toContain(' ')
+    expect(description).toContain('\u00a0')
     expect(description).toContain('\n\n')
 
     const out = renderReport({
@@ -125,8 +125,8 @@ describe('renderReport', () => {
     const lines = out.split('\n')
     const bullet = lines.findIndex((l) => l.startsWith('- [ ] '))
     // Every non-breaking space in the source value survives, at the same count.
-    const nbspInSource = (description.match(/ /g) ?? []).length
-    const nbspInLine = (lines[bullet + 1].match(/ /g) ?? []).length
+    const nbspInSource = (description.match(/\u00a0/g) ?? []).length
+    const nbspInLine = (lines[bullet + 1].match(/\u00a0/g) ?? []).length
     expect(nbspInSource).toBeGreaterThan(0)
     expect(nbspInLine).toBe(nbspInSource)
     // The paragraph break still folds into one space, so the detail stays one list item.
