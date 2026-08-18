@@ -2,7 +2,7 @@
 npcId: 245912
 name: "Lightwarden Ruia"   # auto
 isBoss: true   # auto
-count: 30   # auto — forces per unit
+count: 0   # auto — forces per unit
 
 # A boss ring is gold whatever this says, so threat only adds a badge here.
 threat:

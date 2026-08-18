@@ -36,3 +36,39 @@ Then run `npm test`. The tests assert real values read from this dungeon — 21 
 clones, 46 packs, 817 required forces — so a patch that changes the dungeon will fail them.
 That is the point: the failure tells you the pool moved, and you update the numbers
 deliberately rather than discovering the drift months later in the app.
+
+## MythicDungeonTools.toc
+
+The addon's own `.toc`, copied verbatim from a 6.2.2 install. It is the input
+`parseTocVersion` claims to read, and the version line's exact spelling — `## Version:`, double
+hash, one space — is the whole subject of that parser. A hand-written stand-in would assert our
+guess about a file format instead of testing it.
+
+## altar-of-fangs.with-affix.json / .without-affix.json
+
+Two real versions of one generated dungeon, taken from both sides of commit `e520646`, which
+dropped the seasonal affix from the extraction. Eleven mobs lose spell `1221063` between them.
+
+Both sides are output of the real pipeline, and the change they carry is exactly the case the
+report exists for: a spell leaving a mob takes the card's note off the site with it. A
+hand-written pair would encode our own idea of what an MDT update does to a dungeon, which is the
+one thing a differ must not be tested against.
+
+## TheBlindingVale-6.2.2.lua / TheBlindingVale-6.2.3.lua
+
+Two real, consecutive versions of one MDT dungeon file — not a generated JSON pair like the
+one above, the addon's own `.lua` this time, parsed through `parseDungeon` in each test.
+
+- `TheBlindingVale-6.2.2.lua` comes from the `6.2.2` tag of
+  [Mythic Dungeon Tools](https://github.com/Nnoggie/MythicDungeonTools).
+- `TheBlindingVale-6.2.3.lua` was copied from a local WoW install running the addon's `6.2.3`
+  release, the version that followed it.
+
+Between these two, seven of the eight season dungeons are byte-identical (checked by hand, with
+line endings normalised); The Blinding Vale is the one that changed. What was found by hand
+before this pair existed was clone `x`/`y` jitter from MDT recapturing positions on the newer
+version (which `diffDungeon` must stay blind to, same as every other pair here) and enemy
+`scale`, which is why `scale` was added to the per-mob comparison. Parsing the pair through
+`diffDungeon` turned up a third change nobody had gone looking for: six bosses' `count` (their
+force contribution) dropped from 30 to 0. That is the fixture earning its keep — a hand-built
+scenario tests only the case someone already thought of; a real pair can surface one nobody did.
