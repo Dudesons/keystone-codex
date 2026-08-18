@@ -139,6 +139,14 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     return undefined
   }, [tool, actions])
 
+  // Leaving Route mode drops the active tool too, not merely the panel that shows it: `mode`
+  // is a URL param, not a remount, so `tool` would otherwise survive the switch and keep
+  // handing `drawing` to the map — landing a full-surface hit target over the codex tab's
+  // blips, with nothing in that tab wired to give it a gesture.
+  useEffect(() => {
+    if (mode !== 'route') setTool(null)
+  }, [mode])
+
   // Escape drops the active tool, so there is always a keyboard way back to panning. Only
   // listens in Route mode: the codex tab never has a tool to drop.
   useEffect(() => {

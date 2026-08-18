@@ -528,6 +528,19 @@ describe('The drawing tools', () => {
     fireEvent.mouseEnter(pin)
     expect(within(pin).getByText('lust here')).toBeDefined()
   })
+
+  it('leaves no hit target over the codex map after picking a tool and switching tabs', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+
+    fireEvent.click(screen.getByRole('link', { name: 'Codex' }))
+
+    // A tool picked in Route mode must not leave a full-surface hit target over the codex
+    // map: nothing in the codex tab ever hands `drawing` a gesture to report, so a surface
+    // here would only ever sit between the cursor and the blips beneath it.
+    expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
+  })
 })
 
 describe('Remounting per dungeon', () => {
