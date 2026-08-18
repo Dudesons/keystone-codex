@@ -157,7 +157,7 @@ function main() {
     findings.push(...diffSpells(baseSpells, readJson(path.join(GENERATED_DIR, 'spells.json')), annotated))
   } else {
     console.warn(
-      `  ! ${args.base} has no src/data/generated/spells.json: spell and creature labels could not be compared.`,
+      `  ! ${args.base} has no src/data/generated/spells.json: spell labels could not be compared.`,
     )
   }
 
