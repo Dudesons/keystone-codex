@@ -132,12 +132,34 @@ describe('autoFieldFindings', () => {
       dungeon: 'x',
       subject: '270306 Ritual Chieftain',
       what: 'isBoss disagrees with the data: the card says true, MDT says false',
-      action: 'remove the `isBoss: true   # auto` line',
+      action: 'remove the `isBoss:` line',
       file: 'content/x/1.md',
     }])
   })
 
   it('says nothing when isBoss already agrees with the data', () => {
     expect(autoFieldFindings(card, enemy, 'content/x/1.md', 'x')).toEqual([])
+  })
+
+  // The marker says "MDT chose this value", and a human who typed the line themselves did not
+  // write one. Read as an absent line, the action above would have them add a second `isBoss:`
+  // key -- duplicate keys make the frontmatter unparseable, `readCardFacts` returns null, and the
+  // card drops out of every later report without a word.
+  const unmarked = card.replace('npcId: 270306', 'npcId: 270306\nisBoss: true')
+
+  it('sees an isBoss line a human typed without the marker', () => {
+    expect(autoFieldFindings(unmarked, { ...enemy, isBoss: true }, 'content/x/1.md', 'x')).toEqual([])
+  })
+
+  it('still reports an unmarked isBoss line on a mob that is no longer a boss', () => {
+    const [finding] = autoFieldFindings(unmarked, enemy, 'content/x/1.md', 'x')
+    expect(finding.severity).toBe(6)
+    expect(finding.action).toContain('isBoss:')
+  })
+
+  it('reports the unmarked line without applying anything to it', () => {
+    // Reporting only: an unmarked line is not this module's to rewrite, in either direction.
+    expect(refreshAutoFields(unmarked, { ...enemy, isBoss: true }).text).toContain('\nisBoss: true\n')
+    expect(refreshAutoFields(unmarked, enemy).text).toContain('\nisBoss: true\n')
   })
 })

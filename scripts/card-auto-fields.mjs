@@ -76,9 +76,16 @@ export function refreshAutoFields(text, enemy) {
  *
  * Only `isBoss` can require an insertion or a deletion: the scaffold writes the line when the mob
  * is a boss and omits it otherwise, so a mob changing status needs a structural edit.
+ *
+ * The **presence** of the line is the card's claim, and the marker is not required for it. The
+ * scaffold writes one; a human who typed the line themselves did not, and reading that line as
+ * absent would have the action below add a second `isBoss:` key -- duplicate keys make the
+ * frontmatter unparseable, `readCardFacts` then returns null, and the card drops out of every
+ * later report without a word. Reporting is all that widens here: `refreshAutoFields` still
+ * rewrites marked lines only, and still never adds or removes one.
  */
 export function autoFieldFindings(text, enemy, file, slug) {
-  const declared = /^\s*isBoss:\s*true\s+#\s*auto\b/m.test(text)
+  const declared = /^[ \t]*isBoss:/m.test(text)
   const actual = enemy.isBoss === true
   if (declared === actual) return []
 
@@ -89,7 +96,7 @@ export function autoFieldFindings(text, enemy, file, slug) {
     what: `isBoss disagrees with the data: the card says ${declared}, MDT says ${actual}`,
     action: actual
       ? 'add `isBoss: true   # auto` under npcId'
-      : 'remove the `isBoss: true   # auto` line',
+      : 'remove the `isBoss:` line',
     file,
   }]
 }
