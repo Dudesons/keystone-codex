@@ -6,6 +6,7 @@ import { getLookup, getNpcLabel, getSpell, iconUrl, portraitUrl, wowheadUrl } fr
 import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
+import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
 import { CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
 
 /**
@@ -120,7 +121,10 @@ export default function MobCard({
 
       {content?.trap && (
         <div className="mx-3 mb-3 rounded border-l-2 border-threat-lethal bg-threat-lethal/10 px-3 py-2">
-          <div className="text-[10px] font-bold tracking-widest text-threat-lethal">{t('mob.trap')}</div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-[10px] font-bold tracking-widest text-threat-lethal">{t('mob.trap')}</div>
+            {content.fallback.trap && <BaseLanguageMark />}
+          </div>
           <p
             className="mt-0.5 text-sm text-ink-100"
             dangerouslySetInnerHTML={{ __html: inlineMarkdown(content.trap) }}
@@ -152,6 +156,7 @@ export default function MobCard({
               dispel={s.dispel}
               interruptible={s.interruptible}
               note={notes.get(s.id)}
+              noteInBaseLanguage={content?.fallback.notes.includes(s.id) ?? false}
               compact={compact}
             />
           ))}
@@ -159,12 +164,39 @@ export default function MobCard({
       )}
 
       {!compact && content?.html && (
-        <div
-          className="prose-codex border-t border-ink-700 px-3 py-3"
-          dangerouslySetInnerHTML={{ __html: content.html }}
-        />
+        <div className="border-t border-ink-700 px-3 py-3">
+          {content.fallback.prose && (
+            <div className="mb-1.5 flex justify-end">
+              <BaseLanguageMark />
+            </div>
+          )}
+          <div className="prose-codex" dangerouslySetInnerHTML={{ __html: content.html }} />
+        </div>
       )}
     </article>
+  )
+}
+
+/**
+ * Says the text beside it is still in the base language.
+ *
+ * The card keeps showing the English note rather than swapping it for Wowhead's French
+ * description: the note is a judgement about the pull and the description is a tooltip, so
+ * losing the note would cost the reader more than the language does. What the mark adds is
+ * that they can tell — and that the gap reads as ours to close rather than as their mistake.
+ *
+ * Its text is the base locale, not the word "English": one place decides which language the
+ * codex is written in first, and it is `DEFAULT_LOCALE`.
+ */
+function BaseLanguageMark() {
+  const { t } = useI18n()
+  return (
+    <span
+      title={t('mob.untranslated')}
+      className="shrink-0 rounded border border-ink-600 px-1 text-[9px] font-bold tracking-wider text-ink-500"
+    >
+      {DEFAULT_LOCALE.toUpperCase()}
+    </span>
   )
 }
 
@@ -184,12 +216,15 @@ function SpellRow({
   dispel,
   interruptible,
   note,
+  noteInBaseLanguage,
   compact,
 }: {
   spellId: number
   dispel?: string[]
   interruptible?: boolean
   note?: SpellNote
+  /** The note fell back to the base language: mark it, but only once it is what we show. */
+  noteInBaseLanguage: boolean
   compact: boolean
 }) {
   const { t, locale } = useI18n()
@@ -232,6 +267,9 @@ function SpellRow({
           )}
           <DispelBadges dispel={dispel} />
           {spell?.castTime && <span className="text-[11px] text-ink-400">{spell.castTime}</span>}
+          {/* Conditioned on `written`, not on the note existing: a compact row hides the note,
+              and a row showing Wowhead's description alone is already in the right language. */}
+          {noteInBaseLanguage && written && <BaseLanguageMark />}
         </div>
         {text &&
           (written ? (

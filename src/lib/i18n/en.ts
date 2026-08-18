@@ -69,6 +69,7 @@ export const en = {
   'mob.ccImmune': 'Immune to every CC listed by MDT.',
   'mob.ccUnknown': 'MDT has no CC data for this dungeon.',
   'mob.unknownSpell': 'Spell {id}',
+  'mob.untranslated': 'Not translated yet',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',

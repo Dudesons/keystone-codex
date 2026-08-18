@@ -70,6 +70,7 @@ export const fr: Dictionary = {
   'mob.ccImmune': 'Immunisé à tous les CC listés par MDT.',
   'mob.ccUnknown': 'MDT n’a pas de données de CC pour ce donjon.',
   'mob.unknownSpell': 'Sort {id}',
+  'mob.untranslated': 'Pas encore traduit',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Sans danger',

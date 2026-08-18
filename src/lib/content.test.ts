@@ -34,17 +34,16 @@ const NO_ENTRY = 999_999
 const stub = { slug: '__fixtures__', npcId: 270306 }
 
 /**
- * A dungeon whose plan nobody has translated yet.
+ * A written base carrying a deliberately partial translation, and an untranslated plan.
  *
- * Found rather than named. `altar-of-fangs` used to serve as the fallback's subject and
- * stopped the day its plan was translated — so the test follows the content instead of having
- * to be re-pointed every time a translation lands. `__fixtures__` cannot stand in here: it
- * holds one mob stub and no `_dungeon.md` at all.
+ * Both used to be *found* by scanning the pool for content nobody had translated. That worked
+ * only while the translation was incomplete, which is the one thing it is meant to stop being:
+ * the subject vanishes the day the writing is finished, and a test must not go red for having
+ * succeeded. They are fixtures for the same reason the stub above is one, and their own
+ * comments say what each field is pinning.
  */
-const translatedPlans = Object.keys(import.meta.glob('../../content/*/_dungeon.fr.md'))
-const untranslatedPlan = dungeonList
-  .map((d) => d.slug)
-  .find((slug) => !translatedPlans.some((path) => path.includes(`/${slug}/`)))
+const partial = { slug: '__fixtures__', npcId: 263_109 }
+const untranslatedPlan = '__fixtures__'
 
 describe('isRole', () => {
   it('recognises the vocabulary the scaffold template offers', () => {
@@ -192,16 +191,49 @@ describe('Falling back to the base language', () => {
   })
 
   it('serves the base dungeon plan in both languages', () => {
-    expect(
-      untranslatedPlan,
-      'every dungeon plan is now translated — this test needs another subject',
-    ).toBeDefined()
-    const slug = untranslatedPlan!
-    expect(getDungeonContent(slug, 'fr')!.html).toBe(getDungeonContent(slug, 'en')!.html)
+    expect(getDungeonContent(untranslatedPlan, 'fr')!.html).toBe(
+      getDungeonContent(untranslatedPlan, 'en')!.html,
+    )
   })
 
   it('fabricates nothing for a mob with no file at all', () => {
     expect(getMobContent(SLUG, NO_ENTRY, 'fr')).toBeUndefined()
+  })
+})
+
+/**
+ * Which text fields the reader is being served in the base language rather than their own.
+ *
+ * The merge falls back per field, so a card can be half translated without anything saying
+ * so, and one of those fields is the spell note — which the card shows *instead of* Wowhead's
+ * description, French and available. Silently serving English over available French is the
+ * case this exists to make visible.
+ *
+ * A missing `.fr.md` and a `.fr.md` that omits the field are the same condition and take the
+ * same expression, so one partially translated fixture covers both: there is no second branch
+ * for a fixture to reach.
+ */
+describe('Fallback provenance', () => {
+  it('names the fields still reading in the base language', () => {
+    const { fallback } = getMobContent(partial.slug, partial.npcId, 'fr')!
+    // The fixture translates the trap and the note on 1307567, and nothing else.
+    expect(fallback).toEqual({ trap: false, prose: true, notes: [1306852] })
+  })
+
+  it('marks nothing when the reader asked for the base language', () => {
+    const { fallback } = getMobContent(partial.slug, partial.npcId, 'en')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+  })
+
+  it('marks nothing on an entry translated all the way through', () => {
+    const { fallback } = getMobContent(SLUG, WRITTEN, 'fr')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+  })
+
+  it('marks nothing on a stub: an empty field has no base text to fall back to', () => {
+    // The stub has no .fr.md at all, and still nothing is a fallback — there is nothing there.
+    const { fallback } = getMobContent(stub.slug, stub.npcId, 'fr')!
+    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
   })
 })
 
