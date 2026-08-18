@@ -578,6 +578,14 @@ function CloneTooltip({
   const { enemy, clone } = entry
   const pack = clone.g != null ? lookup.packs.get(clone.g) : null
   const ind = getIndicators(slug, enemy, locale)
+  // Either fragment can be absent on its own (a loner outside any patrol, or a patrol member
+  // with no pack), so the separator only belongs between two fragments that both exist.
+  const meta = [
+    pack ? t('map.pack', { g: pack.g, n: pack.count }) : null,
+    clone.patrol?.length ? t('map.patrol') : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <div className="pointer-events-none absolute top-3 left-3 max-w-72 rounded border border-ink-700 bg-ink-900/95 px-3 py-2 text-sm shadow-lg">
@@ -586,10 +594,7 @@ function CloneTooltip({
         {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
       </div>
       <MobStats enemy={enemy} dungeon={lookup.dungeon} />
-      <div className="mt-0.5 text-xs text-ink-400">
-        {pack && t('map.pack', { g: pack.g, n: pack.count })}
-        {clone.patrol?.length ? ` · ${t('map.patrol')}` : ''}
-      </div>
+      {meta && <div className="mt-0.5 text-xs text-ink-400">{meta}</div>}
       {(ind.kick || ind.tankBuster || ind.dispel.length) && (
         <div className="mt-1 flex flex-wrap gap-1">
           {ind.kick && <Chip color="#d64550">{t('map.toKick')}</Chip>}
