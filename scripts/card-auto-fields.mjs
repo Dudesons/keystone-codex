@@ -17,6 +17,8 @@
  * deleting a line in a hand-written file is a different act from correcting a value on one.
  */
 
+import { yamlString } from './content-stub.mjs'
+
 /**
  * `name: "X"   # auto` and `count: 5   # auto — trailing comment` — value replaced, marker kept.
  *
@@ -30,8 +32,6 @@ const MARKED = /^((name|count):\s*)(.*?)(\s+#\s*auto\b.*)$/
 /** The CC comment the scaffold writes, whose whole payload is the list. */
 const CC_COMMENT = /^(\s*#\s*Applicable CC \(auto, from MDT\):\s*)(.*)$/
 
-const quote = (s) => `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
-
 /** Splits on newlines while remembering each line's own ending, so CRLF files survive. */
 function splitLines(text) {
   return text.split(/(?<=\n)/)
@@ -39,7 +39,10 @@ function splitLines(text) {
 
 export function refreshAutoFields(text, enemy) {
   const changes = []
-  const wanted = { name: quote(enemy.name), count: String(enemy.count) }
+  // `yamlString` is content-stub.mjs's own escaper, imported rather than restated: this whole
+  // module exists to reproduce byte for byte what the scaffold wrote, and a second escaper is how
+  // that quietly stops being true.
+  const wanted = { name: yamlString(enemy.name), count: String(enemy.count) }
 
   const out = splitLines(text).map((raw) => {
     const eol = raw.match(/\r?\n$/)?.[0] ?? ''
