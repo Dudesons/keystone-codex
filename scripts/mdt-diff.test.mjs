@@ -96,10 +96,12 @@ describe('diffDungeon', () => {
 })
 
 /**
- * MDT 6.2.2 -> 6.2.3 touched only one dungeon of the season pool, The Blinding Vale, and only
- * two ways: clone x/y jitter from MDT recapturing positions (which diffDungeon must stay blind
- * to), and enemy `scale`. This is the first real update these fixtures pin the differ against,
- * so the mob-scalar loop's coverage is checked against real data instead of a constructed one.
+ * MDT 6.2.2 -> 6.2.3 touched only one dungeon of the season pool, The Blinding Vale, in three
+ * ways: clone positions, moved deliberately (of 276 clones matched by `mdtIdx`, 91 sit at the
+ * byte-identical position and 185 moved, the smallest nonzero move being well over half a unit
+ * -- there is no sub-unit recapture jitter in this pair at all), enemy `scale`, and nothing else.
+ * This is the first real update these fixtures pin the differ against, so both the mob-scalar
+ * loop and the movement rule are checked against real data instead of a constructed one.
  *
  * The other seven dungeons in the season pool are byte-identical between these two versions
  * (checked by hand, with line endings normalised) and are not exercised by this pair at all:
@@ -131,11 +133,41 @@ describe('diffDungeon over two real MDT versions', () => {
   })
 
   it('never surfaces a coordinate, on the pair whose diff is mostly coordinates', () => {
-    // Clone x/y jitter on every recapture is the bulk of what actually changed between these
-    // two real versions, which makes this the strongest version of the guarantee: two real
-    // consecutive MDT exports, mostly coordinate churn, must produce not one float from it.
+    // Clone movement is the bulk of what actually changed between these two real versions,
+    // which makes this the strongest version of the guarantee: two real consecutive MDT
+    // exports, mostly moved clones, must produce not one float from it.
     const serialised = JSON.stringify(diffDungeon(blindingVale622, blindingVale623))
     expect(serialised).not.toMatch(/\d+\.\d{6}/)
+  })
+
+  it('reports a mob whose clones moved beyond the threshold, matched by mdtIdx', () => {
+    const findings = diffDungeon(blindingVale622, blindingVale623)
+    const moved = findings.filter((f) => f.what === 'moved on the map')
+
+    // Measured by matching every clone on mdtIdx (never by array position -- see
+    // .claude/lessons.md): 18 of the dungeon's mobs have at least one clone that moved more
+    // than the 20-unit threshold between these two real captures.
+    expect(moved).toHaveLength(18)
+    expect(moved.every((f) => f.severity === 6)).toBe(true)
+    expect(moved.every((f) => f.action === undefined)).toBe(true)
+
+    const spiritMoonkin = moved.find((f) => f.subject === '246371 Spirit Moonkin')
+    expect(spiritMoonkin).toBeDefined()
+    expect(spiritMoonkin.detail).toContain('1 of 1 clones moved')
+    expect(spiritMoonkin.detail).toContain('131 units')
+
+    const lasher = moved.find((f) => f.subject === '245410 Lasher')
+    expect(lasher).toBeDefined()
+    expect(lasher.detail).toContain('71 of 115 clones moved')
+    expect(lasher.detail).toContain('64 units')
+  })
+
+  it('does not report a mob whose furthest clone stays at or under the threshold', () => {
+    const findings = diffDungeon(blindingVale622, blindingVale623)
+    const moved = findings.filter((f) => f.what === 'moved on the map')
+    // Overgrown Hydra's furthest clone moves ~19.4 units -- real, nonzero, and below the
+    // threshold on purpose, so this pins the cutoff rather than just the mobs above it.
+    expect(moved.some((f) => f.subject.includes('Overgrown Hydra'))).toBe(false)
   })
 })
 

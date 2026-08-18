@@ -1,19 +1,48 @@
 // ABOUTME: Compares two snapshots of the generated data and says what changed, semantically.
-// ABOUTME: Pure, and deliberately blind to coordinates, which move on every MDT recapture.
+// ABOUTME: Pure. Reads clone coordinates only to measure movement; never reports one by value.
 
 /**
  * Comparing two generated snapshots.
  *
- * `git diff` is unusable on these files: clone x/y are floats that MDT rewrites on every
- * recapture, so a textual diff is mostly noise about positions nobody asked about. Everything
- * here is therefore either a set comparison on ids or a scalar comparison on a named field, and
- * no coordinate is ever read.
+ * `git diff` is unusable on these files: clone x/y are floats, and a textual diff is mostly
+ * noise about positions nobody asked about directly. Everything here is therefore either a set
+ * comparison on ids, a scalar comparison on a named field, or -- for a clone's position -- a
+ * distance measured against a threshold. No coordinate is ever reported by value.
  */
 
 const META_FIELDS = ['mdtIndex', 'mapID', 'teleportId', 'totalCount', 'sublevelCount', 'englishName']
 
 /** The per-mob scalar fields diffOneMob compares directly, field by field. */
 const MOB_SCALAR_FIELDS = ['count', 'health', 'level', 'isBoss', 'scale']
+
+/**
+ * Distance, in MDT map units, above which a moved clone is worth naming rather than folded
+ * into rounding or an editor's hand not landing on the exact same spot twice.
+ *
+ * MDT's frame is 840 by 560 (`MDT_GEOMETRY` in `scripts/config.mjs`), so 20 units is a couple
+ * of percent of the map's width -- small on the map, but enough that a mob has changed corner
+ * rather than been nudged.
+ */
+const MOVEMENT_THRESHOLD = 20
+
+/**
+ * Distances moved by clones present on both sides, matched by `mdtIdx` -- never by array
+ * position, which an inserted or removed clone would shift and so invent movement that never
+ * happened (see .claude/lessons.md, "Diff data files by identity, not by line membership"). A
+ * clone present on only one side is not movement: that is what the clone-count finding already
+ * covers, and is not duplicated here.
+ */
+function movedClones(before, after) {
+  const beforeByIdx = new Map((before.clones ?? []).map((c) => [c.mdtIdx, c]))
+  const distances = []
+  for (const afterClone of after.clones ?? []) {
+    const beforeClone = beforeByIdx.get(afterClone.mdtIdx)
+    if (!beforeClone) continue
+    const distance = Math.hypot(afterClone.x - beforeClone.x, afterClone.y - beforeClone.y)
+    if (distance > 0) distances.push(distance)
+  }
+  return distances
+}
 
 const finding = (f) => ({ severity: 6, ...f })
 
@@ -80,6 +109,19 @@ function diffOneMob(slug, before, after) {
       subject,
       what: 'pack grouping changed',
       detail: `packs ${[...beforePacks].sort((a, b) => a - b).join(',')} -> ${[...afterPacks].sort((a, b) => a - b).join(',')}`,
+    }))
+  }
+
+  // One finding for the whole mob, not one per clone: a human deciding whether to care needs
+  // how many clones moved and how far the worst of them went, not a line each.
+  const distances = movedClones(before, after)
+  const furthest = distances.length ? Math.max(...distances) : 0
+  if (furthest > MOVEMENT_THRESHOLD) {
+    out.push(finding({
+      dungeon: slug,
+      subject,
+      what: 'moved on the map',
+      detail: `${distances.length} of ${(after.clones ?? []).length} clones moved, the furthest by ${Math.round(furthest)} units`,
     }))
   }
 
