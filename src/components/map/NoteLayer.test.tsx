@@ -60,11 +60,12 @@ describe('NoteLayer', () => {
     expect(screen.getByTestId('note-pin-0').className).toContain('pointer-events-auto')
   })
 
-  it('does not close a pinned note when the click lands inside its own text', () => {
+  it('does not close a pinned note when the press lands inside its own text', () => {
     renderEn(<NoteLayer notes={notes} transform={transform} />)
-    const pin = screen.getByTestId('note-pin-0')
-    fireEvent.click(pin)
-    fireEvent.click(screen.getByText('Lust, a lot of kicks to do'))
+    fireEvent.click(screen.getByTestId('note-pin-0'))
+    // `pointerdown`, not `click`: the layer's own listener is on pointerdown, and Testing
+    // Library does not derive one from the other. A click here would reach no listener at all.
+    fireEvent.pointerDown(screen.getByText('Lust, a lot of kicks to do'))
     expect(screen.getByText('Lust, a lot of kicks to do')).toBeTruthy()
   })
 
@@ -78,14 +79,13 @@ describe('NoteLayer', () => {
     expect(screen.queryByText('Lust, a lot of kicks to do')).toBeNull()
   })
 
-  it('does not let the outside-click handler fight the pin over its own click', () => {
-    // A click on the pin fires a native pointerdown before its React click handler runs. If the
-    // outside-click listener treated that pointerdown as "outside", it would close the note the
-    // very click that opened it just tried to open, and the pin would never stay open at all.
+  it('keeps a note open when the press lands on another pin, which is still inside the layer', () => {
+    // The listener closes on a press *outside* the layer. Another note's pin is inside it, so
+    // reaching for it must not close the open note out from under the gesture — the whole point
+    // of testing `contains` against a press the listener actually receives.
     renderEn(<NoteLayer notes={notes} transform={transform} />)
-    const pin = screen.getByTestId('note-pin-0')
-    fireEvent.pointerDown(pin)
-    fireEvent.click(pin)
+    fireEvent.click(screen.getByTestId('note-pin-0'))
+    fireEvent.pointerDown(screen.getByTestId('note-pin-1'))
     expect(screen.getByText('Lust, a lot of kicks to do')).toBeTruthy()
   })
 })
