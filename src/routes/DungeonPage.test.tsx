@@ -367,6 +367,15 @@ describe('The mob panel', () => {
   const forcesRow = (container: HTMLElement) =>
     container.querySelector('[data-standing]')!.parentElement!.previousElementSibling as HTMLElement
 
+  /**
+   * Blips render enemy-by-enemy (`dungeon.enemies.flatMap(e => e.clones)`), and Murder Row's
+   * first enemy alone has 18 clones — so `blips[1]` is the *same* mob as `blips[0]`, not
+   * "another" one. The tooltip-suppression comparison is by enemy id, on purpose (see
+   * `DungeonPage.tsx`), so a test meaning "a genuinely different mob" has to skip past every
+   * clone of the first enemy to land on one.
+   */
+  const otherEnemyBlipIndex = getLookup('murder-row')!.dungeon.enemies[0].clones.length
+
   it('is absent from the codex tab, where the right-hand panel already shows entries', () => {
     const { container } = renderEn(at('/d/murder-row'))
     expect(container.querySelector('[data-testid="mob-panel"]')).toBeNull()
@@ -395,9 +404,21 @@ describe('The mob panel', () => {
     const blips = container.querySelectorAll('[data-clone]')
     fireEvent.contextMenu(blips[0])
     const held = screen.getByTestId('mob-panel').textContent
-    fireEvent.mouseEnter(blips[1])
+    fireEvent.mouseEnter(blips[otherEnemyBlipIndex])
     expect(screen.getByTestId('mob-panel').textContent).toBe(held)
     expect(screen.getByTestId('clone-tooltip')).toBeDefined()
+  })
+
+  it('hides the tooltip on the very mob a right-click just froze, so it is not shown twice', () => {
+    // The natural gesture: hover a blip, then right-click that same blip without moving the
+    // cursor. The map's own hover state stays pointed at it across the click, so the tooltip
+    // would otherwise repeat the mob the column just pinned.
+    const { container } = renderEn(at('/d/murder-row'))
+    fireEvent.click(screen.getByRole('button', { name: 'Route' }))
+    const blip = container.querySelectorAll('[data-clone]')[0]
+    fireEvent.mouseEnter(blip)
+    fireEvent.contextMenu(blip)
+    expect(screen.queryByTestId('clone-tooltip')).toBeNull()
   })
 
   it('shows no tooltip while nothing is held, since the panel already speaks', () => {

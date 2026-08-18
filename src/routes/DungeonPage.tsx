@@ -78,6 +78,10 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const [panelNpc, setPanelNpc] = useState<number | null>(null)
   /** Set by a right-click: the column stops following the hover until it is released. */
   const [frozenNpc, setFrozenNpc] = useState<number | null>(null)
+  /** The mob under the cursor right now, null once it leaves — not the same thing as the one
+      the column shows. Needed only to tell whether the map tooltip would repeat the column: see
+      `suppressCloneTooltip` below. */
+  const [cursorNpc, setCursorNpc] = useState<number | null>(null)
 
   const { route, actions, collab, joinRoom, leaveRoom, resumeRoom, setIdentity, setCursor } = useRouteDoc(
     slug,
@@ -193,6 +197,7 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
   const handleHoverClone = useCallback(
     (ref: CloneRef | null) => {
       const id = enemyOf(ref)?.id ?? null
+      setCursorNpc(id)
       // A null means the cursor left a blip: the column keeps what it had.
       if (id != null && frozenNpc == null) setPanelNpc(id)
     },
@@ -280,7 +285,14 @@ function DungeonView({ slug, npcId }: { slug: string; npcId?: string }) {
             onCloneClick={handleCloneClick}
             onHoverClone={handleHoverClone}
             onCloneContextMenu={mode === 'route' ? handleCloneContextMenu : undefined}
-            suppressCloneTooltip={mode === 'route' && frozenNpc == null}
+            // Hidden whenever nothing is frozen (the column already follows the hover), and
+            // also while the cursor sits on the very mob just frozen by a right-click — that
+            // gesture leaves the map's own `hoverClone` pointed at that mob, and a tooltip
+            // would repeat exactly what the column now pins. Compared by enemy id, not clone
+            // key: hovering a *different clone of the same frozen enemy* hides the tooltip too,
+            // on purpose — the column already shows that enemy's numbers, so repeating them in
+            // a tooltip would be the same redundancy this suppression exists to prevent.
+            suppressCloneTooltip={mode === 'route' && (frozenNpc == null || cursorNpc === frozenNpc)}
             onPullClick={setCurrentPull}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
