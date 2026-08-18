@@ -1063,13 +1063,51 @@ describe('Undoing my own object edits', () => {
       ),
     )
 
+    // The guarantee here is not computed anywhere in this file: `y-websocket` applies a remote
+    // update — over the socket, and over `BroadcastChannel` as it does here — as
+    // `Y.applyUpdate(doc, update, provider)`, so its transaction origin is the `WebsocketProvider`
+    // instance itself, never `OBJECT_EDIT`. Exclusion is by identity mismatch against our string
+    // origin, not by anything this hook decides. This assertion is the one with content: without
+    // it, the `undo()` call below would run against an empty stack, and "the peer's object
+    // survived" would pass whether or not the manager excludes peers at all. It goes red the
+    // moment `trackedOrigins` is widened to also catch the provider — e.g.
+    // `new Set([OBJECT_EDIT, WebsocketProvider])`, which `Y.UndoManager` matches against a
+    // transaction's origin by constructor as well as by identity — a realistic mistake for
+    // someone later trying to make undo cover something new.
+    expect(host.result.current.canUndo).toBe(false)
+
     act(() => host.result.current.actions.undo())
 
+    // Stated for completeness, at no extra cost: undoing on an empty stack is a no-op, so the
+    // peer's object is still there either way.
     expect(host.result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'theirs')).toBe(
       true,
     )
 
     host.unmount()
     guest.unmount()
+  })
+
+  it('treats each object edit as its own undo step, not merged with the next', () => {
+    // `Y.UndoManager` merges same-origin transactions that land within `captureTimeout` (500ms by
+    // default) into a single undo step — right for a text editor's keystrokes, wrong for a
+    // drawing tool where plan 2 wires undo straight to toolbar clicks and drawing gestures: an
+    // add immediately followed by a move both land inside that window, and one undo press would
+    // then take back both instead of just the last gesture. `captureTimeout: 0` turns that
+    // merging off, so two edits made back-to-back still undo one at a time.
+    const { result } = mount()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'first' }),
+    )
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 2, y: 2 }, sublevel: 1, text: 'second' }),
+    )
+
+    act(() => result.current.actions.undo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'first')).toBe(true)
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'second')).toBe(false)
+
+    act(() => result.current.actions.undo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'first')).toBe(false)
   })
 })

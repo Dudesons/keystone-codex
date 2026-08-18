@@ -481,9 +481,19 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
    * exist yet. Isolation therefore comes from the origin, not the scope: `trackedOrigins` names
    * `OBJECT_EDIT` explicitly, because the default, `new Set([null])`, would also capture every
    * pull action and every peer's incoming change, none of which pass an origin at all.
+   *
+   * `captureTimeout: 0` turns off the default merging of same-origin transactions that land
+   * within 500ms of each other into a single undo step. That default suits a text editor's
+   * keystrokes; it is wrong for a drawing tool, where each add, move or delete is its own
+   * deliberate act and toolbar clicks or a drawing gesture can easily land two edits inside that
+   * window — merging them would make one undo press take back two.
    */
   const undoManager = useMemo(
-    () => new Y.UndoManager(doc.getMap('route'), { trackedOrigins: new Set([OBJECT_EDIT]) }),
+    () =>
+      new Y.UndoManager(doc.getMap('route'), {
+        trackedOrigins: new Set([OBJECT_EDIT]),
+        captureTimeout: 0,
+      }),
     [doc],
   )
 
