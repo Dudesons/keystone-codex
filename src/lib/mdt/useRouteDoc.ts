@@ -537,10 +537,17 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       undoManager.off('stack-item-added', sync)
       undoManager.off('stack-item-popped', sync)
       undoManager.off('stack-cleared', sync)
-      // The manager holds its own listener on the doc; leaving it running past this hook's
-      // interest in `undoManager` is the same class of leak `closeSession` exists to avoid for
-      // the provider and its awareness instance.
-      undoManager.destroy()
+      // Deliberately *not* destroyed here, for the same reason the Y.Doc above is never
+      // destroyed: this effect's cleanup runs while the memo that owns the manager is still
+      // alive. StrictMode's development double mount runs setup, cleanup, setup again on one
+      // mount, and `useMemo` does not recompute in between — so a `destroy()` here unsubscribes
+      // the manager from the document for good, and the second setup re-registers these three
+      // listeners on a corpse. Nothing reaches `undoStack` after that: undo goes quiet in
+      // `npm run dev` while every non-StrictMode test still passes.
+      //
+      // Not destroying it leaks nothing that outlives the document. The manager's own listener is
+      // on `doc`, this memo is keyed on `doc`, and a superseded doc is abandoned rather than
+      // destroyed by the policy above — so the two become garbage together.
     }
   }, [undoManager])
 
