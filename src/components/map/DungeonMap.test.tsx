@@ -215,6 +215,16 @@ describe('Route overlay', () => {
     count: 3,
   }
 
+  /**
+   * One pull's outline, found by the pull it belongs to.
+   *
+   * The first `svg path` in the overlay is not it as soon as pack outlines are on, since packs
+   * are drawn before pulls — and route mode draws both. Naming the pull keeps these assertions
+   * about the pull rather than about drawing order.
+   */
+  const outline = (container: HTMLElement, index: number) =>
+    container.querySelector(`[data-pull="${index}"] path`)!
+
   it('numbers each pull from 1 at the centre of its outline', () => {
     const { container } = mount({ showPackOutlines: false, pullShapes: [shape] })
     const label = [...container.querySelectorAll('svg text')].find((t) => t.textContent === '3')!
@@ -224,16 +234,34 @@ describe('Route overlay', () => {
 
   it('thickens the outline of the hovered pull', () => {
     const { container: cold } = mount({ showPackOutlines: false, pullShapes: [shape] })
-    const thin = cold.querySelector('svg path')!.getAttribute('stroke-width')
+    const thin = outline(cold, 2).getAttribute('stroke-width')
 
     const { container: hot } = mount({
       showPackOutlines: false,
       pullShapes: [shape],
       hoveredPull: 2,
     })
-    const thick = hot.querySelector('svg path')!.getAttribute('stroke-width')
+    const thick = outline(hot, 2).getAttribute('stroke-width')
 
     expect(Number(thick)).toBeGreaterThan(Number(thin))
+  })
+
+  it('thickens it in route mode too, where the pack outlines are drawn as well', () => {
+    // Packs are drawn before pulls, so the overlay's first `svg path` is a pack's and reads the
+    // same whether a pull is hovered or not. That is what asking for the pull by name buys.
+    const { container: cold } = mount({ showPackOutlines: true, pullShapes: [shape] })
+    const { container: hot } = mount({
+      showPackOutlines: true,
+      pullShapes: [shape],
+      hoveredPull: 2,
+    })
+
+    expect(hot.querySelector('svg path')!.getAttribute('stroke-width')).toBe(
+      cold.querySelector('svg path')!.getAttribute('stroke-width'),
+    )
+    expect(Number(outline(hot, 2).getAttribute('stroke-width'))).toBeGreaterThan(
+      Number(outline(cold, 2).getAttribute('stroke-width')),
+    )
   })
 
   it('selects the pull when its outline is clicked', () => {
@@ -243,7 +271,7 @@ describe('Route overlay', () => {
       pullShapes: [shape],
       onPullClick: (i: number) => picked.push(i),
     })
-    fireEvent.click(container.querySelector('svg path')!.parentElement!)
+    fireEvent.click(container.querySelector('[data-pull="2"]')!)
     expect(picked).toEqual([2])
   })
 

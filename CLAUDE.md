@@ -292,6 +292,40 @@ piping it into `grep` or `tail` can lose it.
 timers, which would make that timing unreliable to assert on in a real one; it stays a jsdom
 test with fake timers, in `useRouteDoc.test.tsx`.
 
+### One unexplained failure in `DungeonMap.test.tsx`
+
+`Route overlay > thickens the outline of the hovered pull` failed once inside a full `npm test`
+on 2026-08-18, and has not failed since. It is recorded here for the same reason the relay line
+above is: an intermittent nobody can explain is worth a paragraph, not a silence.
+
+**The test was investigated and found sound.** Its body is synchronous throughout — Testing
+Library's `render` commits inside `act`, so the DOM is settled before either query — and the
+`stroke-width` it compares depends on nothing but `hoveredPull === shape.index`, two literals in
+the test. The `shape` object shared across that `describe` is never mutated: the component only
+reads it, and `roundedPolygonPath` copies. The file does declare its own `afterEach(cleanup)`, and
+the two mounts inside the one test body deliberately coexist without it — harmless, because every
+query is scoped to its own container. A probe repeating those two mounts sixty times in one
+process observed a single outcome and no other: one path per container, `3.5` cold and `6` hot,
+each found path inside the container it was asked of. The suite then ran green twenty times in a
+row; at the one-in-three rate first seen, that is a ~0.03% coincidence.
+
+**So the assertion as written cannot report "not greater than".** A real failure at those lines
+would have to be something else wearing their line numbers — a `TypeError` from a `querySelector`
+that returned `null`, or a harness-level error charged to whichever test was running. The
+five-second default timeout is not a candidate either: the test takes ~74 ms. **If it ever fails
+again, keep the error text.** That, and not the line number, is what would identify it.
+
+The investigation did turn up one real thing, not the cause but worth removing: the Route overlay
+tests used to reach their pull outline as the overlay's first `svg path`, which is only the pull's
+**because they pass `showPackOutlines: false`**. Packs are drawn before pulls, so with them on —
+as route mode has them — that selector reads a pack's outline instead, and a hover assertion
+written on it would pass on the wrong element. Each pull's `<g>` now carries `data-pull`, the same
+kind of landmark as `data-clone` on a blip, and those tests ask for the pull by index. The
+`showPackOutlines: true` case is now covered rather than avoided.
+
+Counting paths, as the Pack outlines tests do, was never affected: they assert a total, not which
+one came first.
+
 ## Test-Driven Development
 
 FOR EVERY NEW FEATURE OR BUGFIX, YOU MUST follow Test Driven Development.
