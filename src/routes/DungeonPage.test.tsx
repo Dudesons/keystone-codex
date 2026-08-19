@@ -478,16 +478,25 @@ describe('The drawing tools', () => {
     expect(screen.queryByRole('button', { name: 'Draw' })).toBeNull()
   })
 
-  it('replace the mob panel while a tool is active, and give it back', () => {
+  it('keeps the mob panel through a tool change, and hands the column to a placed object', () => {
     renderEn(at('/d/murder-row/codex'))
     fireEvent.click(screen.getByRole('link', { name: 'Route' }))
-    // The mob panel's empty state is what the column shows with no tool active.
+    // The mob panel's empty state is what the column shows with nothing selected.
     expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
 
+    // Picking a tool no longer takes it away: there is still no object to edit.
     fireEvent.click(screen.getByRole('button', { name: 'Note' }))
-    expect(screen.queryByText(/Hover a mob on the map/)).toBeNull()
+    expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    // Placing a note selects it, and that is what the editor is for.
+    const surface = document.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    expect(screen.queryByText(/Hover a mob on the map/)).toBeNull()
+    expect(screen.getByLabelText('Note text')).toBeDefined()
+
+    // Dropping the selection gives the column back.
+    fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
   })
 
@@ -703,6 +712,36 @@ describe('The drawing tools', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
 
     expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
+  })
+
+  it('keeps the mob card up while a tool is active but nothing is selected', () => {
+    // The column swaps to the object editor only when there is an object to edit. A tool being
+    // up is not that: with nothing selected the editor has only a one-line hint to show, and
+    // trading a whole mob card for a sentence is what made drawing feel like it broke the codex.
+    renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+
+    expect(screen.getByTestId('mob-panel').textContent).toContain('Hover a mob on the map')
+  })
+
+  it('swaps to the editor as soon as an object is selected, and back when it is dropped', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    // The stroke's own colour swatches are the editor, and they only exist once it is showing.
+    expect(screen.getByTestId('colour-ff365c')).toBeTruthy()
+    expect(screen.getByTestId('mob-panel').textContent).not.toContain('Hover a mob on the map')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByTestId('mob-panel').textContent).toContain('Hover a mob on the map')
   })
 
   it('drops the selection on a tool change, so Delete cannot reach it afterwards', () => {

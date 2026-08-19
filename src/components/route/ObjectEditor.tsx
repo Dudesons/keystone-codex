@@ -2,26 +2,22 @@
 // ABOUTME: Stateless — the page holds the object and writes each change to the document.
 
 import { useI18n } from '../../lib/i18n/context'
-import type { TranslationKey } from '../../lib/i18n/en'
 import type { MdtObject } from '../../lib/mdt/objects'
 import BrushControls from './BrushControls'
 
 export default function ObjectEditor({
   object,
-  hint = 'map.notePlaceHint',
   onChange,
   onDelete,
 }: {
   object: MdtObject | null
-  /** What to say while nothing is selected. The active tool decides it; this panel only shows it. */
-  hint?: TranslationKey
   onChange: (object: MdtObject) => void
   onDelete: () => void
 }) {
   const { t } = useI18n()
 
   if (!object) {
-    return <p className="text-xs text-ink-400">{t(hint)}</p>
+    return <p className="text-xs text-ink-400">{t('map.notePlaceHint')}</p>
   }
 
   return (

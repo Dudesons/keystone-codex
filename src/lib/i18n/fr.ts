@@ -135,7 +135,6 @@ export const fr: Dictionary = {
   'map.sizeSmall': 'Fin',
   'map.sizeMedium': 'Moyen',
   'map.sizeLarge': 'Épais',
-  'map.eraseHint': 'Cliquez un dessin ou une note pour le supprimer.',
   'map.noteText': 'Texte de la note',
   'map.notePlaceHint': 'Clique sur la carte pour poser une note.',
   'legend.pips': 'PASTILLES',

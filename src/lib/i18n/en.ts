@@ -134,7 +134,6 @@ export const en = {
   'map.sizeSmall': 'Thin',
   'map.sizeMedium': 'Medium',
   'map.sizeLarge': 'Thick',
-  'map.eraseHint': 'Click a drawing or a note to remove it.',
   'map.noteText': 'Note text',
   'map.notePlaceHint': 'Click the map to place a note.',
   'legend.pips': 'PIPS',

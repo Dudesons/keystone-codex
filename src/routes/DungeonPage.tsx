@@ -440,8 +440,11 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
               onRedo={actions.redo}
             />
             {/* Weighing a pack and marking the map are different tasks; 360px shared between
-                them would serve neither. The toolbar stays, so there is always a way back. */}
-            {tool == null ? (
+                them would serve neither. What decides is whether there is an object to edit, not
+                whether a tool is up: with a tool up and nothing selected the editor has only a
+                hint to show, and trading a whole mob card for a sentence takes the codex away
+                from someone whose hand is on the pencil but whose eye is still on the pack. */}
+            {editing == null ? (
               <MobPanel
                 slug={slug}
                 dungeon={lookup.dungeon}
@@ -452,7 +455,6 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
             ) : (
               <ObjectEditor
                 object={editing}
-                hint={tool === 'erase' ? 'map.eraseHint' : 'map.notePlaceHint'}
                 onChange={(o) => o.id && actions.updateObject(o.id, o)}
                 onDelete={() => {
                   if (editing?.id) actions.removeObject(editing.id)
