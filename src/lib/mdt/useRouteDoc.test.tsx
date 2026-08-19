@@ -4,6 +4,7 @@
 // @vitest-environment jsdom
 import fs from 'node:fs'
 import path from 'node:path'
+import { StrictMode } from 'react'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as encoding from 'lib0/encoding'
@@ -1370,5 +1371,33 @@ describe('Undoing my own object edits', () => {
     // `reset` leaves no source, so there is nothing objects could be derived from — and redo must
     // not put back an array adopted from the preset reset just discarded.
     expect(result.current.route.objects).toEqual([])
+  })
+})
+
+describe('Undoing under the StrictMode the app actually mounts in', () => {
+  /**
+   * `main.tsx` wraps the whole tree in `<StrictMode>`, and in development React runs every
+   * effect setup, cleanup, setup again on the first mount to surface exactly this class of bug.
+   * The ordinary `mount()` above does not, which is why the suite stayed green while undo was
+   * dead in `npm run dev`.
+   */
+  const mountStrict = () =>
+    renderHook(() => useRouteDoc(SLUG, MDT_INDEX), { wrapper: StrictMode })
+
+  it('still records an edit after the double mount has run its cleanup', () => {
+    const { result } = mountStrict()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 1 }, sublevel: 1, text: 'oops' }),
+    )
+    expect(result.current.canUndo).toBe(true)
+  })
+
+  it('takes the edit back when undo is called', () => {
+    const { result } = mountStrict()
+    act(() =>
+      result.current.actions.addObject({ kind: 'note', at: { x: 2, y: 2 }, sublevel: 1, text: 'gone' }),
+    )
+    act(() => result.current.actions.undo())
+    expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'gone')).toBe(false)
   })
 })

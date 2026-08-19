@@ -99,6 +99,7 @@ const mount = (
       hoveredPull={null}
       onHoverPull={() => {}}
       onFocusMob={() => {}}
+      onHoverMob={() => {}}
       collab={offline}
       onJoinRoom={() => {}}
       onLeaveRoom={() => {}}
@@ -344,6 +345,15 @@ describe('Pull briefing', () => {
     expect(container.textContent).not.toContain('frontal:')
   })
 
+  it('reports the mob a briefing line is hovered over', () => {
+    const hovered: number[] = []
+    const { container } = mount({ onHoverMob: (id: number) => hovered.push(id) })
+    fireEvent.click(screen.getAllByText('▸ Briefing')[0])
+    const line = container.querySelector('[data-mob]')!
+    fireEvent.mouseEnter(line)
+    expect(hovered).toEqual([Number(line.getAttribute('data-mob'))])
+  })
+
   it('focuses the mob when a briefing line is clicked', () => {
     const focused: number[] = []
     const { container } = mount({ onFocusMob: (id: number) => focused.push(id) })
@@ -389,6 +399,7 @@ describe('Import', () => {
         hoveredPull={null}
         onHoverPull={() => {}}
         onFocusMob={() => {}}
+        onHoverMob={() => {}}
         collab={offline}
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}
@@ -641,6 +652,7 @@ describe('Choosing a name', () => {
         hoveredPull={null}
         onHoverPull={() => {}}
         onFocusMob={() => {}}
+        onHoverMob={() => {}}
         collab={{ ...offline, identity }}
         onJoinRoom={() => {}}
         onLeaveRoom={() => {}}

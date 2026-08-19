@@ -82,6 +82,18 @@ describe('luaToObjects — strokes, from a real export', () => {
     expect([...layers].sort((a, b) => a - b)).toEqual(layers)
   })
 
+  runDrawn('reads MDT’s duplicated joints as a plain polyline', () => {
+    // MDT's renderer walks `l` in disjoint groups of four, drawing (p1→p2), then (p3→p4): to get a
+    // continuous line its writer repeats every interior vertex. The fixture's freehand stroke is
+    // 264 coordinates — 66 such segments — which is one polyline of 67 points, not 132.
+    const freehand = strokes().find((s) => !s.isArrow)!
+    expect(freehand.points).toHaveLength(67)
+    const repeats = freehand.points.filter(
+      (p, i) => i > 0 && p.x === freehand.points[i - 1].x && p.y === freehand.points[i - 1].y,
+    )
+    expect(repeats).toHaveLength(0)
+  })
+
   runDrawn('pins the first stroke, so a codec regression cannot pass silently', () => {
     const [first] = strokes()
     // The fixture's own first stroke: d = [5, 1.1, 1, true, "ff365c", -8, true], l starting
@@ -106,6 +118,17 @@ describe('luaToObjects — what it refuses to break on', () => {
 
   it('skips an object with no details table instead of throwing', () => {
     expect(luaToObjects(preset(table([[1, table([['n', true]])]])))).toEqual([])
+  })
+
+  it('keeps a stroke MDT drew as a single dot, rather than dropping it', () => {
+    // One zero-length segment is a dot on the map, not nothing: `smooth` makes MDT stamp a circle
+    // at each end of every segment it draws. Collapsing the repeated vertex must not collapse the
+    // object with it, or the app quietly stops showing a mark its author left.
+    const d = table([[1, 5], [2, 1.1], [3, 1], [4, true], [5, 'ff365c'], [6, -8], [7, true]])
+    const l = table([[1, '100.0'], [2, '-200.0'], [3, '100.0'], [4, '-200.0']])
+    const [stroke] = luaToObjects(preset(table([[1, table([['d', d], ['l', l]])]])))
+    expect(stroke).toBeDefined()
+    expect(stroke.kind === 'stroke' && stroke.points).toHaveLength(2)
   })
 
   it('skips a note whose position is not a number', () => {
@@ -255,6 +278,105 @@ describe('objectsToLua — synthesising', () => {
     const d = asTable(obj.get('d'))!
     expect(d.get(2)).toBe(1.1)
     expect(d.get(7)).toBe(true)
+  })
+
+  it('writes a created stroke as the duplicated-joint segment pairs MDT draws', () => {
+    // Three points are two segments, and the shared vertex is written into both: MDT's renderer
+    // consumes `l` four coordinates at a time and would otherwise skip the second segment
+    // altogether, leaving the gap between every drawn piece that reads in game as a dashed line.
+    const stroke: MdtStroke = {
+      kind: 'stroke',
+      points: [toPixels(0, -10), toPixels(10, -20), toPixels(20, -30)],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const l = asTable(asTable(objectsToLua(undefined, [stroke]).get(1))!.get('l'))!
+    expect([...l.values()]).toEqual([
+      '0.0', '-10.0', '10.0', '-20.0',
+      '10.0', '-20.0', '20.0', '-30.0',
+    ])
+  })
+
+  it('drops a point that repeats the one before it rather than drawing on the spot', () => {
+    // A held pointer, or a stroke read back from a preset, can repeat a vertex. Emitted as its own
+    // pair that would be a zero-length segment — and with `smooth` on, MDT draws a circle at each
+    // end of every segment, so it would show up as a blob rather than as nothing.
+    const stroke: MdtStroke = {
+      kind: 'stroke',
+      points: [
+        toPixels(0, -10),
+        toPixels(10, -20),
+        toPixels(10, -20),
+        toPixels(20, -30),
+        toPixels(30, -40),
+      ],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const l = asTable(asTable(objectsToLua(undefined, [stroke]).get(1))!.get('l'))!
+    expect([...l.values()]).toEqual([
+      '0.0', '-10.0', '10.0', '-20.0',
+      '10.0', '-20.0', '20.0', '-30.0',
+      '20.0', '-30.0', '30.0', '-40.0',
+    ])
+  })
+
+  it('writes a stroke that collapses to a dot as one segment, never as an empty `l`', () => {
+    // Reachable from the arrow tool, whose gesture has no sampling threshold: a drag of a pixel
+    // or two at full zoom is less than the tenth of an MDT unit `l` stores, so both ends round to
+    // the same place. An empty `l` would leave an object MDT cannot draw and our own reader
+    // cannot parse — and an entry the reader cannot parse is one `objectsToLua` then hands back
+    // verbatim for ever, so the preset would carry it around permanently.
+    const dot: MdtStroke = {
+      kind: 'stroke',
+      points: [toPixels(100, -200), toPixels(100.02, -200.01)],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const l = asTable(asTable(objectsToLua(undefined, [dot]).get(1))!.get('l'))!
+    expect([...l.values()]).toEqual(['100.0', '-200.0', '100.0', '-200.0'])
+  })
+
+  it('reads back a dot it wrote, so the entry cannot decay into one nothing understands', () => {
+    const dot: MdtStroke = {
+      kind: 'stroke',
+      points: [toPixels(100, -200), toPixels(100, -200)],
+      sublevel: 1,
+      color: 'ff365c',
+      isArrow: false,
+      ...MDT_STROKE_DEFAULTS,
+    }
+    const preset: LuaTable = new Map()
+    preset.set('objects', objectsToLua(undefined, [dot]))
+    const [read] = luaToObjects(preset)
+    expect(read?.kind).toBe('stroke')
+  })
+
+  runDrawn('re-emits a modified freehand stroke with the coordinates the game wrote', () => {
+    // The round trip that matters: read a real stroke, change something that moves no point, and
+    // the synthesised `l` must come back value for value identical to MDT's own. Nothing short of
+    // a real export can make this claim — a hand-written table would only prove our own idea of
+    // the format, which is the assumption that produced the dashes in the first place.
+    const source = decodeMdtString(drawn).table
+    const raw = asTable(source.get('objects'))!
+    const objects = luaToObjects(source)
+    const freehand = objects.find((o): o is MdtStroke => o.kind === 'stroke' && !o.isArrow)!
+    const before = asTable(asTable(raw.get(freehand.from!))!.get('l'))!
+
+    const recoloured = { ...freehand, color: '00ff00' }
+    const out = objectsToLua(source, objects.map((o) => (o === freehand ? recoloured : o)))
+    const entry = [...out.values()]
+      .map(asTable)
+      .find((t) => t && asTable(t.get('d'))?.get(5) === '00ff00')!
+    const after = asTable(entry.get('l'))!
+
+    expect([...after.values()]).toEqual([...before.values()])
   })
 
   it('gives a created arrow a `t`, and a different lineFactor', () => {

@@ -3,6 +3,7 @@
 
 import { useI18n } from '../../lib/i18n/context'
 import type { MdtObject } from '../../lib/mdt/objects'
+import BrushControls from './BrushControls'
 
 export default function ObjectEditor({
   object,
@@ -32,6 +33,16 @@ export default function ObjectEditor({
             className="w-full rounded border border-ink-700 bg-ink-850 px-2 py-1 text-ink-100"
           />
         </label>
+      )}
+      {object.kind === 'stroke' && (
+        // The same strip the toolbar carries, pointed at this stroke instead of at the next one:
+        // a drawing in the wrong colour is worth recolouring rather than redrawing.
+        <BrushControls
+          colour={object.color}
+          size={object.size}
+          onColour={(color) => onChange({ ...object, color })}
+          onSize={(size) => onChange({ ...object, size })}
+        />
       )}
       <button
         onClick={onDelete}

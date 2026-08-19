@@ -4,6 +4,33 @@
 import { test, expect } from '@playwright/test'
 import { acceptInvitation, firstDungeonSlug, newParticipant, openSession } from './fixtures'
 
+test('the eraser removes a note even when the hand wobbles on the way down', async ({ page }) => {
+  // A press on a pin that the pin does not stop starts the map's own pan, which takes pointer
+  // capture a few pixels later and retargets the release away from the pin — so the click erases
+  // nothing and the map slides instead. jsdom cannot show this: it models neither pointer capture
+  // nor the retargeting that follows it, and a bare `click()` in a unit test passes either way.
+  const slug = await firstDungeonSlug(page)
+  await page.goto(`./#/d/${slug}/route`)
+
+  await page.getByRole('button', { name: 'Note', exact: true }).click()
+  const surface = page.getByTestId('draw-surface')
+  const box = (await surface.boundingBox())!
+  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5)
+  await expect(page.locator('[data-testid^="note-pin-"]')).toHaveCount(1)
+
+  await page.getByRole('button', { name: 'Erase', exact: true }).click()
+
+  const pin = (await page.locator('[data-testid^="note-pin-"]').first().boundingBox())!
+  const from = { x: pin.x + pin.width / 2, y: pin.y + pin.height / 2 }
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  // Past the four pixels at which both the pin's own drag and the map's pan would engage.
+  await page.mouse.move(from.x + 6, from.y + 3)
+  await page.mouse.up()
+
+  await expect(page.locator('[data-testid^="note-pin-"]')).toHaveCount(0)
+})
+
 test('a stroke reaches the room while it is still being drawn, then stays', async ({ page, browser }) => {
   const slug = await firstDungeonSlug(page)
   await openSession(page, slug, 'Artist')

@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Awareness } from 'y-protocols/awareness'
 import { getLookup } from '../lib/data'
+import { MAP_SCALE } from '../lib/geometry'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
@@ -471,22 +472,77 @@ describe('The mob panel', () => {
   })
 })
 
+describe('The pull briefing and the mob panel', () => {
+  const enemies = getLookup('murder-row')!.dungeon.enemies
+
+  /**
+   * The route starts empty, so a briefing has to be given something to brief on: clicking a
+   * blip adds its whole pack to the current pull, which is what makes the "▸ Briefing" toggle
+   * appear at all.
+   */
+  const openBriefing = (container: HTMLElement) => {
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(container.querySelectorAll('[data-clone]')[0])
+    fireEvent.click(screen.getByText('▸ Briefing'))
+    return [...container.querySelectorAll('[data-mob]')]
+  }
+
+  const nameOf = (line: Element) =>
+    enemies.find((e) => e.id === Number(line.getAttribute('data-mob')))!.name
+
+  /** Blips render `enemies.flatMap(e => e.clones)`, so an enemy's first one sits past every
+      clone of every enemy before it. */
+  const firstBlipOf = (container: HTMLElement, enemy: (typeof enemies)[number]) =>
+    container.querySelectorAll('[data-clone]')[
+      enemies.slice(0, enemies.indexOf(enemy)).reduce((n, e) => n + e.clones.length, 0)
+    ]
+
+  it('shows a briefing line’s mob in the left column on hover', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    const line = openBriefing(container)[0]
+    expect(screen.getByTestId('mob-panel').textContent).not.toContain(nameOf(line))
+    fireEvent.mouseEnter(line)
+    expect(screen.getByTestId('mob-panel').textContent).toContain(nameOf(line))
+  })
+
+  it('leaves a right-clicked mob in place while a briefing line is hovered', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    const lines = openBriefing(container)
+    // A mob the briefing does not list, so "unchanged" cannot be satisfied by accident.
+    const pinned = enemies.find((e) => !lines.some((l) => l.getAttribute('data-mob') === String(e.id)))!
+    fireEvent.contextMenu(firstBlipOf(container, pinned))
+    const held = screen.getByTestId('mob-panel').textContent
+    expect(held).toContain(pinned.name)
+    fireEvent.mouseEnter(lines[0])
+    expect(screen.getByTestId('mob-panel').textContent).toBe(held)
+  })
+})
+
 describe('The drawing tools', () => {
   it('are absent from the codex tab', () => {
     renderEn(at('/d/murder-row/codex'))
     expect(screen.queryByRole('button', { name: 'Draw' })).toBeNull()
   })
 
-  it('replace the mob panel while a tool is active, and give it back', () => {
+  it('keeps the mob panel through a tool change, and hands the column to a placed object', () => {
     renderEn(at('/d/murder-row/codex'))
     fireEvent.click(screen.getByRole('link', { name: 'Route' }))
-    // The mob panel's empty state is what the column shows with no tool active.
+    // The mob panel's empty state is what the column shows with nothing selected.
     expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
 
+    // Picking a tool no longer takes it away: there is still no object to edit.
     fireEvent.click(screen.getByRole('button', { name: 'Note' }))
-    expect(screen.queryByText(/Hover a mob on the map/)).toBeNull()
+    expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    // Placing a note selects it, and that is what the editor is for.
+    const surface = document.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    expect(screen.queryByText(/Hover a mob on the map/)).toBeNull()
+    expect(screen.getByLabelText('Note text')).toBeDefined()
+
+    // Dropping the selection gives the column back.
+    fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.getByText(/Hover a mob on the map/)).toBeDefined()
   })
 
@@ -615,6 +671,123 @@ describe('The drawing tools', () => {
     fireEvent.keyDown(document, { key: 'Delete' })
 
     expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(0)
+  })
+
+  it('draws in the colour and the width the brush is set to', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    fireEvent.click(screen.getByTestId('colour-4ade80'))
+    fireEvent.click(screen.getByTestId('size-12'))
+
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    const polyline = container.querySelector('[data-testid="stroke-0"] polyline')!
+    expect(polyline.getAttribute('stroke')).toBe('#4ade80')
+    // MDT's own 0.3 factor, applied to the width the brush chose rather than to its default.
+    expect(polyline.getAttribute('stroke-width')).toBe(String(12 * 0.3 * MAP_SCALE))
+  })
+
+  it('recolours a stroke already drawn, without redrawing it', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    // The stroke's own line is the last of the group: a selected stroke is drawn over a gold
+    // halo and an invisible hit target, both of which are polylines through the same points.
+    const drawn = () => {
+      const all = container.querySelectorAll('[data-testid="stroke-0"] polyline')
+      return all[all.length - 1]
+    }
+    const before = drawn().getAttribute('points')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    fireEvent.click(screen.getByTestId('colour-38bdf8'))
+
+    const polyline = drawn()
+    expect(polyline.getAttribute('stroke')).toBe('#38bdf8')
+    // The same line, in another colour: an edit that moved a point would not be a recolour.
+    expect(polyline.getAttribute('points')).toBe(before)
+  })
+
+  it('erases the drawing that is clicked, and leaves the others alone', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    for (const y of [0, 60]) {
+      fireEvent.pointerDown(surface, { clientX: 0, clientY: y, pointerId: 1 })
+      fireEvent.pointerMove(surface, { clientX: 40, clientY: y, pointerId: 1 })
+      fireEvent.pointerUp(surface, { clientX: 40, clientY: y, pointerId: 1 })
+    }
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+    fireEvent.click(container.querySelectorAll('[data-hit]')[0]!)
+
+    expect(container.querySelectorAll('[data-testid^="stroke-"]')).toHaveLength(1)
+  })
+
+  it('erases a note as readily as a drawing', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Note' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 30, clientY: 30, pointerId: 1 })
+    expect(container.querySelectorAll('[data-testid^=\"note-pin-\"]')).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+    fireEvent.click(container.querySelector('[data-testid^=\"note-pin-\"]')!)
+
+    expect(container.querySelectorAll('[data-testid^=\"note-pin-\"]')).toHaveLength(0)
+  })
+
+  it('draws nothing while the eraser is the active tool', () => {
+    // Erase reuses the objects' own hit targets, so it must not also mount the full-map surface
+    // that a drawing tool needs — that surface would sit over every one of them.
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+
+    expect(container.querySelector('[data-testid="draw-surface"]')).toBeNull()
+  })
+
+  it('keeps the mob card up while a tool is active but nothing is selected', () => {
+    // The column swaps to the object editor only when there is an object to edit. A tool being
+    // up is not that: with nothing selected the editor has only a one-line hint to show, and
+    // trading a whole mob card for a sentence is what made drawing feel like it broke the codex.
+    renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+
+    expect(screen.getByTestId('mob-panel').textContent).toContain('Hover a mob on the map')
+  })
+
+  it('swaps to the editor as soon as an object is selected, and back when it is dropped', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Draw' }))
+    const surface = container.querySelector('[data-testid="draw-surface"]')!
+    fireEvent.pointerDown(surface, { clientX: 0, clientY: 0, pointerId: 1 })
+    fireEvent.pointerMove(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(surface, { clientX: 40, clientY: 0, pointerId: 1 })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }))
+    fireEvent.click(container.querySelector('[data-hit]')!)
+    // The stroke's own colour swatches are the editor, and they only exist once it is showing.
+    expect(screen.getByTestId('colour-ff365c')).toBeTruthy()
+    expect(screen.getByTestId('mob-panel').textContent).not.toContain('Hover a mob on the map')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByTestId('mob-panel').textContent).toContain('Hover a mob on the map')
   })
 
   it('drops the selection on a tool change, so Delete cannot reach it afterwards', () => {

@@ -125,7 +125,15 @@ export default function DungeonMap({
   const [hoverPack, setHoverPack] = useState<number | null>(null)
   const [hoverClone, setHoverClone] = useState<string | null>(null)
   const [hoverPoi, setHoverPoi] = useState<number | null>(null)
-  const [showLegend, setShowLegend] = useState(false)
+  /**
+   * Open from the start: a pip's letter and a ring's colour are what a reader needs *before* they
+   * would know to go looking for the key to them, so the map explains itself rather than waiting
+   * to be asked. The button stays, because someone who has learnt the code wants the map bare.
+   *
+   * It sits top-right, which nothing else claims — both tooltips and the relay notice sit along
+   * the top-left and centre, and the zoom cluster along the bottom-right.
+   */
+  const [showLegend, setShowLegend] = useState(true)
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
 
@@ -646,7 +654,10 @@ function Legend() {
     ['rgba(180,190,210,0.75)', t('legend.ring.unknown')],
   ]
   return (
-    <div className="absolute top-3 right-3 w-60 rounded border border-ink-700 bg-ink-900/95 p-3 text-xs shadow-lg">
+    // `pointer-events-none`: open from the start, this panel covers the top-right of the map for
+    // good, and a mob that a pan or a zoom brings underneath it would otherwise stop answering
+    // the cursor. It holds no button or link of its own, so there is nothing here to click.
+    <div className="pointer-events-none absolute top-3 right-3 w-60 rounded border border-ink-700 bg-ink-900/95 p-3 text-xs shadow-lg">
       <div className="mb-1.5 text-[10px] font-bold tracking-widest text-ink-400">{t('legend.pips')}</div>
       {rows.map(([color, glyph, label]) => (
         <div key={glyph} className="mb-1 flex items-center gap-2">

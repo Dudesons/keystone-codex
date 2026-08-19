@@ -104,10 +104,15 @@ export default function NoteLayer({
             onMouseEnter={() => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
             onPointerDown={(e) => {
-              // With neither the select tool nor another drawing tool active, there is nothing
-              // here that needs this press — letting it fall through is what lets the map's own
-              // pan start for no reason other than "the hand happened to land on a pin".
-              if (!onMove && !drawingActive) return
+              // With no tool able to act on this pin, there is nothing here that needs the press
+              // — letting it fall through is what lets the map's own pan start for no reason
+              // other than "the hand happened to land on a pin".
+              //
+              // `onSelect` counts, and not only `onMove`: the eraser can act on a pin while
+              // supplying no way to drag it, and a press left to fall through starts a pan that
+              // takes pointer capture a few pixels later, retargeting the click away from the
+              // pin it was aimed at. The tool that removes things would remove nothing.
+              if (!onSelect && !onMove && !drawingActive) return
               e.stopPropagation()
               // Only the select tool can actually move this note, and only once it carries an id
               // (see the note on `selected` above) — a drawing tool still needed the stop above,
