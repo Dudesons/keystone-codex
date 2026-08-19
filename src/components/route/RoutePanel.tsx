@@ -53,6 +53,9 @@ interface Props {
   hoveredPull: number | null
   onHoverPull: (index: number | null) => void
   onFocusMob: (npcId: number) => void
+  /** Called when a briefing line is entered. There is no matching "left" call: the column
+      deliberately holds the last mob it was given, so leaving has nothing to say. */
+  onHoverMob: (npcId: number) => void
   collab: CollabState
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
@@ -93,6 +96,7 @@ export default function RoutePanel({
   hoveredPull,
   onHoverPull,
   onFocusMob,
+  onHoverMob,
   collab,
   onJoinRoom,
   onLeaveRoom,
@@ -302,6 +306,7 @@ export default function RoutePanel({
                         enemy={enemy}
                         n={n}
                         onClick={() => onFocusMob(enemy.id)}
+                        onHover={() => onHoverMob(enemy.id)}
                       />
                     ))}
                   </div>
@@ -400,11 +405,13 @@ function PullMobLine({
   enemy,
   n,
   onClick,
+  onHover,
 }: {
   slug: string
   enemy: Enemy
   n: number
   onClick: () => void
+  onHover: () => void
 }) {
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
@@ -416,8 +423,10 @@ function PullMobLine({
 
   return (
     <div
+      data-mob={enemy.id}
       className="mb-1.5 rounded px-1 py-0.5 last:mb-0 hover:bg-ink-800"
       onClick={(e) => (e.stopPropagation(), onClick())}
+      onMouseEnter={onHover}
     >
       <div className="flex items-center gap-1.5">
         <span className="text-xs text-ink-100">

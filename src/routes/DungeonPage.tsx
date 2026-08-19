@@ -394,6 +394,19 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
     [lookup, frozenNpc],
   )
 
+  /**
+   * A pull's briefing names its mobs; hovering one puts its entry in the column, so the pack
+   * can be read without hunting for its blips. `cursorNpc` stays untouched on purpose — it
+   * exists only to tell whether the map's tooltip would repeat the column, and a cursor in the
+   * right-hand panel is over no blip at all.
+   */
+  const handleHoverMob = useCallback(
+    (id: number) => {
+      if (frozenNpc == null) setPanelNpc(id)
+    },
+    [frozenNpc],
+  )
+
   const handleCloneContextMenu = useCallback(
     (ref: CloneRef) => {
       const id = enemyOf(ref)?.id
@@ -564,6 +577,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
                 setFocusNpc(id)
                 navigate(`/d/${slug}/codex/mob/${id}`)
               }}
+              onHoverMob={handleHoverMob}
               collab={collab}
               onJoinRoom={joinRoom}
               onLeaveRoom={handleLeaveRoom}

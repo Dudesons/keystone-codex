@@ -472,6 +472,52 @@ describe('The mob panel', () => {
   })
 })
 
+describe('The pull briefing and the mob panel', () => {
+  const enemies = getLookup('murder-row')!.dungeon.enemies
+
+  /**
+   * The route starts empty, so a briefing has to be given something to brief on: clicking a
+   * blip adds its whole pack to the current pull, which is what makes the "▸ Briefing" toggle
+   * appear at all.
+   */
+  const openBriefing = (container: HTMLElement) => {
+    fireEvent.click(screen.getByRole('link', { name: 'Route' }))
+    fireEvent.click(container.querySelectorAll('[data-clone]')[0])
+    fireEvent.click(screen.getByText('▸ Briefing'))
+    return [...container.querySelectorAll('[data-mob]')]
+  }
+
+  const nameOf = (line: Element) =>
+    enemies.find((e) => e.id === Number(line.getAttribute('data-mob')))!.name
+
+  /** Blips render `enemies.flatMap(e => e.clones)`, so an enemy's first one sits past every
+      clone of every enemy before it. */
+  const firstBlipOf = (container: HTMLElement, enemy: (typeof enemies)[number]) =>
+    container.querySelectorAll('[data-clone]')[
+      enemies.slice(0, enemies.indexOf(enemy)).reduce((n, e) => n + e.clones.length, 0)
+    ]
+
+  it('shows a briefing line’s mob in the left column on hover', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    const line = openBriefing(container)[0]
+    expect(screen.getByTestId('mob-panel').textContent).not.toContain(nameOf(line))
+    fireEvent.mouseEnter(line)
+    expect(screen.getByTestId('mob-panel').textContent).toContain(nameOf(line))
+  })
+
+  it('leaves a right-clicked mob in place while a briefing line is hovered', () => {
+    const { container } = renderEn(at('/d/murder-row/codex'))
+    const lines = openBriefing(container)
+    // A mob the briefing does not list, so "unchanged" cannot be satisfied by accident.
+    const pinned = enemies.find((e) => !lines.some((l) => l.getAttribute('data-mob') === String(e.id)))!
+    fireEvent.contextMenu(firstBlipOf(container, pinned))
+    const held = screen.getByTestId('mob-panel').textContent
+    expect(held).toContain(pinned.name)
+    fireEvent.mouseEnter(lines[0])
+    expect(screen.getByTestId('mob-panel').textContent).toBe(held)
+  })
+})
+
 describe('The drawing tools', () => {
   it('are absent from the codex tab', () => {
     renderEn(at('/d/murder-row/codex'))
