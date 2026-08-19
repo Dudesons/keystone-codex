@@ -570,6 +570,17 @@ describe('Heads-up display', () => {
     expect(container.textContent).toContain('PIPS')
   })
 
+  it('lets the pointer through to the map it covers', () => {
+    // Open from the start, it sits over the top-right of the map for good — so a mob that a pan
+    // or a zoom brings underneath it would become unhoverable and unclickable. It carries no
+    // button or link of its own, so nothing is lost by making it transparent to the pointer.
+    const { container } = mount()
+    const legend = [...container.querySelectorAll('div')].find(
+      (d) => d.className.includes('absolute') && /PIPS/.test(d.textContent ?? ''),
+    )!
+    expect(legend.className).toContain('pointer-events-none')
+  })
+
   it('explains every ring colour, including the one that means "not judged"', () => {
     const { container } = mount()
     for (const label of ['Lethal threat', 'Dangerous', 'Watch out', 'Harmless', 'Boss']) {
