@@ -348,6 +348,9 @@ Two things are deliberately not English-only: the codex content under `content/*
 user interface. Both are translated through the i18n layer, per locale, rather than written
 in a single language.
 
+`CONTRIBUTING.md` and `CONTRIBUTING.fr.md` are a translated pair: **both land in the same commit
+or neither does.** Nothing tests a document, so that rule is the only thing keeping them in step.
+
 Commit style, taken from the existing history: imperative mood, no `feat:` / `fix:` prefix, a
 subject line saying what the commit does to the repository. The body explains **why**, not
 what — the diff already says what.
@@ -516,6 +519,8 @@ exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js throug
 - **CI runs no extraction script** (there is no WoW on the runner). After a local
   `npm run data`, the generated files have to be committed for the live site to change.
 - **Deployment is manual** (`Actions → Deploy → Run workflow`), never automatic.
+- **Nothing under `content/` ever reaches an MDT string.** The codec serialises the route
+  document only; tips, traps and prose are ours and stay ours. A share string carries a route.
 
 ## Commands
 

@@ -34,6 +34,8 @@ spells:
     prio: 1
     note: "581k physical on the current target."
 trap: "Immune to every CC: you have to burst it."
+tips:
+  - text: "Pull it into the corridor — the frontal has nowhere to reach the healer."
 ---
 
 Free-form prose: positioning, focus order, cooldowns.
@@ -45,6 +47,9 @@ displayed with its MDT data alone — the codex fills in gradually without ever 
 app.
 
 The dev server hot-reloads: saving a `.md` updates the card immediately.
+
+**Writing your first card?** [CONTRIBUTING.md](CONTRIBUTING.md) walks through it — in the
+browser or locally, with a recipe per task ([en français](CONTRIBUTING.fr.md)).
 
 `content/<dungeon>/_dungeon.md` carries the timer, the summary, the route plan, and — where
 MDT's own encounter order is not usable — a `bosses:` list of npc ids giving the boss cards
