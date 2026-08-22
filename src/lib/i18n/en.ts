@@ -71,6 +71,11 @@ export const en = {
   'mob.unknownSpell': 'Spell {id}',
   'mob.untranslated': 'Not translated yet',
 
+  // Tips
+  'tip.section': 'TIPS',
+  'tip.play': 'Play video',
+  'tip.openOnYouTube': 'Open on YouTube',
+
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',
   'threat.medium': 'Watch out',

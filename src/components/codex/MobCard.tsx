@@ -6,8 +6,7 @@ import { getLookup, getNpcLabel, getSpell, iconUrl, portraitUrl, wowheadUrl } fr
 import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
-import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
-import { CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
+import { BaseLanguageMark, CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
 
 /**
  * Display order: whatever demands an immediate reaction comes first.
@@ -174,29 +173,6 @@ export default function MobCard({
         </div>
       )}
     </article>
-  )
-}
-
-/**
- * Says the text beside it is still in the base language.
- *
- * The card keeps showing the English note rather than swapping it for Wowhead's French
- * description: the note is a judgement about the pull and the description is a tooltip, so
- * losing the note would cost the reader more than the language does. What the mark adds is
- * that they can tell — and that the gap reads as ours to close rather than as their mistake.
- *
- * Its text is the base locale, not the word "English": one place decides which language the
- * codex is written in first, and it is `DEFAULT_LOCALE`.
- */
-function BaseLanguageMark() {
-  const { t } = useI18n()
-  return (
-    <span
-      title={t('mob.untranslated')}
-      className="shrink-0 rounded border border-ink-600 px-1 text-[9px] font-bold tracking-wider text-ink-500"
-    >
-      {DEFAULT_LOCALE.toUpperCase()}
-    </span>
   )
 }
 

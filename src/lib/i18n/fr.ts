@@ -72,6 +72,11 @@ export const fr: Dictionary = {
   'mob.unknownSpell': 'Sort {id}',
   'mob.untranslated': 'Pas encore traduit',
 
+  // Astuces
+  'tip.section': 'ASTUCES',
+  'tip.play': 'Lire la vidéo',
+  'tip.openOnYouTube': 'Ouvrir sur YouTube',
+
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Sans danger',
   'threat.medium': 'À surveiller',
