@@ -175,7 +175,12 @@ export default function MobCard({
       )}
 
       {!compact && content?.tips && content.tips.length > 0 && (
-        <MobTips slug={slug} tips={content.tips} fallback={content.fallback.tips} />
+        <MobTips
+          slug={slug}
+          npcId={enemy.id}
+          tips={content.tips}
+          fallback={content.fallback.tips}
+        />
       )}
     </article>
   )

@@ -3,17 +3,19 @@
 
 import { useState } from 'react'
 import { inlineMarkdown } from '../../lib/content'
-import { embedUrl, tipImageUrl, watchUrl, type Tip } from '../../lib/tips'
+import { embedUrl, tipImageUrl, tipsSectionId, watchUrl, type Tip } from '../../lib/tips'
 import { useI18n } from '../../lib/i18n/context'
 import { BaseLanguageMark } from './Badges'
 
 export default function MobTips({
   slug,
+  npcId,
   tips,
   /** The list fell back to the base language: mark the section, not each row. */
   fallback,
 }: {
   slug: string
+  npcId: number
   tips: Tip[]
   fallback: boolean
 }) {
@@ -21,7 +23,7 @@ export default function MobTips({
   if (!tips.length) return null
 
   return (
-    <div className="border-t border-ink-700 px-3 py-3">
+    <div id={tipsSectionId(npcId)} className="scroll-mt-2 border-t border-ink-700 px-3 py-3">
       <div className="mb-1.5 flex items-center gap-1.5">
         <div className="text-[10px] font-bold tracking-widest text-ink-400">{t('tip.section')}</div>
         {fallback && <BaseLanguageMark />}
