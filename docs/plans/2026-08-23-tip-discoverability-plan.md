@@ -256,7 +256,7 @@ Expected: PASS and clean. Other tests in that file construct `MobTips` directly 
 
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH" && npm test
-git add src/components/codex/MobTips.tsx src/components/codex/MobTips.test.tsx src/components/codex/MobCard.tsx
+git add src/lib/tips.ts src/lib/tips.test.ts src/components/codex/MobTips.tsx src/components/codex/MobTips.test.tsx src/components/codex/MobCard.tsx
 git commit -m "$(cat <<'EOF'
 Give the tips section an address
 
