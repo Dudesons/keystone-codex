@@ -32,6 +32,7 @@
 | --- | --- |
 | `src/lib/indicators.ts` | Gains `hasTips: boolean`. The single derivation both badges read. |
 | `src/components/codex/Badges.tsx` | Gains `TipsJumpBadge` — a button, unlike its neighbours, because it navigates. |
+| `src/lib/tips.ts` | Gains `tipsSectionId(npcId)`. Lives here, not in a component, to avoid a cycle — see task 2. |
 | `src/components/codex/MobTips.tsx` | Gains a stable `id` on its section so something can scroll to it. |
 | `src/components/codex/MobCard.tsx` | Renders the badge in the header behind `!compact`. |
 | `src/components/map/DungeonMap.tsx` | One `badges.push` entry and one `Legend` row. |
@@ -143,13 +144,15 @@ EOF
 ## Task 2: A section worth scrolling to
 
 **Files:**
-- Modify: `src/components/codex/MobTips.tsx`
-- Test: `src/components/codex/MobTips.test.tsx`
+- Modify: `src/lib/tips.ts`, `src/components/codex/MobTips.tsx`
+- Test: `src/lib/tips.test.ts`, `src/components/codex/MobTips.test.tsx`
 
 **Interfaces:**
-- Produces: `tipsSectionId(npcId: number): string`, exported from `MobTips.tsx` — task 3 uses it to build the scroll target, and the id must be computed the same way in both places.
+- Produces: `tipsSectionId(npcId: number): string`, exported from **`src/lib/tips.ts`** — task 3 uses it to build the scroll target, and the id must be computed the same way in both places.
 
 Why an exported function rather than a literal: `MobCard` renders the badge and `MobTips` renders the target, and a hardcoded string in two files is a rename waiting to break silently. The route builder can also mount several cards at once, so the id must be per mob, not a constant.
+
+**Why it lives in `src/lib/tips.ts` and not in the component.** `MobTips.tsx` already imports `BaseLanguageMark` from `./Badges`. Task 3 makes `Badges.tsx` need this helper — so exporting it from `MobTips.tsx` would put a cycle between the two modules. It would likely still run, because the only call site is inside a click handler and nothing evaluates at module load, but "works depending on evaluation order" is not a property to build on. `src/lib/tips.ts` imports nothing, both files already reach for it, and a function from an npc id to a string is exactly the pure kind of thing that module holds.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -164,32 +167,44 @@ it('gives its section an id derived from the mob, so a badge can scroll to it', 
 })
 ```
 
-Import `tipsSectionId` alongside the default import at the top of the file.
+Import `tipsSectionId` from `../../lib/tips` at the top of the file.
 
-- [ ] **Step 2: Run it and watch it fail**
+Also add a unit test to `src/lib/tips.test.ts`, since that is where the helper now lives:
 
-```bash
-export PATH="/c/Program Files/nodejs:$PATH" && npx vitest run --project app src/components/codex/MobTips.test.tsx
+```ts
+it('builds a scroll target from the npc id', () => {
+  expect(tipsSectionId(254_850)).toBe('tips-254850')
+})
 ```
 
-Expected: FAIL — `tipsSectionId` is not exported (a TypeScript/import error), then once imported, no element carries the id.
+- [ ] **Step 2: Run both and watch them fail**
 
-- [ ] **Step 3: Add the prop and the id**
+```bash
+export PATH="/c/Program Files/nodejs:$PATH" && npx vitest run --project app src/lib/tips.test.ts src/components/codex/MobTips.test.tsx
+```
 
-In `src/components/codex/MobTips.tsx`, export the helper above the component:
+Expected: FAIL — `tipsSectionId` is not exported (a TypeScript/import error), then once exported, no element carries the id.
+
+- [ ] **Step 3: Add the helper, the prop and the id**
+
+In `src/lib/tips.ts`, export the helper beside the other URL builders:
 
 ```ts
 /**
  * The scroll target for a card's tips.
  *
- * `MobCard` renders the badge and this component renders the target, so the id is computed in
- * one place rather than written as a literal in two. It is keyed by the mob because the route
- * builder can hold more than one card at a time.
+ * `MobCard` renders the badge and `MobTips` renders the target, so the id is computed in one
+ * place rather than written as a literal in two. Keyed by the mob because the route builder can
+ * hold more than one card at a time.
+ *
+ * It lives in this module rather than in either component because `MobTips` already imports
+ * from `Badges` and `Badges` is about to need this: exporting it from a component would put a
+ * cycle between them.
  */
 export const tipsSectionId = (npcId: number) => `tips-${npcId}`
 ```
 
-Add `npcId` to the props type and destructuring:
+In `src/components/codex/MobTips.tsx`, add `tipsSectionId` to the existing import from `../../lib/tips`, then add `npcId` to the props type and destructuring:
 
 ```ts
 export default function MobTips({
@@ -264,7 +279,7 @@ EOF
 - Test: `src/components/codex/MobCard.test.tsx`
 
 **Interfaces:**
-- Consumes: `MobIndicators.hasTips` (task 1), `tipsSectionId` (task 2).
+- Consumes: `MobIndicators.hasTips` (task 1), `tipsSectionId` from `src/lib/tips.ts` (task 2).
 - Produces: `TipsJumpBadge({ npcId }: { npcId: number })`, exported from `Badges.tsx`.
 
 - [ ] **Step 1: Add the interface string to both dictionaries**
@@ -360,8 +375,10 @@ export function TipsJumpBadge({ npcId }: { npcId: number }) {
 Add the import at the top of `Badges.tsx`:
 
 ```ts
-import { tipsSectionId } from './MobTips'
+import { tipsSectionId } from '../../lib/tips'
 ```
+
+**Not from `./MobTips`.** `MobTips.tsx` imports `BaseLanguageMark` from this file already; importing back would make a cycle. Task 2 put the helper in `src/lib/tips.ts` for exactly this reason.
 
 - [ ] **Step 5: Render it in the card header**
 
@@ -981,7 +998,7 @@ EOF
 
 **Spec coverage.** Decision 1 → task 1. Decision 2 → tasks 2 and 3. Decision 3 → task 3 step 5, and its dedicated compact test in step 2. Decision 4 → task 4. Decision 5 → task 4 (one glyph, one legend row, no per-kind branch anywhere). Decision 6 → tasks 5 and 6. Decision 7 → task 6 step 4, where `TipList` mounts `MobTips` rather than rendering tips itself, and task 7's request-collector scenario, which is what proves the guarantee survived the reuse.
 
-**Type consistency.** `MobIndicators.hasTips` is defined in task 1 and read in tasks 3 and 4. `tipsSectionId(npcId: number): string` is exported in task 2 and imported in task 3. `MobTips`'s props become `{ slug, npcId, tips, fallback }` in task 2 and are passed with exactly those four names in task 2 step 4 and task 6 step 4. `HighlightTip` is defined in task 5 and consumed in task 6 with the same five fields. `DungeonHighlights.tips` is added to both the interface and `EMPTY` in task 5, so the type and its empty value cannot drift.
+**Type consistency.** `MobIndicators.hasTips` is defined in task 1 and read in tasks 3 and 4. `tipsSectionId(npcId: number): string` is exported from `src/lib/tips.ts` in task 2 and imported from there in task 3 — never from a component, which would put a cycle between `MobTips` and `Badges`. `MobTips`'s props become `{ slug, npcId, tips, fallback }` in task 2 and are passed with exactly those four names in task 2 step 4 and task 6 step 4. `HighlightTip` is defined in task 5 and consumed in task 6 with the same five fields. `DungeonHighlights.tips` is added to both the interface and `EMPTY` in task 5, so the type and its empty value cannot drift.
 
 **Known soft spots, named rather than hidden.**
 
