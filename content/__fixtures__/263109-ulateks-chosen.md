@@ -33,6 +33,15 @@ spells:
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Kick Mass Envenom while the adds are still up, or the poison stacks on a group that is already spread out."
+
+# Tips, in the base language only: the .fr.md sibling deliberately carries none, which is what
+# pins `fallback.tips`. The image names a real committed file under public/tips/__fixtures__/.
+tips:
+  - text: "Fixture tip: the sentence a reader gets when no translation exists yet."
+  - video: https://www.youtube.com/shorts/9D0gCU8Tp5Y
+    label: "Fixture video"
+  - image: example.webp
+    label: "Fixture image"
 ---
 
 The caster that decides how a pull goes, at 25 forces per unit.
