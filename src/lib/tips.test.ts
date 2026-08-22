@@ -1,0 +1,104 @@
+// ABOUTME: Tests the tip parser — which YouTube URLs are accepted, and what is rejected.
+// ABOUTME: Pure input/output: no files, no DOM, so every rejection can be stated as a case.
+
+import { describe, expect, it, vi } from 'vitest'
+import { embedUrl, parseTips, tipImageUrl, watchUrl, youtube } from './tips'
+
+describe('youtube', () => {
+  it('reads the id out of every form someone actually pastes', () => {
+    expect(youtube('https://www.youtube.com/watch?v=9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y', portrait: false })
+    expect(youtube('https://youtu.be/9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y', portrait: false })
+    expect(youtube('https://www.youtube.com/embed/9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y', portrait: false })
+  })
+
+  it('marks a Short as portrait, which is the only reason the form is distinguished', () => {
+    expect(youtube('https://www.youtube.com/shorts/9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y', portrait: true })
+  })
+
+  it('keeps a timestamp, with or without its trailing s', () => {
+    expect(youtube('https://youtu.be/9D0gCU8Tp5Y?t=95')?.start).toBe(95)
+    expect(youtube('https://www.youtube.com/watch?v=9D0gCU8Tp5Y&t=95s')?.start).toBe(95)
+    expect(youtube('https://youtu.be/9D0gCU8Tp5Y')?.start).toBeUndefined()
+    // A timestamp we cannot read is no timestamp, not a broken one.
+    expect(youtube('https://youtu.be/9D0gCU8Tp5Y?t=1h2m')?.start).toBeUndefined()
+  })
+
+  it('refuses anything that is not a YouTube video id', () => {
+    expect(youtube('https://www.youtube.com/watch?v=tooshort')).toBeNull()
+    expect(youtube('https://vimeo.com/9D0gCU8Tp5Y')).toBeNull()
+    expect(youtube('https://www.youtube.com/results?search_query=x')).toBeNull()
+    expect(youtube('javascript:alert(1)')).toBeNull()
+    expect(youtube('not a url at all')).toBeNull()
+  })
+})
+
+describe('URLs', () => {
+  it('embeds through the no-cookie host, autoplaying because the click already happened', () => {
+    expect(embedUrl({ videoId: '9D0gCU8Tp5Y' })).toBe(
+      'https://www.youtube-nocookie.com/embed/9D0gCU8Tp5Y?autoplay=1&rel=0',
+    )
+    expect(embedUrl({ videoId: '9D0gCU8Tp5Y', start: 95 })).toBe(
+      'https://www.youtube-nocookie.com/embed/9D0gCU8Tp5Y?autoplay=1&rel=0&start=95',
+    )
+  })
+
+  it('links out to the canonical watch page', () => {
+    expect(watchUrl('9D0gCU8Tp5Y')).toBe('https://www.youtube.com/watch?v=9D0gCU8Tp5Y')
+  })
+
+  it('starts an image from BASE_URL, to stay valid under a GitHub Pages subpath', () => {
+    expect(tipImageUrl('the-blinding-vale', 'a.webp')).toBe(
+      `${import.meta.env.BASE_URL}tips/the-blinding-vale/a.webp`,
+    )
+  })
+})
+
+describe('parseTips', () => {
+  it('reads the three kinds, taking the key as the kind', () => {
+    const tips = parseTips(
+      [
+        { text: 'Kick the second cast.' },
+        { video: 'https://www.youtube.com/shorts/9D0gCU8Tp5Y', label: 'The pull' },
+        { image: 'beams.webp', label: 'Where they land' },
+      ],
+      'card.md',
+    )
+    expect(tips).toEqual([
+      { kind: 'text', text: 'Kick the second cast.' },
+      { kind: 'video', videoId: '9D0gCU8Tp5Y', portrait: true, label: 'The pull' },
+      { kind: 'image', file: 'beams.webp', label: 'Where they land' },
+    ])
+  })
+
+  it('drops an entry that names no kind, or two, and warns rather than throwing', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(parseTips([{ label: 'orphan' }], 'card.md')).toBeUndefined()
+    expect(parseTips([{ text: 'a', video: 'https://youtu.be/9D0gCU8Tp5Y' }], 'card.md')).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+
+  it('keeps the good entries when one is bad, because a card must never break over content', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const tips = parseTips([{ text: 'kept' }, { video: 'https://vimeo.com/x' }], 'card.md')
+    expect(tips).toEqual([{ kind: 'text', text: 'kept' }])
+    warn.mockRestore()
+  })
+
+  it('refuses an image that is anything but a bare filename', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    for (const file of ['../secret.webp', 'sub/dir.webp', 'C:\\x.webp', 'https://example.com/x.webp', 'x.svg', '.webp']) {
+      expect(parseTips([{ image: file }], 'card.md'), file).toBeUndefined()
+    }
+    warn.mockRestore()
+  })
+
+  it('treats a missing or malformed list as no tips at all', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(parseTips(undefined, 'card.md')).toBeUndefined()
+    expect(parseTips(null, 'card.md')).toBeUndefined()
+    expect(parseTips('a string', 'card.md')).toBeUndefined()
+    expect(parseTips([], 'card.md')).toBeUndefined()
+    warn.mockRestore()
+  })
+})
