@@ -294,6 +294,10 @@ are somebody's separate pull request.
 - **Do not paste someone else's guide.** A route write-up, a video script, a wiki page — link it
   as a tip with their name in the label. Mirroring text into this repository is both a licensing
   problem and a maintenance one: their guide gets updated, our copy does not.
+- **No raw HTML, ever.** `note:`, `trap:` and a text tip are rendered as inline markdown,
+  and the renderer does not strip HTML — a `<script>` in one of those fields would run in the
+  browser of every reader of that card. Markdown covers what a card needs: emphasis and links.
+  Raw HTML is refused in review, and looking for it is part of reviewing a card.
 
 ## Where to ask
 

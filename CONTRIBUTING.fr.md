@@ -307,6 +307,11 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
   page de wiki : mettez-le en lien comme astuce, avec son nom dans le label. Recopier du texte
   dans ce dépôt est à la fois un problème de licence et un problème de maintenance — leur guide
   sera mis à jour, notre copie non.
+- **Jamais de HTML brut.** `note:`, `trap:` et une astuce de type texte sont rendus comme du
+  markdown en ligne, et le rendu ne filtre pas le HTML — une balise `<script>` dans l’un de ces
+  champs s’exécuterait dans le navigateur de chaque personne qui lit la fiche. Le markdown
+  suffit à ce qu’une fiche demande : emphase et liens. Le HTML brut est refusé en relecture, et
+  le repérer fait partie du travail de relecture.
 
 ## Où poser une question
 
