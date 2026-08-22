@@ -24,8 +24,9 @@ change to the right-hand column is work the next `npm run data` erases.
 | `tips`: a sentence, a video or a screenshot | |
 
 A fresh card also carries a few lines the scaffold copied out of the generated data as a
-reminder: `name:`, `count:`, `isBoss:`, and a spell's name and cast time. Each is marked
-`# auto`. The app never reads them, and changing one changes nothing on screen.
+reminder: `name:`, `count:` and `isBoss:`, each marked `# auto`; a spell's `name:`, marked the
+same way; and a bare comment under it giving that spell's cast time and range. The app reads
+none of them, and changing one changes nothing on screen.
 
 **A wrong spell name, a wrong cast time or a missing spell is a data problem, not a card
 problem.** No edit to `content/` can fix it, so do not try: [open an
@@ -99,7 +100,7 @@ Free-form prose: positioning, focus order, cooldowns.
 | `role` | `caster`, `melee`, `patrol`, `miniboss` or `add`. |
 | `spells[].id` | A spell id that already exists in the generated data. Do not invent one. |
 | `spells[].tag` | `kick`, `frontal`, `dodge`, `dispel`, `tank`, `soak` or `ignore`. A fresh card says `tag: todo`, which shows no badge and means "not looked at yet". |
-| `spells[].prio` | A number. `prio: 1` puts the spell on the dungeon's Overview tab; within a card it orders spells carrying the same tag. |
+| `spells[].prio` | A number. Within a card it orders spells carrying the same tag; `prio: 1` can also reach the dungeon's Overview tab. See [Annotate a spell](#annotate-a-spell). |
 | `spells[].note` | One sentence, shown **instead of** Wowhead's description. Leave it out and Wowhead's own text is shown. |
 | `trap` | The one sentence that avoids the wipe. Leave it empty if the mob is harmless. |
 | `tips` | See [Add a tip](#add-a-tip). |
@@ -152,13 +153,13 @@ mob shows up on its card and nowhere else — rate the mob and it appears.
 ### Rate a mob's threat
 
 `threat` is not "how big is the number", it is how much of the pull this mob changes. The scale,
-the three rules that follow from it and two worked examples are in
+the three rules that follow from it and two worked examples live in
 [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
-— read that before rating, and do not re-derive it here.
+— **read it before rating.** It also tells you when to leave the field empty instead of filling
+it, and which mobs carry no `threat` at all.
 
-Two consequences worth repeating, because they decide what you write: an unrated mob is not a
-harmless mob, so **leave `threat:` empty rather than guess**; and bosses carry no `threat` at
-all.
+That page is the one place those answers live, which is why this one does not repeat them: a
+rule written twice is a rule that will disagree with itself.
 
 ### Write the prose
 
@@ -189,7 +190,7 @@ tips:
 
 The rules:
 
-- **A `label:` is required on a video and on an image.** Without one the button reads only
+- **Always give a `label:` on a video and on an image.** Without one the button reads only
   "Play video" and the image gets no caption — nothing tells the reader what they are about to
   open. A text tip needs none: the sentence is the tip.
 - **Credit the creator in the label.** If the video is someone else's work, their name goes in
@@ -283,10 +284,13 @@ are somebody's separate pull request.
 
 ## House rules
 
-- **Write what the data holds and nothing more.** If MDT's tooltip does not name a radius, the
-  card does not name one either. If you know something from playing that no source records,
-  write it in the prose and say it is observed — never as a spell entry, never as a badge, since
-  badges are generated from data that does not contain it.
+- **Write what the data holds and nothing more.** It is the easiest rule to break by accident,
+  and it has more edges than a bullet can carry: a tooltip that names no radius, an unscaled
+  figure,
+  two sources that disagree, something you know only from having played it. All of them are
+  answered in
+  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  Read it before writing a sentence the card cannot source.
 - **Do not paste someone else's guide.** A route write-up, a video script, a wiki page — link it
   as a tip with their name in the label. Mirroring text into this repository is both a licensing
   problem and a maintenance one: their guide gets updated, our copy does not.

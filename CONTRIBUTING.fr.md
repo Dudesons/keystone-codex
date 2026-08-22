@@ -26,9 +26,10 @@ modifiée à la main. Toute modification de la colonne de droite est un travail 
 | `tips` : une phrase, une vidéo ou une capture | |
 
 Une fiche fraîchement générée contient aussi quelques lignes que le scaffold a recopiées depuis
-les données générées, à titre de rappel : `name:`, `count:`, `isBoss:`, ainsi que le nom et le
-temps d'incantation d'un sort. Chacune est marquée `# auto`. L'application ne les lit jamais, et
-en changer une ne change rien à l'écran.
+les données générées, à titre de rappel : `name:`, `count:` et `isBoss:`, chacune marquée
+`# auto` ; le `name:` d'un sort, marqué de la même façon ; et, juste en dessous, un simple
+commentaire donnant son temps d'incantation et sa portée. L'application n'en lit aucune, et en
+changer une ne change rien à l'écran.
 
 **Un nom de sort faux, un temps d'incantation faux ou un sort manquant sont un problème de
 données, pas un problème de fiche.** Aucune modification dans `content/` ne peut les corriger,
@@ -105,7 +106,7 @@ Prose libre : placement, ordre de focus, cooldowns.
 | `role` | `caster`, `melee`, `patrol`, `miniboss` ou `add`. |
 | `spells[].id` | Un identifiant de sort qui existe déjà dans les données générées. N'en inventez pas. |
 | `spells[].tag` | `kick`, `frontal`, `dodge`, `dispel`, `tank`, `soak` ou `ignore`. Une fiche fraîche porte `tag: todo`, qui n'affiche aucun badge et veut dire « pas encore regardé ». |
-| `spells[].prio` | Un nombre. `prio: 1` place le sort dans l'onglet Aperçu du donjon ; à l'intérieur d'une fiche, il ordonne les sorts portant le même tag. |
+| `spells[].prio` | Un nombre. À l'intérieur d'une fiche, il ordonne les sorts portant le même tag ; `prio: 1` peut en plus atteindre l'onglet Résumé du donjon. Voir [Annoter un sort](#annoter-un-sort). |
 | `spells[].note` | Une phrase, affichée **à la place** de la description Wowhead. Si vous n'en mettez pas, c'est le texte de Wowhead qui s'affiche. |
 | `trap` | La phrase, unique, qui évite le wipe. Laissez vide si le mob est inoffensif. |
 | `tips` | Voir [Ajouter une astuce](#ajouter-une-astuce). |
@@ -150,22 +151,22 @@ son temps d'incantation — puis donnez-lui un `tag`, une `prio` s'il la mérite
 Remplacez `tag: todo` au lieu d'ajouter une deuxième ligne `tag:`. Ne touchez pas aux lignes
 `# auto` autour.
 
-`prio: 1` est une promotion : le sort devient une pastille dans l'onglet Aperçu du donjon, qui
+`prio: 1` est une promotion : le sort devient une pastille dans l'onglet Résumé du donjon, qui
 est une liste courte et cesse d'être utile dès que tout y figure. Deux ou trois par mob au
-maximum. L'Aperçu ne liste que les mobs évalués `medium` ou au-dessus (et les minibosses) : une
+maximum. Le Résumé ne liste que les mobs évalués `medium` ou au-dessus (et les minibosses) : une
 `prio: 1` sur un mob non évalué n'apparaît donc que sur sa fiche — évaluez le mob et elle
 apparaîtra.
 
 ### Évaluer la menace d'un mob
 
 `threat` ne répond pas à « le chiffre est-il gros », mais à « ce mob change-t-il le pull ».
-L'échelle, les trois règles qui en découlent et deux exemples travaillés sont dans
+L'échelle, les trois règles qui en découlent et deux exemples travaillés vivent dans
 [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
-— lisez-les avant d'évaluer, plutôt que de les reconstituer ici.
+— **lisez-le avant d'évaluer.** Il dit aussi quand laisser le champ vide plutôt que de le
+remplir, et quels mobs ne portent pas de `threat` du tout.
 
-Deux conséquences valent d'être répétées, parce qu'elles décident de ce que vous écrivez : un mob
-non évalué n'est pas un mob inoffensif, donc **laissez `threat:` vide plutôt que de deviner** ;
-et les boss ne portent pas de `threat` du tout.
+Cette page est le seul endroit où ces réponses vivent, et c'est pourquoi celle-ci ne les répète
+pas : une règle écrite deux fois est une règle qui finira par se contredire.
 
 ### Écrire la prose
 
@@ -196,7 +197,7 @@ tips:
 
 Les règles :
 
-- **Un `label:` est obligatoire sur une vidéo et sur une image.** Sans lui, le bouton n'affiche
+- **Mettez toujours un `label:` sur une vidéo et sur une image.** Sans lui, le bouton n'affiche
   que « Lire la vidéo » et l'image n'a aucune légende — rien ne dit au lecteur ce qu'il s'apprête
   à ouvrir. Une astuce en texte n'en a pas besoin : la phrase est l'astuce.
 - **Créditez l'auteur dans le label.** Si la vidéo est le travail de quelqu'un d'autre, son nom
@@ -295,11 +296,13 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
 
 ## Règles de la maison
 
-- **Écrivez ce que les données contiennent, et rien de plus.** Si l'infobulle MDT ne donne pas de
-  rayon, la fiche n'en donne pas non plus. Si vous savez quelque chose en l'ayant joué et
-  qu'aucune source ne le consigne, écrivez-le dans la prose et dites que c'est observé — jamais
-  comme une entrée de sort, jamais comme un badge, puisque les badges sont générés à partir de
-  données qui ne le contiennent pas.
+- **Écrivez ce que les données contiennent, et rien de plus.** C'est la règle la plus facile à
+  enfreindre sans s'en rendre compte, et elle a plus de cas particuliers qu'une puce ne peut en
+  porter : une infobulle qui ne donne aucun rayon, un chiffre non mis à l'échelle, deux sources
+  qui se contredisent, quelque chose que vous ne savez que pour l'avoir joué. Tous ces cas sont
+  traités dans
+  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  Lisez-le avant d'écrire une phrase que la fiche ne peut pas sourcer.
 - **Ne recopiez pas le guide de quelqu'un d'autre.** Un écrit de route, un script de vidéo, une
   page de wiki : mettez-le en lien comme astuce, avec son nom dans le label. Recopier du texte
   dans ce dépôt est à la fois un problème de licence et un problème de maintenance — leur guide
