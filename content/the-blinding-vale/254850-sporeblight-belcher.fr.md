@@ -13,6 +13,10 @@ spells:
     note: "291k à tous les proches à sa mort, et ça laisse du Blight Resin au sol. Onze corps comme celui-là, c'est onze explosions."
 
 trap: "Vingt-cinq forces par corps et 291k à chaque mort. Ne pas en laisser plusieurs mourir sur le groupe en même temps — étaler les kills ou les disperser."
+
+tips:
+  - video: https://www.youtube.com/shorts/9D0gCU8Tp5Y
+    label: "Naowh — prendre le pull après le premier boss"
 ---
 
 **Le mob le plus lourd du donjon, et de loin** : onze unités à 25 forces chacune, environ 42 % du

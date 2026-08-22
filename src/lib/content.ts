@@ -99,7 +99,8 @@ export interface DungeonContent {
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/
 
-function splitFrontmatter(raw: string): { data: Record<string, unknown>; body: string } {
+/** Exported for the integrity test, which reads the same frontmatter straight off disk. */
+export function splitFrontmatter(raw: string): { data: Record<string, unknown>; body: string } {
   const m = FRONTMATTER.exec(raw)
   if (!m) return { data: {}, body: raw }
   try {
