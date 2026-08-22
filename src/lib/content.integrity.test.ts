@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { splitFrontmatter } from './content'
+import { parseTips } from './tips'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 
@@ -42,5 +43,26 @@ describe('Image tips', () => {
         .map((image) => `${file} → public/tips/${slug}/${image}`),
     )
     expect(missing).toEqual([])
+  })
+
+  /**
+   * The file existing is not the same claim as the tip rendering: `parseTips` also rejects a
+   * well-formed-looking value — a space, a leading underscore, an extension outside the
+   * allowlist — and drops it with a `console.warn` nobody reads in CI. A committed file that
+   * exists but whose declared name does not survive parsing is exactly as invisible in
+   * production as a missing one, so count what parsing actually keeps, not just what exists.
+   */
+  it('parses into an image tip for every declared `image:` — not just a file that exists', () => {
+    const mismatches = cards().flatMap(([, file]) => {
+      const declared = declaredImages(file)
+      if (!declared.length) return []
+      const { data } = splitFrontmatter(readFileSync(file, 'utf8'))
+      const parsed = parseTips(data.tips, file) ?? []
+      const accepted = parsed.filter((t) => t.kind === 'image').length
+      return accepted === declared.length
+        ? []
+        : [`${file}: declared ${declared.length} image tip(s), parseTips accepted ${accepted}`]
+    })
+    expect(mismatches).toEqual([])
   })
 })

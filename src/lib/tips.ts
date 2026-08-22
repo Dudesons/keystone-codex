@@ -37,7 +37,7 @@ const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
 const IMAGE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(webp|png|jpe?g|gif)$/i
 
 /** `t=90` and `t=90s` both mean ninety seconds. Anything else means no timestamp. */
-export function startSeconds(value: string | null): number | undefined {
+function startSeconds(value: string | null): number | undefined {
   const m = value ? /^(\d+)s?$/.exec(value) : null
   const n = m ? Number(m[1]) : 0
   return n > 0 ? n : undefined
@@ -106,7 +106,10 @@ function parseTip(raw: unknown, where: string): Tip | null {
   const value = (entry[kind] as string).trim()
   const label = typeof entry.label === 'string' && entry.label.trim() ? entry.label.trim() : undefined
 
-  if (kind === 'text') return { kind: 'text', text: value }
+  if (kind === 'text') {
+    if (label) console.warn(`${where}: a text tip's label is ignored, entry unaffected`)
+    return { kind: 'text', text: value }
+  }
 
   if (kind === 'video') {
     const video = youtube(value)

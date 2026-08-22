@@ -30,6 +30,18 @@ describe('youtube', () => {
     expect(youtube('javascript:alert(1)')).toBeNull()
     expect(youtube('not a url at all')).toBeNull()
   })
+
+  it('refuses a host that only looks like YouTube', () => {
+    // `hostname` on both is a suffix match away from being accepted by a careless check —
+    // the field decides which host a browser is sent to, so this is a security claim.
+    expect(youtube('https://youtube.com.evil.com/watch?v=9D0gCU8Tp5Y')).toBeNull()
+    expect(youtube('https://notyoutube.com/watch?v=9D0gCU8Tp5Y')).toBeNull()
+  })
+
+  it('accepts the mobile and no-cookie hosts, not just the canonical one', () => {
+    expect(youtube('https://m.youtube.com/watch?v=9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y' })
+    expect(youtube('https://youtube-nocookie.com/watch?v=9D0gCU8Tp5Y')).toMatchObject({ videoId: '9D0gCU8Tp5Y' })
+  })
 })
 
 describe('URLs', () => {

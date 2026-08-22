@@ -11,6 +11,7 @@ afterEach(cleanup)
 import type { Enemy } from '../../lib/types'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
+import { en } from '../../lib/i18n/en'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
 import { renderEn, renderFr } from '../../test/render'
 import MobCard from './MobCard'
@@ -405,6 +406,6 @@ describe('Tips', () => {
 
   it('shows no section at all for a card that carries none', () => {
     renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
-    expect(screen.queryByText('TIPS')).toBeNull()
+    expect(screen.queryByText(en['tip.section'])).toBeNull()
   })
 })
