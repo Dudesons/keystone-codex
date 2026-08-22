@@ -36,7 +36,10 @@ export default function MobTips({
                 dangerouslySetInnerHTML={{ __html: inlineMarkdown(tip.text) }}
               />
             )}
-            {tip.kind === 'video' && <VideoTip tip={tip} />}
+            {/* Keyed by the video, not the row: a translation can swap in a different video at
+                the same index (decision 7 replaces the list whole), and `playing` must not
+                survive onto a video it was never clicked for. */}
+            {tip.kind === 'video' && <VideoTip key={tip.videoId} tip={tip} />}
             {tip.kind === 'image' && (
               <figure>
                 <img

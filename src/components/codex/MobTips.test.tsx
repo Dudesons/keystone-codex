@@ -49,6 +49,20 @@ describe('Video tips', () => {
     renderFr(<MobTips slug={SLUG} tips={[{ ...video, label: undefined }]} fallback={false} />)
     expect(screen.getByRole('button', { name: 'Lire la vidéo' })).toBeTruthy()
   })
+
+  it('does not carry playback state onto a different video swapped into the same row', () => {
+    // A translation replaces the whole `tips:` list (decision 7): the video at index 0 can
+    // become a different video entirely. `playing` for the old one must not leak onto the new.
+    const other: Tip = { kind: 'video', videoId: 'aaaaaaaaaaa', portrait: false, label: 'Other video' }
+    const { container, rerender } = renderEn(<MobTips slug={SLUG} tips={[video]} fallback={false} />)
+    fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
+    expect(container.querySelector('iframe')).toBeTruthy()
+
+    rerender(<MobTips slug={SLUG} tips={[other]} fallback={false} />)
+
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Other video' })).toBeTruthy()
+  })
 })
 
 describe('Image tips', () => {
