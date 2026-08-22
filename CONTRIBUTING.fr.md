@@ -125,10 +125,10 @@ Chacune de ces recettes fait une petite pull request. Aucune n'a besoin des autr
 ### Ajouter ou modifier un piège
 
 Le piège est la phrase qu'on lit en plein pull : elle dit ce qu'il faut *faire*, pas ce que le
-mob *est*. Extrait de `content/the-blinding-vale/254850-sporeblight-belcher.md` :
+mob *est*. Extrait de `content/the-blinding-vale/254850-sporeblight-belcher.fr.md` :
 
 ```yaml
-trap: "Twenty-five forces a body and 291k when each one dies. Do not let several die on top of the group at once — stagger the kills or spread them out."
+trap: "Vingt-cinq forces par corps et 291k à chaque mort. Ne pas en laisser plusieurs mourir sur le groupe en même temps — étaler les kills ou les disperser."
 ```
 
 Si le mob est vraiment inoffensif, laissez `trap:` vide. Un champ vide est une information ; un
