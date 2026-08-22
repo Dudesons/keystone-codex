@@ -7,6 +7,7 @@ import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } 
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { BaseLanguageMark, CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
+import MobTips from './MobTips'
 
 /**
  * Display order: whatever demands an immediate reaction comes first.
@@ -171,6 +172,10 @@ export default function MobCard({
           )}
           <div className="prose-codex" dangerouslySetInnerHTML={{ __html: content.html }} />
         </div>
+      )}
+
+      {!compact && content?.tips && content.tips.length > 0 && (
+        <MobTips slug={slug} tips={content.tips} fallback={content.fallback.tips} />
       )}
     </article>
   )

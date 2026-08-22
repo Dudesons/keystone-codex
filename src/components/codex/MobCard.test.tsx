@@ -208,11 +208,12 @@ describe('Text still in the base language', () => {
     expect(markedRow(container, 1_306_853)).toBe(false)
   })
 
-  it('marks the untranslated prose and spares the translated trap', () => {
+  it('marks the untranslated prose and tips, and spares the translated trap', () => {
     const { container } = renderFr(<MobCard slug={FIXTURES} enemy={halfTranslated} />)
-    // Two marks and no more: the untranslated note and the untranslated prose. The trap is
+    // Three marks and no more: the untranslated note, the untranslated prose, and the
+    // untranslated tips section (the fr sibling carries no `tips` of its own). The trap is
     // translated, and counting proves it carries none without having to select its block.
-    expect(screen.queryAllByText(MARK)).toHaveLength(2)
+    expect(screen.queryAllByText(MARK)).toHaveLength(3)
     expect(container.querySelector('.prose-codex')).not.toBeNull()
     expect(container.querySelector('.border-threat-lethal')!.textContent).not.toContain(MARK)
   })
@@ -387,5 +388,23 @@ describe('Markdown in the one-line fields', () => {
   it('leaves a Wowhead description alone: it is data, not our writing', () => {
     const { container } = renderEn(<MobCard slug="dungeon-without-content" enemy={unknown} />)
     expect(container.innerHTML).not.toContain('<strong>')
+  })
+})
+
+describe('Tips', () => {
+  it('shows the section for a card that carries tips', () => {
+    const { container } = renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Fixture video' })).toBeTruthy()
+  })
+
+  it('hides it in compact, where the prose and the CC are hidden too', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={chosen} compact />)
+    expect(screen.queryByRole('button', { name: 'Fixture video' })).toBeNull()
+  })
+
+  it('shows no section at all for a card that carries none', () => {
+    renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(screen.queryByText('TIPS')).toBeNull()
   })
 })
