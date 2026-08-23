@@ -41,6 +41,23 @@ export type Role = (typeof ROLES)[number]
 export function isRole(value: unknown): value is Role {
   return typeof value === 'string' && (ROLES as readonly string[]).includes(value)
 }
+
+/**
+ * A mob's rank: how much of a deal it is, as opposed to `role`, which is what shape it is.
+ *
+ * Unlike `role` this is **not** free text. `role` is displayed, so an unknown value renders as
+ * itself and the reader sees the word someone wrote. `rank` is never displayed as text — it
+ * decides which list a mob appears in — so an unknown value is dropped and MDT's own `isBoss`
+ * stands. `content.integrity.test.ts` is what turns that silent fallback into a failing test.
+ */
+export const RANKS = ['boss', 'miniboss'] as const
+
+export type Rank = (typeof RANKS)[number]
+
+export function isRank(value: unknown): value is Rank {
+  return typeof value === 'string' && (RANKS as readonly string[]).includes(value)
+}
+
 /**
  * `frontal` is narrower than `dodge` on purpose: a cone you leave by not standing in front,
  * rather than something on the floor to walk out of. It is the only one of these the pull
@@ -79,6 +96,7 @@ export interface MobContent {
   npcId: number
   threat?: Threat
   role?: string
+  rank?: Rank
   trap?: string
   spells?: SpellNote[]
   tips?: Tip[]
@@ -151,6 +169,7 @@ interface RawMob {
   npcId: number
   threat?: Threat
   role?: string
+  rank?: Rank
   trap?: string
   spells?: SpellNote[]
   tips?: Tip[]
@@ -207,6 +226,7 @@ for (const [filePath, raw] of Object.entries(files)) {
     npcId,
     threat: data.threat as Threat | undefined,
     role: data.role as string | undefined,
+    rank: isRank(data.rank) ? data.rank : undefined,
     trap: data.trap as string | undefined,
     spells: (data.spells as SpellNote[] | undefined)?.filter((s) => s && Number(s.id)),
     tips: parseTips(data.tips, filePath),
@@ -284,6 +304,7 @@ function mergeMob(base: RawMob | undefined, translation: RawMob | undefined, loc
     npcId: source.npcId,
     threat,
     role: translation?.role ?? base?.role,
+    rank: translation?.rank ?? base?.rank,
     trap,
     spells,
     tips,
