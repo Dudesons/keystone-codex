@@ -75,6 +75,7 @@ export const en = {
   // Tips
   'tip.section': 'TIPS',
   'tip.play': 'Play video',
+  'tip.collapse': 'Fold the video away',
   'tip.openOnYouTube': 'Open on YouTube',
   'tip.jump': 'Has tips — jump to them',
 

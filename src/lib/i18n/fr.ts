@@ -76,6 +76,7 @@ export const fr: Dictionary = {
   // Astuces
   'tip.section': 'ASTUCES',
   'tip.play': 'Lire la vidéo',
+  'tip.collapse': 'Replier la vidéo',
   'tip.openOnYouTube': 'Ouvrir sur YouTube',
   'tip.jump': 'Contient des astuces — y aller',
 

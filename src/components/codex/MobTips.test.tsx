@@ -152,3 +152,52 @@ describe('The flash that lands the eye on the section', () => {
     expect(section(container).className).toContain('tips-flash')
   })
 })
+
+describe('Folding a video away again', () => {
+  it('keeps the row after the embed opens, so there is still something to click', () => {
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
+    expect(screen.getByRole('button', { name: 'The pull' })).toBeTruthy()
+  })
+
+  /**
+   * Unmounted, not hidden. This section exists on the promise that nothing reaches Google until
+   * the reader asks — leaving a player alive behind a folded row would keep the connection the
+   * fold was meant to end, and would keep the audio playing with it.
+   */
+  it('drops the embed entirely on the second click', () => {
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const row = screen.getByRole('button', { name: 'The pull' })
+
+    fireEvent.click(row)
+    expect(container.querySelector('iframe')).not.toBeNull()
+
+    fireEvent.click(row)
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('says whether it is open, for a reader who cannot see the glyph', () => {
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const row = screen.getByRole('button', { name: 'The pull' })
+    expect(row.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(row)
+    expect(row.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('keeps the way out to YouTube reachable while the embed is open', () => {
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
+    expect(screen.getByRole('link', { name: 'Open on YouTube' })).toBeTruthy()
+  })
+
+  it('reopens a folded video rather than refusing to play it twice', () => {
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const row = screen.getByRole('button', { name: 'The pull' })
+
+    fireEvent.click(row)
+    fireEvent.click(row)
+    fireEvent.click(row)
+    expect(container.querySelector('iframe')).not.toBeNull()
+  })
+})

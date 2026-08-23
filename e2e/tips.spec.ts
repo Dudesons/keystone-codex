@@ -62,3 +62,30 @@ test('the briefing page loads no embed until asked', async ({ page }) => {
     new RegExp(`youtube-nocookie\\.com/embed/${VIDEO_ID}`),
   )
 })
+
+/**
+ * Folding drops the frame rather than hiding it.
+ *
+ * The unit tests already assert the iframe leaves the DOM. This one is here for what only a
+ * real browser can show: that the same row folds and unfolds the same video repeatedly, in a
+ * build where the embed really did load. The open-then-fold shape is also what keeps the test
+ * honest — a locator that matched nothing would fail at the first assertion, not silently pass
+ * the second.
+ */
+test('a reader can fold a video away again, and open it once more', async ({ page }) => {
+  await page.goto('./#/d/the-blinding-vale/codex/mob/254850')
+
+  const card = page.locator('[data-npc="254850"]')
+  const row = card.getByRole('button', { name: /Naowh/ })
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(1)
+  await expect(row).toHaveAttribute('aria-expanded', 'true')
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(0)
+  await expect(row).toHaveAttribute('aria-expanded', 'false')
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(1)
+})
