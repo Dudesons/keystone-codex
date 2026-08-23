@@ -321,7 +321,7 @@ describe('Tips badge', () => {
     const scrollIntoView = vi.fn()
     Element.prototype.scrollIntoView = scrollIntoView
     renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
-    await userEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+    fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
     expect(scrollIntoView).toHaveBeenCalled()
   })
 })
@@ -742,8 +742,7 @@ Create `src/components/highlights/TipList.test.tsx`:
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { cleanup, fireEvent, screen } from '@testing-library/react'
 import TipList from './TipList'
 import { getHighlights } from '../../lib/highlights'
 import { renderEn } from '../../test/render'
@@ -764,10 +763,10 @@ describe('TipList', () => {
     expect(link.getAttribute('href')).toContain(`/d/the-blinding-vale/codex/mob/${tips[0].npcId}`)
   })
 
-  it('loads no embed until the reader clicks', async () => {
+  it('loads no embed until the reader clicks', () => {
     const { container } = renderEn(<TipList slug="the-blinding-vale" tips={tips} />)
     expect(container.querySelectorAll('iframe')).toHaveLength(0)
-    await userEvent.click(screen.getAllByRole('button')[0])
+    fireEvent.click(screen.getAllByRole('button')[0])
     expect(container.querySelectorAll('iframe')).toHaveLength(1)
   })
 })
