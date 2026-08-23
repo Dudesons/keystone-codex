@@ -8,8 +8,8 @@ import { getMobContent } from './content'
 import { frontalList, getIndicators, kickList } from './indicators'
 
 /**
- * `getIndicators` memoizes under the key `<slug>/<enemy.id>`, with no invalidation. Every
- * case therefore uses an `id` of its own, otherwise the tests contaminate each other.
+ * `getIndicators` memoizes under the key `<locale>/<slug>/<enemy.id>`, with no invalidation.
+ * Every case therefore uses an `id` of its own, otherwise the tests contaminate each other.
  */
 const SLUG = 'test-dungeon' // no file under content/: only the MDT path is exercised
 
@@ -253,5 +253,15 @@ describe('hasTips', () => {
     // Both locales carry tips on this card. The point is that the cache key varies:
     // asking in French must not return the English answer by accident.
     expect(getIndicators(TIP_SLUG, enemy, 'fr').hasTips).toBe(true)
+  })
+
+  // __fixtures__/888003: no `tips:` in the base file, one only in its French sibling. Unlike
+  // the card above, whose two locales agree, this is the case that would actually fail if
+  // `getIndicators`'s cache key ever dropped `locale` — the two languages disagree here, so a
+  // key collision would make one of them read the other's cached answer.
+  it('is false in the base language and true only once translated', () => {
+    const mob = enemy({ id: 888_003 })
+    expect(getIndicators('__fixtures__', mob).hasTips).toBe(false)
+    expect(getIndicators('__fixtures__', mob, 'fr').hasTips).toBe(true)
   })
 })
