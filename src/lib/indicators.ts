@@ -12,7 +12,7 @@
  */
 
 import type { Enemy } from './types'
-import { getMobContent, type Threat } from './content'
+import { getMobContent, type Rank, type Threat } from './content'
 import { getSpell } from './data'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 
@@ -39,6 +39,11 @@ export interface MobIndicators {
   generalTips: boolean
   /** Every pack named by a scoped tip. A clone in one of these shows the badge. */
   tipPacks: number[]
+  /**
+   * Boss, miniboss, or neither. The card decides; MDT's `isBoss` is the default it overrides.
+   * This is the only place that derivation happens — nothing downstream reads `enemy.isBoss`.
+   */
+  rank?: Rank
   /** Colour of the blip's ring on the map. */
   ring: string
 }
@@ -88,14 +93,18 @@ export function getIndicators(
 
   const tankBuster = [...notes.values()].some((n) => n.tag === 'tank')
   const threat = content?.threat
+  const rank: Rank | undefined = content?.rank ?? (enemy.isBoss ? 'boss' : undefined)
+  // `content.role === 'miniboss'` is the pre-migration spelling and is removed in the task that
+  // retires it from `ROLES`. Both are true of the same mobs in between.
   const priority =
-    enemy.isBoss === true ||
+    rank !== undefined ||
     content?.role === 'miniboss' ||
     threat === 'lethal' ||
     threat === 'high'
 
   const indicators: MobIndicators = {
     threat,
+    rank,
     kick: kickSpells.length > 0,
     kickSpells,
     frontalSpells,
@@ -106,7 +115,7 @@ export function getIndicators(
     hasTips: Boolean(content?.tips?.length),
     generalTips: (content?.tips ?? []).some((tip) => !tip.packs?.length),
     tipPacks: [...new Set((content?.tips ?? []).flatMap((tip) => tip.packs ?? []))],
-    ring: enemy.isBoss ? BOSS_RING : threat ? THREAT_RING[threat] : NEUTRAL_RING,
+    ring: rank === 'boss' ? BOSS_RING : threat ? THREAT_RING[threat] : NEUTRAL_RING,
   }
 
   cache.set(key, indicators)

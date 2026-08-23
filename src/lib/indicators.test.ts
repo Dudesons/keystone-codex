@@ -314,3 +314,33 @@ describe('the pulls a tip is about', () => {
     )
   })
 })
+
+describe('rank', () => {
+  const ALTAR = 'altar-of-fangs'
+
+  it('inherits MDT for a card that says nothing', () => {
+    const boss = getLookup(ALTAR)!.dungeon.enemies.find((e) => e.isBoss)!
+    expect(getIndicators(ALTAR, boss).rank).toBe('boss')
+  })
+
+  it('is undefined for an unflagged mob whose card says nothing', () => {
+    const trash = getLookup(ALTAR)!.dungeon.enemies.find((e) => !e.isBoss)!
+    expect(getIndicators(ALTAR, trash).rank).toBeUndefined()
+  })
+
+  it('takes the card over MDT', () => {
+    expect(getIndicators('__fixtures__', enemy({ id: 888_010, isBoss: true })).rank).toBe('miniboss')
+  })
+
+  /**
+   * The same mob as above: MDT flags it a boss, the card demotes it to miniboss. That is the
+   * whole point of the field, so the ring has to follow the card — gold is for a boss, and this
+   * is not one any more. It keeps the priority mark, because a miniboss is still worth marking.
+   */
+  it('gives a demoted mob the priority mark but not the gold ring', () => {
+    const ind = getIndicators('__fixtures__', enemy({ id: 888_010, isBoss: true }))
+    expect(ind.priority).toBe(true)
+    // The ring is the threat rating; the card is `threat: high`.
+    expect(ind.ring).toBe('#d97036')
+  })
+})
