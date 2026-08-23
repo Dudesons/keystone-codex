@@ -17,6 +17,7 @@ import type { Enemy } from './types'
 import { getLookup, getNpcLabel, getSpell } from './data'
 import { getDungeonContent, getMobContent, inlineMarkdown, type SpellTag, type Threat } from './content'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
+import type { Tip } from './tips'
 
 /** One chip on a mob's row. Several ids can carry one name; the chip is the name. */
 export interface HighlightSpell {
@@ -49,6 +50,22 @@ export interface HighlightTrap {
   html: string
 }
 
+/**
+ * A mob's tips, on the briefing page.
+ *
+ * Unlike the traps list, this one is not an overflow of the mob table: it holds every mob with
+ * tips, shortlisted or not. The table's shortlist drops any mob without a `prio: 1` spell that
+ * clears `earnsARow`, and a tip is worth reading whatever the mob's threat.
+ */
+export interface HighlightTip {
+  npcId: number
+  mobName: string
+  threat?: Threat
+  tips: Tip[]
+  /** The list fell back to the base language — `MobTips` marks the section with it. */
+  fallback: boolean
+}
+
 export interface DungeonHighlights {
   /**
    * The shortlist: non-boss mobs with a `prio: 1` spell that also clear `earnsARow`, most
@@ -62,6 +79,8 @@ export interface DungeonHighlights {
   traps: HighlightTrap[]
   /** Every boss, in the declared or the `mdtIdx` order. */
   bosses: HighlightMob[]
+  /** Every mob carrying tips, shortlisted or not, most dangerous first. */
+  tips: HighlightTip[]
 }
 
 const THREAT_RANK: Record<Threat, number> = { lethal: 0, high: 1, medium: 2, low: 3 }
@@ -148,7 +167,7 @@ export function orderBosses(bosses: HighlightMob[], byIdx: number[], declared?: 
   return [...bosses].sort((a, b) => (position.get(a.npcId) ?? 0) - (position.get(b.npcId) ?? 0))
 }
 
-const EMPTY: DungeonHighlights = { mobs: [], traps: [], bosses: [] }
+const EMPTY: DungeonHighlights = { mobs: [], traps: [], bosses: [], tips: [] }
 
 // Keyed by locale, like `indicators.ts`: the chip names, and therefore the alphabetical
 // tie-break, are not the same string from one language to the next.
@@ -168,6 +187,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
   const mobs: HighlightMob[] = []
   const traps: HighlightTrap[] = []
   const bosses: HighlightMob[] = []
+  const tips: HighlightTip[] = []
   const bossOrder: number[] = []
 
   // `enemyById` is already unique per NPC: the same mob appears several times in
@@ -180,6 +200,16 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
     // one place the two disagree. The alphabetical tie-break below sorts on this name, which is
     // why it is resolved here rather than in the components.
     const { name } = getNpcLabel(enemy, locale)
+
+    if (content?.tips?.length) {
+      tips.push({
+        npcId: enemy.id,
+        mobName: name,
+        threat: content.threat,
+        tips: content.tips,
+        fallback: content.fallback.tips,
+      })
+    }
 
     if (enemy.isBoss) {
       bossOrder.push(enemy.id)
@@ -223,11 +253,15 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
   traps.sort(
     (a, b) => rankOf(a.threat) - rankOf(b.threat) || a.mobName.localeCompare(b.mobName, locale),
   )
+  tips.sort(
+    (a, b) => rankOf(a.threat) - rankOf(b.threat) || a.mobName.localeCompare(b.mobName, locale),
+  )
 
   const highlights: DungeonHighlights = {
     mobs,
     traps,
     bosses: orderBosses(bosses, bossOrder, getDungeonContent(slug, locale)?.bosses),
+    tips,
   }
   cache.set(key, highlights)
   return highlights

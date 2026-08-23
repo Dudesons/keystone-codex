@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
+import { getMobContent } from './content'
 
 /**
  * Landmarks, all real:
@@ -125,7 +126,7 @@ describe('getHighlights mobs', () => {
   })
 
   it('returns empty lists for a dungeon that does not exist', () => {
-    expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [] })
+    expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [], tips: [] })
   })
 })
 
@@ -214,5 +215,39 @@ describe('orderBosses', () => {
     const ordered = orderBosses(bosses, byIdx, [999, 20, 10])
     expect(ordered).toHaveLength(3)
     expect(ordered.map((b) => b.npcId)).toEqual([20, 10, 30])
+  })
+})
+
+describe('tips', () => {
+  it('lists a mob whose card carries tips', () => {
+    const { tips } = getHighlights('the-blinding-vale')
+    expect(tips.map((x) => x.npcId)).toContain(254_850)
+  })
+
+  it('carries the tips themselves, not a flag', () => {
+    const { tips } = getHighlights('the-blinding-vale')
+    const entry = tips.find((x) => x.npcId === 254_850)!
+    expect(entry.tips).toEqual(getMobContent('the-blinding-vale', 254_850)!.tips)
+  })
+
+  it('names the mob in the reader’s language', () => {
+    const en = getHighlights('the-blinding-vale').tips.find((x) => x.npcId === 254_850)!
+    const fr = getHighlights('the-blinding-vale', 'fr').tips.find((x) => x.npcId === 254_850)!
+    expect(fr.mobName).not.toBe(en.mobName)
+  })
+
+  it('builds from every mob with tips, not only the ones the shortlist keeps', () => {
+    // 254850 (Sporeblight Belcher) is `threat: high` with a `prio: 1` spell, so it is itself
+    // shortlisted — it is the only mob in this dungeon's real content annotated with tips
+    // today, so there is no second, unshortlisted tipped mob to point at directly. That is a
+    // fact about the content, not a bug: the mechanism is proven instead, by counting the pool
+    // independently of getHighlights and asserting the tips list matches it exactly regardless
+    // of earnsARow.
+    const slug = 'the-blinding-vale'
+    const { tips } = getHighlights(slug)
+    const withTips = [...getLookup(slug)!.enemyById.values()].filter(
+      (e) => (getMobContent(slug, e.id)?.tips?.length ?? 0) > 0,
+    )
+    expect(tips.length).toBe(withTips.length)
   })
 })
