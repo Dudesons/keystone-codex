@@ -34,3 +34,31 @@ test('the link out survives the deployed sub-path', async ({ page }) => {
   const link = page.locator('[data-npc="254850"]').getByRole('link', { name: 'Open on YouTube' })
   await expect(link).toHaveAttribute('href', `https://www.youtube.com/watch?v=${VIDEO_ID}`)
 })
+
+test('the map marks a mob that has tips', async ({ page }) => {
+  await page.goto('./#/d/the-blinding-vale/route')
+  // Blips are addressed by clone id (enemyIndex:cloneIndex), never by npc id — Sporeblight
+  // Belcher is enemy index 4, so its clones are the `5:` group.
+  const blip = page.locator('[data-clone^="5:"]').first()
+  await expect(blip).toBeVisible()
+  await expect(blip.getByText('?')).toBeVisible()
+})
+
+test('the briefing page loads no embed until asked', async ({ page }) => {
+  const thirdParty: string[] = []
+  page.on('request', (r) => {
+    if (/youtube|ytimg|googlevideo/.test(new URL(r.url()).hostname)) thirdParty.push(r.url())
+  })
+
+  await page.goto('./#/d/the-blinding-vale')
+  const card = page.locator(`[data-tips="254850"]`)
+  await expect(card).toBeVisible()
+  expect(thirdParty).toEqual([])
+  await expect(card.locator('iframe')).toHaveCount(0)
+
+  await card.getByRole('button').first().click()
+  await expect(card.locator('iframe')).toHaveAttribute(
+    'src',
+    new RegExp(`youtube-nocookie\\.com/embed/${VIDEO_ID}`),
+  )
+})
