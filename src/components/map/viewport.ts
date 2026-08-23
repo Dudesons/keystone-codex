@@ -9,6 +9,7 @@
  * They are pure functions here so they can be pinned without a DOM.
  */
 
+import type { Rank } from '../../lib/content'
 import { MAP_HEIGHT, MAP_WIDTH, type Point } from '../../lib/geometry'
 
 export const MIN_SCALE = 0.4
@@ -56,9 +57,13 @@ export function zoomAt(current: Transform, factor: number, pivot: Point): Transf
   }
 }
 
-/** Radius of a mob's blip. Bosses read bigger, and MDT's own scale is capped. */
-export function blipRadius(enemy: { isBoss?: true; scale?: number }): number {
-  return (enemy.isBoss ? 22 : 14) * Math.min(enemy.scale || 1, 1.9)
+/**
+ * Radius of a mob's blip. Size carries rank — a boss reads biggest, a miniboss sits between —
+ * while the ring colour carries threat. MDT's own scale is capped.
+ */
+export function blipRadius(enemy: { scale?: number }, rank?: Rank): number {
+  const base = rank === 'boss' ? 22 : rank === 'miniboss' ? 18 : 14
+  return base * Math.min(enemy.scale || 1, 1.9)
 }
 
 export interface BadgePlacement {

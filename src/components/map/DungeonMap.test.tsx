@@ -561,6 +561,21 @@ describe('Heads-up display', () => {
     expect(container.textContent).toContain('Threat not assessed')
   })
 
+  /**
+   * The blip sizes have always meant something and the legend has never said so. Three rows
+   * rather than one: naming only the newcomer would explain half a vocabulary.
+   *
+   * The size itself is pinned in `viewport.test.ts`, where it is arithmetic rather than layout;
+   * this asserts that the map wires the group in at all. No real card declares `rank:` yet, so
+   * there is no dungeon in the pool that would render a miniboss blip to measure here.
+   */
+  it('says what the three blip sizes mean', () => {
+    const { container } = mount()
+    expect(container.textContent).toContain(en['legend.blip'])
+    expect(container.textContent).toContain(en['legend.blip.miniboss'])
+    expect(container.textContent).toContain(en['legend.blip.trash'])
+  })
+
   it('still closes and reopens on the button, for a reader who wants the map bare', () => {
     const { container } = mount()
 

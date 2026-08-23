@@ -104,8 +104,13 @@ describe('zoomAt', () => {
 })
 
 describe('blipRadius', () => {
-  it('draws bosses larger than trash', () => {
-    expect(blipRadius({ isBoss: true, scale: 1 })).toBeGreaterThan(blipRadius({ scale: 1 }))
+  it('draws a boss bigger than a miniboss, and a miniboss bigger than trash', () => {
+    expect(blipRadius({ scale: 1 }, 'boss')).toBeGreaterThan(blipRadius({ scale: 1 }, 'miniboss'))
+    expect(blipRadius({ scale: 1 }, 'miniboss')).toBeGreaterThan(blipRadius({ scale: 1 }))
+  })
+
+  it('scales a miniboss like any other blip', () => {
+    expect(blipRadius({ scale: 1.5 }, 'miniboss')).toBeCloseTo(18 * 1.5, 9)
   })
 
   it('follows MDT scale', () => {

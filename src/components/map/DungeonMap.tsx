@@ -548,7 +548,7 @@ function Blip({
 }: BlipProps) {
   const { t, locale } = useI18n()
   const ind = getIndicators(slug, enemy, locale)
-  const r = blipRadius(enemy)
+  const r = blipRadius(enemy, ind.rank)
   const emphasised = isHighlighted || isHovered
 
   // Indicator pips, laid out in an arc above the portrait.
@@ -705,6 +705,13 @@ function Legend() {
     ['#e0b552', t('legend.ring.boss')],
     ['rgba(180,190,210,0.75)', t('legend.ring.unknown')],
   ]
+  // Three rows rather than one for the miniboss: a boss blip has always been bigger than trash
+  // and nothing ever said so, and explaining half a vocabulary is worse than explaining none.
+  const blipRows: [number, string][] = [
+    [10, t('legend.blip.boss')],
+    [8, t('legend.blip.miniboss')],
+    [6, t('legend.blip.trash')],
+  ]
   return (
     // `pointer-events-none`: open from the start, this panel covers the top-right of the map for
     // good, and a mob that a pan or a zoom brings underneath it would otherwise stop answering
@@ -731,6 +738,21 @@ function Legend() {
             className="h-4 w-4 shrink-0 rounded-full border-[3px] bg-ink-850"
             style={{ borderColor: color }}
           />
+          <span className="text-ink-300">{label}</span>
+        </div>
+      ))}
+
+      <div className="mt-2.5 mb-1.5 text-[10px] font-bold tracking-widest text-ink-400">
+        {t('legend.blip')}
+      </div>
+      {blipRows.map(([size, label]) => (
+        <div key={label} className="mb-1 flex items-center gap-2">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+            <span
+              className="shrink-0 rounded-full bg-ink-600"
+              style={{ width: size, height: size }}
+            />
+          </span>
           <span className="text-ink-300">{label}</span>
         </div>
       ))}
@@ -769,7 +791,10 @@ function CloneTooltip({
     >
       <div className="flex items-center gap-2">
         <span className="font-semibold text-ink-100">{getNpcLabel(enemy, locale).name}</span>
-        {enemy.isBoss && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
+        {ind.rank === 'boss' && <span className="text-xs text-gold-400">{t('map.boss')}</span>}
+        {ind.rank === 'miniboss' && (
+          <span className="text-xs text-ink-300">{t('map.miniboss')}</span>
+        )}
       </div>
       <MobStats enemy={enemy} dungeon={lookup.dungeon} />
       {meta && <div className="mt-0.5 text-xs text-ink-400">{meta}</div>}
