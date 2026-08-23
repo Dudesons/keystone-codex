@@ -52,7 +52,7 @@ export const en = {
   // A shortlisted mob's trap moved onto its row; what is left here belongs to the mobs the
   // shortlist dropped, so the heading says so rather than reading as a list of everything.
   'highlights.traps': 'OTHER TRAPS',
-  'highlights.tips': 'TIPS',
+  'highlights.tips': 'MOB TIPS',
   'highlights.bosses': 'BOSSES',
   'highlights.trap': 'Trap',
 
