@@ -217,23 +217,23 @@ describe('Fallback provenance', () => {
   it('names the fields still reading in the base language', () => {
     const { fallback } = getMobContent(partial.slug, partial.npcId, 'fr')!
     // The fixture translates the trap and the note on 1307567, and nothing else.
-    expect(fallback).toEqual({ trap: false, prose: true, notes: [1306852] })
+    expect(fallback).toEqual({ trap: false, prose: true, tips: true, notes: [1306852] })
   })
 
   it('marks nothing when the reader asked for the base language', () => {
     const { fallback } = getMobContent(partial.slug, partial.npcId, 'en')!
-    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+    expect(fallback).toEqual({ trap: false, prose: false, tips: false, notes: [] })
   })
 
   it('marks nothing on an entry translated all the way through', () => {
     const { fallback } = getMobContent(SLUG, WRITTEN, 'fr')!
-    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+    expect(fallback).toEqual({ trap: false, prose: false, tips: false, notes: [] })
   })
 
   it('marks nothing on a stub: an empty field has no base text to fall back to', () => {
     // The stub has no .fr.md at all, and still nothing is a fallback — there is nothing there.
     const { fallback } = getMobContent(stub.slug, stub.npcId, 'fr')!
-    expect(fallback).toEqual({ trap: false, prose: false, notes: [] })
+    expect(fallback).toEqual({ trap: false, prose: false, tips: false, notes: [] })
   })
 })
 
@@ -576,6 +576,43 @@ describe('npcIdList', () => {
 
   it('keeps the ids it recognises and discards the rest of the list', () => {
     expect(npcIdList([135322, 'nope'])).toEqual([135322])
+  })
+})
+
+describe('Tips', () => {
+  const withTips = getMobContent('__fixtures__', 263_109)
+
+  it('reads the three kinds off the frontmatter', () => {
+    expect(withTips!.tips).toEqual([
+      { kind: 'text', text: 'Fixture tip: the sentence a reader gets when no translation exists yet.' },
+      { kind: 'video', videoId: '9D0gCU8Tp5Y', portrait: true, label: 'Fixture video' },
+      { kind: 'image', file: 'example.webp', label: 'Fixture image' },
+    ])
+  })
+
+  it('falls back to the base list, and says so, when the translation carries none', () => {
+    const fr = getMobContent('__fixtures__', 263_109, 'fr')
+    expect(fr!.tips).toEqual(withTips!.tips)
+    expect(fr!.fallback.tips).toBe(true)
+  })
+
+  it('replaces the whole list when the translation names the key', () => {
+    const en = getMobContent('__fixtures__', 888_002)
+    const fr = getMobContent('__fixtures__', 888_002, 'fr')
+    expect(en!.tips).toEqual([{ kind: 'text', text: 'Base tip.' }])
+    expect(fr!.tips).toEqual([{ kind: 'text', text: 'Astuce traduite.' }])
+    expect(fr!.fallback.tips).toBe(false)
+  })
+
+  it('never marks a fallback in the base language itself', () => {
+    expect(withTips!.fallback.tips).toBe(false)
+  })
+
+  it('counts a card carrying nothing but a tip as written', () => {
+    // 888002 has no threat, no trap, no prose and no annotated spell — only a tip. Someone who
+    // found the video that explains the fight has put something here, and the bar measures
+    // whether there is anything to read.
+    expect(getMobContent('__fixtures__', 888_002)!.isStub).toBe(false)
   })
 })
 

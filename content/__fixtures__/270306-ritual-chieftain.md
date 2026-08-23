@@ -48,6 +48,11 @@ spells:
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:
+
+# Tips: a sentence, a YouTube link, or a screenshot committed under public/tips/.
+# See CONTRIBUTING.md. Uncomment and fill in — an empty `tips:` is not a tip.
+# tips:
+#   - text: "…"
 ---
 
 <!-- Free prose: positioning, focus order, cooldowns. -->

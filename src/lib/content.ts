@@ -23,6 +23,7 @@
 import { parse as parseYaml } from 'yaml'
 import { marked } from 'marked'
 import { DEFAULT_LOCALE, isLocale, type Locale } from './i18n/locales'
+import { parseTips, type Tip } from './tips'
 
 export type Threat = 'low' | 'medium' | 'high' | 'lethal'
 
@@ -68,6 +69,8 @@ export interface SpellNote {
 export interface MobFallback {
   trap: boolean
   prose: boolean
+  /** The reader is being served the base language's tips, because the translation names none. */
+  tips: boolean
   /** Ids whose note still reads in the base language. */
   notes: number[]
 }
@@ -78,6 +81,7 @@ export interface MobContent {
   role?: string
   trap?: string
   spells?: SpellNote[]
+  tips?: Tip[]
   /** Markdown body already converted to HTML. */
   html: string
   /** True as long as the file has received no writing at all. */
@@ -95,7 +99,8 @@ export interface DungeonContent {
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/
 
-function splitFrontmatter(raw: string): { data: Record<string, unknown>; body: string } {
+/** Exported for the integrity test, which reads the same frontmatter straight off disk. */
+export function splitFrontmatter(raw: string): { data: Record<string, unknown>; body: string } {
   const m = FRONTMATTER.exec(raw)
   if (!m) return { data: {}, body: raw }
   try {
@@ -148,6 +153,7 @@ interface RawMob {
   role?: string
   trap?: string
   spells?: SpellNote[]
+  tips?: Tip[]
   prose: string
 }
 
@@ -203,6 +209,7 @@ for (const [filePath, raw] of Object.entries(files)) {
     role: data.role as string | undefined,
     trap: data.trap as string | undefined,
     spells: (data.spells as SpellNote[] | undefined)?.filter((s) => s && Number(s.id)),
+    tips: parseTips(data.tips, filePath),
     prose,
   }
 }
@@ -248,7 +255,7 @@ export function npcIdList(value: unknown): number[] | undefined {
  * being served in the wrong language when nothing is being served.
  */
 function fallbackOf(locale: Locale, base?: RawMob, translation?: RawMob): MobFallback {
-  if (locale === DEFAULT_LOCALE) return { trap: false, prose: false, notes: [] }
+  if (locale === DEFAULT_LOCALE) return { trap: false, prose: false, tips: false, notes: [] }
 
   const translated = new Set(
     (translation?.spells ?? []).filter((s) => s.note).map((s) => Number(s.id)),
@@ -256,6 +263,7 @@ function fallbackOf(locale: Locale, base?: RawMob, translation?: RawMob): MobFal
   return {
     trap: base?.trap != null && translation?.trap == null,
     prose: Boolean(base?.prose) && !translation?.prose,
+    tips: Boolean(base?.tips?.length) && !translation?.tips,
     notes: (base?.spells ?? [])
       .filter((s) => s.note && !translated.has(Number(s.id)))
       .map((s) => Number(s.id)),
@@ -270,6 +278,7 @@ function mergeMob(base: RawMob | undefined, translation: RawMob | undefined, loc
   const spells = mergeSpells(base?.spells, translation?.spells)
   const trap = translation?.trap ?? base?.trap
   const threat = translation?.threat ?? base?.threat
+  const tips = translation?.tips ?? base?.tips
 
   return {
     npcId: source.npcId,
@@ -277,13 +286,15 @@ function mergeMob(base: RawMob | undefined, translation: RawMob | undefined, loc
     role: translation?.role ?? base?.role,
     trap,
     spells,
+    tips,
     html: render(prose),
     // A card counts as written as soon as a human has put a judgement in it: threat, trap,
-    // prose, or at least one annotated spell.
+    // prose, a tip, or at least one annotated spell.
     isStub:
       !prose &&
       !trap &&
       !threat &&
+      !tips?.length &&
       !spells?.some((s) => s.note || (s.tag && s.tag !== 'todo')),
     fallback: fallbackOf(locale, base, translation),
   }

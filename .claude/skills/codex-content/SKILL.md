@@ -82,10 +82,28 @@ hold.** Three failures to recognise, all of which happened here:
 `threat`, `role`, `tag` and `prio` are judgements and live **only in the base file**; a `.fr.md`
 sibling carries `note`, `trap` and prose. See the [i18n skill](../i18n/SKILL.md).
 
-**`note:` and `trap:` are markdown**, rendered inline by `inlineMarkdown` in
-[`src/lib/content.ts`](../../../src/lib/content.ts): emphasis and links work, headings and
-lists do not. A spell's Wowhead description is deliberately **not** rendered as markdown — it
-is their data, not our writing.
+The full field reference — every key, its allowed values, and what a `.fr.md` may carry — is
+[`CONTRIBUTING.md`](../../../CONTRIBUTING.md). It is written for contributors who do not use an
+agent, and it is the one place the format is defined; this skill keeps the judgement.
+
+**`note:` and `trap:` render as inline markdown**, via `inlineMarkdown` in
+[`src/lib/content.ts`](../../../src/lib/content.ts) — the allowed subset is in CONTRIBUTING.md's
+field reference above. A spell's Wowhead description is deliberately **not** rendered as
+markdown — it is their data, not our writing.
+
+**Tips are for what a card cannot say.** A `tips:` entry carries a sentence, a YouTube video or
+Short, or a screenshot committed under `public/tips/<dungeon>/`. The format is in
+[`CONTRIBUTING.md`](../../../CONTRIBUTING.md); what belongs here is the judgement:
+
+- **A tip is not a second prose block.** If it can be written as a sentence in the card, write it
+  there. A tip earns its place when the thing being explained is spatial or timed — where to
+  stand, what the pull looks like when it goes wrong.
+- **Credit the creator in the `label:`.** We link other people's work; we do not present it as
+  ours, and we do not transcribe a video's claims into the card as if they were sourced.
+- **A video is not a source.** The rules in *What may be written at all* are unchanged: a figure
+  goes in the card only if MDT or Wowhead holds it. A video may contradict them, and if it does,
+  say so in the prose rather than quietly following it.
+- **Tips are never exported to MDT**, like everything else under `content/`.
 
 **A cross-link between mob cards is written `#/d/<slug>/codex/mob/<npcId>`.** `marked` emits
 the href verbatim, and nothing in the app rewrites it, so the address has to be the one the

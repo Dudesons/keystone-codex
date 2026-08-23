@@ -39,6 +39,10 @@ spells:
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Twenty-five forces a body and 291k when each one dies. Do not let several die on top of the group at once — stagger the kills or spread them out."
+
+tips:
+  - video: https://www.youtube.com/shorts/9D0gCU8Tp5Y
+    label: "Naowh — taking the pull after the first boss"
 ---
 
 **The heaviest mob in the dungeon by a distance**: eleven units at 25 forces each, roughly 42%

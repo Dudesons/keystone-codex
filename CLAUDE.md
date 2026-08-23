@@ -190,7 +190,7 @@ exactly as it would in production.
 | Unit | Vitest, `app` project (node) | **All of `src/lib/`** — `mdt/codec`, `mdt/route`, `mdt/useRouteDoc`, `geometry`, `indicators`, `content`, `data`, `i18n/detect`, `i18n/format` — plus `map/viewport`, `scripts/tile-layout`, `scripts/lua-table`, `scripts/mdt-dungeon`, `scripts/wowhead-tooltip` and `scripts/content-stub` |
 | Integration | Vitest, `app` project (jsdom) | Every component — the codex chain (`Badges`, `MobCard`, `CodexPanel`), `RoutePanel`, `DungeonMap`, the home page, and `DungeonPage`, which mounts the map and both side panels together — against the real dungeon pool |
 | Relay | Vitest, `relay` project (workerd) | The Cloudflare Worker in `relay/`: room lifecycle and the origin allowlist, run inside the same runtime a deploy actually uses |
-| End-to-end | Playwright, Chromium (`npm run test:e2e`) | Scenarios in a real browser: a real browser socket, carrying a real `Origin`, is accepted by the real relay and presence comes back (the deployed host's entry in `relay/src/index.js`'s `ALLOWED_ORIGINS` cannot be exercised from this local harness, and stays verified by eye); a join link carrying the deployed sub-path into a second browser; two viewports agreeing on where a shared cursor points; a local route set aside on joining and handed back on leaving — plus one smoke test that only proves the harness loads the build |
+| End-to-end | Playwright, Chromium (`npm run test:e2e`) | Scenarios in a real browser: a real browser socket, carrying a real `Origin`, is accepted by the real relay and presence comes back (the deployed host's entry in `relay/src/index.js`'s `ALLOWED_ORIGINS` cannot be exercised from this local harness, and stays verified by eye); a join link carrying the deployed sub-path into a second browser; two viewports agreeing on where a shared cursor points; a local route set aside on joining and handed back on leaving; an eraser drag that survives the map's own pointer capture and retargeting; a stroke that reaches a second browser while it is still being drawn; a video tip's embed loading only once the reader clicks, with no request to YouTube before that click, and its link out surviving the deployed sub-path — plus one smoke test that only proves the harness loads the build |
 
 **Not covered directly:** `lib/i18n/context.tsx`, `components/LocaleSwitcher.tsx`, `App.tsx`
 and `main.tsx`. The first two are exercised by every component test through `renderEn` /
@@ -247,7 +247,8 @@ since been made — Playwright — and its suite is documented next.
 
 ### The end-to-end suite
 
-`e2e/session.spec.ts` and `e2e/smoke.spec.ts` run under Playwright, not Vitest. `e2e/**` is
+`e2e/session.spec.ts`, `e2e/drawing.spec.ts`, `e2e/tips.spec.ts` and `e2e/smoke.spec.ts` run
+under Playwright, not Vitest. `e2e/**` is
 excluded from the `app` project in `vite.config.ts` on purpose: Vitest's default `include`
 (`**/*.{test,spec}.?(c|m)[jt]s?(x)`) would otherwise collect the Playwright specs too and try to
 run them under node, where `page`, `browser` and the rest of Playwright's fixtures do not exist
@@ -347,6 +348,9 @@ leave them alone.
 Two things are deliberately not English-only: the codex content under `content/**.md` and the
 user interface. Both are translated through the i18n layer, per locale, rather than written
 in a single language.
+
+`CONTRIBUTING.md` and `CONTRIBUTING.fr.md` are a translated pair: **both land in the same commit
+or neither does.** Nothing tests a document, so that rule is the only thing keeping them in step.
 
 Commit style, taken from the existing history: imperative mood, no `feat:` / `fix:` prefix, a
 subject line saying what the commit does to the repository. The body explains **why**, not
@@ -498,6 +502,7 @@ exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js throug
 | `content/<dungeon>/*.md` | **The written content**: threat, role, spell notes, traps. One file per mob, YAML frontmatter plus prose. A `.fr.md` sibling holds the French version. | By hand |
 | `src/data/generated/*.json` | Mobs, clones, packs, forces — extracted from MDT; spell and creature labels per language, fetched from Wowhead. | **Generated, never by hand** |
 | `public/maps/` | WebP maps assembled from MDT tiles. | **Generated** |
+| `public/tips/<dungeon>/` | Screenshots a card's `tips:` names by bare filename. | By hand |
 | `scripts/*.mjs` | Extraction chain (`npm run data`): reads the local WoW install, writes the versioned files. | By hand |
 | `src/lib/mdt/` | MDT string codec (CBOR + raw deflate) and the route's Y.js document. | By hand |
 | `src/lib/i18n/` | Interface strings, language detection, formatting. | By hand |
@@ -516,6 +521,8 @@ exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js throug
 - **CI runs no extraction script** (there is no WoW on the runner). After a local
   `npm run data`, the generated files have to be committed for the live site to change.
 - **Deployment is manual** (`Actions → Deploy → Run workflow`), never automatic.
+- **Nothing under `content/` ever reaches an MDT string.** The codec serialises the route
+  document only; tips, traps and prose are ours and stay ours. A share string carries a route.
 
 ## Commands
 

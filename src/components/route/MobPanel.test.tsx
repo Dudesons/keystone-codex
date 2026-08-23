@@ -19,6 +19,9 @@ beforeAll(() => {
 const { dungeon } = getLookup('murder-row')!
 const byName = (name: string): Enemy => dungeon.enemies.find((e) => e.name === name)!
 
+/** Ula'tek's Chosen, from altar-of-fangs: the real enemy the `__fixtures__` tips content names. */
+const chosen = getLookup('altar-of-fangs')!.dungeon.enemies.find((e) => e.id === 263_109)!
+
 const mount = (over: Partial<React.ComponentProps<typeof MobPanel>> = {}) =>
   renderEn(
     <MobPanel
@@ -74,5 +77,12 @@ describe('MobPanel', () => {
     mount({ frozen: true, onUnfreeze: () => (released += 1) })
     fireEvent.click(screen.getByRole('button', { name: 'Stop holding this mob' }))
     expect(released).toBe(1)
+  })
+
+  it('carries a mob tip into the route builder, which is where a router reads it', () => {
+    renderEn(
+      <MobPanel slug="__fixtures__" dungeon={dungeon} enemy={chosen} frozen={false} onUnfreeze={() => {}} />,
+    )
+    expect(screen.getByRole('button', { name: 'Fixture video' })).toBeTruthy()
   })
 })

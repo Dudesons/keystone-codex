@@ -132,6 +132,12 @@ describe('buildMobStub', () => {
     expect(stub.match(/^---$/gm)).toHaveLength(2)
   })
 
+  it('advertises tips without turning the field on', () => {
+    // Commented out on purpose: an empty `tips:` would parse to null on every scaffolded card.
+    expect(stub).toContain('# tips:')
+    expect(stub).not.toMatch(/^tips:/m)
+  })
+
   it('counts as a stub, not as a written card', () => {
     // Mirrors the isStub rule in lib/content.ts: no prose, no trap, no threat, no real tag.
     const body = stub.split(/^---$/m)[2].replace(/<!--[\s\S]*?-->/g, '').trim()
