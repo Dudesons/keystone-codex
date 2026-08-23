@@ -766,8 +766,12 @@ describe('Preset notes', () => {
 })
 
 describe('Tips badge', () => {
-  const vale = getLookup('the-blinding-vale')!
-  const renderMap = (slug: string) => renderEn(<DungeonMap slug={slug} lookup={getLookup(slug)!} />)
+  const VALE_SLUG = 'the-blinding-vale'
+  const vale = getLookup(VALE_SLUG)!
+  // Pinned to the-blinding-vale, like `blipFor` below: the two must stay in lockstep, since
+  // `blipFor` resolves ids through `vale` regardless of what a parameterized `renderMap` was
+  // given, and every case in this block only ever needs this one dungeon.
+  const renderMap = () => renderEn(<DungeonMap slug={VALE_SLUG} lookup={vale} />)
 
   /**
    * The blip for a mob's first clone in the-blinding-vale, found by npc id rather than by
@@ -786,13 +790,13 @@ describe('Tips badge', () => {
   const npcWithoutTips = 245410
 
   it('marks the blip of a mob whose card has tips', () => {
-    const { container } = renderMap('the-blinding-vale')
+    const { container } = renderMap()
     const blip = blipFor(container, 254_850)
     expect(within(blip).queryByText('?')).not.toBeNull()
   })
 
   it('leaves a mob without tips unmarked', () => {
-    const { container } = renderMap('the-blinding-vale')
+    const { container } = renderMap()
     const blip = blipFor(container, npcWithoutTips)
     expect(within(blip).queryByText('?')).toBeNull()
   })
