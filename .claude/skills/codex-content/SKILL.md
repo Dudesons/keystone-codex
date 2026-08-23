@@ -103,6 +103,11 @@ Short, or a screenshot committed under `public/tips/<dungeon>/`. The format is i
 - **A video is not a source.** The rules in *What may be written at all* are unchanged: a figure
   goes in the card only if MDT or Wowhead holds it. A video may contradict them, and if it does,
   say so in the prose rather than quietly following it.
+- **Scope a tip when it is about a pull.** "This frontal is wide" is about the mob and belongs
+  unscoped. "Take this one after the first boss, from the left" is about one group of mobs standing
+  in one place, and without `packs:` it marks every clone of that mob in the dungeon — eleven of
+  them, in the case this key was written for. If you cannot name the pack, the tip is probably
+  general.
 - **Tips are never exported to MDT**, like everything else under `content/`.
 
 **A cross-link between mob cards is written `#/d/<slug>/codex/mob/<npcId>`.** `marked` emits

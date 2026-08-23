@@ -38,10 +38,19 @@ test('the link out survives the deployed sub-path', async ({ page }) => {
 test('the map marks a mob that has tips', async ({ page }) => {
   await page.goto('./#/d/the-blinding-vale/route')
   // Blips are addressed by clone id (enemyIndex:cloneIndex), never by npc id — Sporeblight
-  // Belcher is enemy index 4, so its clones are the `5:` group.
-  const blip = page.locator('[data-clone^="5:"]').first()
+  // Belcher is enemy index 4, so its clones are the `5:` group. Clone 10 is the one standing
+  // in pack 44, which is the pull its only tip is about.
+  const blip = page.locator('[data-clone="5:10"]')
   await expect(blip).toBeVisible()
   await expect(blip.getByText('?')).toBeVisible()
+})
+
+test('marks one blip for a tip about one pull, not every clone of the mob', async ({ page }) => {
+  await page.goto('./#/d/the-blinding-vale/route')
+  await expect(page.locator('[data-clone="5:10"]')).toBeVisible()
+  // Sporeblight Belcher stands in eleven packs and is the only tipped mob in this dungeon;
+  // its one tip is about pack 44. Eleven badges here would be the noise `packs:` answers.
+  await expect(page.locator('[data-badge="tips"]')).toHaveCount(1)
 })
 
 test('the briefing page loads no embed until asked', async ({ page }) => {

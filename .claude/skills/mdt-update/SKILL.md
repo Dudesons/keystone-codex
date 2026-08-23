@@ -112,6 +112,11 @@ before you compare, and never conclude a dungeon changed from its size alone.
 
 - **`mdtIdx` is sparse, and routes reference it directly.** Never renumber it, even to close a
   gap left by a deleted mob.
+- **A scoped tip's `packs:` is a pack id, and nothing promises those are stable.** `mdtIdx` is
+  never renumbered, but `g` carries no such rule — `mdt-diff` reports pack changes precisely
+  because they happen. After an update that names a pack finding, re-read every card with a
+  `packs:` key: a tip pointing at a renumbered pack is wrong and looks entirely correct.
+  `grep -rl 'packs:' content/` is the list.
 - **A changed `textureFolder` means the committed WebP no longer matches the tiles.** Run
   `npm run build:maps`; the report names this, but only running the command fixes it.
 - **CI runs no extraction.** The generated files and the rebuilt maps have to be committed, or
