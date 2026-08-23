@@ -17,6 +17,7 @@ trap: "Vingt-cinq forces par corps et 291k à chaque mort. Ne pas en laisser plu
 tips:
   - video: https://www.youtube.com/shorts/9D0gCU8Tp5Y
     label: "Naowh — prendre le pull après le premier boss"
+    packs: [44]
 ---
 
 **Le mob le plus lourd du donjon, et de loin** : onze unités à 25 forces chacune, environ 42 % du

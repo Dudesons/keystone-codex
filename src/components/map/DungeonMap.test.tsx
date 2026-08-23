@@ -789,9 +789,20 @@ describe('Tips badge', () => {
   // Lasher (245410): no `tips:` key in its card, so it is the negative case below.
   const npcWithoutTips = 245410
 
+  /** The blip for the clone of a mob that stands in one named pack, rather than its first. */
+  const blipInPack = (container: HTMLElement, npcId: number, g: number) => {
+    const enemy = vale.dungeon.enemies.find((e) => e.id === npcId)!
+    const clone = enemy.clones.find((c) => c.g === g)!
+    return container.querySelector(
+      `svg > g[data-clone="${cloneKey(enemy.mdtIdx, clone.mdtIdx)}"]`,
+    ) as HTMLElement
+  }
+
+  // The belcher's only tip is scoped to pack 44, so this asks the blip the tip is about. Its
+  // first clone stands in pack 80 and is deliberately no longer the one under test.
   it('marks the blip of a mob whose card has tips', () => {
     const { container } = renderMap()
-    const blip = blipFor(container, 254_850)
+    const blip = blipInPack(container, 254_850, 44)
     expect(within(blip).queryByText('?')).not.toBeNull()
   })
 
@@ -807,10 +818,13 @@ describe('Tips badge', () => {
   })
 
   it("badges a clone in a scoped tip's pack and leaves its siblings alone", () => {
-    // No real card is scoped yet — the task that scopes one comes later. This pins the wiring:
-    // with every tip general, every clone of a tipped mob still badges, exactly as before.
+    // The Sporeblight Belcher stands in eleven packs and its tip is about one of them. Before
+    // `packs:` existed all eleven carried the badge, which is the noise this key answers.
     const { container } = renderMap()
-    expect(container.querySelectorAll('[data-badge="tips"]').length).toBeGreaterThan(0)
+    expect(within(blipInPack(container, 254_850, 44)).queryByText('?')).not.toBeNull()
+    for (const g of [80, 73, 12]) {
+      expect(within(blipInPack(container, 254_850, g)).queryByText('?'), `pack ${g}`).toBeNull()
+    }
   })
 })
 
