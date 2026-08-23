@@ -107,7 +107,7 @@ export function BaseLanguageMark() {
  * card, below the spell list, which is right for reading and wrong for discovery — this is the
  * announcement that ordering costs.
  */
-export function TipsJumpBadge({ npcId }: { npcId: number }) {
+export function TipsJumpBadge({ npcId, onJump }: { npcId: number; onJump?: () => void }) {
   const { t } = useI18n()
   return (
     <button
@@ -121,6 +121,9 @@ export function TipsJumpBadge({ npcId }: { npcId: number }) {
         document
           .getElementById(tipsSectionId(npcId))
           ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        // Scrolling puts the section on screen; the wash is what puts it under the eye. The
+        // card owns that state, because it owns both this button and the section.
+        onJump?.()
       }}
       className="shrink-0 rounded border border-gold-500/40 bg-gold-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-gold-400 hover:border-gold-400 hover:bg-gold-500/20"
     >

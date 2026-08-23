@@ -109,3 +109,23 @@ body {
   color: var(--color-gold-400);
   text-decoration: underline;
 }
+
+/* One wash of the tips section when the reader follows the `?` badge to it. Written in English
+   per CLAUDE.md; the comments above it predate that rule and are left alone. */
+@keyframes tips-flash {
+  from {
+    background-color: color-mix(in oklab, var(--color-gold-400) 20%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.tips-flash {
+  animation: tips-flash 1.1s ease-out 1;
+}
+/* The jump still happens; only the wash is dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .tips-flash {
+    animation: none;
+  }
+}

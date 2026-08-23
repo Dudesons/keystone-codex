@@ -13,6 +13,7 @@ import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
 import { en } from '../../lib/i18n/en'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
+import { tipsSectionId } from '../../lib/tips'
 import { renderEn, renderFr } from '../../test/render'
 import MobCard from './MobCard'
 
@@ -436,6 +437,40 @@ describe('Tips badge', () => {
       renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
       fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
       expect(scrollIntoView).toHaveBeenCalled()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('washes the tips section on the way in, so the eye lands on what it scrolled to', () => {
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const { container } = renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      const section = container.querySelector(`#${CSS.escape(tipsSectionId(chosen.id))}`)!
+      expect(section.className).not.toContain('tips-flash')
+
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(section.className).toContain('tips-flash')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('washes it again on a second jump, once the first wash has finished', () => {
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const { container } = renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      const section = container.querySelector(`#${CSS.escape(tipsSectionId(chosen.id))}`)!
+      const jump = screen.getByRole('button', { name: en['tip.jump'] })
+
+      fireEvent.click(jump)
+      fireEvent.animationEnd(section)
+      expect(section.className).not.toContain('tips-flash')
+
+      fireEvent.click(jump)
+      expect(section.className).toContain('tips-flash')
     } finally {
       Element.prototype.scrollIntoView = original
     }

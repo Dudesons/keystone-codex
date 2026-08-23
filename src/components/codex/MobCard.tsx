@@ -1,6 +1,7 @@
 // ABOUTME: A mob's card: portrait, threat, forces, trap, applicable CC and its spell list.
 // ABOUTME: Spells are ordered by what needs an immediate reaction, then by declared priority.
 
+import { useState } from 'react'
 import type { Enemy } from '../../lib/types'
 import { getLookup, getNpcLabel, getSpell, iconUrl, portraitUrl, wowheadUrl } from '../../lib/data'
 import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } from '../../lib/content'
@@ -39,6 +40,9 @@ export default function MobCard({
   onSelect,
 }: Props) {
   const { t, plural, locale } = useI18n()
+  // The card owns this because it owns both ends of the jump: the badge in the header and the
+  // section at the bottom. A counter, not a flag — a second jump has to wash again.
+  const [flashToken, setFlashToken] = useState(0)
   const content = getMobContent(slug, enemy.id, locale)
   const ind = getIndicators(slug, enemy, locale)
   const label = getNpcLabel(enemy, locale)
@@ -98,7 +102,9 @@ export default function MobCard({
             <h3 className="font-semibold text-ink-100">{label.name}</h3>
             {enemy.isBoss && <span className="text-xs font-semibold text-gold-400">{t('mob.boss')}</span>}
             <ThreatBadge threat={content?.threat} />
-            {!compact && ind.hasTips && <TipsJumpBadge npcId={enemy.id} />}
+            {!compact && ind.hasTips && (
+              <TipsJumpBadge npcId={enemy.id} onJump={() => setFlashToken((n) => n + 1)} />
+            )}
             {ind.kick && <Pill color="#d64550">{t('tag.kick')}</Pill>}
             {ind.tankBuster && <Pill color="#4a90c2">{t('tag.tank')}</Pill>}
             {ind.dispel.map((d) => (
@@ -181,6 +187,7 @@ export default function MobCard({
           npcId={enemy.id}
           tips={content.tips}
           fallback={content.fallback.tips}
+          flashToken={flashToken}
         />
       )}
     </article>

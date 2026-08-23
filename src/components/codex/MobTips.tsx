@@ -1,7 +1,7 @@
 // ABOUTME: A card's tips: a sentence, a click-to-load YouTube embed, or a committed image.
 // ABOUTME: Nothing reaches YouTube until the reader clicks the button — that click is the consent.
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { inlineMarkdown } from '../../lib/content'
 import { embedUrl, tipImageUrl, tipsSectionId, watchUrl, type Tip } from '../../lib/tips'
 import { useI18n } from '../../lib/i18n/context'
@@ -13,18 +13,53 @@ export default function MobTips({
   tips,
   /** The list fell back to the base language: mark the section, not each row. */
   fallback,
+  /**
+   * Bumped by the card every time the reader clicks the jump badge. A counter rather than a flag:
+   * the wash has to replay on a second jump, and setting a boolean that is already true is not
+   * a change React would render.
+   */
+  flashToken,
 }: {
   slug: string
   npcId: number
   tips: Tip[]
   fallback: boolean
+  flashToken?: number
 }) {
   const { t } = useI18n()
+  const section = useRef<HTMLDivElement>(null)
+  const [flashing, setFlashing] = useState(false)
+
+  useEffect(() => {
+    const el = section.current
+    if (!flashToken || !el) return
+    setFlashing(true)
+    /**
+     * A native listener rather than React's `onAnimationEnd`: jsdom defines no `AnimationEvent`,
+     * so react-dom never registers that listener and the synthetic event cannot fire there at
+     * all — measured, not assumed. This binds to the element that actually animates, and works
+     * the same in a browser.
+     */
+    const done = () => setFlashing(false)
+    el.addEventListener('animationend', done, { once: true })
+    return () => el.removeEventListener('animationend', done)
+  }, [flashToken])
+
   if (!tips.length) return null
 
   return (
-    <div id={tipsSectionId(npcId)} className="scroll-mt-2 border-t border-ink-700 px-3 py-3">
+    <div
+      ref={section}
+      id={tipsSectionId(npcId)}
+      className={`scroll-mt-2 border-t border-ink-700 px-3 py-3${flashing ? ' tips-flash' : ''}`}
+    >
       <div className="mb-1.5 flex items-center gap-1.5">
+        {/* The same glyph the jump badge carries, and the map paints on a blip: whoever followed
+            one of those here should recognise what they landed on. Decorative — the heading
+            beside it already names the section, and a bare "question mark" read aloud is noise. */}
+        <span data-tips-marker aria-hidden="true" className="text-[10px] font-bold text-gold-400">
+          ?
+        </span>
         <div className="text-[10px] font-bold tracking-widest text-ink-400">{t('tip.section')}</div>
         {fallback && <BaseLanguageMark />}
       </div>

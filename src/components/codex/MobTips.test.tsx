@@ -93,3 +93,62 @@ describe('The section itself', () => {
     expect(container.querySelector(`#${CSS.escape(tipsSectionId(263_109))}`)).not.toBeNull()
   })
 })
+
+describe('The marker that ties the section to the badge', () => {
+  it('shows the same `?` the jump badge carries, in either language', () => {
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    expect(container.querySelector('[data-tips-marker]')?.textContent).toBe('?')
+
+    cleanup()
+    const fr = renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    expect(fr.container.querySelector('[data-tips-marker]')?.textContent).toBe('?')
+  })
+
+  // A screen reader announcing a bare question mark before the section name is noise: the
+  // heading already says what this is. The glyph is there for the eye that just clicked one.
+  it('hides the glyph from assistive technology', () => {
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    expect(container.querySelector('[data-tips-marker]')?.getAttribute('aria-hidden')).toBe('true')
+  })
+})
+
+describe('The flash that lands the eye on the section', () => {
+  const section = (container: HTMLElement) =>
+    container.querySelector(`#${CSS.escape(tipsSectionId(NPC_ID))}`)!
+
+  it('does not wash the section until a jump asks it to', () => {
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    expect(section(container).className).not.toContain('tips-flash')
+  })
+
+  it('washes the section when the card reports a jump', () => {
+    const { container } = renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+    )
+    expect(section(container).className).toContain('tips-flash')
+  })
+
+  /**
+   * jsdom runs no animations, so this asserts the wiring rather than the wash. The class has to
+   * come off: the animation only replays on an element that is not already carrying it, so a
+   * second jump to the same card would otherwise do nothing.
+   */
+  it('takes the wash off again when the animation reports itself finished', () => {
+    const { container } = renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+    )
+    fireEvent.animationEnd(section(container))
+    expect(section(container).className).not.toContain('tips-flash')
+  })
+
+  it('washes again on a second jump, which is a new token rather than a new value of true', () => {
+    const { container, rerender } = renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+    )
+    fireEvent.animationEnd(section(container))
+    expect(section(container).className).not.toContain('tips-flash')
+
+    rerender(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={2} />)
+    expect(section(container).className).toContain('tips-flash')
+  })
+})
