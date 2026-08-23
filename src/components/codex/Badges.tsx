@@ -4,6 +4,7 @@
 import type { Threat, SpellTag } from '../../lib/content'
 import { useI18n } from '../../lib/i18n/context'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
+import { tipsSectionId } from '../../lib/tips'
 
 const THREAT_STYLE: Record<Threat, string> = {
   low: 'bg-threat-low/15 text-threat-low border-threat-low/40',
@@ -96,5 +97,34 @@ export function BaseLanguageMark() {
     >
       {DEFAULT_LOCALE.toUpperCase()}
     </span>
+  )
+}
+
+/**
+ * Says the card has tips, and takes the reader to them.
+ *
+ * A button rather than a badge, because it acts. The tips section sits at the bottom of the
+ * card, below the spell list, which is right for reading and wrong for discovery — this is the
+ * announcement that ordering costs.
+ */
+export function TipsJumpBadge({ npcId }: { npcId: number }) {
+  const { t } = useI18n()
+  return (
+    <button
+      type="button"
+      title={t('tip.jump')}
+      aria-label={t('tip.jump')}
+      onClick={(e) => {
+        // The header is clickable in the route builder: selecting the mob and jumping to its
+        // tips are different intents, and this one must not also fire that one.
+        e.stopPropagation()
+        document
+          .getElementById(tipsSectionId(npcId))
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }}
+      className="shrink-0 rounded border border-gold-500/40 bg-gold-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-gold-400 hover:border-gold-400 hover:bg-gold-500/20"
+    >
+      ?
+    </button>
   )
 }

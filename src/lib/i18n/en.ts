@@ -75,6 +75,7 @@ export const en = {
   'tip.section': 'TIPS',
   'tip.play': 'Play video',
   'tip.openOnYouTube': 'Open on YouTube',
+  'tip.jump': 'Has tips — jump to them',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',

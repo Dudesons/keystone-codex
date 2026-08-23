@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 // Without `globals: true`, Testing Library does not register its automatic cleanup: renders
 // would pile up in the document and skew the `screen` queries.
@@ -407,5 +407,37 @@ describe('Tips', () => {
   it('shows no section at all for a card that carries none', () => {
     renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.queryByText(en['tip.section'])).toBeNull()
+  })
+})
+
+describe('Tips badge', () => {
+  it('marks a card whose mob has tips', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+    expect(screen.getByRole('button', { name: en['tip.jump'] })).toBeTruthy()
+  })
+
+  it('leaves a card without tips unmarked', () => {
+    renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(screen.queryByRole('button', { name: en['tip.jump'] })).toBeNull()
+  })
+
+  it('does not offer the jump in compact, where the section is not rendered', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={chosen} compact />)
+    expect(screen.queryByRole('button', { name: en['tip.jump'] })).toBeNull()
+  })
+
+  it('scrolls the tips section into view when clicked', () => {
+    // Follows the CodexPanel.test.tsx convention for a test-scoped stub: save the original,
+    // install a spy, and restore it in `finally` so it cannot leak into a later test.
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(scrollIntoView).toHaveBeenCalled()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
   })
 })

@@ -6,7 +6,7 @@ import { getLookup, getNpcLabel, getSpell, iconUrl, portraitUrl, wowheadUrl } fr
 import { getMobContent, inlineMarkdown, isRole, type SpellNote, type SpellTag } from '../../lib/content'
 import { getIndicators } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
-import { BaseLanguageMark, CcBadges, DispelBadges, TagBadge, ThreatBadge } from './Badges'
+import { BaseLanguageMark, CcBadges, DispelBadges, TagBadge, ThreatBadge, TipsJumpBadge } from './Badges'
 import MobTips from './MobTips'
 
 /**
@@ -98,6 +98,7 @@ export default function MobCard({
             <h3 className="font-semibold text-ink-100">{label.name}</h3>
             {enemy.isBoss && <span className="text-xs font-semibold text-gold-400">{t('mob.boss')}</span>}
             <ThreatBadge threat={content?.threat} />
+            {!compact && ind.hasTips && <TipsJumpBadge npcId={enemy.id} />}
             {ind.kick && <Pill color="#d64550">{t('tag.kick')}</Pill>}
             {ind.tankBuster && <Pill color="#4a90c2">{t('tag.tank')}</Pill>}
             {ind.dispel.map((d) => (

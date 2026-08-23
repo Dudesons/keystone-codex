@@ -76,6 +76,7 @@ export const fr: Dictionary = {
   'tip.section': 'ASTUCES',
   'tip.play': 'Lire la vidéo',
   'tip.openOnYouTube': 'Ouvrir sur YouTube',
+  'tip.jump': 'Contient des astuces — y aller',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Sans danger',
