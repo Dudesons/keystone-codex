@@ -94,13 +94,7 @@ export function getIndicators(
   const tankBuster = [...notes.values()].some((n) => n.tag === 'tank')
   const threat = content?.threat
   const rank: Rank | undefined = content?.rank ?? (enemy.isBoss ? 'boss' : undefined)
-  // `content.role === 'miniboss'` is the pre-migration spelling and is removed in the task that
-  // retires it from `ROLES`. Both are true of the same mobs in between.
-  const priority =
-    rank !== undefined ||
-    content?.role === 'miniboss' ||
-    threat === 'lethal' ||
-    threat === 'high'
+  const priority = rank !== undefined || threat === 'lethal' || threat === 'high'
 
   const indicators: MobIndicators = {
     threat,

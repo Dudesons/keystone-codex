@@ -44,8 +44,10 @@ export function buildMobStub(enemy, spells) {
   lines.push('')
   lines.push('# TO FILL IN: low | medium | high | lethal')
   lines.push('threat:')
-  lines.push('# TO FILL IN: caster | melee | patrol | miniboss | add')
+  lines.push('# TO FILL IN: caster | melee | patrol | add')
   lines.push('role:')
+  lines.push('# OPTIONAL — overrides MDT: boss | miniboss')
+  lines.push('rank:')
 
   if (enemy.cc.length) {
     lines.push(`# Applicable CC (auto, from MDT): ${enemy.cc.join(', ')}`)

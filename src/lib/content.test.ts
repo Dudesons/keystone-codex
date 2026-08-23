@@ -653,3 +653,12 @@ describe('rank', () => {
     expect(isRank(3)).toBe(false)
   })
 })
+
+describe('miniboss leaves the shape vocabulary', () => {
+  // It was never a shape: a mob is a caster or a melee *and* a miniboss. The rank field is
+  // where it lives now, and leaving it in `ROLES` would keep offering the old spelling.
+  it('no longer offers miniboss as a shape', () => {
+    expect(isRole('miniboss')).toBe(false)
+    expect(ROLES).not.toContain('miniboss')
+  })
+})

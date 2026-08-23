@@ -92,7 +92,6 @@ export const en = {
   'role.caster': 'Caster',
   'role.melee': 'Melee',
   'role.patrol': 'Patrol',
-  'role.miniboss': 'Miniboss',
   'role.add': 'Encounter add',
 
   // Spell tags

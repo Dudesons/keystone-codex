@@ -88,7 +88,16 @@ describe('buildMobStub', () => {
     // The value must be empty: a default would be a judgement nobody made.
     expect(stub).toMatch(/^threat:$/m)
     expect(stub).toMatch(/^role:$/m)
+    expect(stub).toMatch(/^rank:$/m)
     expect(stub).toMatch(/^trap:$/m)
+  })
+
+  it('offers the shape vocabulary without the rank in it, and prompts for the rank apart', () => {
+    // `miniboss` was in the role list until it became a rank. A scaffold still offering it
+    // would recreate the confusion the field exists to end.
+    expect(stub).toContain('# TO FILL IN: caster | melee | patrol | add')
+    expect(stub).toContain('# OPTIONAL — overrides MDT: boss | miniboss')
+    expect(stub).not.toContain('patrol | miniboss')
   })
 
   it('tags every spell `todo`, which does not count as written', () => {

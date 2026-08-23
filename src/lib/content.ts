@@ -34,7 +34,7 @@ export type Threat = 'low' | 'medium' | 'high' | 'lethal'
  * word we never planned must render as itself rather than as a missing translation key.
  * `isRole` is the guard that decides which of the two happens.
  */
-export const ROLES = ['caster', 'melee', 'patrol', 'miniboss', 'add'] as const
+export const ROLES = ['caster', 'melee', 'patrol', 'add'] as const
 
 export type Role = (typeof ROLES)[number]
 

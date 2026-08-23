@@ -110,17 +110,9 @@ const THREAT_RANK: Record<Threat, number> = { lethal: 0, high: 1, medium: 2, low
  *
  * `rank !== undefined` reads as "any rank", but only a miniboss can reach it: a boss leaves the
  * loop one branch above. Written this way it stays correct if a third rank is ever added.
- *
- * `role === 'miniboss'` is the pre-migration spelling, removed with the `ROLES` entry.
  */
-function earnsARow(threat?: Threat, rank?: Rank, role?: string): boolean {
-  return (
-    threat === 'lethal' ||
-    threat === 'high' ||
-    threat === 'medium' ||
-    rank !== undefined ||
-    role === 'miniboss'
-  )
+function earnsARow(threat?: Threat, rank?: Rank): boolean {
+  return threat === 'lethal' || threat === 'high' || threat === 'medium' || rank !== undefined
 }
 const rankOf = (threat?: Threat) => (threat ? THREAT_RANK[threat] : 4)
 
@@ -248,7 +240,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
       continue
     }
 
-    const hasRow = spells.length > 0 && earnsARow(content?.threat, rank, content?.role)
+    const hasRow = spells.length > 0 && earnsARow(content?.threat, rank)
 
     if (hasRow) {
       mobs.push({
