@@ -4,7 +4,8 @@ name: "The Winter Squall"   # auto
 count: 50   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1309964

@@ -4,7 +4,8 @@ name: "Ascendant Serpent"   # auto
 count: 30   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1295055

@@ -4,7 +4,8 @@ name: "High Channeler Ryvati"   # auto
 count: 30   # auto — forces per unit
 
 threat: lethal
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1310355

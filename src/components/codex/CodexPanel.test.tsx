@@ -203,3 +203,32 @@ describe('The boss group reads rank, not MDT', () => {
     expect(shown.sort()).toEqual(byRank.sort())
   })
 })
+
+describe('A mob its card demotes', () => {
+  const NALORAKK = 'den-of-nalorakk'
+  const ECHO = 247_301
+
+  const nalorakkProps = () => ({
+    ...props(),
+    slug: NALORAKK,
+    lookup: getLookup(NALORAKK)!,
+  })
+
+  it('drops out of the boss group and into the trash list, marked in place', () => {
+    const { container } = renderEn(<CodexPanel {...nalorakkProps()} />)
+    const sections = [...container.querySelectorAll('section')]
+    const group = (heading: RegExp) =>
+      sections.find((s) => heading.test(s.querySelector('h2')?.textContent ?? ''))
+
+    const inBosses = [...(group(/BOSSES/)?.querySelectorAll('[data-npc]') ?? [])].map((el) =>
+      Number(el.getAttribute('data-npc')),
+    )
+    const inTrash = [...(group(/TRASH/)?.querySelectorAll('[data-npc]') ?? [])].map((el) =>
+      Number(el.getAttribute('data-npc')),
+    )
+
+    expect(inBosses).not.toContain(ECHO)
+    expect(inTrash).toContain(ECHO)
+    expect(screen.getAllByText('MINIBOSS').length).toBeGreaterThan(0)
+  })
+})

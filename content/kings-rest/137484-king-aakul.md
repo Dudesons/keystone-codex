@@ -4,7 +4,8 @@ name: "King A'akul"   # auto
 count: 25   # auto — forces per unit
 
 threat: medium
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1297918

@@ -67,16 +67,16 @@ describe('getHighlights mobs', () => {
   })
 
   it('keeps only the mobs a group has to plan around', () => {
-    // The shortlist: lethal, high, medium, or a miniboss. Everything else is out, including a
-    // mob nobody has rated — the codex fills in gradually, and an unrated mob comes back the
+    // The shortlist: lethal, high, medium, or carrying a rank. Everything else is out, including
+    // a mob nobody has rated — the codex fills in gradually, and an unrated mob comes back the
     // day someone writes its threat.
     for (const mob of getHighlights(VOIDSCAR).mobs) {
       const kept =
         mob.threat === 'lethal' ||
         mob.threat === 'high' ||
         mob.threat === 'medium' ||
-        mob.role === 'miniboss'
-      expect(kept, `${mob.name} (threat ${mob.threat}, role ${mob.role})`).toBe(true)
+        mob.rank !== undefined
+      expect(kept, `${mob.name} (threat ${mob.threat}, rank ${mob.rank})`).toBe(true)
     }
   })
 
@@ -288,5 +288,23 @@ describe('Rank on a row', () => {
       .sort()
     expect(strip.length).toBeGreaterThan(0)
     expect(strip).toEqual(byRank)
+  })
+})
+
+describe('A card that demotes its mob', () => {
+  /**
+   * MDT flags Echo of Nalorakk a boss because the game does. It has 3.4M health against
+   * Nalorakk's 21.9M and is fought during his encounter, so no group plans a pull around it.
+   */
+  it('leaves Echo of Nalorakk out of the boss strip its card never claimed', () => {
+    const { bosses } = getHighlights('den-of-nalorakk')
+    expect(bosses.map((b) => b.npcId)).not.toContain(247_301)
+    // The three the dungeon actually has.
+    expect(bosses).toHaveLength(3)
+  })
+
+  it('carries the rank onto its row, which is what marks it in place', () => {
+    const row = getHighlights('den-of-nalorakk').mobs.find((m) => m.npcId === 247_301)
+    expect(row?.rank).toBe('miniboss')
   })
 })

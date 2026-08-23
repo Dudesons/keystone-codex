@@ -4,7 +4,8 @@ name: "Aegyra the Unyielding"   # auto
 count: 40   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1298908

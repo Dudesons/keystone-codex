@@ -4,7 +4,8 @@ name: "Shadow of Zul"   # auto
 count: 30   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Two players get a large area around them and have to split off — from the group **and** from each other. Everything else here waits on that."

@@ -4,7 +4,8 @@ name: "Flamegullet"   # auto
 count: 40   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 392394

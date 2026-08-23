@@ -216,13 +216,26 @@ describe('Real pool data', () => {
     expect(dispellable.length).toBeGreaterThan(0)
   })
 
-  it('gives the golden ring to every boss in the pool', () => {
-    const bosses = enemies.filter((e) => e.isBoss)
+  const slugOf = (enemy: Enemy) =>
+    dungeonList.find((d) => getDungeon(d.slug)?.enemies.includes(enemy))!.slug
+
+  it('gives the golden ring to every mob whose rank is boss', () => {
+    const bosses = enemies.filter((e) => getIndicators(slugOf(e), e).rank === 'boss')
     expect(bosses.length).toBeGreaterThan(0)
     for (const boss of bosses) {
-      const slug = dungeonList.find((d) => getDungeon(d.slug)?.enemies.includes(boss))!.slug
-      expect(getIndicators(slug, boss).ring).toBe(BOSS_RING)
+      expect(getIndicators(slugOf(boss), boss).ring).toBe(BOSS_RING)
     }
+  })
+
+  /**
+   * Gold means boss. A mob MDT flags whose card demotes it is not one, so it must not wear the
+   * ring — that is the whole point of the field, and this is the pool's only such mob today.
+   */
+  it('takes the golden ring off a mob its card demotes', () => {
+    const echo = enemies.find((e) => e.id === 247_301)!
+    expect(echo.isBoss).toBe(true)
+    expect(getIndicators(slugOf(echo), echo).rank).toBe('miniboss')
+    expect(getIndicators(slugOf(echo), echo).ring).not.toBe(BOSS_RING)
   })
 })
 

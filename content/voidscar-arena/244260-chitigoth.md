@@ -4,7 +4,8 @@ name: "Chitigoth"   # auto
 count: 25   # auto — forces per unit
 
 threat: high
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1234855

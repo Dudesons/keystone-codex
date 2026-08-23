@@ -4,7 +4,8 @@ name: "Queen Wasi"   # auto
 count: 25   # auto — forces per unit
 
 threat: medium
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 270920

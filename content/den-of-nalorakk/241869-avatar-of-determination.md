@@ -4,7 +4,8 @@ name: "Avatar of Determination"   # auto
 count: 28   # auto — forces per unit
 
 threat: lethal
-role: miniboss
+role:
+rank: miniboss
 
 spells:
   - id: 1241463
