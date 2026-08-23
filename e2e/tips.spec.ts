@@ -34,3 +34,58 @@ test('the link out survives the deployed sub-path', async ({ page }) => {
   const link = page.locator('[data-npc="254850"]').getByRole('link', { name: 'Open on YouTube' })
   await expect(link).toHaveAttribute('href', `https://www.youtube.com/watch?v=${VIDEO_ID}`)
 })
+
+test('the map marks a mob that has tips', async ({ page }) => {
+  await page.goto('./#/d/the-blinding-vale/route')
+  // Blips are addressed by clone id (enemyIndex:cloneIndex), never by npc id — Sporeblight
+  // Belcher is enemy index 4, so its clones are the `5:` group.
+  const blip = page.locator('[data-clone^="5:"]').first()
+  await expect(blip).toBeVisible()
+  await expect(blip.getByText('?')).toBeVisible()
+})
+
+test('the briefing page loads no embed until asked', async ({ page }) => {
+  const thirdParty: string[] = []
+  page.on('request', (r) => {
+    if (/youtube|ytimg|googlevideo/.test(new URL(r.url()).hostname)) thirdParty.push(r.url())
+  })
+
+  await page.goto('./#/d/the-blinding-vale')
+  const card = page.locator(`[data-tips="254850"]`)
+  await expect(card).toBeVisible()
+  expect(thirdParty).toEqual([])
+  await expect(card.locator('iframe')).toHaveCount(0)
+
+  await card.getByRole('button').first().click()
+  await expect(card.locator('iframe')).toHaveAttribute(
+    'src',
+    new RegExp(`youtube-nocookie\\.com/embed/${VIDEO_ID}`),
+  )
+})
+
+/**
+ * Folding drops the frame rather than hiding it.
+ *
+ * The unit tests already assert the iframe leaves the DOM. This one is here for what only a
+ * real browser can show: that the same row folds and unfolds the same video repeatedly, in a
+ * build where the embed really did load. The open-then-fold shape is also what keeps the test
+ * honest — a locator that matched nothing would fail at the first assertion, not silently pass
+ * the second.
+ */
+test('a reader can fold a video away again, and open it once more', async ({ page }) => {
+  await page.goto('./#/d/the-blinding-vale/codex/mob/254850')
+
+  const card = page.locator('[data-npc="254850"]')
+  const row = card.getByRole('button', { name: /Naowh/ })
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(1)
+  await expect(row).toHaveAttribute('aria-expanded', 'true')
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(0)
+  await expect(row).toHaveAttribute('aria-expanded', 'false')
+
+  await row.click()
+  await expect(card.locator('iframe')).toHaveCount(1)
+})

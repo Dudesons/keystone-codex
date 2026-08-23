@@ -88,6 +88,19 @@ export const watchUrl = (videoId: string) => `https://www.youtube.com/watch?v=${
 export const tipImageUrl = (slug: string, file: string) =>
   `${import.meta.env.BASE_URL}tips/${slug}/${file}`
 
+/**
+ * The scroll target for a card's tips.
+ *
+ * `MobCard` renders the badge and `MobTips` renders the target, so the id is computed in one
+ * place rather than written as a literal in two. Keyed by the mob because the route builder can
+ * hold more than one card at a time.
+ *
+ * It lives in this module rather than in either component because `MobTips` already imports
+ * from `Badges` and `Badges` is about to need this: exporting it from a component would put a
+ * cycle between them.
+ */
+export const tipsSectionId = (npcId: number) => `tips-${npcId}`
+
 const KINDS = ['text', 'video', 'image'] as const
 
 function parseTip(raw: unknown, where: string): Tip | null {

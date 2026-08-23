@@ -7,6 +7,7 @@ import { cleanup, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import HighlightsPage from './HighlightsPage'
 import { getLookup } from '../lib/data'
+import { getHighlights } from '../lib/highlights'
 import { renderEn, renderFr } from '../test/render'
 
 afterEach(cleanup)
@@ -66,5 +67,29 @@ describe('The three blocks', () => {
   it("shows no trap heading for a dungeon whose shortlist claims every trap", () => {
     renderEn(at(`/d/${SLUG}`))
     expect(screen.queryByText('OTHER TRAPS')).toBeNull()
+  })
+})
+
+describe('Tips section', () => {
+  // Neither altar-of-fangs nor murder-row, the two dungeons the blocks above exercise, has a
+  // written tip — which is exactly why this section shipped without a page-level test to catch
+  // it. the-blinding-vale's Sporeblight Belcher does.
+  const VALE = 'the-blinding-vale'
+
+  it('renders for a dungeon with a written tip, and links to the mob’s card', () => {
+    const tips = getHighlights(VALE).tips
+    expect(tips.length).toBeGreaterThan(0)
+
+    const { container } = renderEn(at(`/d/${VALE}`))
+    // The outer page-section heading ('MOB TIPS') and MobTips's own inner label ('TIPS') no
+    // longer collide now that they read differently, so this is unambiguous.
+    expect(screen.getByText('MOB TIPS')).toBeDefined()
+
+    // Scoped to the tips entry itself: Sporeblight Belcher also earns a row in the mobs table
+    // above, whose own link carries the same accessible name, so an unscoped `getByRole` here
+    // would hit strict-mode ambiguity for exactly the reason CLAUDE.md warns Playwright's does.
+    const entry = container.querySelector(`[data-tips="${tips[0].npcId}"]`) as HTMLElement
+    const link = within(entry).getByRole('link', { name: tips[0].mobName })
+    expect(link.getAttribute('href')).toBe(`/d/${VALE}/codex/mob/${tips[0].npcId}`)
   })
 })

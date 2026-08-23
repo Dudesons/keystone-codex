@@ -4,11 +4,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Enemy } from './types'
 import { dungeonList, getDungeon, getLookup } from './data'
+import { getMobContent } from './content'
 import { frontalList, getIndicators, kickList } from './indicators'
 
 /**
- * `getIndicators` memoizes under the key `<slug>/<enemy.id>`, with no invalidation. Every
- * case therefore uses an `id` of its own, otherwise the tests contaminate each other.
+ * `getIndicators` memoizes under the key `<locale>/<slug>/<enemy.id>`, with no invalidation.
+ * Every case therefore uses an `id` of its own, otherwise the tests contaminate each other.
  */
 const SLUG = 'test-dungeon' // no file under content/: only the MDT path is exercised
 
@@ -222,5 +223,45 @@ describe('Real pool data', () => {
       const slug = dungeonList.find((d) => getDungeon(d.slug)?.enemies.includes(boss))!.slug
       expect(getIndicators(slug, boss).ring).toBe(BOSS_RING)
     }
+  })
+})
+
+describe('hasTips', () => {
+  // Sporeblight Belcher: a written card with a `tips:` entry in both the base file and its
+  // French translation, which is what makes it useful for the per-locale case below too.
+  const TIP_SLUG = 'the-blinding-vale'
+  const TIP_ID = 254_850
+
+  it('is true for a mob whose card carries tips', () => {
+    const enemy = getLookup(TIP_SLUG)!.enemyById.get(TIP_ID)!
+    expect(getIndicators(TIP_SLUG, enemy).hasTips).toBe(true)
+  })
+
+  it('is false for a mob whose card carries none', () => {
+    const enemy = getLookup(TIP_SLUG)!.enemyById.get(TIP_ID)!
+    const byId = getLookup(TIP_SLUG)!.enemyById
+    const other = [...byId.values()].find(
+      (e) => e.id !== TIP_ID && !getMobContent(TIP_SLUG, e.id)?.tips?.length,
+    )!
+    expect(other).toBeDefined()
+    expect(getIndicators(TIP_SLUG, other).hasTips).toBe(false)
+    expect(getIndicators(TIP_SLUG, enemy).hasTips).toBe(true)
+  })
+
+  it('answers per locale, because a translation replaces the list', () => {
+    const enemy = getLookup(TIP_SLUG)!.enemyById.get(TIP_ID)!
+    // Both locales carry tips on this card. The point is that the cache key varies:
+    // asking in French must not return the English answer by accident.
+    expect(getIndicators(TIP_SLUG, enemy, 'fr').hasTips).toBe(true)
+  })
+
+  // __fixtures__/888003: no `tips:` in the base file, one only in its French sibling. Unlike
+  // the card above, whose two locales agree, this is the case that would actually fail if
+  // `getIndicators`'s cache key ever dropped `locale` — the two languages disagree here, so a
+  // key collision would make one of them read the other's cached answer.
+  it('is false in the base language and true only once translated', () => {
+    const mob = enemy({ id: 888_003 })
+    expect(getIndicators('__fixtures__', mob).hasTips).toBe(false)
+    expect(getIndicators('__fixtures__', mob, 'fr').hasTips).toBe(true)
   })
 })

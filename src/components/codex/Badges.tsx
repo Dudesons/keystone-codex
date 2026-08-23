@@ -1,9 +1,10 @@
-// ABOUTME: The small coloured badges of a mob card: threat, spell tag, CC and dispel types.
-// ABOUTME: CC and dispel come straight from MDT; threat and tag come from the written entry.
+// ABOUTME: The small coloured badges of a mob card: threat, spell tag, CC and dispel types,
+// ABOUTME: plus the base-language mark and the tips-jump control, a navigation button, not a badge.
 
 import type { Threat, SpellTag } from '../../lib/content'
 import { useI18n } from '../../lib/i18n/context'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
+import { tipsSectionId } from '../../lib/tips'
 
 const THREAT_STYLE: Record<Threat, string> = {
   low: 'bg-threat-low/15 text-threat-low border-threat-low/40',
@@ -96,5 +97,37 @@ export function BaseLanguageMark() {
     >
       {DEFAULT_LOCALE.toUpperCase()}
     </span>
+  )
+}
+
+/**
+ * Says the card has tips, and takes the reader to them.
+ *
+ * A button rather than a badge, because it acts. The tips section sits at the bottom of the
+ * card, below the spell list, which is right for reading and wrong for discovery — this is the
+ * announcement that ordering costs.
+ */
+export function TipsJumpBadge({ npcId, onJump }: { npcId: number; onJump?: () => void }) {
+  const { t } = useI18n()
+  return (
+    <button
+      type="button"
+      title={t('tip.jump')}
+      aria-label={t('tip.jump')}
+      onClick={(e) => {
+        // The header is clickable in the route builder: selecting the mob and jumping to its
+        // tips are different intents, and this one must not also fire that one.
+        e.stopPropagation()
+        document
+          .getElementById(tipsSectionId(npcId))
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        // Scrolling puts the section on screen; the wash is what puts it under the eye. The
+        // card owns that state, because it owns both this button and the section.
+        onJump?.()
+      }}
+      className="shrink-0 rounded border border-gold-500/40 bg-gold-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-gold-400 hover:border-gold-400 hover:bg-gold-500/20"
+    >
+      ?
+    </button>
   )
 }

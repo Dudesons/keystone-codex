@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 // Without `globals: true`, Testing Library does not register its automatic cleanup: renders
 // would pile up in the document and skew the `screen` queries.
@@ -13,6 +13,7 @@ import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
 import { en } from '../../lib/i18n/en'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
+import { tipsSectionId } from '../../lib/tips'
 import { renderEn, renderFr } from '../../test/render'
 import MobCard from './MobCard'
 
@@ -407,5 +408,94 @@ describe('Tips', () => {
   it('shows no section at all for a card that carries none', () => {
     renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     expect(screen.queryByText(en['tip.section'])).toBeNull()
+  })
+})
+
+describe('Tips badge', () => {
+  it('marks a card whose mob has tips', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+    expect(screen.getByRole('button', { name: en['tip.jump'] })).toBeTruthy()
+  })
+
+  it('leaves a card without tips unmarked', () => {
+    renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
+    expect(screen.queryByRole('button', { name: en['tip.jump'] })).toBeNull()
+  })
+
+  it('does not offer the jump in compact, where the section is not rendered', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={chosen} compact />)
+    expect(screen.queryByRole('button', { name: en['tip.jump'] })).toBeNull()
+  })
+
+  it('scrolls the tips section into view when clicked', () => {
+    // Follows the CodexPanel.test.tsx convention for a test-scoped stub: save the original,
+    // install a spy, and restore it in `finally` so it cannot leak into a later test.
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(scrollIntoView).toHaveBeenCalled()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('washes the tips section on the way in, so the eye lands on what it scrolled to', () => {
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const { container } = renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      const section = container.querySelector(`#${CSS.escape(tipsSectionId(chosen.id))}`)!
+      expect(section.className).not.toContain('tips-flash')
+
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(section.className).toContain('tips-flash')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('washes it again on a second jump, once the first wash has finished', () => {
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const { container } = renderEn(<MobCard slug="__fixtures__" enemy={chosen} />)
+      const section = container.querySelector(`#${CSS.escape(tipsSectionId(chosen.id))}`)!
+      const jump = screen.getByRole('button', { name: en['tip.jump'] })
+
+      fireEvent.click(jump)
+      fireEvent.animationEnd(section)
+      expect(section.className).not.toContain('tips-flash')
+
+      fireEvent.click(jump)
+      expect(section.className).toContain('tips-flash')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('does not select the mob when the jump is clicked, unlike the header itself', () => {
+    // `stopPropagation()` in `TipsJumpBadge` exists precisely to keep this click from also
+    // firing the header's `onSelect` (see the `Interactions` describe block above for the
+    // header's own case). Asserting only the absence would pass just as well if `onSelect`
+    // were never wired up at all, so the second click - on the header - proves the wiring is
+    // live and the first result is a real guard, not a vacuous one.
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const seen: number[] = []
+      const { container } = renderEn(
+        <MobCard slug="__fixtures__" enemy={chosen} onSelect={(id) => seen.push(id)} />,
+      )
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(seen).toEqual([])
+
+      fireEvent.click(container.querySelector('header')!)
+      expect(seen).toEqual([chosen.id])
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
   })
 })

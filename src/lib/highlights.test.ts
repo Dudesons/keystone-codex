@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
+import { getMobContent } from './content'
 
 /**
  * Landmarks, all real:
@@ -125,7 +126,7 @@ describe('getHighlights mobs', () => {
   })
 
   it('returns empty lists for a dungeon that does not exist', () => {
-    expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [] })
+    expect(getHighlights('no-such-dungeon')).toEqual({ mobs: [], traps: [], bosses: [], tips: [] })
   })
 })
 
@@ -214,5 +215,45 @@ describe('orderBosses', () => {
     const ordered = orderBosses(bosses, byIdx, [999, 20, 10])
     expect(ordered).toHaveLength(3)
     expect(ordered.map((b) => b.npcId)).toEqual([20, 10, 30])
+  })
+})
+
+describe('tips', () => {
+  it('lists a mob whose card carries tips', () => {
+    const { tips } = getHighlights('the-blinding-vale')
+    expect(tips.map((x) => x.npcId)).toContain(254_850)
+  })
+
+  it('carries the tips themselves, not a flag', () => {
+    const { tips } = getHighlights('the-blinding-vale')
+    const entry = tips.find((x) => x.npcId === 254_850)!
+    expect(entry.tips).toEqual(getMobContent('the-blinding-vale', 254_850)!.tips)
+  })
+
+  it('names the mob in the reader’s language', () => {
+    const en = getHighlights('the-blinding-vale').tips.find((x) => x.npcId === 254_850)!
+    const fr = getHighlights('the-blinding-vale', 'fr').tips.find((x) => x.npcId === 254_850)!
+    expect(fr.mobName).not.toBe(en.mobName)
+  })
+
+  it('builds from every mob with tips, not only the ones the shortlist keeps', () => {
+    // What this proves: every mob whose content carries tips reaches the list, and none is
+    // dropped or duplicated — counted independently of getHighlights, by walking enemyById and
+    // getMobContent directly rather than reading getHighlights' own mobs/bosses lists.
+    //
+    // What this cannot prove today: 254850 (Sporeblight Belcher) is the only mob in this
+    // dungeon's real content carrying tips, and it is both shortlisted (`threat: high` alone
+    // satisfies earnsARow) and non-boss. So an implementation that gated the push with
+    // `&& hasRow`, or one that pushed only after the `isBoss` branch (excluding bosses), would
+    // produce the same count on this dataset and this test would not catch it. Closing that gap
+    // needs a real card in the differentiating cell — a tipped mob that is a boss, or a tipped
+    // mob the shortlist drops (unrated, or rated below `medium`/non-miniboss) — and there isn't
+    // one yet.
+    const slug = 'the-blinding-vale'
+    const { tips } = getHighlights(slug)
+    const withTips = [...getLookup(slug)!.enemyById.values()].filter(
+      (e) => (getMobContent(slug, e.id)?.tips?.length ?? 0) > 0,
+    )
+    expect(tips.length).toBe(withTips.length)
   })
 })

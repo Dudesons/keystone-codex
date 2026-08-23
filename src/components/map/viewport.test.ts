@@ -144,8 +144,12 @@ describe('badgeArc', () => {
   })
 
   it('keeps every badge above the blip', () => {
-    for (const p of badgeArc(3, centre, 14)) {
-      expect(p.y).toBeLessThan(centre.y)
+    // Up to 5: DungeonMap never pushes more than one badge per indicator (kick, frontal, tank
+    // buster, dispel, tips), so 5 is the real ceiling, not an arbitrary round number.
+    for (const count of [3, 4, 5]) {
+      for (const p of badgeArc(count, centre, 14)) {
+        expect(p.y, `count ${count}`).toBeLessThan(centre.y)
+      }
     }
   })
 

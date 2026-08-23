@@ -33,6 +33,8 @@ export interface MobIndicators {
   /** Focus first: boss, miniboss, or high threat. */
   priority: boolean
   hasTrap: boolean
+  /** The card carries at least one tip. Locale-sensitive: a translation replaces the list whole. */
+  hasTips: boolean
   /** Colour of the blip's ring on the map. */
   ring: string
 }
@@ -97,6 +99,7 @@ export function getIndicators(
     tankBuster,
     priority,
     hasTrap: Boolean(content?.trap),
+    hasTips: Boolean(content?.tips?.length),
     ring: enemy.isBoss ? BOSS_RING : threat ? THREAT_RING[threat] : NEUTRAL_RING,
   }
 

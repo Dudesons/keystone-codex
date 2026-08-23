@@ -7,6 +7,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
 import { cloneKey, getLookup, getNpcLabel, mapUrl, type DungeonLookup } from '../../lib/data'
 import type { Point } from '../../lib/geometry'
+import { en } from '../../lib/i18n/en'
 import type { Peer } from '../../lib/collab/presence'
 import type { Clone, CloneRef, Dungeon, Enemy } from '../../lib/types'
 import { renderEn, renderFr } from '../../test/render'
@@ -761,6 +762,48 @@ describe('Preset notes', () => {
     fireEvent.pointerDown(pin, { button: 0, pointerId: 3, clientX: 100, clientY: 100 })
     fireEvent.pointerMove(pin, { pointerId: 3, clientX: 160, clientY: 140 })
     expect(captured).toEqual([])
+  })
+})
+
+describe('Tips badge', () => {
+  const VALE_SLUG = 'the-blinding-vale'
+  const vale = getLookup(VALE_SLUG)!
+  // Pinned to the-blinding-vale, like `blipFor` below: the two must stay in lockstep, since
+  // `blipFor` resolves ids through `vale` regardless of what a parameterized `renderMap` was
+  // given, and every case in this block only ever needs this one dungeon.
+  const renderMap = () => renderEn(<DungeonMap slug={VALE_SLUG} lookup={vale} />)
+
+  /**
+   * The blip for a mob's first clone in the-blinding-vale, found by npc id rather than by
+   * `data-clone` directly — blips are keyed `enemyIdx:cloneIdx`, not by npc id, so the id has
+   * to be resolved through the lookup first.
+   */
+  const blipFor = (container: HTMLElement, npcId: number) => {
+    const enemy = vale.dungeon.enemies.find((e) => e.id === npcId)!
+    const clone = enemy.clones[0]
+    return container.querySelector(
+      `svg > g[data-clone="${cloneKey(enemy.mdtIdx, clone.mdtIdx)}"]`,
+    ) as HTMLElement
+  }
+
+  // Lasher (245410): no `tips:` key in its card, so it is the negative case below.
+  const npcWithoutTips = 245410
+
+  it('marks the blip of a mob whose card has tips', () => {
+    const { container } = renderMap()
+    const blip = blipFor(container, 254_850)
+    expect(within(blip).queryByText('?')).not.toBeNull()
+  })
+
+  it('leaves a mob without tips unmarked', () => {
+    const { container } = renderMap()
+    const blip = blipFor(container, npcWithoutTips)
+    expect(within(blip).queryByText('?')).toBeNull()
+  })
+
+  it('gives the legend a row for it', () => {
+    mount()
+    expect(screen.getByText(en['legend.tips'])).toBeTruthy()
   })
 })
 

@@ -52,6 +52,7 @@ export const en = {
   // A shortlisted mob's trap moved onto its row; what is left here belongs to the mobs the
   // shortlist dropped, so the heading says so rather than reading as a list of everything.
   'highlights.traps': 'OTHER TRAPS',
+  'highlights.tips': 'MOB TIPS',
   'highlights.bosses': 'BOSSES',
   'highlights.trap': 'Trap',
 
@@ -74,7 +75,9 @@ export const en = {
   // Tips
   'tip.section': 'TIPS',
   'tip.play': 'Play video',
+  'tip.collapse': 'Fold the video away',
   'tip.openOnYouTube': 'Open on YouTube',
+  'tip.jump': 'Has tips — jump to them',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',
@@ -114,6 +117,7 @@ export const en = {
   'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
+  'map.badgeTips': 'Has tips',
   'map.item': 'usable item',
   'map.dungeonEntrance': 'Dungeon entrance',
   'map.note': 'note',
@@ -147,6 +151,7 @@ export const en = {
   'legend.frontal': 'Frontal cone (declared in the card)',
   'legend.tank': 'Tank buster (declared in the card)',
   'legend.dispel': 'Dispellable spell (from MDT)',
+  'legend.tips': 'Something written about this mob',
   'legend.ring.lethal': 'Lethal threat',
   'legend.ring.high': 'Dangerous',
   'legend.ring.medium': 'Watch out',

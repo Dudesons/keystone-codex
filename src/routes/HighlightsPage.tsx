@@ -6,6 +6,7 @@ import DungeonHeader from '../components/DungeonHeader'
 import UnknownDungeon from '../components/UnknownDungeon'
 import MobTable from '../components/highlights/MobTable'
 import TrapList from '../components/highlights/TrapList'
+import TipList from '../components/highlights/TipList'
 import BossStrip from '../components/highlights/BossStrip'
 import { getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
@@ -47,6 +48,14 @@ export default function HighlightsPage() {
                 {t('highlights.traps')}
               </h2>
               <TrapList slug={slug} traps={highlights.traps} />
+            </section>
+          )}
+          {highlights.tips.length > 0 && (
+            <section className="mb-10">
+              <h2 className="mb-3 text-xs font-semibold tracking-[0.2em] text-gold-500">
+                {t('highlights.tips')}
+              </h2>
+              <TipList slug={slug} tips={highlights.tips} />
             </section>
           )}
           {highlights.bosses.length > 0 && (

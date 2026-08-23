@@ -2,7 +2,7 @@
 // ABOUTME: Pure input/output: no files, no DOM, so every rejection can be stated as a case.
 
 import { describe, expect, it, vi } from 'vitest'
-import { embedUrl, parseTips, tipImageUrl, watchUrl, youtube } from './tips'
+import { embedUrl, parseTips, tipImageUrl, tipsSectionId, watchUrl, youtube } from './tips'
 
 describe('youtube', () => {
   it('reads the id out of every form someone actually pastes', () => {
@@ -62,6 +62,10 @@ describe('URLs', () => {
     expect(tipImageUrl('the-blinding-vale', 'a.webp')).toBe(
       `${import.meta.env.BASE_URL}tips/the-blinding-vale/a.webp`,
     )
+  })
+
+  it('builds a scroll target from the npc id', () => {
+    expect(tipsSectionId(254_850)).toBe('tips-254850')
   })
 })
 

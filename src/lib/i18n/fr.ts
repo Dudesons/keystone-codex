@@ -53,6 +53,7 @@ export const fr: Dictionary = {
   // Le piège d'un mob du tableau ci-dessus est passé sur sa ligne ; ce qui reste ici appartient
   // aux mobs écartés du tableau, d'où ce titre plutôt qu'une liste de tout.
   'highlights.traps': 'AUTRES PIÈGES',
+  'highlights.tips': 'ASTUCES DES MOBS',
   'highlights.bosses': 'BOSS',
   'highlights.trap': 'Piège',
 
@@ -75,7 +76,9 @@ export const fr: Dictionary = {
   // Astuces
   'tip.section': 'ASTUCES',
   'tip.play': 'Lire la vidéo',
+  'tip.collapse': 'Replier la vidéo',
   'tip.openOnYouTube': 'Ouvrir sur YouTube',
+  'tip.jump': 'Contient des astuces — y aller',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Sans danger',
@@ -115,6 +118,7 @@ export const fr: Dictionary = {
   'map.badgeFrontal': 'Frontal',
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
+  'map.badgeTips': 'Contient des astuces',
   'map.item': 'objet utilisable',
   'map.dungeonEntrance': 'Entrée du donjon',
   'map.note': 'note',
@@ -148,6 +152,7 @@ export const fr: Dictionary = {
   'legend.frontal': 'Cône frontal (déclaré dans la fiche)',
   'legend.tank': 'Tank buster (déclaré dans la fiche)',
   'legend.dispel': 'Sort dissipable (source MDT)',
+  'legend.tips': 'Quelque chose d’écrit sur ce mob',
   'legend.ring.lethal': 'Menace létale',
   'legend.ring.high': 'Dangereux',
   'legend.ring.medium': 'À surveiller',

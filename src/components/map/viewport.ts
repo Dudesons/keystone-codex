@@ -72,14 +72,25 @@ export interface BadgePlacement {
  *
  * One pip sits straight above; two straddle that position; three fan out around it. Centring
  * on the count is what keeps them from sliding sideways as a mob gains an indicator.
+ *
+ * The per-pip spread is capped at 46°, but the *total* span (spread × (count - 1)) is also
+ * capped, at `MAX_SPAN_DEGREES`: left uncapped, five pips — the real ceiling, one per
+ * indicator (kick, frontal, tank buster, dispel, tips) — would fan out to ±92° from vertical,
+ * past the horizontal, and the outermost two would sit *below* the blip instead of above it.
+ * Tapering the per-pip spread as the count grows keeps every pip's angle within
+ * `(-180°, 0°)`, which is what "above the blip" means in screen coordinates (positive y is
+ * down). One through four pips are unaffected — their span already fit.
  */
 export function badgeArc(count: number, centre: Point, radius: number): BadgePlacement[] {
-  const SPREAD_DEGREES = 46
+  const MAX_PIP_SPREAD_DEGREES = 46
+  const MAX_SPAN_DEGREES = 150
   const GAP = 5
   const r = Math.max(6, radius * 0.42)
+  const spreadDegrees =
+    count > 1 ? Math.min(MAX_PIP_SPREAD_DEGREES, MAX_SPAN_DEGREES / (count - 1)) : MAX_PIP_SPREAD_DEGREES
 
   return Array.from({ length: count }, (_, i) => {
-    const angle = (-90 + (i - (count - 1) / 2) * SPREAD_DEGREES) * (Math.PI / 180)
+    const angle = (-90 + (i - (count - 1) / 2) * spreadDegrees) * (Math.PI / 180)
     return {
       x: centre.x + Math.cos(angle) * (radius + GAP),
       y: centre.y + Math.sin(angle) * (radius + GAP),

@@ -514,6 +514,7 @@ function Blip({
     badges.push({ color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
   if (ind.tankBuster) badges.push({ color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
   if (ind.dispel.length) badges.push({ color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
+  if (ind.hasTips) badges.push({ color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
   const placements = badgeArc(badges.length, { x, y }, r)
 
   return (
@@ -644,6 +645,7 @@ function Legend() {
     ['#cf6fa0', 'F', t('legend.frontal')],
     ['#4a90c2', 'T', t('legend.tank')],
     ['#7f6fd0', 'D', t('legend.dispel')],
+    ['#e0b552', '?', t('legend.tips')],
   ]
   const ringRows: [string, string][] = [
     ['#cf3f52', t('legend.ring.lethal')],
