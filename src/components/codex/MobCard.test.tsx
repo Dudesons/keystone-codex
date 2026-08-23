@@ -440,4 +440,27 @@ describe('Tips badge', () => {
       Element.prototype.scrollIntoView = original
     }
   })
+
+  it('does not select the mob when the jump is clicked, unlike the header itself', () => {
+    // `stopPropagation()` in `TipsJumpBadge` exists precisely to keep this click from also
+    // firing the header's `onSelect` (see the `Interactions` describe block above for the
+    // header's own case). Asserting only the absence would pass just as well if `onSelect`
+    // were never wired up at all, so the second click - on the header - proves the wiring is
+    // live and the first result is a real guard, not a vacuous one.
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = () => {}
+    try {
+      const seen: number[] = []
+      const { container } = renderEn(
+        <MobCard slug="__fixtures__" enemy={chosen} onSelect={(id) => seen.push(id)} />,
+      )
+      fireEvent.click(screen.getByRole('button', { name: en['tip.jump'] }))
+      expect(seen).toEqual([])
+
+      fireEvent.click(container.querySelector('header')!)
+      expect(seen).toEqual([chosen.id])
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
 })
