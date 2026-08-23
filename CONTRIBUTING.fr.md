@@ -20,6 +20,7 @@ modifiée à la main. Toute modification de la colonne de droite est un travail 
 | --- | --- |
 | `threat` : à quel point ce mob change le pull | Noms, icônes, descriptions, temps d'incantation et portées des sorts — récupérés sur Wowhead |
 | `role` : de quel genre de mob il s'agit | Noms des mobs, forces, positions sur la carte, CC applicables — extraits de MDT |
+| `rank` : boss ou miniboss, quand le jeu et les joueurs ne sont pas d'accord | Les mobs que le jeu lui-même marque comme boss |
 | Le `tag`, la `prio` et la `note` d'un sort | Quels sorts un mob possède, et leurs identifiants |
 | `trap` : la phrase qui évite le wipe | Les cartes de donjon sous `public/maps/` |
 | La prose sous le frontmatter | Tout ce qui se trouve sous `src/data/generated/` |
@@ -85,7 +86,8 @@ entre les lignes `---`, la prose libre en dessous.
 ---
 npcId: 270306
 threat: high              # low | medium | high | lethal
-role: melee               # caster | melee | patrol | miniboss | add
+role: melee               # caster | melee | patrol | add
+rank: miniboss            # facultatif : boss | miniboss — prime sur ce que dit MDT
 spells:
   - id: 1306911
     tag: tank             # kick | frontal | dodge | dispel | tank | soak | ignore
@@ -103,7 +105,8 @@ Prose libre : placement, ordre de focus, cooldowns.
 | --- | --- |
 | `npcId` | L'identifiant du mob. Écrit par le scaffold ; ne le changez jamais — c'est par ce seul nombre que la fiche est rattachée à la carte. |
 | `threat` | `low`, `medium`, `high` ou `lethal`. Détermine la couleur de l'anneau sur la carte. Voir [Évaluer la menace d'un mob](#évaluer-la-menace-dun-mob). |
-| `role` | `caster`, `melee`, `patrol`, `miniboss` ou `add`. |
+| `role` | `caster`, `melee`, `patrol` ou `add`. De quel genre de mob il s'agit. |
+| `rank` | `boss` ou `miniboss`. Sans lui, le mob est ce que MDT en dit. À écrire quand le jeu et les joueurs ne sont pas d'accord : une unité marquée boss qui est en réalité un miniboss, ou une unité non marquée que tout le monde traite comme telle. Une autre valeur est ignorée, et un test nomme le fichier. |
 | `spells[].id` | Un identifiant de sort qui existe déjà dans les données générées. N'en inventez pas. |
 | `spells[].tag` | `kick`, `frontal`, `dodge`, `dispel`, `tank`, `soak` ou `ignore`. Une fiche fraîche porte `tag: todo`, qui n'affiche aucun badge et veut dire « pas encore regardé ». |
 | `spells[].prio` | Un nombre. À l'intérieur d'une fiche, il ordonne les sorts portant le même tag ; `prio: 1` peut en plus atteindre l'onglet Résumé du donjon. Voir [Annoter un sort](#annoter-un-sort). |
@@ -253,7 +256,7 @@ par-dessus la fiche de base champ par champ — tout ce que vous omettez garde l
 
 Ce qui a sa place dans un `.fr.md` : `npcId` (pour rattacher le fichier), la `note` d'un sort
 repérée par son `id`, `trap`, la prose — et `tips`, avec la réserve ci-dessous. Ce qui n'y a pas
-sa place : `threat`, `role`, `tag`, `prio`. Ce sont des jugements, pas de la langue ; les
+sa place : `threat`, `role`, `tag`, `prio`, `rank`. Ce sont des jugements, pas de la langue ; les
 dupliquer dans deux fichiers ne ferait que les laisser diverger.
 
 ```yaml
