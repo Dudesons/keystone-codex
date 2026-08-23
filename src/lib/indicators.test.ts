@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import type { Enemy } from './types'
 import { dungeonList, getDungeon, getLookup } from './data'
 import { getMobContent } from './content'
-import { frontalList, getIndicators, kickList } from './indicators'
+import { frontalList, getIndicators, kickList, tippedPacks } from './indicators'
 
 /**
  * `getIndicators` memoizes under the key `<locale>/<slug>/<enemy.id>`, with no invalidation.
@@ -281,5 +281,36 @@ describe('tip scope', () => {
     const ind = getIndicators('__fixtures__', enemy({ id: 270_306 }))
     expect(ind.generalTips).toBe(false)
     expect(ind.tipPacks).toEqual([])
+  })
+})
+
+describe('the pulls a tip is about', () => {
+  it('collects every pack a scoped tip names', () => {
+    const packs = tippedPacks('__fixtures__', [enemy({ id: 888_020 })])
+    expect([...packs].sort((a, b) => a - b)).toEqual([44, 45])
+  })
+
+  /**
+   * 888020 stands in no pack at all, and still names two. That is the combined-pull case: a mob
+   * standing only in 44 can carry a tip about taking 44 and 45 together, and both pulls should
+   * be marked. Asking "does a tipped mob stand here" would mark only one of them.
+   */
+  it('names a pack even where no tipped mob stands', () => {
+    expect(tippedPacks('__fixtures__', [enemy({ id: 888_020 })]).has(45)).toBe(true)
+  })
+
+  it('leaves a general tip out, because that one is about the mob and stays on its blips', () => {
+    // __fixtures__/263109 carries tips with no `packs:`.
+    expect(tippedPacks('__fixtures__', [enemy({ id: 263_109 })]).size).toBe(0)
+  })
+
+  it('is empty for mobs with nothing written about them', () => {
+    expect(tippedPacks('__fixtures__', [enemy({ id: 270_306 })]).size).toBe(0)
+  })
+
+  it('answers per locale, because a translation replaces the tips list whole', () => {
+    expect(tippedPacks('the-blinding-vale', getLookup('the-blinding-vale')!.dungeon.enemies)).toEqual(
+      tippedPacks('the-blinding-vale', getLookup('the-blinding-vale')!.dungeon.enemies, 'fr'),
+    )
   })
 })

@@ -35,21 +35,19 @@ test('the link out survives the deployed sub-path', async ({ page }) => {
   await expect(link).toHaveAttribute('href', `https://www.youtube.com/watch?v=${VIDEO_ID}`)
 })
 
-test('the map marks a mob that has tips', async ({ page }) => {
+test('the map marks the pull a tip is about', async ({ page }) => {
   await page.goto('./#/d/the-blinding-vale/route')
-  // Blips are addressed by clone id (enemyIndex:cloneIndex), never by npc id — Sporeblight
-  // Belcher is enemy index 4, so its clones are the `5:` group. Clone 10 is the one standing
-  // in pack 44, which is the pull its only tip is about.
-  const blip = page.locator('[data-clone="5:10"]')
-  await expect(blip).toBeVisible()
-  await expect(blip.getByText('?')).toBeVisible()
+  await expect(page.locator('[data-badge="tips"][data-pack="44"]')).toBeVisible()
 })
 
-test('marks one blip for a tip about one pull, not every clone of the mob', async ({ page }) => {
+test('marks one pull, not every clone of the mob the tip is written on', async ({ page }) => {
   await page.goto('./#/d/the-blinding-vale/route')
+  // Blips are addressed by clone id (enemyIndex:cloneIndex), never by npc id — Sporeblight
+  // Belcher is enemy index 4, so its clones are the `5:` group, and 5:10 is the one standing
+  // in pack 44. Eleven marks here would be the noise `packs:` answers; one on a blip would
+  // mean the advice had been pinned to a mob rather than to the pull it is about.
   await expect(page.locator('[data-clone="5:10"]')).toBeVisible()
-  // Sporeblight Belcher stands in eleven packs and is the only tipped mob in this dungeon;
-  // its one tip is about pack 44. Eleven badges here would be the noise `packs:` answers.
+  await expect(page.locator('[data-clone="5:10"] [data-badge="tips"]')).toHaveCount(0)
   await expect(page.locator('[data-badge="tips"]')).toHaveCount(1)
 })
 

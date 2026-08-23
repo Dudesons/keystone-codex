@@ -148,6 +148,26 @@ export function kickList(slug: string, enemy: Enemy, locale: Locale = DEFAULT_LO
   return briefingList(getIndicators(slug, enemy, locale).kickSpells, slug, enemy, locale)
 }
 
+/**
+ * The pulls something is written about, across a whole dungeon.
+ *
+ * A tip naming `packs:` is about the pull, not about the mob whose card happens to hold the
+ * sentence — so the map marks the pull. The question is asked of the dungeon rather than of each
+ * pack's members on purpose: a mob standing in 44 can carry a tip about taking 44 and 45
+ * together, and both are pulls the reader should be told about.
+ */
+export function tippedPacks(
+  slug: string,
+  enemies: Enemy[],
+  locale: Locale = DEFAULT_LOCALE,
+): Set<number> {
+  const packs = new Set<number>()
+  for (const enemy of enemies) {
+    for (const g of getIndicators(slug, enemy, locale).tipPacks) packs.add(g)
+  }
+  return packs
+}
+
 /** Frontal cones to step out of — for the pull briefing. */
 export function frontalList(
   slug: string,
