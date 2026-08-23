@@ -35,6 +35,10 @@ export interface MobIndicators {
   hasTrap: boolean
   /** The card carries at least one tip. Locale-sensitive: a translation replaces the list whole. */
   hasTips: boolean
+  /** At least one tip carries no `packs:` — it is about the mob, so every clone shows it. */
+  generalTips: boolean
+  /** Every pack named by a scoped tip. A clone in one of these shows the badge. */
+  tipPacks: number[]
   /** Colour of the blip's ring on the map. */
   ring: string
 }
@@ -100,6 +104,8 @@ export function getIndicators(
     priority,
     hasTrap: Boolean(content?.trap),
     hasTips: Boolean(content?.tips?.length),
+    generalTips: (content?.tips ?? []).some((tip) => !tip.packs?.length),
+    tipPacks: [...new Set((content?.tips ?? []).flatMap((tip) => tip.packs ?? []))],
     ring: enemy.isBoss ? BOSS_RING : threat ? THREAT_RING[threat] : NEUTRAL_RING,
   }
 

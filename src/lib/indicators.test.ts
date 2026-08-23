@@ -265,3 +265,21 @@ describe('hasTips', () => {
     expect(getIndicators('__fixtures__', mob, 'fr').hasTips).toBe(true)
   })
 })
+
+describe('tip scope', () => {
+  it('reports a general tip and collects every scoped pack', () => {
+    const ind = getIndicators('__fixtures__', enemy({ id: 888_020 }))
+    expect(ind.generalTips).toBe(true)
+    expect([...ind.tipPacks].sort((a, b) => a - b)).toEqual([44, 45])
+  })
+
+  it('still reports hasTips, which means any tip at all', () => {
+    expect(getIndicators('__fixtures__', enemy({ id: 888_020 })).hasTips).toBe(true)
+  })
+
+  it('reports neither for a mob with no tips', () => {
+    const ind = getIndicators('__fixtures__', enemy({ id: 270_306 }))
+    expect(ind.generalTips).toBe(false)
+    expect(ind.tipPacks).toEqual([])
+  })
+})
