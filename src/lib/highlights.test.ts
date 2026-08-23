@@ -237,12 +237,18 @@ describe('tips', () => {
   })
 
   it('builds from every mob with tips, not only the ones the shortlist keeps', () => {
-    // 254850 (Sporeblight Belcher) is `threat: high` with a `prio: 1` spell, so it is itself
-    // shortlisted — it is the only mob in this dungeon's real content annotated with tips
-    // today, so there is no second, unshortlisted tipped mob to point at directly. That is a
-    // fact about the content, not a bug: the mechanism is proven instead, by counting the pool
-    // independently of getHighlights and asserting the tips list matches it exactly regardless
-    // of earnsARow.
+    // What this proves: every mob whose content carries tips reaches the list, and none is
+    // dropped or duplicated — counted independently of getHighlights, by walking enemyById and
+    // getMobContent directly rather than reading getHighlights' own mobs/bosses lists.
+    //
+    // What this cannot prove today: 254850 (Sporeblight Belcher) is the only mob in this
+    // dungeon's real content carrying tips, and it is both shortlisted (`threat: high` alone
+    // satisfies earnsARow) and non-boss. So an implementation that gated the push with
+    // `&& hasRow`, or one that pushed only after the `isBoss` branch (excluding bosses), would
+    // produce the same count on this dataset and this test would not catch it. Closing that gap
+    // needs a real card in the differentiating cell — a tipped mob that is a boss, or a tipped
+    // mob the shortlist drops (unrated, or rated below `medium`/non-miniboss) — and there isn't
+    // one yet.
     const slug = 'the-blinding-vale'
     const { tips } = getHighlights(slug)
     const withTips = [...getLookup(slug)!.enemyById.values()].filter(
