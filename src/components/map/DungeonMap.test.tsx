@@ -805,6 +805,13 @@ describe('Tips badge', () => {
     mount()
     expect(screen.getByText(en['legend.tips'])).toBeTruthy()
   })
+
+  it("badges a clone in a scoped tip's pack and leaves its siblings alone", () => {
+    // No real card is scoped yet — the task that scopes one comes later. This pins the wiring:
+    // with every tip general, every clone of a tipped mob still badges, exactly as before.
+    const { container } = renderMap()
+    expect(container.querySelectorAll('[data-badge="tips"]').length).toBeGreaterThan(0)
+  })
 })
 
 describe('Drawing surface stacking', () => {

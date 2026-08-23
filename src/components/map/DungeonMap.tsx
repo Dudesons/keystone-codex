@@ -350,6 +350,7 @@ export default function DungeonMap({
                   slug={slug}
                   cloneId={key}
                   enemy={enemy}
+                  pack={clone.g}
                   x={toPixels(clone.x, clone.y).x}
                   y={toPixels(clone.x, clone.y).y}
                   mark={pullMarks?.get(key)}
@@ -473,6 +474,8 @@ interface BlipProps {
   slug: string
   cloneId: string
   enemy: Enemy
+  /** The clone's pack, so a tip scoped to one pull badges only the blips standing in it. */
+  pack: number | null
   x: number
   y: number
   mark?: PullMark
@@ -490,6 +493,7 @@ function Blip({
   slug,
   cloneId,
   enemy,
+  pack,
   x,
   y,
   mark,
@@ -508,13 +512,18 @@ function Blip({
   const emphasised = isHighlighted || isHovered
 
   // Indicator pips, laid out in an arc above the portrait.
-  const badges: { color: string; glyph: string; title: string }[] = []
-  if (ind.kick) badges.push({ color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
+  const badges: { name: string; color: string; glyph: string; title: string }[] = []
+  if (ind.kick) badges.push({ name: 'kick', color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
   if (ind.frontalSpells.length)
-    badges.push({ color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
-  if (ind.tankBuster) badges.push({ color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
-  if (ind.dispel.length) badges.push({ color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
-  if (ind.hasTips) badges.push({ color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
+    badges.push({ name: 'frontal', color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
+  if (ind.tankBuster)
+    badges.push({ name: 'tank', color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
+  if (ind.dispel.length)
+    badges.push({ name: 'dispel', color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
+  // A general tip is about the mob and shows on every clone; a scoped one shows only where its
+  // pull is. `hasTips` deliberately stays the card's question, not the map's.
+  if (ind.generalTips || (pack != null && ind.tipPacks.includes(pack)))
+    badges.push({ name: 'tips', color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
   const placements = badgeArc(badges.length, { x, y }, r)
 
   return (
@@ -577,7 +586,7 @@ function Blip({
       {badges.map((badge, i) => {
         const { x: bx, y: by, r: br } = placements[i]
         return (
-          <g key={badge.glyph} className="pointer-events-none">
+          <g key={badge.name} data-badge={badge.name} className="pointer-events-none">
             <title>{badge.title}</title>
             <circle cx={bx} cy={by} r={br} fill={badge.color} stroke="#0b0d12" strokeWidth={1.5} />
             <text
