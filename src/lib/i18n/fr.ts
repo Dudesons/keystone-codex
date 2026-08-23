@@ -65,6 +65,7 @@ export const fr: Dictionary = {
 
   // Mob card
   'mob.boss': 'BOSS',
+  'mob.miniboss': 'MINIBOSS',
   'mob.pull': 'Pull {n}',
   'mob.trap': 'LE PIÈGE',
   'mob.ccApplicable': 'CC APPLICABLES',

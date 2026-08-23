@@ -64,6 +64,7 @@ export const en = {
 
   // Mob card
   'mob.boss': 'BOSS',
+  'mob.miniboss': 'MINIBOSS',
   'mob.pull': 'Pull {n}',
   'mob.trap': 'THE TRAP',
   'mob.ccApplicable': 'APPLICABLE CC',
