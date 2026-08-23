@@ -771,7 +771,8 @@ describe('Tips badge', () => {
   // Pinned to the-blinding-vale, like `blipFor` below: the two must stay in lockstep, since
   // `blipFor` resolves ids through `vale` regardless of what a parameterized `renderMap` was
   // given, and every case in this block only ever needs this one dungeon.
-  const renderMap = () => renderEn(<DungeonMap slug={VALE_SLUG} lookup={vale} />)
+  const renderMap = (over: Partial<React.ComponentProps<typeof DungeonMap>> = {}) =>
+    renderEn(<DungeonMap slug={VALE_SLUG} lookup={vale} {...over} />)
 
   /**
    * The blip for a mob's first clone in the-blinding-vale, found by npc id rather than by
@@ -789,10 +790,30 @@ describe('Tips badge', () => {
   // Lasher (245410): no `tips:` key in its card, so it is the negative case below.
   const npcWithoutTips = 245410
 
-  it('marks the blip of a mob whose card has tips', () => {
+  /** The blip for the clone of a mob that stands in one named pack, rather than its first. */
+  const blipInPack = (container: HTMLElement, npcId: number, g: number) => {
+    const enemy = vale.dungeon.enemies.find((e) => e.id === npcId)!
+    const clone = enemy.clones.find((c) => c.g === g)!
+    return container.querySelector(
+      `svg > g[data-clone="${cloneKey(enemy.mdtIdx, clone.mdtIdx)}"]`,
+    ) as HTMLElement
+  }
+
+  it('marks the pull a scoped tip is about', () => {
     const { container } = renderMap()
-    const blip = blipFor(container, 254_850)
-    expect(within(blip).queryByText('?')).not.toBeNull()
+    expect(container.querySelector('[data-badge="tips"][data-pack="44"]')).not.toBeNull()
+  })
+
+  /**
+   * The belcher's video is about taking the pull after the first boss. It is written on its card
+   * because that is where a sentence about a mob lives, but the advice is about the pull — so no
+   * blip carries it, not even the one standing in pack 44.
+   */
+  it('leaves every blip of that mob unmarked, including the one standing in the pull', () => {
+    const { container } = renderMap()
+    for (const g of [44, 80, 73, 12]) {
+      expect(within(blipInPack(container, 254_850, g)).queryByText('?'), `pack ${g}`).toBeNull()
+    }
   })
 
   it('leaves a mob without tips unmarked', () => {
@@ -804,6 +825,20 @@ describe('Tips badge', () => {
   it('gives the legend a row for it', () => {
     mount()
     expect(screen.getByText(en['legend.tips'])).toBeTruthy()
+  })
+
+  it('marks one pull and nothing else in the dungeon', () => {
+    // The Sporeblight Belcher stands in eleven packs, and before `packs:` existed all eleven of
+    // its blips carried the badge. One mark, on the pull the video is about, is the whole point.
+    const { container } = renderMap()
+    expect(container.querySelectorAll('[data-badge="tips"]').length).toBe(1)
+  })
+
+  // The hulls are a visual aid and can be turned off; whether a pull has advice written about it
+  // is information, and does not go away with them.
+  it('marks the pull whether or not the pack outlines are drawn', () => {
+    const { container } = renderMap({ showPackOutlines: false })
+    expect(container.querySelector('[data-badge="tips"][data-pack="44"]')).not.toBeNull()
   })
 })
 

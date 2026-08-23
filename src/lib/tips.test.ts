@@ -118,3 +118,49 @@ describe('parseTips', () => {
     warn.mockRestore()
   })
 })
+
+describe('a tip that names its pull', () => {
+  it('reads a list of pack numbers', () => {
+    const [tip] = parseTips([{ text: 'x', packs: [44, 45] }], 'card')!
+    expect(tip.packs).toEqual([44, 45])
+  })
+
+  // Someone will write the scalar form. Dropping it silently would produce a card that looks
+  // right and a map that behaves as though the key were never there.
+  it('accepts a bare number as a list of one', () => {
+    const [tip] = parseTips([{ text: 'x', packs: 44 }], 'card')!
+    expect(tip.packs).toEqual([44])
+  })
+
+  it('leaves a tip with no packs unscoped', () => {
+    const [tip] = parseTips([{ text: 'x' }], 'card')!
+    expect(tip.packs).toBeUndefined()
+  })
+
+  it('scopes a video and an image too, not only text', () => {
+    const [video] = parseTips([{ video: 'https://youtu.be/9D0gCU8Tp5Y', packs: [44] }], 'card')!
+    const [image] = parseTips([{ image: 'a.webp', packs: [44] }], 'card')!
+    expect(video.packs).toEqual([44])
+    expect(image.packs).toEqual([44])
+  })
+
+  /**
+   * One bad entry unscopes the whole tip rather than narrowing it silently. An unscoped tip is
+   * noisy on the map — a badge on every clone — which is visible; a quietly narrowed one points
+   * at the wrong pull and looks correct doing it.
+   */
+  it('drops the scope, and warns, when any value is not a pack number', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(parseTips([{ text: 'x', packs: [44, 'nope'] }], 'card')![0].packs).toBeUndefined()
+    expect(parseTips([{ text: 'x', packs: [0] }], 'card')![0].packs).toBeUndefined()
+    expect(parseTips([{ text: 'x', packs: [-3] }], 'card')![0].packs).toBeUndefined()
+    expect(parseTips([{ text: 'x', packs: [1.5] }], 'card')![0].packs).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(4)
+    warn.mockRestore()
+  })
+
+  it('leaves an empty list unscoped without complaining', () => {
+    const [tip] = parseTips([{ text: 'x', packs: [] }], 'card')!
+    expect(tip.packs).toBeUndefined()
+  })
+})

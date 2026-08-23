@@ -211,6 +211,32 @@ renders — so if your tip is not showing up, open the console. A missing image 
 the test suite, not by production: `npm test` fails if an `image:` names a file that is not
 there.
 
+### Say which pull a tip is about
+
+A tip with no `packs:` is about the mob, wherever you meet it, and the map marks every one of its
+blips. Most tips are like that. But a tip about *one pull* — where to stand, what to pull it with,
+which corner to fight it in — should say so:
+
+```yaml
+tips:
+  - text: "Pull it into the corridor — the frontal has nowhere to reach the healer."
+    packs: [44]
+```
+
+`packs:` takes the numbers the map's tooltip shows when you hover a mob. Name several when the pull
+takes several groups at once: `packs: [44, 45]`. The map then puts the `?` **on those pulls** rather
+than on any mob — the advice is about taking that group, and the card it is written on is only where
+the sentence lives. The card says which pull, so a reader who followed the mark knows what they
+found.
+
+The Sporeblight Belcher is why this key exists: it stands in eleven packs, and a video about the
+pull after the first boss used to put a `?` on all eleven of its blips.
+
+**A `.fr.md` that restates `tips:` must restate `packs:` too.** The translated list replaces the
+base list whole, so a missing `packs:` there means French readers see the badge on every blip of the
+mob while English readers see it on the pull. A test checks this, along with the pack existing in
+that dungeon and the mob actually standing in it.
+
 ### Translate a card into French
 
 A translation is a sibling file: `254850-sporeblight-belcher.md` gets

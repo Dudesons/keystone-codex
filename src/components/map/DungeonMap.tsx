@@ -2,10 +2,10 @@
 // ABOUTME: Rendering only; the pan, zoom and layout arithmetic lives in viewport.ts.
 
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CloneRef, Enemy, Pack } from '../../lib/types'
 import { cloneKey, getNpcLabel, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'
-import { getIndicators } from '../../lib/indicators'
+import { getIndicators, tippedPacks } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
 import type { Peer } from '../../lib/collab/presence'
@@ -119,6 +119,7 @@ export default function DungeonMap({
   onMoveObject,
   drawing,
 }: Props) {
+  const { locale } = useI18n()
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState<Transform>({ scale: 0.5, tx: 0, ty: 0 })
   const [panning, setPanning] = useState(false)
@@ -134,6 +135,12 @@ export default function DungeonMap({
    * the top-left and centre, and the zoom cluster along the bottom-right.
    */
   const [showLegend, setShowLegend] = useState(true)
+
+  /** The pulls something is written about. Keyed by locale: a translation replaces the tips. */
+  const tipPulls = useMemo(
+    () => tippedPacks(slug, lookup.dungeon.enemies, locale),
+    [slug, lookup, locale],
+  )
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
 
@@ -381,6 +388,14 @@ export default function DungeonMap({
             }),
           )}
 
+          {/* Over the blips, and drawn whether or not the hulls are: a pull with advice written
+              about it is information, not part of the outline's decoration. */}
+          {[...lookup.packs.values()]
+            .filter((pack) => tipPulls.has(pack.g))
+            .map((pack) => (
+              <PackTipsMark key={`tips-${pack.g}`} pack={pack} />
+            ))}
+
           {/* Pull numbers at the centre of their outline, as in MDT. */}
           {pullShapes?.map((shape) => (
             <g key={`num-${shape.index}`} className="pointer-events-none">
@@ -469,6 +484,35 @@ function PackOutline({ pack, active, hovered }: { pack: Pack; active: boolean; h
   )
 }
 
+/**
+ * A pull with something written about it.
+ *
+ * On the pack rather than on a blip: a tip naming `packs:` is advice about taking this group of
+ * mobs, and the card it is written on is only where the sentence lives. It sits above the hull
+ * rather than at its centre, which is where the blips are.
+ */
+function PackTipsMark({ pack }: { pack: Pack }) {
+  const { t } = useI18n()
+  const y = Math.min(...pack.hull.map((p) => p.y)) - 12
+  return (
+    <g data-badge="tips" data-pack={pack.g} className="pointer-events-none">
+      <title>{t('map.badgeTipsPull', { g: pack.g })}</title>
+      <circle cx={pack.center.x} cy={y} r={11} fill="#e0b552" stroke="#0b0d12" strokeWidth={2} />
+      <text
+        x={pack.center.x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={15}
+        fontWeight={700}
+        fill="#0b0d12"
+      >
+        ?
+      </text>
+    </g>
+  )
+}
+
 interface BlipProps {
   slug: string
   cloneId: string
@@ -508,13 +552,19 @@ function Blip({
   const emphasised = isHighlighted || isHovered
 
   // Indicator pips, laid out in an arc above the portrait.
-  const badges: { color: string; glyph: string; title: string }[] = []
-  if (ind.kick) badges.push({ color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
+  const badges: { name: string; color: string; glyph: string; title: string }[] = []
+  if (ind.kick) badges.push({ name: 'kick', color: '#d64550', glyph: 'K', title: t('map.badgeKick') })
   if (ind.frontalSpells.length)
-    badges.push({ color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
-  if (ind.tankBuster) badges.push({ color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
-  if (ind.dispel.length) badges.push({ color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
-  if (ind.hasTips) badges.push({ color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
+    badges.push({ name: 'frontal', color: '#cf6fa0', glyph: 'F', title: t('map.badgeFrontal') })
+  if (ind.tankBuster)
+    badges.push({ name: 'tank', color: '#4a90c2', glyph: 'T', title: t('map.badgeTank') })
+  if (ind.dispel.length)
+    badges.push({ name: 'dispel', color: '#7f6fd0', glyph: 'D', title: t('map.badgeDispel') })
+  // Only a general tip: that one is about the mob, so it belongs on the mob. A scoped tip is
+  // about the pull and is marked on the pack instead — see `PackTipsMark`. `hasTips` stays the
+  // card's question, which is neither of these.
+  if (ind.generalTips)
+    badges.push({ name: 'tips', color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
   const placements = badgeArc(badges.length, { x, y }, r)
 
   return (
@@ -577,7 +627,7 @@ function Blip({
       {badges.map((badge, i) => {
         const { x: bx, y: by, r: br } = placements[i]
         return (
-          <g key={badge.glyph} className="pointer-events-none">
+          <g key={badge.name} data-badge={badge.name} className="pointer-events-none">
             <title>{badge.title}</title>
             <circle cx={bx} cy={by} r={br} fill={badge.color} stroke="#0b0d12" strokeWidth={1.5} />
             <text

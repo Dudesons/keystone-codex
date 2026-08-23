@@ -67,6 +67,7 @@ export default function MobTips({
         {/* The index is the key: the list is replaced whole by a translation, never reordered. */}
         {tips.map((tip, i) => (
           <li key={i}>
+            {tip.packs?.length ? <PackChip packs={tip.packs} /> : null}
             {tip.kind === 'text' && (
               <p
                 className="text-xs leading-snug text-ink-300"
@@ -154,5 +155,20 @@ function VideoTip({ tip }: { tip: Extract<Tip, { kind: 'video' }> }) {
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Which pull a tip is about.
+ *
+ * It sits on the row rather than in the section heading because one card's tips can be about
+ * different pulls — a mob standing in eleven packs can earn a sentence about two of them.
+ */
+function PackChip({ packs }: { packs: number[] }) {
+  const { t } = useI18n()
+  return (
+    <span className="mb-1 inline-block rounded border border-ink-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-400">
+      {packs.length === 1 ? t('tip.pack', { g: packs[0] }) : t('tip.packs', { list: packs.join(' + ') })}
+    </span>
   )
 }

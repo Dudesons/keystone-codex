@@ -13,10 +13,15 @@
  * `public/tips/<dungeon>/`, so the field cannot address a host we do not control.
  */
 
+/** Which pull a tip is about. Absent means the mob, wherever it stands. */
+interface Scope {
+  packs?: number[]
+}
+
 export type Tip =
-  | { kind: 'text'; text: string }
-  | { kind: 'video'; videoId: string; start?: number; portrait: boolean; label?: string }
-  | { kind: 'image'; file: string; label?: string }
+  | ({ kind: 'text'; text: string } & Scope)
+  | ({ kind: 'video'; videoId: string; start?: number; portrait: boolean; label?: string } & Scope)
+  | ({ kind: 'image'; file: string; label?: string } & Scope)
 
 export interface Video {
   videoId: string
@@ -103,6 +108,24 @@ export const tipsSectionId = (npcId: number) => `tips-${npcId}`
 
 const KINDS = ['text', 'video', 'image'] as const
 
+/**
+ * `packs: 44` and `packs: [44, 45]` both mean a list of pack ids.
+ *
+ * A single bad value unscopes the entry rather than narrowing it: a tip that badges every clone
+ * is merely noisy, and noise is visible. One that badges the wrong pull is wrong and looks right.
+ */
+function parsePacks(raw: unknown, where: string): number[] | undefined {
+  if (raw == null) return undefined
+  const list = Array.isArray(raw) ? raw : [raw]
+  if (!list.length) return undefined
+  const packs = list.filter((g) => Number.isInteger(g) && (g as number) > 0) as number[]
+  if (packs.length !== list.length) {
+    console.warn(`${where}: \`packs:\` takes pack numbers, tip left unscoped`)
+    return undefined
+  }
+  return packs
+}
+
 function parseTip(raw: unknown, where: string): Tip | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     console.warn(`${where}: a tip must be a mapping, entry ignored`)
@@ -118,10 +141,14 @@ function parseTip(raw: unknown, where: string): Tip | null {
   const kind = named[0]
   const value = (entry[kind] as string).trim()
   const label = typeof entry.label === 'string' && entry.label.trim() ? entry.label.trim() : undefined
+  const packs = parsePacks(entry.packs, where)
+  // Spread rather than assigned, so "no packs" stays an absent key rather than an explicit
+  // undefined — the same shape `label` already keeps.
+  const scope = packs ? { packs } : {}
 
   if (kind === 'text') {
     if (label) console.warn(`${where}: a text tip's label is ignored, entry unaffected`)
-    return { kind: 'text', text: value }
+    return { kind: 'text', text: value, ...scope }
   }
 
   if (kind === 'video') {
@@ -130,14 +157,18 @@ function parseTip(raw: unknown, where: string): Tip | null {
       console.warn(`${where}: not a YouTube video URL: ${value}, entry ignored`)
       return null
     }
-    return label ? { kind: 'video', ...video, label } : { kind: 'video', ...video }
+    return label
+      ? { kind: 'video', ...video, label, ...scope }
+      : { kind: 'video', ...video, ...scope }
   }
 
   if (!IMAGE_FILE.test(value)) {
     console.warn(`${where}: an image tip must be a bare filename under public/tips/: ${value}, entry ignored`)
     return null
   }
-  return label ? { kind: 'image', file: value, label } : { kind: 'image', file: value }
+  return label
+    ? { kind: 'image', file: value, label, ...scope }
+    : { kind: 'image', file: value, ...scope }
 }
 
 /** The whole list. Returns undefined rather than an empty array, so "no tips" has one shape. */

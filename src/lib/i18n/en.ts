@@ -78,6 +78,8 @@ export const en = {
   'tip.collapse': 'Fold the video away',
   'tip.openOnYouTube': 'Open on YouTube',
   'tip.jump': 'Has tips — jump to them',
+  'tip.pack': 'Pack {g}',
+  'tip.packs': 'Packs {list}',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',
@@ -118,6 +120,7 @@ export const en = {
   'map.badgeTank': 'Tank buster',
   'map.badgeDispel': 'Dispel',
   'map.badgeTips': 'Has tips',
+  'map.badgeTipsPull': 'Something written about pull {g}',
   'map.item': 'usable item',
   'map.dungeonEntrance': 'Dungeon entrance',
   'map.note': 'note',
@@ -151,7 +154,7 @@ export const en = {
   'legend.frontal': 'Frontal cone (declared in the card)',
   'legend.tank': 'Tank buster (declared in the card)',
   'legend.dispel': 'Dispellable spell (from MDT)',
-  'legend.tips': 'Something written about this mob',
+  'legend.tips': 'Something written about this mob, or this pull',
   'legend.ring.lethal': 'Lethal threat',
   'legend.ring.high': 'Dangerous',
   'legend.ring.medium': 'Watch out',

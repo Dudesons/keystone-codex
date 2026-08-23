@@ -201,3 +201,24 @@ describe('Folding a video away again', () => {
     expect(container.querySelector('iframe')).not.toBeNull()
   })
 })
+
+describe('The chip that names the pull', () => {
+  it('names the pull a scoped tip is about', () => {
+    renderEn(
+      <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44] }]} />,
+    )
+    expect(screen.getByText('Pack 44')).toBeTruthy()
+  })
+
+  it('joins a combined pull with a plus, so it reads as one pull of two groups', () => {
+    renderEn(
+      <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44, 45] }]} />,
+    )
+    expect(screen.getByText('Packs 44 + 45')).toBeTruthy()
+  })
+
+  it('says nothing about a pull for a general tip', () => {
+    renderEn(<MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x' }]} />)
+    expect(screen.queryByText(/^Pack/)).toBeNull()
+  })
+})

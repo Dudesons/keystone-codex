@@ -219,6 +219,32 @@ de la fiche s'affiche quand même — donc si votre astuce n'apparaît pas, ouvr
 fichier image manquant, lui, est attrapé par les tests et non par la production : `npm test`
 échoue si un `image:` nomme un fichier qui n'est pas là.
 
+### Dire de quel pull parle une astuce
+
+Une astuce sans `packs:` parle du mob, où qu'on le croise, et la carte marque chacun de ses points.
+La plupart des astuces sont comme ça. Mais une astuce qui parle d'*un pull* — où se placer, avec
+quoi l'enchaîner, dans quel coin le combattre — devrait le dire :
+
+```yaml
+tips:
+  - text: "Tirez-le dans le couloir — le frontal n'a nulle part où atteindre le soigneur."
+    packs: [44]
+```
+
+`packs:` prend les numéros que l'infobulle de la carte affiche au survol d'un mob. Nommez-en
+plusieurs quand le pull prend plusieurs groupes à la fois : `packs: [44, 45]`. La carte pose alors
+le `?` **sur ces pulls** et non sur un mob : le conseil porte sur la façon de prendre ce groupe, et
+la fiche qui le porte n'est que l'endroit où la phrase est écrite. La fiche dit de quel pull il
+s'agit, pour que celui qui a suivi la marque sache ce qu'il a trouvé.
+
+Le Rejeteur de spores est la raison d'être de cette clé : il se tient dans onze packs, et une vidéo
+sur le pull d'après le premier boss posait un `?` sur ses onze points.
+
+**Un `.fr.md` qui reprend `tips:` doit reprendre `packs:` aussi.** La liste traduite remplace la
+liste de base en entier : un `packs:` oublié, et les lecteurs francophones voient le badge sur tous
+les points du mob là où les anglophones le voient sur le pull. Un test le vérifie, en même temps que
+l'existence du pack dans ce donjon et la présence du mob dedans.
+
 ### Traduire une fiche en français
 
 Une traduction est un fichier voisin : `254850-sporeblight-belcher.md` reçoit
