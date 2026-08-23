@@ -45,7 +45,9 @@ function MobRow({ slug, mob }: { slug: string; mob: HighlightMob }) {
             {mob.name}
           </Link>
           <ThreatBadge threat={mob.threat} />
-          {mob.role === 'miniboss' && (
+          {/* Either spelling: thirty cards still say `role: miniboss`, and the task that
+              migrates them is what removes the second clause. */}
+          {(mob.rank === 'miniboss' || mob.role === 'miniboss') && (
             <span className="rounded border border-gold-500/40 bg-gold-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-gold-400">
               {t('role.miniboss')}
             </span>

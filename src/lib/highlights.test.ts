@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
+import { getIndicators } from './indicators'
 import { getMobContent } from './content'
 
 /**
@@ -255,5 +256,37 @@ describe('tips', () => {
       (e) => (getMobContent(slug, e.id)?.tips?.length ?? 0) > 0,
     )
     expect(tips.length).toBe(withTips.length)
+  })
+})
+
+describe('Rank on a row', () => {
+  /**
+   * `'rank' in row` rather than a value: no card declares a rank yet, so every row's would be
+   * `undefined` either way and an assertion on the value would pass before the field existed.
+   * What this pins is that the row carries it at all. The assertion with a value in it lands
+   * with the content that makes one, in the task that migrates the cards.
+   */
+  it('puts the rank on a row so the table can mark it in place', () => {
+    const rows = getHighlights(ALTAR).mobs
+    expect(rows.length).toBeGreaterThan(0)
+    for (const row of rows) expect('rank' in row, String(row.npcId)).toBe(true)
+  })
+
+  it('never lets a boss reach the mob rows, whichever source said so', () => {
+    // The boss branch runs first and continues, so a rank found among the rows can only ever
+    // be a miniboss. That is what lets `MobTable` mark one in place instead of filtering.
+    for (const row of getHighlights(ALTAR).mobs) {
+      expect(row.rank, String(row.npcId)).not.toBe('boss')
+    }
+  })
+
+  it('builds the boss strip from the same derivation the codex uses', () => {
+    const strip = getHighlights(ALTAR).bosses.map((b) => b.npcId).sort()
+    const byRank = getLookup(ALTAR)!
+      .dungeon.enemies.filter((e) => getIndicators(ALTAR, e).rank === 'boss')
+      .map((e) => e.id)
+      .sort()
+    expect(strip.length).toBeGreaterThan(0)
+    expect(strip).toEqual(byRank)
   })
 })
