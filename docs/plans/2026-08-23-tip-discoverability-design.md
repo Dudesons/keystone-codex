@@ -81,8 +81,8 @@ which costs nothing — they were going to the card anyway.
 
 ### 6. The Overview gets its own section, not inline rows
 
-`getHighlights` gains `tips: HighlightTip[]` — `{ npcId, mobName, tips, fallback }` — rendered
-by a `TipList` component in a fourth section of `HighlightsPage`, built like `TrapList`.
+`getHighlights` gains `tips: HighlightTip[]` — `{ npcId, mobName, threat, tips, fallback }` —
+rendered by a `TipList` component in a fourth section of `HighlightsPage`, built like `TrapList`.
 
 Inline placement on existing rows was refused for a reason the page already demonstrates: the
 mob table holds only non-boss mobs with a `prio: 1` spell that also clear `earnsARow`. A tip on
@@ -119,7 +119,7 @@ clicked, which is the whole point.
 | `src/components/highlights/TipList.tsx` | **new.** Mounts `MobTips` per mob. |
 | `src/components/highlights/TipList.test.tsx` | **new.** Renders; no iframe before the click. |
 | `src/routes/HighlightsPage.tsx` | The fourth section. |
-| `src/lib/i18n/*` | `map.badgeTips`, `legend.tips`, `highlights.tips`, `mob.jumpToTips`, both dictionaries. |
+| `src/lib/i18n/*` | `map.badgeTips`, `legend.tips`, `highlights.tips`, `tip.jump`, both dictionaries. |
 | `e2e/tips.spec.ts` | The map badge, and the Overview player making no request before the click. |
 
 ## Testing

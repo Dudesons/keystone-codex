@@ -1,5 +1,5 @@
-// ABOUTME: The small coloured badges of a mob card: threat, spell tag, CC and dispel types.
-// ABOUTME: CC and dispel come straight from MDT; threat and tag come from the written entry.
+// ABOUTME: The small coloured badges of a mob card: threat, spell tag, CC and dispel types,
+// ABOUTME: plus the base-language mark and the tips-jump control, a navigation button, not a badge.
 
 import type { Threat, SpellTag } from '../../lib/content'
 import { useI18n } from '../../lib/i18n/context'
