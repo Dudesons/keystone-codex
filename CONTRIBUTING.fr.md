@@ -164,7 +164,7 @@ apparaîtra.
 
 `threat` ne répond pas à « le chiffre est-il gros », mais à « ce mob change-t-il le pull ».
 L'échelle, les trois règles qui en découlent et deux exemples travaillés vivent dans
-[`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
+[`docs/writing-cards.fr.md`](docs/writing-cards.fr.md#léchelle-de-menace)
 — **lisez-le avant d'évaluer.** Il dit aussi quand laisser le champ vide plutôt que de le
 remplir, et quels mobs ne portent pas de `threat` du tout.
 
@@ -330,7 +330,7 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
   porter : une infobulle qui ne donne aucun rayon, un chiffre non mis à l'échelle, deux sources
   qui se contredisent, quelque chose que vous ne savez que pour l'avoir joué. Tous ces cas sont
   traités dans
-  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  [`docs/writing-cards.fr.md`](docs/writing-cards.fr.md#ce-qui-peut-être-écrit).
   Lisez-le avant d'écrire une phrase que la fiche ne peut pas sourcer.
 - **Ne recopiez pas le guide de quelqu'un d'autre.** Un écrit de route, un script de vidéo, une
   page de wiki : mettez-le en lien comme astuce, avec son nom dans le label. Recopier du texte

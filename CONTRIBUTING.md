@@ -157,7 +157,7 @@ mob shows up on its card and nowhere else — rate the mob and it appears.
 
 `threat` is not "how big is the number", it is how much of the pull this mob changes. The scale,
 the three rules that follow from it and two worked examples live in
-[`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
+[`docs/writing-cards.md`](docs/writing-cards.md#the-threat-scale)
 — **read it before rating.** It also tells you when to leave the field empty instead of filling
 it, and which mobs carry no `threat` at all.
 
@@ -318,7 +318,7 @@ are somebody's separate pull request.
   figure,
   two sources that disagree, something you know only from having played it. All of them are
   answered in
-  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  [`docs/writing-cards.md`](docs/writing-cards.md#what-may-be-written-at-all).
   Read it before writing a sentence the card cannot source.
 - **Do not paste someone else's guide.** A route write-up, a video script, a wiki page — link it
   as a tip with their name in the label. Mirroring text into this repository is both a licensing
