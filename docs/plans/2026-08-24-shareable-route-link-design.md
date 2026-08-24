@@ -36,18 +36,34 @@ works offline from a text file.
 
 ### 2. Long routes are named as a limit, not hidden
 
-Measured from the repository's own fixtures:
+Measured, and the spread is the point — **both committed fixtures happen to carry drawn objects,
+so reading only those overstates the problem badly.** A route of pulls alone, built from the real
+pack data:
 
-| Route | MDT string | URL-encoded | Full link |
+| Route | MDT string | Full link |
+| --- | --- | --- |
+| 5 pulls, 23 clones | 271 | **370** |
+| 10 pulls, 35 clones | 315 | **418** |
+| 20 pulls, 68 clones | 411 | **526** |
+| 30 pulls, 107 clones | 507 | **612** |
+
+Thirty pulls is more than any dungeon in the pool needs, and its link fits in a tweet. **The
+ordinary case is nowhere near a limit.** What overflows is drawing:
+
+| Fixture | Objects | MDT string | Full link |
 | --- | --- | --- | --- |
-| `real-export.txt` — five notes | 963 | 1013 | ~1092 |
-| `real-export-strokes.txt` — notes, strokes, two arrows | 1931 | 2037 | ~2116 |
+| `real-export.txt` — five notes | 5 | 963 | ~1092 |
+| `real-export-strokes.txt` — notes, strokes, two arrows | 11 | 1931 | ~2116 |
 
 URL overhead is 79 characters at the season's longest slug
 (`https://dudesons.github.io/keystone-codex/` plus `#/d/temple-of-sethraliss/route?route=`).
 
 Browsers are not the constraint — Discord is, at **2000 characters per message**, and Discord is
 where these get posted. So a heavily drawn route produces a link that will not paste.
+
+This is therefore an **edge, not a headline**: the feature's ordinary output is a 400–600 character
+link, and only a route somebody has drawn all over reaches the ceiling. It is worth handling and not
+worth designing around.
 
 **The link is always copied, and when it exceeds 1900 characters the app says so and names the
 collaboration room as the way to share that route instead.** The room has no length limit and
@@ -98,25 +114,26 @@ Beside the existing session controls in `RoutePanel`, as a third way of handing 
 the MDT string (for MDT users), open a session (to work together), copy a link (to just send it).
 Grouping them is what makes the choice between them legible.
 
-### 7. The payload's dungeon must match the address's
+### 7. The payload's dungeon is already checked, and the link inherits it
 
-`importRoute` does **not** check this today, and the check belongs here rather than nowhere.
+**This section used to describe a check the link would perform itself. It no longer needs one.**
 
-`luaToRoute` reads `currentDungeonIdx` out of the payload and resolves a slug from it, throwing
-`notInPool` only when that index names no dungeon in the season pool
-(`src/lib/mdt/route.ts:73-75`). It never compares the result against the document it is being
-imported into. A Temple of Sethraliss route applied to Altar of Fangs' page therefore writes Temple's
-pulls into Altar's document, where every clone reference means a different mob — a route that looks
-populated and is nonsense.
+The first draft claimed `importRoute` did not compare the payload's dungeon against the document's.
+That was wrong: `RoutePanel` did compare them — it just did so *after* calling `importRoute`, which
+had already replaced the document. The reader got an error message and a route rebuilt out of
+references to different mobs, so the case looked handled while being exactly the thing it warned
+about.
 
-A share link is the first mechanism that puts a payload and a slug into one string, so it is the
-first place they can disagree: hand-editing the slug in a copied URL is enough. **On arrival, the
-payload's `currentDungeonIdx` is compared to the address's slug, and a mismatch is refused with a
-message rather than applied.**
+That is fixed in [PR #23](https://github.com/Dudesons/keystone-codex/pull/23), which moves the
+comparison into `importRoute` ahead of the transaction and raises `MdtUserError('wrongDungeon')`.
 
-> **Pre-existing, and out of scope:** the paste box has the same gap — pasting dungeon A's string into
-> dungeon B's panel is accepted today. This design does not change that path; it is worth its own
-> issue, and this section is the description to open it with.
+**A share link therefore needs no dungeon check of its own.** Accepting one calls `importRoute` like
+any other import, and a payload for another dungeon is refused before anything is written, with a
+message naming the dungeon it was actually for. Hand-editing the slug in a copied URL — the only way
+a link's payload and address can disagree — lands on that same refusal.
+
+This is the argument for having fixed it there rather than here: a guard in the link path would have
+left one mistake behaving two different ways depending on how it arrived.
 
 ### 8. What the link cannot carry
 
@@ -155,8 +172,10 @@ with no warning.
 calls `importRoute` with the payload and clears the parameter; declining leaves the parameter and
 shows no card; a reload after declining offers again; `?room=` and `?route=` together show only the
 room invitation; a malformed payload reports the same error a bad paste does rather than throwing;
-**a payload for another dungeon is refused rather than applied** (decision 7) — built by taking a
-real fixture and pointing the address at a different slug, so the test exercises a genuine string.
+**a payload for another dungeon reports that, and leaves the route alone** — built by taking a real
+fixture and pointing the address at a different slug, so the test exercises a genuine string. That
+last one asserts the inherited behaviour from decision 7 rather than anything this feature adds, and
+is worth keeping for exactly that reason: it is the test that would notice the guard being moved.
 
 **E2E** — `e2e/share.spec.ts`: build a route in one browser, copy the link, open it in a second
 context, accept, and see the same pulls — the one test that proves the sub-path, the encoding and the

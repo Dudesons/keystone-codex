@@ -44,7 +44,7 @@ Playwright. **No new dependency.**
 | `handleImport` / `errorText` | `src/components/route/RoutePanel.tsx:141`, `:84` | The error handling to reuse. Only `MdtUserError` is translated; other codec errors are diagnostics shown verbatim. |
 | The room invitation | `src/components/route/RoutePanel.tsx:~554` | Written inline, not as a component. The route offer goes beside it. |
 | The `?room=` arrival flow | `src/routes/DungeonPage.tsx:42-63` | The precedent: `declined` holds the specific value refused, and the codex address redirects to the route one keeping the parameter. |
-| `luaToRoute` | `src/lib/mdt/route.ts:73-75` | Resolves the slug from `currentDungeonIdx`; throws `MdtUserError('notInPool')` only for a dungeon outside the pool. This is why Task 3 exists. |
+| `importRoute`'s dungeon guard | `src/lib/mdt/useRouteDoc.ts` (PR #23) | Refuses a payload whose dungeon is not the document's, **before** the transaction, raising `MdtUserError('wrongDungeon')`. The link inherits this and adds no check of its own. |
 | Its tests | `src/routes/DungeonPage.test.tsx:167-225`, `src/components/route/RoutePanel.test.tsx:689-710` | The shape the new tests should match. |
 
 ---
@@ -77,7 +77,6 @@ Playwright. **No new dependency.**
   'route.routeOffer': 'This link carries a route. Loading it replaces the one you have.',
   'route.acceptRoute': 'Load this route',
   'route.declineRoute': 'Keep mine',
-  'route.routeWrongDungeon': 'That link’s route is for another dungeon.',
 ```
 
 `src/lib/i18n/fr.ts`, at the matching position:
@@ -90,7 +89,6 @@ Playwright. **No new dependency.**
   'route.routeOffer': 'Ce lien contient une route. La charger remplacera la vôtre.',
   'route.acceptRoute': 'Charger cette route',
   'route.declineRoute': 'Garder la mienne',
-  'route.routeWrongDungeon': 'La route de ce lien concerne un autre donjon.',
 ```
 
 - [ ] **Step 2: Write the failing tests**
@@ -255,10 +253,8 @@ git commit -m "Copy a route as a link, and say when it is too long to post"
 - Consumes: `routeLink` and `LINK_LIMIT` from Task 1; `actions.importRoute` from `useRouteDoc`.
 - Produces: `RoutePanel` gains three props, all optional so its existing tests keep compiling:
   ```ts
-  /** The route a link carries. Null when the address carries none, or it is for another dungeon. */
+  /** The route a link carries. Null when the address carries none. */
   pendingRoute?: string | null
-  /** True when a route was offered but belongs to a different dungeon. */
-  routeWrongDungeon?: boolean
   /** Called only after a successful import, so the page can drop the parameter. */
   onRouteLoaded?: () => void
   onDeclineRoute?: () => void
@@ -391,40 +387,23 @@ this page decides *whether* a route is on offer, and the panel performs it and r
 same way a bad paste does. That is why the callback above is `routeLoaded` (a notification) rather
 than `acceptRoute` (a command).
 
-- [ ] **Step 4: Add the dungeon check**
-
-The payload names its own dungeon and the address names another. Decide the mismatch **before**
-offering, so a refused link never shows an accept button:
+Pass to `RoutePanel`:
 
 ```tsx
-  // `luaToRoute` resolves a slug from the payload's `currentDungeonIdx` and only rejects a
-  // dungeon outside the season pool — it never compares that against the document being
-  // imported into. A link is the first thing to carry a payload and a slug together, so it is
-  // the first place they can disagree.
-  const routeForThisDungeon = useMemo(() => {
-    if (!pendingRoute) return true
-    try {
-      return luaToRoute(decodeMdtString(pendingRoute).table).slug === slug
-    } catch {
-      // A payload that will not decode is not a dungeon mismatch; let `acceptRoute` report the
-      // codec's own error, which says something useful.
-      return true
-    }
-  }, [pendingRoute, slug])
-```
-
-and pass to `RoutePanel`:
-
-```tsx
-  pendingRoute={routeForThisDungeon ? pendingRoute : null}
-  routeWrongDungeon={Boolean(pendingRoute) && !routeForThisDungeon}
+  pendingRoute={pendingRoute}
   onRouteLoaded={routeLoaded}
   onDeclineRoute={declineRoute}
 ```
 
-Import `luaToRoute` from `../lib/mdt/route` and `decodeMdtString` from `../lib/mdt/string`.
+> **There is deliberately no dungeon check here.** An earlier draft of this plan had a step that
+> decoded the payload to compare its dungeon against the address's. That step is gone:
+> [PR #23](https://github.com/Dudesons/keystone-codex/pull/23) moved the comparison into
+> `importRoute`, ahead of the transaction, so accepting a link for another dungeon raises
+> `MdtUserError('wrongDungeon')` and the panel translates it like any other import failure —
+> before anything is written. Adding a second check here would leave one mistake behaving two
+> different ways depending on how it arrived.
 
-- [ ] **Step 5: Add the card to `RoutePanel`**
+- [ ] **Step 4: Add the card to `RoutePanel`**
 
 Beside the room invitation (around line 554), in the same section, so the two read as one family:
 
@@ -469,14 +448,13 @@ and the card itself:
           </div>
         </div>
       )}
-      {routeWrongDungeon && (
-        <p className="mb-2 rounded border border-threat-lethal/40 bg-threat-lethal/5 p-2 text-[11px] text-ink-300">
-          {t('route.routeWrongDungeon')}
-        </p>
-      )}
 ```
 
-- [ ] **Step 6: Run the tests to verify they pass**
+A wrong-dungeon link needs nothing here: `handleAcceptRoute` calls `importRoute`, which refuses it
+and lands in the `catch` above, where `errorText` translates `mdtError.wrongDungeon` into a sentence
+naming the dungeon the route was for.
+
+- [ ] **Step 5: Run the tests to verify they pass**
 
 ```bash
 npx vitest run --project app src/routes/DungeonPage.test.tsx src/components/route/RoutePanel.test.tsx
@@ -486,7 +464,7 @@ npm run typecheck
 
 Expected: all clean. `RoutePanel`'s new props are optional, so its existing tests keep compiling.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/routes/DungeonPage.tsx src/components/route/RoutePanel.tsx src/routes/DungeonPage.test.tsx
@@ -595,9 +573,8 @@ git commit -m "Prove a route link survives into a second browser"
       warning names the length and points at the session
 - [ ] By hand: edit the slug in a copied link to another dungeon and confirm it refuses
 
-## Follow-up to raise separately, not here
+## Depends on
 
-`importRoute` does not check that a pasted string's dungeon matches the document's — pasting dungeon
-A's MDT string into dungeon B's panel is accepted today and writes pulls whose clone references mean
-different mobs. Task 2 fixes this **for the link path only**, deliberately. Open an issue for the
-paste path, using decision 7 of the design as its description.
+[PR #23](https://github.com/Dudesons/keystone-codex/pull/23) — the dungeon guard in `importRoute`.
+Cut this branch after it lands. Without it, accepting a link for another dungeon would replace the
+document and *then* complain, which is the behaviour that PR exists to remove.
