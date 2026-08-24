@@ -1,0 +1,36 @@
+name: A mob has no card, and I cannot generate one
+description: Ask for the scaffold to be run, when you are editing in the browser and cannot run it yourself.
+title: "Scaffold: "
+labels: ["scaffold"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cards are generated from the extracted data by `npm run scaffold`, with the id, the name,
+        the forces and the whole spell list already filled in. If you have a clone, run it
+        yourself — it needs no WoW installation and never overwrites an existing file.
+
+        This form is for the browser path, where you cannot. **Please do not hand-write the
+        frontmatter instead:** an invented `npcId` or spell id attaches the card to nothing.
+
+        **Write in whichever language you prefer, French or English.**
+  - type: input
+    id: dungeon
+    attributes:
+      label: Dungeon
+      description: The name, or the slug from the URL (`/d/<slug>`).
+    validations:
+      required: true
+  - type: textarea
+    id: mobs
+    attributes:
+      label: Which mobs
+      description: One per line. Names are enough; ids are welcome if you have them.
+    validations:
+      required: true
+  - type: checkboxes
+    id: intent
+    attributes:
+      label: Are you going to write it?
+      options:
+        - label: I intend to write the card once the file exists.

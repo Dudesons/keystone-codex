@@ -34,8 +34,8 @@ changer une ne change rien à l'écran.
 
 **Un nom de sort faux, un temps d'incantation faux ou un sort manquant sont un problème de
 données, pas un problème de fiche.** Aucune modification dans `content/` ne peut les corriger,
-donc n'essayez pas : [ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues) à la
-place.
+donc n'essayez pas :
+[ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) à la place.
 
 ## Deux façons de modifier
 
@@ -306,9 +306,9 @@ viennent de MDT. Les deux sont réécrits en bloc par `npm run data` : une corre
 survit donc exactement jusqu'à la prochaine extraction — et, entre-temps, elle met la fiche en
 désaccord avec le jeu.
 
-[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues) en nommant le donjon, le
-mob et ce qui est faux. Le correctif est soit une nouvelle extraction, soit une modification des
-scripts, et les deux sont la pull request de quelqu'un d'autre.
+[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) en nommant le
+donjon, le mob et ce qui est faux. Le correctif est soit une nouvelle extraction, soit une
+modification des scripts, et les deux sont la pull request de quelqu'un d'autre.
 
 ## Avant d'ouvrir une pull request
 
@@ -349,9 +349,13 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
 
 ## Où poser une question
 
-[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues). Une question sur un mob
-est une aussi bonne raison qu'un bug : si une fiche est assez floue pour qu'on pose la question,
-elle l'est assez pour être corrigée.
+[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose). Une question sur
+un mob est une aussi bonne raison qu'un bug : si une fiche est assez floue pour qu'on pose la
+question, elle l'est assez pour être corrigée.
+
+Si ce que vous avez trouvé est une fiche qui arrive à faire exécuter du script, et non une fiche
+qui se trompe, lisez d'abord [`.github/SECURITY.md`](.github/SECURITY.md) : il dit quoi mettre
+dans le rapport, et quoi en laisser dehors.
 
 La référence sur l'application elle-même — comment lire la carte, les routes, comment les données
 sont régénérées — est dans [README.md](README.md).

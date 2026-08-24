@@ -31,7 +31,7 @@ none of them, and changing one changes nothing on screen.
 
 **A wrong spell name, a wrong cast time or a missing spell is a data problem, not a card
 problem.** No edit to `content/` can fix it, so do not try: [open an
-issue](https://github.com/Dudesons/keystone-codex/issues) instead.
+issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) instead.
 
 ## Two ways to edit
 
@@ -295,9 +295,9 @@ Wowhead; mob names, forces and applicable CC come from MDT. Both are rewritten w
 `npm run data`, so an edit by hand survives exactly until the next extraction — and in the
 meantime it makes the card disagree with the game.
 
-[Open an issue](https://github.com/Dudesons/keystone-codex/issues) naming the dungeon, the mob
-and what is wrong. The fix is either an extraction re-run or a change to the scripts, and both
-are somebody's separate pull request.
+[Open an issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) naming the dungeon,
+the mob and what is wrong. The fix is either an extraction re-run or a change to the scripts, and
+both are somebody's separate pull request.
 
 ## Before you open a pull request
 
@@ -335,8 +335,13 @@ are somebody's separate pull request.
 
 ## Where to ask
 
-[Open an issue](https://github.com/Dudesons/keystone-codex/issues). A question about a mob is as
-good a reason as a bug — if a card is unclear enough to ask about, it is unclear enough to fix.
+[Open an issue](https://github.com/Dudesons/keystone-codex/issues/new/choose). A question about a
+mob is as good a reason as a bug — if a card is unclear enough to ask about, it is unclear enough
+to fix.
+
+If what you found is a card that gets script to run rather than a card that is wrong, read
+[`.github/SECURITY.md`](.github/SECURITY.md) first — it says what to include and what to leave
+out.
 
 The reference for the app itself — how to read the map, the routes, how the data is regenerated
 — is in [README.md](README.md).

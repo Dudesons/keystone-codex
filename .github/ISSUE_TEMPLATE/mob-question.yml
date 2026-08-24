@@ -1,0 +1,31 @@
+name: A card is unclear, or I have a question about a mob
+description: Ask about a pull, a spell or a rating. A question is as good a reason as a bug.
+title: "Question: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If a card is unclear enough to ask about, it is unclear enough to fix — so this form is a
+        way of reporting that the writing did not land, not an imposition.
+
+        **Write in whichever language you prefer, French or English.**
+  - type: input
+    id: dungeon
+    attributes:
+      label: Dungeon
+      description: The name, or the slug from the URL (`/d/<slug>`).
+    validations:
+      required: true
+  - type: input
+    id: mob
+    attributes:
+      label: Mob or pull
+      description: Which card, or which part of the map. Leave empty if the question is about the dungeon as a whole.
+  - type: textarea
+    id: question
+    attributes:
+      label: What you want to know
+      description: If the card says something you have found not to be true in game, say what you saw.
+    validations:
+      required: true
