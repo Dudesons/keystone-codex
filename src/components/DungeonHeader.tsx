@@ -7,6 +7,7 @@ import type { DungeonLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from './LocaleSwitcher'
+import { useSearch } from './SearchPalette'
 
 /** Which of the three fixed tabs is current. */
 export type DungeonTab = 'overview' | 'codex' | 'route'
@@ -25,6 +26,7 @@ export default function DungeonHeader({
   children?: ReactNode
 }) {
   const { t, plural, locale } = useI18n()
+  const { open: openSearch } = useSearch()
   const content = getDungeonContent(slug, locale)
 
   // Reused by every tab: the active one carries the gold treatment, the rest stay dim until
@@ -56,6 +58,12 @@ export default function DungeonHeader({
       </div>
       <div className="ml-auto flex items-center gap-2">
         {children}
+        <button
+          onClick={openSearch}
+          className="rounded border border-ink-800 px-2 py-1 text-xs text-ink-400 transition hover:border-gold-500 hover:text-gold-400"
+        >
+          {t('search.open')}
+        </button>
         <div className="flex items-center gap-1 rounded-lg border border-ink-800 bg-ink-900 p-0.5">
           {tab('overview', `/d/${slug}`, t('tab.overview'))}
           {tab('codex', `/d/${slug}/codex`, t('tab.codex'))}

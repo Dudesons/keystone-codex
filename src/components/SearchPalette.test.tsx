@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { SearchProvider, useSearch } from './SearchPalette'
+import DungeonHeader from './DungeonHeader'
 import { dungeonList, getLookup, getNpcLabel } from '../lib/data'
 import { renderEn } from '../test/render'
 
@@ -196,6 +197,22 @@ describe('Choosing a result', () => {
     type('zzzzqqqqxxxx')
     fireEvent.keyDown(box, { key: 'Enter' })
     expect(screen.getByTestId('address').textContent).toBe('/')
+    expect(screen.getByRole('combobox')).toBeDefined()
+  })
+})
+
+describe('The trigger button', () => {
+  it('opens the palette from a dungeon header', () => {
+    // A shortcut nobody knows about is a feature nobody has, so the header carries a control.
+    const slug = dungeonList[0].slug
+    renderEn(
+      <MemoryRouter initialEntries={[`/d/${slug}`]}>
+        <SearchProvider>
+          <DungeonHeader slug={slug} lookup={getLookup(slug)!} view="overview" />
+        </SearchProvider>
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
     expect(screen.getByRole('combobox')).toBeDefined()
   })
 })

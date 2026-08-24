@@ -9,11 +9,25 @@ import { contentProgress, getDungeonContent } from '../lib/content'
 import { dungeonList, getDungeon } from '../lib/data'
 import { renderEn } from '../test/render'
 import Home from './Home'
+import { SearchProvider } from '../components/SearchPalette'
 import { mdtRelease } from '../lib/data'
 
 afterEach(cleanup)
 
-const mount = () => renderEn(<Home />, { wrapper: MemoryRouter })
+/**
+ * `Home` calls `useSearch`, which throws outside a provider — so every test in this file reads
+ * through a mount that supplies one. Written as nested elements rather than the `wrapper` option
+ * because two wrappers do not fit it; `renderIn` nests a caller's wrapper inside the locale
+ * provider, so this is equivalent.
+ */
+const mount = () =>
+  renderEn(
+    <MemoryRouter>
+      <SearchProvider>
+        <Home />
+      </SearchProvider>
+    </MemoryRouter>,
+  )
 
 describe('Dungeon list', () => {
   it('shows one card per dungeon in the pool', () => {
@@ -120,5 +134,13 @@ describe('Credits', () => {
   it('names the MDT release the map and the forces came out of', () => {
     const { container } = mount()
     expect(container.textContent).toContain(mdtRelease.version)
+  })
+})
+
+describe('Search', () => {
+  it('offers a way in, since a shortcut nobody knows is a feature nobody has', () => {
+    mount()
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+    expect(screen.getByRole('combobox')).toBeDefined()
   })
 })
