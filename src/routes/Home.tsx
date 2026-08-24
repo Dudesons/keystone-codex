@@ -6,6 +6,7 @@ import { dungeonList, getDungeon, mapUrl } from '../lib/data'
 import { contentProgress, getDungeonContent } from '../lib/content'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
+import SiteFooter from '../components/SiteFooter'
 
 export default function Home() {
   const { t, plural, locale } = useI18n()
@@ -78,9 +79,7 @@ export default function Home() {
         })}
       </div>
 
-      <footer className="mt-10 border-t border-ink-800 pt-4 text-xs text-ink-600">
-        {t('home.footer')} <code className="text-ink-400">content/</code>.
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

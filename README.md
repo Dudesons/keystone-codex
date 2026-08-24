@@ -295,3 +295,9 @@ Maps, icons, portraits and spell text are World of Warcraft material and belong 
 Entertainment; no licence granted here applies to them. This project is neither affiliated
 with nor endorsed by Blizzard Entertainment. [NOTICE.md](NOTICE.md) says which file comes
 from where.
+
+**The running site says the same thing**, rather than leaving it to whoever clones the
+repository: the home page and every dungeon's Overview carry a credit line with the licence,
+the source and the two upstreams, and the map's *Legend* carries the short form. The MDT
+release named there is read from `src/data/generated/mdt.json`, so it cannot be stale by hand
+— a reader can tell at a glance whether the map in front of them is a patch behind.

@@ -8,6 +8,7 @@ import {
   dungeonList,
   getDungeon,
   getLookup,
+  mdtRelease,
   getNpcLabel,
   getSpell,
   iconUrl,
@@ -321,5 +322,15 @@ describe('Asset URLs', () => {
     expect(iconUrl('spell_nature_invisibilty')).toBe(`${base}icons/spell_nature_invisibilty.jpg`)
     expect(portraitUrl(12345)).toBe(`${base}portraits/12345.webp`)
     expect(mapUrl(SLUG)).toBe(`${base}maps/${SLUG}.webp`)
+  })
+})
+
+describe('MDT provenance', () => {
+  it('names the MDT release the data was extracted from, so a page can credit it', () => {
+    expect(mdtRelease.version).toMatch(/^\d+\.\d+/)
+  })
+
+  it('names the expansion that release covers', () => {
+    expect(mdtRelease.expansion).toBeTruthy()
   })
 })
