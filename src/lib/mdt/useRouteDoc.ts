@@ -886,8 +886,21 @@ function storedIdentity(): string | null {
   return localStorage.getItem(IDENTITY_KEY)
 }
 
-/** A short room code, easy to read out on Discord. */
+/**
+ * A short room code, easy to read out on Discord.
+ *
+ * Drawn from the platform's CSPRNG rather than `Math.random`, whose stream is neither
+ * unpredictable nor beyond a page's reach. The code is the only thing standing between a room
+ * and someone who did not get invited, so it should be worth guessing at.
+ *
+ * The alphabet holds 32 characters and 32 divides 256, so each byte folds onto exactly eight
+ * of them and the modulus introduces no bias — the usual reason to reject-and-redraw does not
+ * apply here. Six of them is about 1.07e9 codes.
+ */
 export function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('')
+  return Array.from(
+    crypto.getRandomValues(new Uint8Array(6)),
+    (byte) => alphabet[byte % alphabet.length],
+  ).join('')
 }
