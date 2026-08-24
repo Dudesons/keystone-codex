@@ -8,6 +8,7 @@ import MobTable from '../components/highlights/MobTable'
 import TrapList from '../components/highlights/TrapList'
 import TipList from '../components/highlights/TipList'
 import BossStrip from '../components/highlights/BossStrip'
+import SiteFooter from '../components/SiteFooter'
 import { getLookup } from '../lib/data'
 import { getDungeonContent } from '../lib/content'
 import { getHighlights } from '../lib/highlights'
@@ -66,6 +67,7 @@ export default function HighlightsPage() {
               <BossStrip slug={slug} bosses={highlights.bosses} />
             </section>
           )}
+          <SiteFooter />
         </div>
       </div>
     </div>

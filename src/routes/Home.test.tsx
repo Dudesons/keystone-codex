@@ -9,6 +9,7 @@ import { contentProgress, getDungeonContent } from '../lib/content'
 import { dungeonList, getDungeon } from '../lib/data'
 import { renderEn } from '../test/render'
 import Home from './Home'
+import { mdtRelease } from '../lib/data'
 
 afterEach(cleanup)
 
@@ -105,5 +106,19 @@ describe('Page landmarks', () => {
   it('points at `content/` for writing', () => {
     const { container } = mount()
     expect(container.textContent).toContain('content/')
+  })
+})
+
+describe('Credits', () => {
+  it('credits MDT and Wowhead, and says the project is not Blizzard’s', () => {
+    mount()
+    expect(screen.getByRole('link', { name: 'Mythic Dungeon Tools' })).toBeDefined()
+    expect(screen.getByRole('link', { name: 'Wowhead' })).toBeDefined()
+    expect(screen.getByText(/neither affiliated with nor endorsed by/i)).toBeDefined()
+  })
+
+  it('names the MDT release the map and the forces came out of', () => {
+    const { container } = mount()
+    expect(container.textContent).toContain(mdtRelease.version)
   })
 })

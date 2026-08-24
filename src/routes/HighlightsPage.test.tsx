@@ -93,3 +93,11 @@ describe('Tips section', () => {
     expect(link.getAttribute('href')).toBe(`/d/${VALE}/codex/mob/${tips[0].npcId}`)
   })
 })
+
+describe('Credits', () => {
+  it('credits the sources on the briefing too, not only on the home page', () => {
+    renderEn(at(`/d/${SLUG}`))
+    expect(screen.getByRole('link', { name: 'Mythic Dungeon Tools' })).toBeDefined()
+    expect(screen.getByText(/neither affiliated with nor endorsed by/i)).toBeDefined()
+  })
+})

@@ -37,8 +37,20 @@ export const fr: Dictionary = {
   'home.bosses.one': '{n} boss',
   'home.bosses.other': '{n} boss',
   'home.cards': '{written}/{total} fiches',
-  'home.footer':
-    'Données de mobs et cartes extraites de Mythic Dungeon Tools. Descriptions et pièges à éditer dans',
+
+  'credits.mdt':
+    'Données de mobs, packs, forces et cartes issues de Mythic Dungeon Tools {version}.',
+  'credits.wowhead':
+    'Noms de sorts et de créatures, icônes et descriptions récupérés via Wowhead.',
+  'credits.cards':
+    'Les fiches — menaces, pièges, notes de sorts et astuces — sont écrites à la main, dans content/.',
+  'credits.blizzard':
+    'Le matériel World of Warcraft appartient à Blizzard Entertainment. Ce projet n’est ni affilié à Blizzard Entertainment ni approuvé par lui.',
+  'credits.blizzardShort': 'Le matériel World of Warcraft appartient à Blizzard Entertainment.',
+  'credits.link.licence': 'GPL-2.0',
+  'credits.link.source': 'Code source',
+  'credits.link.contribute': 'Contribuer',
+  'credits.sources': 'SOURCES',
 
   // Dungeon page
   'dungeon.unknown': 'Donjon inconnu.',

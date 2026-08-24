@@ -5,7 +5,14 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getMobContent } from '../../lib/content'
-import { cloneKey, getLookup, getNpcLabel, mapUrl, type DungeonLookup } from '../../lib/data'
+import {
+  cloneKey,
+  getLookup,
+  getNpcLabel,
+  mapUrl,
+  mdtRelease,
+  type DungeonLookup,
+} from '../../lib/data'
 import type { Point } from '../../lib/geometry'
 import { en } from '../../lib/i18n/en'
 import type { Peer } from '../../lib/collab/presence'
@@ -574,6 +581,27 @@ describe('Heads-up display', () => {
     expect(container.textContent).toContain(en['legend.blip'])
     expect(container.textContent).toContain(en['legend.blip.miniboss'])
     expect(container.textContent).toContain(en['legend.blip.trash'])
+  })
+
+  /**
+   * The map is Blizzard's art recomposed from MDT's tiles, and the codex and route tabs fill
+   * the viewport — so `SiteFooter` has nowhere to sit on them and the credit has to live here.
+   * Text only: the panel is `pointer-events-none` precisely because it holds nothing
+   * clickable, and a link in here would be a link nobody can click.
+   */
+  it('says whose data the map is drawn from, and which release of it', () => {
+    const { container } = mount()
+    expect(container.textContent).toContain('Mythic Dungeon Tools')
+    expect(container.textContent).toContain(mdtRelease.version)
+    expect(container.textContent).toContain(en['credits.blizzardShort'])
+  })
+
+  it('puts no link in the legend, which could not be clicked through it', () => {
+    const { container } = mount()
+    const legend = [...container.querySelectorAll('div')].find(
+      (d) => d.className.includes('absolute') && /PIPS/.test(d.textContent ?? ''),
+    )!
+    expect(legend.querySelector('a')).toBeNull()
   })
 
   it('still closes and reopens on the button, for a reader who wants the map bare', () => {

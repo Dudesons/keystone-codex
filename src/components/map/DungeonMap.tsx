@@ -4,7 +4,14 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CloneRef, Enemy, Pack } from '../../lib/types'
-import { cloneKey, getNpcLabel, mapUrl, portraitUrl, type DungeonLookup } from '../../lib/data'
+import {
+  cloneKey,
+  getNpcLabel,
+  mapUrl,
+  mdtRelease,
+  portraitUrl,
+  type DungeonLookup,
+} from '../../lib/data'
 import { getIndicators, tippedPacks } from '../../lib/indicators'
 import { useI18n } from '../../lib/i18n/context'
 import { MAP_HEIGHT, MAP_WIDTH, roundedPolygonPath, toPixels, type Point } from '../../lib/geometry'
@@ -756,6 +763,16 @@ function Legend() {
           <span className="text-ink-300">{label}</span>
         </div>
       ))}
+
+      {/* The credit the codex and route tabs have nowhere else to put: both fill the viewport,
+          so `SiteFooter` only reaches the home and briefing pages. Text and no link, because
+          the panel is transparent to the pointer and a link here could not be clicked. */}
+      <div className="mt-2.5 mb-1 text-[10px] font-bold tracking-widest text-ink-400">
+        {t('credits.sources')}
+      </div>
+      <p className="text-[10px] leading-snug text-ink-500">
+        {t('credits.mdt', { version: mdtRelease.version })} {t('credits.blizzardShort')}
+      </p>
     </div>
   )
 }

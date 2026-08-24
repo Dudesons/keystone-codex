@@ -36,8 +36,19 @@ export const en = {
   'home.bosses.one': '{n} boss',
   'home.bosses.other': '{n} bosses',
   'home.cards': '{written}/{total} cards',
-  'home.footer':
-    'Mob data and maps extracted from Mythic Dungeon Tools. Descriptions and traps are edited in',
+
+  // Credits. Sentences and link labels are separate keys on purpose: a translator gets whole
+  // sentences to work with, and no anchor has to be interpolated into one.
+  'credits.mdt': 'Mob data, packs, forces and maps come from Mythic Dungeon Tools {version}.',
+  'credits.wowhead': 'Spell and creature names, icons and descriptions come via Wowhead.',
+  'credits.cards': 'The cards — threats, traps, spell notes and tips — are written by hand, in content/.',
+  'credits.blizzard':
+    'World of Warcraft material belongs to Blizzard Entertainment. This project is neither affiliated with nor endorsed by Blizzard Entertainment.',
+  'credits.blizzardShort': 'World of Warcraft material belongs to Blizzard Entertainment.',
+  'credits.link.licence': 'GPL-2.0',
+  'credits.link.source': 'Source',
+  'credits.link.contribute': 'Contribute',
+  'credits.sources': 'SOURCES',
 
   // Dungeon page
   'dungeon.unknown': 'Unknown dungeon.',

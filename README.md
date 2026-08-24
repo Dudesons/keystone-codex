@@ -27,10 +27,11 @@ hand.
 ---
 npcId: 270306
 threat: high              # low | medium | high | lethal
-role: melee               # caster | melee | patrol | miniboss | add
+role: melee               # caster | melee | patrol | add
+rank: miniboss            # optional: boss | miniboss — overrides what MDT says
 spells:
   - id: 1306911
-    tag: tank             # kick | dodge | dispel | tank | soak | ignore
+    tag: tank             # kick | frontal | dodge | dispel | tank | soak | ignore
     prio: 1
     note: "581k physical on the current target."
 trap: "Immune to every CC: you have to burst it."
@@ -79,10 +80,15 @@ everything else (MDT index, force totals, mapID) is read from the game files.
 ## Reading the briefing
 
 Opening a dungeon (`/d/<slug>`) shows its **Overview** rather than the codex: a row per mob
-worth knowing with its threat and its prio-1 spells, the traps to remember, and a card per
-boss in encounter order with its own spells and, where the card holds one, its trap sentence.
-A mob's or boss's name links straight into its full card in the codex, at
-`/d/<slug>/codex/mob/<npcId>`.
+worth knowing with its threat and its prio-1 spells, the traps to remember, the tips written
+about the dungeon's mobs, and a card per boss in encounter order with its own spells and,
+where the card holds one, its trap sentence. A mob's or boss's name links straight into its
+full card in the codex, at `/d/<slug>/codex/mob/<npcId>`.
+
+The mob table is a shortlist, not a census: a row goes to a mob with a `prio: 1` spell that is
+also rated `medium` or above — or is a miniboss, marked `MINIBOSS` on its row. An unrated mob
+does not appear, which is the price of the shortlist: writing its `threat` is what brings it
+back. Tips are the exception and are listed for every mob that carries one, rated or not.
 
 The **Overview / Codex / Route** tabs in the header are fixed and always present, each its own
 address (`/d/<slug>`, `/d/<slug>/codex`, `/d/<slug>/route`); the URL follows whichever you
@@ -90,19 +96,25 @@ pick, so a link to any of the three can be shared directly.
 
 ## Reading the map
 
-Every unit is a circular portrait, like in MDT. The information reads on three levels:
+Every unit is a circular portrait, like in MDT. The information reads on four levels:
 
 - **The ring** gives the threat level (`threat` in the card): red for lethal, orange for
   dangerous, gold for watch-out, green for harmless, amber for a boss, grey when it has not
   been assessed yet.
+- **The size** gives the rank: a boss blip is biggest, a miniboss sits between, everything else
+  is trash-sized. Rank comes from `rank` in the card, falling back to what MDT flagged.
 - **The pips** above the portrait flag `K` a spell to interrupt, `T` a tank buster, `D` a
-  dispellable spell.
+  dispellable spell, and `?` something written about this mob — or about this pull.
 - **The outlines** surround packs in Codex mode, and pulls (with their number) in Route mode.
 
 `K` and `D` are **derived from MDT** — 75 interruptible spells and 108 dispel types are
 already filled in without you writing anything. `T` and the threat level come from the
 cards: their absence means "not assessed yet", not "harmless". The *Legend* button on the
 map is a reminder of all this.
+
+A `?` sits on the mob when the tip is about the mob, and **on the pack** when the tip names
+the pull it is about (`packs:` in the card) — the advice is about taking that group, and the
+card it happens to be written on is only where the sentence lives.
 
 Hovering a mob in the codex highlights it on the map and dims the others; clicking a unit on
 the map opens its pack and scrolls the panel to its card.
@@ -118,14 +130,24 @@ A dungeon's **Route** tab lets you:
 - unfold a pull's **briefing**: its mobs, what to interrupt there, and their traps;
 - hover a mob on the map to read its entry and its worth in a column beside the map, without
   leaving the tab; right-click a mob to hold that entry in place while you compare another;
+- **draw on the map**, and read back what an imported route drew;
 - copy an MDT string that reimports in game.
 
 When a route exists, the codex cards carry a pip with the pull number, and hovering a pull
 highlights its mobs on the map.
 
+### Drawing on the map
+
+The toolbar over the map carries five tools — *Select*, *Note*, *Arrow*, *Draw* and *Erase* —
+and draws what MDT itself draws, so everything here survives a round trip through the game.
+*Arrow* and *Draw* take one of eight colours and three widths; the choice is yours alone and is
+not part of the route, so two people in a session each keep their own. *Note* drops a pin
+carrying text. *Select* moves and edits what is already there, *Erase* removes it, and
+`Ctrl+Z` / `Ctrl+Shift+Z` undo and redo. `Escape` drops both the selection and the tool.
+
 The current route is saved to `localStorage`, encoded as an MDT string — that format already
-carries everything, including the drawings and notes of an imported route that we cannot
-edit and hand back untouched on re-export.
+carries everything, drawings and notes included, so what an imported route drew comes back out
+on re-export whether you touched it or not.
 
 ### Editing together
 
@@ -273,3 +295,9 @@ Maps, icons, portraits and spell text are World of Warcraft material and belong 
 Entertainment; no licence granted here applies to them. This project is neither affiliated
 with nor endorsed by Blizzard Entertainment. [NOTICE.md](NOTICE.md) says which file comes
 from where.
+
+**The running site says the same thing**, rather than leaving it to whoever clones the
+repository: the home page and every dungeon's Overview carry a credit line with the licence,
+the source and the two upstreams, and the map's *Legend* carries the short form. The MDT
+release named there is read from `src/data/generated/mdt.json`, so it cannot be stale by hand
+— a reader can tell at a glance whether the map in front of them is a patch behind.

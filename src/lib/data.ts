@@ -25,6 +25,7 @@ import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 import dungeonIndex from '../data/generated/dungeons.json'
 import npcData from '../data/generated/npcs.json'
 import spellData from '../data/generated/spells.json'
+import mdtMeta from '../data/generated/mdt.json'
 
 const modules = import.meta.glob<Dungeon>('../data/generated/*.json', {
   eager: true,
@@ -37,6 +38,15 @@ const dungeons = new Map<string, Dungeon>(
     .filter((m): m is Dungeon => Array.isArray((m as Dungeon)?.enemies))
     .map((d) => [d.slug, d]),
 )
+
+/**
+ * Which MDT release this data came out of.
+ *
+ * Written by `extract-mdt.mjs` on every run, and until now read only by `mdt-report.mjs`. A
+ * reader has no other way to tell whether the map in front of them is a patch behind, so the
+ * credit line in the interface says it — which also means it can never be stale by hand.
+ */
+export const mdtRelease = mdtMeta as { version: string; expansion: string }
 
 export const dungeonList = dungeonIndex as DungeonSummary[]
 const spells = spellData as unknown as Record<string, SpellEntry>
