@@ -201,7 +201,6 @@ export const en = {
   'route.copied': 'MDT string copied. Paste it into MDT in game (Import).',
   'route.codeCopied': 'Session code copied.',
   'route.linkCopied': 'Session link copied.',
-  'route.wrongDungeon': 'That route is for {dungeon}, not for this one.',
   'route.imported.one': '“{name}” imported: {n} pull.',
   'route.imported.other': '“{name}” imported: {n} pulls.',
   'route.hoverAMob': 'Hover a mob on the map to read its entry. Right-click to keep it here.',
@@ -238,6 +237,8 @@ export const en = {
   'mdtError.emptyString': 'Empty string.',
   'mdtError.unknownFormat':
     'Unrecognised format. Paste a string exported by MDT (it starts with “!~MDT2~” or “!”).',
+  'mdtError.wrongDungeon':
+    'This route is for {dungeon}. Open that dungeon to import it — loaded here, its pulls would point at different mobs.',
 } as const
 
 export type TranslationKey = keyof typeof en

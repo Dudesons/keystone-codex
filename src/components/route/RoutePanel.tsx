@@ -140,14 +140,11 @@ export default function RoutePanel({
 
   const handleImport = () => {
     try {
+      // A route for another dungeon is refused by `importRoute` itself and arrives here as an
+      // `MdtUserError`, translated below like any other. It used to be caught on this line
+      // instead — after the import had already replaced the document — so the reader got an
+      // error message *and* a route rebuilt out of references to different mobs.
       const imported = actions.importRoute(importText)
-      if (imported.slug !== slug) {
-        setMessage({
-          kind: 'error',
-          text: t('route.wrongDungeon', { dungeon: imported.slug.replace(/-/g, ' ') }),
-        })
-        return
-      }
       onCurrentPullChange(Math.max(0, imported.pulls.length - 1))
       setImportText('')
       setMessage({
