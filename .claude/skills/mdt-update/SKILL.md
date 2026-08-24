@@ -77,7 +77,8 @@ before you compare, and never conclude a dungeon changed from its size alone.
 - **Severity 1 — writing already lost.** A note now points at a spell id the mob no longer
   carries, or a whole card's mob left the dungeon. Move the note to the spell that replaced
   it, or delete it. Deleting writing is a decision, not a tidy-up: state it in the commit
-  message. Read `codex-content` first — it owns what a card may claim.
+  message. Read [`docs/writing-cards.md`](../../../docs/writing-cards.md) first — it owns what a
+  card may claim.
 - **Severity 2 — writing incomplete.** A written card whose mob carries spells nobody has
   annotated — the audit reads the current state of the card against the current data, not what
   the update changed, so these may predate it. Annotate the spells, or leave `tag: todo`
@@ -90,7 +91,8 @@ before you compare, and never conclude a dungeon changed from its size alone.
   nothing unless step 4 ran: without `FORCE=1 npm run fetch:assets` every cached tooltip comes
   back unchanged by construction.
 - **Severity 4 — to write.** A new mob or a new dungeon, with no card yet. Run
-  `npm run scaffold`, then write. `codex-content` owns the threat scale.
+  `npm run scaffold`, then write. [`docs/writing-cards.md`](../../../docs/writing-cards.md) owns
+  the threat scale.
 - **Severity 5 — dead weight.** The card's mob left MDT and the card was never written.
   Delete the file **and its `.fr.md` sibling** — missing one leaves a translation of nothing.
 - **Severity 6 — informational.** What moved in the data, with no writing lost. Read it: it

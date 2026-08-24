@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getLookup, getNpcLabel } from '../../lib/data'
 import { emptyRoute, nextColor, routeToLua, type Route } from '../../lib/mdt/route'
 import { encodeMdtString } from '../../lib/mdt/string'
+import { MdtUserError } from '../../lib/mdt/errors'
 import type { Peer } from '../../lib/collab/presence'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { renderEn, renderFr } from '../../test/render'
@@ -411,6 +412,41 @@ describe('Import', () => {
     fireEvent.change(screen.getByPlaceholderText(/Paste an MDT string/), { target: { value: 'x' } })
     fireEvent.click(screen.getByText('Import'))
     expect(screen.getByText('boom')).toBeDefined()
+  })
+
+  it('names the dungeon when the string is for a different one', () => {
+    // The user-facing half of the guard in `importRoute`. Pasting another dungeon's string used
+    // to be accepted, filling pulls with references that land on entirely different mobs; the
+    // panel now has to say which dungeon it was for, or the refusal is a dead end.
+    const { actions } = recorder()
+    renderEn(
+      <RoutePanel
+        slug={SLUG}
+        lookup={lookup}
+        route={routeWith(1)}
+        actions={{
+          ...actions,
+          importRoute: () => {
+            throw new MdtUserError('wrongDungeon', { dungeon: 'Murder Row' })
+          },
+        }}
+        currentPull={0}
+        onCurrentPullChange={() => {}}
+        hoveredPull={null}
+        onHoverPull={() => {}}
+        onFocusMob={() => {}}
+        onHoverMob={() => {}}
+        collab={offline}
+        onJoinRoom={() => {}}
+        onLeaveRoom={() => {}}
+        onResumeRoom={() => {}}
+        onSetIdentity={() => {}}
+        pendingRoom={null}
+      />,
+    )
+    fireEvent.change(screen.getByPlaceholderText(/Paste an MDT string/), { target: { value: 'x' } })
+    fireEvent.click(screen.getByText('Import'))
+    expect(screen.getByText(/Murder Row/)).toBeDefined()
   })
 
   it('clears the route', () => {

@@ -1,0 +1,10 @@
+# A blank issue stays available on purpose: the three forms cover the cases CONTRIBUTING names,
+# and something they do not fit should not have to be squeezed into one of them.
+blank_issues_enabled: true
+contact_links:
+  - name: How to write or fix a card yourself
+    url: https://github.com/Dudesons/keystone-codex/blob/main/CONTRIBUTING.md
+    about: Most card changes need no issue and no tooling — you can edit the markdown in the browser.
+  - name: Écrire ou corriger une fiche vous-même
+    url: https://github.com/Dudesons/keystone-codex/blob/main/CONTRIBUTING.fr.md
+    about: Le guide du contributeur en français. Éditer une fiche ne demande ni clone ni outillage.

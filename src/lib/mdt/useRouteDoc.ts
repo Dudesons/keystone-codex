@@ -15,7 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import type { CloneRef } from '../types'
-import { cloneKey } from '../data'
+import { cloneKey, dungeonList } from '../data'
+import { MdtUserError } from './errors'
 import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
@@ -602,6 +603,27 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       importRoute: (mdtString) => {
         const decoded = decodeMdtString(mdtString)
         const imported = luaToRoute(decoded.table)
+
+        // `luaToRoute` resolves a slug from the string's own `currentDungeonIdx` and rejects
+        // only a dungeon this app does not carry at all, so the mismatch has to be caught here.
+        //
+        // It is caught *before* the transaction below, which is the whole point. The route panel
+        // used to compare the two after calling this function and show a message — by which time
+        // the document had already been replaced, leaving the reader an error and a route
+        // rebuilt out of references to different mobs. A clone reference is a pair of MDT
+        // indices rather than an id, so another dungeon's route does not bounce off: measured
+        // across the two fixtures, 57 of 114 references land on *some* mob in the wrong dungeon
+        // and the other 57 dangle.
+        //
+        // Every way a route enters the app comes through this function, so refusing here is what
+        // makes the answer the same however it arrived.
+        if (imported.slug !== slug) {
+          throw new MdtUserError('wrongDungeon', {
+            dungeon:
+              dungeonList.find((d) => d.slug === imported.slug)?.englishName ?? imported.slug,
+          })
+        }
+
         const root = doc.getMap('route')
         doc.transact(() => {
           root.set('name', imported.name)
@@ -886,8 +908,21 @@ function storedIdentity(): string | null {
   return localStorage.getItem(IDENTITY_KEY)
 }
 
-/** A short room code, easy to read out on Discord. */
+/**
+ * A short room code, easy to read out on Discord.
+ *
+ * Drawn from the platform's CSPRNG rather than `Math.random`, whose stream is neither
+ * unpredictable nor beyond a page's reach. The code is the only thing standing between a room
+ * and someone who did not get invited, so it should be worth guessing at.
+ *
+ * The alphabet holds 32 characters and 32 divides 256, so each byte folds onto exactly eight
+ * of them and the modulus introduces no bias — the usual reason to reject-and-redraw does not
+ * apply here. Six of them is about 1.07e9 codes.
+ */
 export function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('')
+  return Array.from(
+    crypto.getRandomValues(new Uint8Array(6)),
+    (byte) => alphabet[byte % alphabet.length],
+  ).join('')
 }

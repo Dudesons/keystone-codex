@@ -153,6 +153,21 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:4173',
 ])
 
+/**
+ * How long a room name may be.
+ *
+ * The app builds `midnight-codex:<slug>:<CODE>` — 42 characters at the season's longest slug, so
+ * this is generous rather than tight. It is not access control either: it bounds what an
+ * anonymous request can have us hash and hold a name for, and keeps the object namespace from
+ * filling with whatever a URL happened to carry. Names are hashed, so nothing longer would be
+ * *unsafe* — it would just be unaccountable.
+ *
+ * Deliberately no charset restriction: a name is only ever hashed into an id, so there is nothing
+ * to escape, and a rule tighter than the format above would refuse a legitimate room the first
+ * time the format changes.
+ */
+const MAX_ROOM_NAME = 128
+
 export default {
   async fetch(request, env) {
     if (request.headers.get('Upgrade') !== 'websocket') {
@@ -164,6 +179,9 @@ export default {
     }
     // The client appends the room name to the URL, and rooms are namespaced by dungeon.
     const room = decodeURIComponent(new URL(request.url).pathname.slice(1)) || 'default'
+    if (room.length > MAX_ROOM_NAME) {
+      return new Response('room name too long', { status: 400 })
+    }
     return env.ROOM.get(env.ROOM.idFromName(room)).fetch(request)
   },
 }

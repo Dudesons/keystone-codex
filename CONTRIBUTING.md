@@ -31,7 +31,7 @@ none of them, and changing one changes nothing on screen.
 
 **A wrong spell name, a wrong cast time or a missing spell is a data problem, not a card
 problem.** No edit to `content/` can fix it, so do not try: [open an
-issue](https://github.com/Dudesons/keystone-codex/issues) instead.
+issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) instead.
 
 ## Two ways to edit
 
@@ -157,7 +157,7 @@ mob shows up on its card and nowhere else — rate the mob and it appears.
 
 `threat` is not "how big is the number", it is how much of the pull this mob changes. The scale,
 the three rules that follow from it and two worked examples live in
-[`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
+[`docs/writing-cards.md`](docs/writing-cards.md#the-threat-scale)
 — **read it before rating.** It also tells you when to leave the field empty instead of filling
 it, and which mobs carry no `threat` at all.
 
@@ -295,9 +295,9 @@ Wowhead; mob names, forces and applicable CC come from MDT. Both are rewritten w
 `npm run data`, so an edit by hand survives exactly until the next extraction — and in the
 meantime it makes the card disagree with the game.
 
-[Open an issue](https://github.com/Dudesons/keystone-codex/issues) naming the dungeon, the mob
-and what is wrong. The fix is either an extraction re-run or a change to the scripts, and both
-are somebody's separate pull request.
+[Open an issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) naming the dungeon,
+the mob and what is wrong. The fix is either an extraction re-run or a change to the scripts, and
+both are somebody's separate pull request.
 
 ## Before you open a pull request
 
@@ -318,7 +318,7 @@ are somebody's separate pull request.
   figure,
   two sources that disagree, something you know only from having played it. All of them are
   answered in
-  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  [`docs/writing-cards.md`](docs/writing-cards.md#what-may-be-written-at-all).
   Read it before writing a sentence the card cannot source.
 - **Do not paste someone else's guide.** A route write-up, a video script, a wiki page — link it
   as a tip with their name in the label. Mirroring text into this repository is both a licensing
@@ -335,8 +335,13 @@ are somebody's separate pull request.
 
 ## Where to ask
 
-[Open an issue](https://github.com/Dudesons/keystone-codex/issues). A question about a mob is as
-good a reason as a bug — if a card is unclear enough to ask about, it is unclear enough to fix.
+[Open an issue](https://github.com/Dudesons/keystone-codex/issues/new/choose). A question about a
+mob is as good a reason as a bug — if a card is unclear enough to ask about, it is unclear enough
+to fix.
+
+If what you found is a card that gets script to run rather than a card that is wrong, read
+[`.github/SECURITY.md`](.github/SECURITY.md) first — it says what to include and what to leave
+out.
 
 The reference for the app itself — how to read the map, the routes, how the data is regenerated
 — is in [README.md](README.md).
