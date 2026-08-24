@@ -15,7 +15,15 @@
 
 import type { Enemy } from './types'
 import { getLookup, getNpcLabel, getSpell } from './data'
-import { getDungeonContent, getMobContent, inlineMarkdown, type SpellTag, type Threat } from './content'
+import {
+  getDungeonContent,
+  getMobContent,
+  inlineMarkdown,
+  type Rank,
+  type SpellTag,
+  type Threat,
+} from './content'
+import { getIndicators } from './indicators'
 import { DEFAULT_LOCALE, type Locale } from './i18n/locales'
 import type { Tip } from './tips'
 
@@ -37,6 +45,8 @@ export interface HighlightMob {
   displayId?: number
   threat?: Threat
   role?: string
+  /** Boss or miniboss, as the card declares it. `MobTable` marks a miniboss in place. */
+  rank?: Rank
   /** The `trap:` sentence as inline HTML. Filled for bosses and shortlisted mobs, whose card
    *  or row shows it. */
   trapHtml?: string
@@ -97,9 +107,12 @@ const THREAT_RANK: Record<Threat, number> = { lethal: 0, high: 1, medium: 2, low
  *
  * A mob nobody has rated therefore does not appear here at all. That is deliberate and it is
  * the price of the shortlist: writing its `threat` is what brings it back.
+ *
+ * `rank !== undefined` reads as "any rank", but only a miniboss can reach it: a boss leaves the
+ * loop one branch above. Written this way it stays correct if a third rank is ever added.
  */
-function earnsARow(threat?: Threat, role?: string): boolean {
-  return threat === 'lethal' || threat === 'high' || threat === 'medium' || role === 'miniboss'
+function earnsARow(threat?: Threat, rank?: Rank): boolean {
+  return threat === 'lethal' || threat === 'high' || threat === 'medium' || rank !== undefined
 }
 const rankOf = (threat?: Threat) => (threat ? THREAT_RANK[threat] : 4)
 
@@ -200,6 +213,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
     // one place the two disagree. The alphabetical tie-break below sorts on this name, which is
     // why it is resolved here rather than in the components.
     const { name } = getNpcLabel(enemy, locale)
+    const { rank } = getIndicators(slug, enemy, locale)
 
     if (content?.tips?.length) {
       tips.push({
@@ -211,7 +225,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
       })
     }
 
-    if (enemy.isBoss) {
+    if (rank === 'boss') {
       bossOrder.push(enemy.id)
       bosses.push({
         npcId: enemy.id,
@@ -219,13 +233,14 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
         displayId: enemy.displayId,
         threat: content?.threat,
         role: content?.role,
+        rank,
         trapHtml: inlineMarkdown(content?.trap) || undefined,
         spells,
       })
       continue
     }
 
-    const hasRow = spells.length > 0 && earnsARow(content?.threat, content?.role)
+    const hasRow = spells.length > 0 && earnsARow(content?.threat, rank)
 
     if (hasRow) {
       mobs.push({
@@ -234,6 +249,7 @@ export function getHighlights(slug: string, locale: Locale = DEFAULT_LOCALE): Du
         displayId: enemy.displayId,
         threat: content?.threat,
         role: content?.role,
+        rank,
         trapHtml: inlineMarkdown(content?.trap) || undefined,
         spells,
       })

@@ -51,7 +51,14 @@ pack healer":
 | Answers | interrupt **or** magic dispel | interrupt |
 
 **Bosses carry no `threat`.** Their ring is gold regardless, so the field would only add a
-redundant badge.
+redundant badge. **A mob you demote with `rank: miniboss` is no longer a boss**, and its ring
+goes back to being the threat rating — so a demoted card deserves one.
+
+**`rank` is about the fight, not the health bar.** Write `boss` for something the dungeon counts
+as an encounter and `miniboss` for a unit that stops the group without being one. MDT's flag is
+the default and it is wrong in both directions — it flags every unit that appears in an
+encounter, so a council of three reads as three bosses, and it flags nothing for the
+200M-health blocker standing in a corridor. Leave `rank` out unless you are correcting it.
 
 ## What may be written at all
 
@@ -79,7 +86,7 @@ hold.** Three failures to recognise, all of which happened here:
 
 ## Fields
 
-`threat`, `role`, `tag` and `prio` are judgements and live **only in the base file**; a `.fr.md`
+`threat`, `role`, `rank`, `tag` and `prio` are judgements and live **only in the base file**; a `.fr.md`
 sibling carries `note`, `trap` and prose. See the [i18n skill](../i18n/SKILL.md).
 
 The full field reference — every key, its allowed values, and what a `.fr.md` may carry — is

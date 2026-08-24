@@ -5,6 +5,7 @@
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { getLookup } from '../../lib/data'
+import { getIndicators } from '../../lib/indicators'
 import { renderEn } from '../../test/render'
 import CodexPanel, { type PullRef } from './CodexPanel'
 
@@ -176,5 +177,58 @@ describe('Landing on a spell', () => {
           .container,
     )
     expect(scrolled).toEqual([])
+  })
+})
+
+describe('The boss group reads rank, not MDT', () => {
+  /**
+   * No card in the pool declares `rank:` yet, so today this group holds exactly MDT's flagged
+   * bosses — the same set as before. What it pins is *where the question is asked*: the panel
+   * now reads the derived rank, so a card that demotes a mob will move it out of this group
+   * without anything here changing. The demotion itself is asserted where the content lands.
+   */
+  it('holds the mobs whose derived rank is boss', () => {
+    const { container } = renderEn(<CodexPanel {...props()} />)
+    const group = [...container.querySelectorAll('section')].find((s) =>
+      /BOSSES/.test(s.querySelector('h2')?.textContent ?? ''),
+    )!
+    const shown = [...group.querySelectorAll('[data-npc]')].map((el) =>
+      Number(el.getAttribute('data-npc')),
+    )
+    const byRank = lookup.dungeon.enemies
+      .filter((e) => getIndicators(SLUG, e).rank === 'boss')
+      .map((e) => e.id)
+
+    expect(shown.length).toBeGreaterThan(0)
+    expect(shown.sort()).toEqual(byRank.sort())
+  })
+})
+
+describe('A mob its card demotes', () => {
+  const NALORAKK = 'den-of-nalorakk'
+  const ECHO = 247_301
+
+  const nalorakkProps = () => ({
+    ...props(),
+    slug: NALORAKK,
+    lookup: getLookup(NALORAKK)!,
+  })
+
+  it('drops out of the boss group and into the trash list, marked in place', () => {
+    const { container } = renderEn(<CodexPanel {...nalorakkProps()} />)
+    const sections = [...container.querySelectorAll('section')]
+    const group = (heading: RegExp) =>
+      sections.find((s) => heading.test(s.querySelector('h2')?.textContent ?? ''))
+
+    const inBosses = [...(group(/BOSSES/)?.querySelectorAll('[data-npc]') ?? [])].map((el) =>
+      Number(el.getAttribute('data-npc')),
+    )
+    const inTrash = [...(group(/TRASH/)?.querySelectorAll('[data-npc]') ?? [])].map((el) =>
+      Number(el.getAttribute('data-npc')),
+    )
+
+    expect(inBosses).not.toContain(ECHO)
+    expect(inTrash).toContain(ECHO)
+    expect(screen.getAllByText('MINIBOSS').length).toBeGreaterThan(0)
   })
 })

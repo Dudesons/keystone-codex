@@ -4,7 +4,8 @@ name: "Devouring Brutalizer"   # auto
 count: 30   # auto — forces per unit
 
 threat: high
-role: miniboss
+role: melee
+rank: miniboss
 
 spells:
   - id: 1300243

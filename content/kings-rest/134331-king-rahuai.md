@@ -4,7 +4,8 @@ name: "King Rahu'ai"   # auto
 count: 25   # auto — forces per unit
 
 threat: medium
-role: miniboss
+role: caster
+rank: miniboss
 
 spells:
   - id: 1296671

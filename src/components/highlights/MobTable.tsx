@@ -45,9 +45,9 @@ function MobRow({ slug, mob }: { slug: string; mob: HighlightMob }) {
             {mob.name}
           </Link>
           <ThreatBadge threat={mob.threat} />
-          {mob.role === 'miniboss' && (
+          {mob.rank === 'miniboss' && (
             <span className="rounded border border-gold-500/40 bg-gold-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-gold-400">
-              {t('role.miniboss')}
+              {t('mob.miniboss')}
             </span>
           )}
         </div>

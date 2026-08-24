@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { getHighlights, orderBosses, type HighlightMob } from './highlights'
 import { getLookup } from './data'
+import { getIndicators } from './indicators'
 import { getMobContent } from './content'
 
 /**
@@ -66,16 +67,16 @@ describe('getHighlights mobs', () => {
   })
 
   it('keeps only the mobs a group has to plan around', () => {
-    // The shortlist: lethal, high, medium, or a miniboss. Everything else is out, including a
-    // mob nobody has rated — the codex fills in gradually, and an unrated mob comes back the
+    // The shortlist: lethal, high, medium, or carrying a rank. Everything else is out, including
+    // a mob nobody has rated — the codex fills in gradually, and an unrated mob comes back the
     // day someone writes its threat.
     for (const mob of getHighlights(VOIDSCAR).mobs) {
       const kept =
         mob.threat === 'lethal' ||
         mob.threat === 'high' ||
         mob.threat === 'medium' ||
-        mob.role === 'miniboss'
-      expect(kept, `${mob.name} (threat ${mob.threat}, role ${mob.role})`).toBe(true)
+        mob.rank !== undefined
+      expect(kept, `${mob.name} (threat ${mob.threat}, rank ${mob.rank})`).toBe(true)
     }
   })
 
@@ -255,5 +256,55 @@ describe('tips', () => {
       (e) => (getMobContent(slug, e.id)?.tips?.length ?? 0) > 0,
     )
     expect(tips.length).toBe(withTips.length)
+  })
+})
+
+describe('Rank on a row', () => {
+  /**
+   * `'rank' in row` rather than a value: no card declares a rank yet, so every row's would be
+   * `undefined` either way and an assertion on the value would pass before the field existed.
+   * What this pins is that the row carries it at all. The assertion with a value in it lands
+   * with the content that makes one, in the task that migrates the cards.
+   */
+  it('puts the rank on a row so the table can mark it in place', () => {
+    const rows = getHighlights(ALTAR).mobs
+    expect(rows.length).toBeGreaterThan(0)
+    for (const row of rows) expect('rank' in row, String(row.npcId)).toBe(true)
+  })
+
+  it('never lets a boss reach the mob rows, whichever source said so', () => {
+    // The boss branch runs first and continues, so a rank found among the rows can only ever
+    // be a miniboss. That is what lets `MobTable` mark one in place instead of filtering.
+    for (const row of getHighlights(ALTAR).mobs) {
+      expect(row.rank, String(row.npcId)).not.toBe('boss')
+    }
+  })
+
+  it('builds the boss strip from the same derivation the codex uses', () => {
+    const strip = getHighlights(ALTAR).bosses.map((b) => b.npcId).sort()
+    const byRank = getLookup(ALTAR)!
+      .dungeon.enemies.filter((e) => getIndicators(ALTAR, e).rank === 'boss')
+      .map((e) => e.id)
+      .sort()
+    expect(strip.length).toBeGreaterThan(0)
+    expect(strip).toEqual(byRank)
+  })
+})
+
+describe('A card that demotes its mob', () => {
+  /**
+   * MDT flags Echo of Nalorakk a boss because the game does. It has 3.4M health against
+   * Nalorakk's 21.9M and is fought during his encounter, so no group plans a pull around it.
+   */
+  it('leaves Echo of Nalorakk out of the boss strip its card never claimed', () => {
+    const { bosses } = getHighlights('den-of-nalorakk')
+    expect(bosses.map((b) => b.npcId)).not.toContain(247_301)
+    // The three the dungeon actually has.
+    expect(bosses).toHaveLength(3)
+  })
+
+  it('carries the rank onto its row, which is what marks it in place', () => {
+    const row = getHighlights('den-of-nalorakk').mobs.find((m) => m.npcId === 247_301)
+    expect(row?.rank).toBe('miniboss')
   })
 })

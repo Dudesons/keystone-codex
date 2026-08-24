@@ -64,6 +64,7 @@ export const en = {
 
   // Mob card
   'mob.boss': 'BOSS',
+  'mob.miniboss': 'MINIBOSS',
   'mob.pull': 'Pull {n}',
   'mob.trap': 'THE TRAP',
   'mob.ccApplicable': 'APPLICABLE CC',
@@ -91,7 +92,6 @@ export const en = {
   'role.caster': 'Caster',
   'role.melee': 'Melee',
   'role.patrol': 'Patrol',
-  'role.miniboss': 'Miniboss',
   'role.add': 'Encounter add',
 
   // Spell tags
@@ -110,6 +110,7 @@ export const en = {
   'map.zoomOut': 'Zoom out',
   'map.fit': 'Fit',
   'map.boss': 'boss',
+  'map.miniboss': 'miniboss',
   'map.pack': 'pack {g} ({n})',
   'map.patrol': 'patrol',
   'map.toKick': 'to kick',
@@ -161,6 +162,10 @@ export const en = {
   'legend.ring.low': 'Harmless',
   'legend.ring.boss': 'Boss',
   'legend.ring.unknown': 'Threat not assessed',
+  'legend.blip': 'BLIP SIZE',
+  'legend.blip.boss': 'Boss',
+  'legend.blip.miniboss': 'Miniboss',
+  'legend.blip.trash': 'Everything else',
 
   // Route panel
   'route.namePlaceholder': 'Route name',

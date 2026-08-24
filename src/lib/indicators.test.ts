@@ -216,13 +216,26 @@ describe('Real pool data', () => {
     expect(dispellable.length).toBeGreaterThan(0)
   })
 
-  it('gives the golden ring to every boss in the pool', () => {
-    const bosses = enemies.filter((e) => e.isBoss)
+  const slugOf = (enemy: Enemy) =>
+    dungeonList.find((d) => getDungeon(d.slug)?.enemies.includes(enemy))!.slug
+
+  it('gives the golden ring to every mob whose rank is boss', () => {
+    const bosses = enemies.filter((e) => getIndicators(slugOf(e), e).rank === 'boss')
     expect(bosses.length).toBeGreaterThan(0)
     for (const boss of bosses) {
-      const slug = dungeonList.find((d) => getDungeon(d.slug)?.enemies.includes(boss))!.slug
-      expect(getIndicators(slug, boss).ring).toBe(BOSS_RING)
+      expect(getIndicators(slugOf(boss), boss).ring).toBe(BOSS_RING)
     }
+  })
+
+  /**
+   * Gold means boss. A mob MDT flags whose card demotes it is not one, so it must not wear the
+   * ring — that is the whole point of the field, and this is the pool's only such mob today.
+   */
+  it('takes the golden ring off a mob its card demotes', () => {
+    const echo = enemies.find((e) => e.id === 247_301)!
+    expect(echo.isBoss).toBe(true)
+    expect(getIndicators(slugOf(echo), echo).rank).toBe('miniboss')
+    expect(getIndicators(slugOf(echo), echo).ring).not.toBe(BOSS_RING)
   })
 })
 
@@ -312,5 +325,35 @@ describe('the pulls a tip is about', () => {
     expect(tippedPacks('the-blinding-vale', getLookup('the-blinding-vale')!.dungeon.enemies)).toEqual(
       tippedPacks('the-blinding-vale', getLookup('the-blinding-vale')!.dungeon.enemies, 'fr'),
     )
+  })
+})
+
+describe('rank', () => {
+  const ALTAR = 'altar-of-fangs'
+
+  it('inherits MDT for a card that says nothing', () => {
+    const boss = getLookup(ALTAR)!.dungeon.enemies.find((e) => e.isBoss)!
+    expect(getIndicators(ALTAR, boss).rank).toBe('boss')
+  })
+
+  it('is undefined for an unflagged mob whose card says nothing', () => {
+    const trash = getLookup(ALTAR)!.dungeon.enemies.find((e) => !e.isBoss)!
+    expect(getIndicators(ALTAR, trash).rank).toBeUndefined()
+  })
+
+  it('takes the card over MDT', () => {
+    expect(getIndicators('__fixtures__', enemy({ id: 888_010, isBoss: true })).rank).toBe('miniboss')
+  })
+
+  /**
+   * The same mob as above: MDT flags it a boss, the card demotes it to miniboss. That is the
+   * whole point of the field, so the ring has to follow the card — gold is for a boss, and this
+   * is not one any more. It keeps the priority mark, because a miniboss is still worth marking.
+   */
+  it('gives a demoted mob the priority mark but not the gold ring', () => {
+    const ind = getIndicators('__fixtures__', enemy({ id: 888_010, isBoss: true }))
+    expect(ind.priority).toBe(true)
+    // The ring is the threat rating; the card is `threat: high`.
+    expect(ind.ring).toBe('#d97036')
   })
 })

@@ -499,3 +499,33 @@ describe('Tips badge', () => {
     }
   })
 })
+
+describe('Rank in the header', () => {
+  /** The fixture card that declares `rank: miniboss`, as an Enemy of the real shape. */
+  const ranked: Enemy = {
+    mdtIdx: 1,
+    id: 888_010,
+    name: 'Ranked Miniboss',
+    count: 0,
+    health: 1000,
+    level: 80,
+    scale: 1,
+    cc: [],
+    spells: [],
+    clones: [{ mdtIdx: 1, x: 0, y: 0, g: null, sublevel: 1 }],
+  }
+
+  it('marks a miniboss, and does not call it a boss', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={ranked} />)
+    expect(screen.getByText('MINIBOSS')).toBeTruthy()
+    expect(screen.queryByText('BOSS')).toBeNull()
+  })
+
+  // MDT flags it, the card demotes it: the header has to follow the card, or the codex and the
+  // map would disagree about the same mob.
+  it('says miniboss even when MDT flags the mob as a boss', () => {
+    renderEn(<MobCard slug="__fixtures__" enemy={{ ...ranked, isBoss: true }} />)
+    expect(screen.getByText('MINIBOSS')).toBeTruthy()
+    expect(screen.queryByText('BOSS')).toBeNull()
+  })
+})

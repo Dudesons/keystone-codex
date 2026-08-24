@@ -65,6 +65,7 @@ export const fr: Dictionary = {
 
   // Mob card
   'mob.boss': 'BOSS',
+  'mob.miniboss': 'MINIBOSS',
   'mob.pull': 'Pull {n}',
   'mob.trap': 'LE PIÈGE',
   'mob.ccApplicable': 'CC APPLICABLES',
@@ -92,7 +93,6 @@ export const fr: Dictionary = {
   'role.caster': 'Caster',
   'role.melee': 'Mêlée',
   'role.patrol': 'Patrouille',
-  'role.miniboss': 'Miniboss',
   'role.add': 'Add de rencontre',
 
   // Spell tags
@@ -111,6 +111,7 @@ export const fr: Dictionary = {
   'map.zoomOut': 'Dézoomer',
   'map.fit': 'Recadrer',
   'map.boss': 'boss',
+  'map.miniboss': 'miniboss',
   'map.pack': 'pack {g} ({n})',
   'map.patrol': 'patrouille',
   'map.toKick': 'à kick',
@@ -162,6 +163,10 @@ export const fr: Dictionary = {
   'legend.ring.low': 'Sans danger',
   'legend.ring.boss': 'Boss',
   'legend.ring.unknown': 'Menace non renseignée',
+  'legend.blip': 'TAILLE DES PIONS',
+  'legend.blip.boss': 'Boss',
+  'legend.blip.miniboss': 'Miniboss',
+  'legend.blip.trash': 'Tout le reste',
 
   // Route panel
   'route.namePlaceholder': 'Nom de la route',

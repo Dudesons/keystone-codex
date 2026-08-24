@@ -100,7 +100,12 @@ export default function MobCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <h3 className="font-semibold text-ink-100">{label.name}</h3>
-            {enemy.isBoss && <span className="text-xs font-semibold text-gold-400">{t('mob.boss')}</span>}
+            {ind.rank === 'boss' && (
+              <span className="text-xs font-semibold text-gold-400">{t('mob.boss')}</span>
+            )}
+            {ind.rank === 'miniboss' && (
+              <span className="text-xs font-semibold text-ink-300">{t('mob.miniboss')}</span>
+            )}
             <ThreatBadge threat={content?.threat} />
             {!compact && ind.hasTips && (
               <TipsJumpBadge npcId={enemy.id} onJump={() => setFlashToken((n) => n + 1)} />

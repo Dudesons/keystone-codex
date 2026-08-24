@@ -5,7 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { splitFrontmatter } from './content'
+import { isRank, splitFrontmatter } from './content'
 import { getLookup } from './data'
 import { parseTips } from './tips'
 
@@ -139,5 +139,31 @@ describe('Tip pack scopes', () => {
         return here === there ? [] : [`${file}: scopes ${here || '(none)'}, base scopes ${there || '(none)'}`]
       })
     expect(drifted).toEqual([])
+  })
+})
+
+/** The raw `rank:` a card declares, before the loader has had a chance to drop it. */
+function declaredRank(file: string): string | undefined {
+  const { data } = splitFrontmatter(readFileSync(file, 'utf8'))
+  return typeof data.rank === 'string' ? data.rank : undefined
+}
+
+describe('Declared ranks', () => {
+  it('finds at least one card declaring one, so this test is not vacuous', () => {
+    const declared = cards().flatMap(([, file]) => declaredRank(file) ?? [])
+    expect(declared.length).toBeGreaterThan(0)
+  })
+
+  /**
+   * A `rank:` outside the vocabulary is dropped by the loader without a word, and the mob keeps
+   * whatever MDT said — so `rank: bos` on a real boss looks exactly like a correct card until
+   * someone notices the mob in the wrong list. This is the only place that typo is visible.
+   */
+  it('uses a value the loader will accept', () => {
+    const bad = cards().flatMap(([, file]) => {
+      const rank = declaredRank(file)
+      return rank !== undefined && !isRank(rank) ? [`${file}: rank: ${rank}`] : []
+    })
+    expect(bad).toEqual([])
   })
 })

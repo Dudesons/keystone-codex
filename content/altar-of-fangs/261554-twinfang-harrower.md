@@ -4,7 +4,8 @@ name: "Twinfang Harrower"   # auto
 count: 25   # auto — forces per unit
 
 threat: medium
-role: miniboss
+role: melee
+rank: miniboss
 
 spells:
   - id: 1294572

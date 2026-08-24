@@ -4,7 +4,8 @@ name: "Defier Draghar"   # auto
 count: 30   # auto — forces per unit
 
 threat: high
-role: miniboss
+role: melee
+rank: miniboss
 
 spells:
   - id: 372047

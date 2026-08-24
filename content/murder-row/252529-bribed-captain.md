@@ -4,7 +4,8 @@ name: "Bribed Captain"   # auto
 count: 35   # auto — forces per unit
 
 threat: medium
-role: miniboss
+role: melee
+rank: miniboss
 
 spells:
   - id: 1256276

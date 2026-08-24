@@ -4,7 +4,8 @@ name: "Raj'kess the Spellstorm"   # auto
 count: 40   # auto — forces per unit
 
 threat: low
-role: miniboss
+role: caster
+rank: miniboss
 
 spells:
   - id: 1311747

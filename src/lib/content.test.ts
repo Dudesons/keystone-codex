@@ -8,6 +8,7 @@ import {
   getDungeonContent,
   getMobContent,
   inlineMarkdown,
+  isRank,
   isRole,
   npcIdList,
 } from './content'
@@ -627,5 +628,37 @@ describe('getDungeonContent bosses', () => {
 
   it('leaves it undefined where no order is declared, so mdtIdx stands', () => {
     expect(getDungeonContent('altar-of-fangs')?.bosses).toBeUndefined()
+  })
+})
+
+describe('rank', () => {
+  it('reads a legal value off a card', () => {
+    expect(getMobContent('__fixtures__', 888_010)?.rank).toBe('miniboss')
+  })
+
+  it('leaves rank undefined on a card that declares none', () => {
+    expect(getMobContent('__fixtures__', 270_306)?.rank).toBeUndefined()
+  })
+
+  // `role` is displayed, so a typo renders verbatim and the reader sees what was written.
+  // `rank` decides placement and is never displayed as text, so the same tolerance would drop a
+  // boss off the Overview with nothing on screen to say so. Ignoring it leaves MDT's answer
+  // standing, which is the safe direction; `content.integrity.test.ts` is what catches the typo.
+  it('rejects a value outside the vocabulary', () => {
+    expect(isRank('boss')).toBe(true)
+    expect(isRank('miniboss')).toBe(true)
+    expect(isRank('bos')).toBe(false)
+    expect(isRank('')).toBe(false)
+    expect(isRank(undefined)).toBe(false)
+    expect(isRank(3)).toBe(false)
+  })
+})
+
+describe('miniboss leaves the shape vocabulary', () => {
+  // It was never a shape: a mob is a caster or a melee *and* a miniboss. The rank field is
+  // where it lives now, and leaving it in `ROLES` would keep offering the old spelling.
+  it('no longer offers miniboss as a shape', () => {
+    expect(isRole('miniboss')).toBe(false)
+    expect(ROLES).not.toContain('miniboss')
   })
 })

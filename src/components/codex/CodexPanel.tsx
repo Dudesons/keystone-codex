@@ -4,6 +4,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { getDungeonContent } from '../../lib/content'
+import { getIndicators } from '../../lib/indicators'
+import type { Enemy } from '../../lib/types'
 import { useI18n } from '../../lib/i18n/context'
 import MobCard from './MobCard'
 
@@ -136,10 +138,13 @@ export default function CodexPanel({
     )
   }
 
-  const bosses = lookup.dungeon.enemies.filter((e) => e.isBoss)
+  // The card's word, not MDT's flag: a mob the card demotes belongs in the trash list, marked
+  // in place, rather than in the boss group under a heading that would make it a boss again.
+  const isBossRank = (e: Enemy) => getIndicators(slug, e, locale).rank === 'boss'
+  const bosses = lookup.dungeon.enemies.filter(isBossRank)
   const seen = new Set<number>()
   const uniqueTrash = lookup.dungeon.enemies.filter(
-    (e) => !e.isBoss && (seen.has(e.id) ? false : (seen.add(e.id), true)),
+    (e) => !isBossRank(e) && (seen.has(e.id) ? false : (seen.add(e.id), true)),
   )
 
   return (

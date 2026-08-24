@@ -18,6 +18,7 @@ change to the right-hand column is work the next `npm run data` erases.
 | --- | --- |
 | `threat`: how much this mob changes the pull | Spell names, icons, descriptions, cast times and ranges — fetched from Wowhead |
 | `role`: what shape of mob it is | Mob names, forces, positions on the map, applicable CC — extracted from MDT |
+| `rank`: whether it is a boss or a miniboss, when the game disagrees with the players | Which mobs the game itself flags as bosses |
 | A spell's `tag`, `prio` and `note` | Which spells a mob has at all, and their ids |
 | `trap`: the sentence that avoids the wipe | The dungeon maps under `public/maps/` |
 | The prose under the frontmatter | Everything under `src/data/generated/` |
@@ -79,7 +80,8 @@ the `---` lines, free prose after it.
 ---
 npcId: 270306
 threat: high              # low | medium | high | lethal
-role: melee               # caster | melee | patrol | miniboss | add
+role: melee               # caster | melee | patrol | add
+rank: miniboss            # optional: boss | miniboss — overrides what MDT says
 spells:
   - id: 1306911
     tag: tank             # kick | frontal | dodge | dispel | tank | soak | ignore
@@ -97,7 +99,8 @@ Free-form prose: positioning, focus order, cooldowns.
 | --- | --- |
 | `npcId` | The mob's id. Written by the scaffold; never change it — the card is matched to the map by this number alone. |
 | `threat` | `low`, `medium`, `high` or `lethal`. Colours the ring on the map. See [Rate a mob's threat](#rate-a-mobs-threat). |
-| `role` | `caster`, `melee`, `patrol`, `miniboss` or `add`. |
+| `role` | `caster`, `melee`, `patrol` or `add`. What shape of mob it is. |
+| `rank` | `boss` or `miniboss`. Leave it out and the mob is whatever MDT flagged it. Write it when the game disagrees with the players: a flagged unit that is really a miniboss, or an unflagged one that everybody treats as a boss fight. A value outside those two is ignored, and a test names the file. |
 | `spells[].id` | A spell id that already exists in the generated data. Do not invent one. |
 | `spells[].tag` | `kick`, `frontal`, `dodge`, `dispel`, `tank`, `soak` or `ignore`. A fresh card says `tag: todo`, which shows no badge and means "not looked at yet". |
 | `spells[].prio` | A number. Within a card it orders spells carrying the same tag; `prio: 1` can also reach the dungeon's Overview tab. See [Annotate a spell](#annotate-a-spell). |
@@ -245,7 +248,7 @@ the base card field by field — anything you leave out keeps the English.
 
 What belongs in a `.fr.md`: `npcId` (so the file is matched), a spell's `note` keyed by its
 `id`, `trap`, the prose — and `tips`, with one caveat below. What does not: `threat`, `role`,
-`tag`, `prio`. Those are judgements, not language; duplicating them across two files would only
+`tag`, `prio`, `rank`. Those are judgements, not language; duplicating them across two files would only
 let them drift.
 
 ```yaml

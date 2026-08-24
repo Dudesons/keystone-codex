@@ -4,9 +4,12 @@ name: "Echo of Nalorakk"   # auto
 isBoss: true   # auto
 count: 0   # auto — forces per unit
 
-# A boss ring is gold whatever this says, so threat only adds a badge here.
+# MDT flags this a boss because the game does. It has 3.4M health against Nalorakk's 21.9M and
+# is fought during his encounter, so no group plans a pull around it: `rank` says so, and the
+# ring now follows threat rather than being gold regardless. Rating it would be worth doing.
 threat:
 role: add
+rank: miniboss
 
 spells:
   - id: 1255570

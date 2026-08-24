@@ -5,8 +5,10 @@ count: 25   # auto — forces per unit
 
 # TO FILL IN: low | medium | high | lethal
 threat:
-# TO FILL IN: caster | melee | patrol | miniboss | add
+# TO FILL IN: caster | melee | patrol | add
 role:
+# OPTIONAL — overrides MDT: boss | miniboss
+rank:
 
 spells:
   - id: 1306517
