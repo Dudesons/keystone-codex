@@ -76,6 +76,30 @@ export function sessionLink(slug: string, room: string): string {
 }
 
 /**
+ * A link that carries the route itself.
+ *
+ * Built from `location` for the same reason `sessionLink` is: that is what puts the deployed
+ * sub-path in front of the hash, without anything about the deployment being repeated here. The
+ * payload is encoded in this one place, so no caller can forget — an MDT string is base64-ish,
+ * and `+`, `/` and `=` all mean something else inside a query.
+ */
+export function routeLink(slug: string, mdtString: string): string {
+  return `${location.origin}${location.pathname}#/d/${slug}/route?route=${encodeURIComponent(mdtString)}`
+}
+
+/**
+ * The length past which a link stops being postable.
+ *
+ * Not a browser limit — browsers take far more. Discord caps a message at 2000 characters, and
+ * Discord is where a route gets handed to a group. The ordinary case is nowhere near it: a route
+ * of pulls alone measures 370 to 612 characters, thirty pulls included. What reaches the ceiling
+ * is drawing — a route carrying freehand strokes measures about 2116 — so this is an edge worth
+ * naming rather than designing around. The link is copied either way: the limit belongs to
+ * wherever it is being pasted, and 2116 characters are fine in an email or a wiki.
+ */
+export const LINK_LIMIT = 1900
+
+/**
  * Import and export failures, as a sentence to show.
  *
  * Only `MdtUserError` is translated: the codec's other errors are diagnostics ("CBOR:
@@ -156,6 +180,23 @@ export default function RoutePanel({
     }
   }
 
+  const handleCopyRouteLink = async () => {
+    try {
+      const link = routeLink(slug, encodeMdtString(routeToLua(route)))
+      await navigator.clipboard.writeText(link)
+      // The over-length case is reported as an error, not because copying failed — it did not —
+      // but because this panel has one channel for something the reader must actually read, and
+      // a success tone would let it pass unnoticed.
+      setMessage(
+        link.length > LINK_LIMIT
+          ? { kind: 'error', text: t('route.routeLinkLong', { n: link.length }) }
+          : { kind: 'ok', text: t('route.routeLinkCopied') },
+      )
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorText(err, t) })
+    }
+  }
+
   const handleExport = async () => {
     try {
       await navigator.clipboard.writeText(encodeMdtString(routeToLua(route)))
@@ -199,6 +240,12 @@ export default function RoutePanel({
             className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
           >
             {t('route.copy')}
+          </button>
+          <button
+            onClick={handleCopyRouteLink}
+            className="flex-1 rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
+          >
+            {t('route.copyRouteLink')}
           </button>
           <button
             onClick={() => {

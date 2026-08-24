@@ -203,6 +203,13 @@ export const fr: Dictionary = {
   'route.copied': 'String MDT copiée. Colle-la dans MDT en jeu (Import).',
   'route.codeCopied': 'Code de session copié.',
   'route.linkCopied': 'Lien de session copié.',
+  'route.copyRouteLink': 'Copier un lien vers cette route',
+  'route.routeLinkCopied': 'Lien copié.',
+  'route.routeLinkLong':
+    'Lien copié, mais il fait {n} caractères — trop long pour un message Discord. Pour partager une route de cette taille, ouvrez plutôt une session.',
+  'route.routeOffer': 'Ce lien contient une route. La charger remplacera la vôtre.',
+  'route.acceptRoute': 'Charger cette route',
+  'route.declineRoute': 'Garder la mienne',
   'route.imported.one': '« {name} » importée : {n} pull.',
   'route.imported.other': '« {name} » importée : {n} pulls.',
   'route.hoverAMob': 'Survole un mob sur la carte pour lire sa fiche. Clic droit pour la garder ici.',
