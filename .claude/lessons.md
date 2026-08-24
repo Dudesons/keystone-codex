@@ -48,3 +48,27 @@ answer from a line-by-line or set-membership diff. Compare structurally, by the 
 identity (id, key), or use the tool built to do that.
 **Scope:** Everywhere a generated or exported data file is compared across versions; in this
 repository, `scripts/mdt-diff.mjs` is that tool for MDT's `.lua` exports.
+
+## 2026-08-25 — Prove a thing is absent before reporting it absent
+
+**What happened:** I told RwlRwl that `importRoute` had no check that a payload's dungeon matched
+the document's. It had one — `RoutePanel.handleImport` compared the slugs. The check was simply in
+the wrong place: it ran *after* `importRoute` had already replaced the document, so the reader got
+an error message and a corrupted route.
+
+I had read `importRoute` itself and concluded "no check" from its absence there, without searching
+for handling anywhere else. I found the truth by accident, when switching branches surfaced a
+`route.wrongDungeon` string I had never looked for.
+
+**The rule:** A claim that something is missing is a negative, and a negative needs a search, not a
+reading. Before reporting an absent guard, validation or handler, grep the whole tree for its
+symptoms — the error string, the message key, the concept — not just the function you expected it
+in. A report asserting a negative deserves more evidence than one asserting a positive.
+
+**The tell I ignored:** eleven existing tests imported one dungeon's fixture into another dungeon's
+document and asserted happily on the result. That was direct evidence the import completed, which
+should have made me ask what the caller did afterwards.
+
+**Scope:** Every "there is no X" claim — missing validation, missing test coverage, an unhandled
+case — and especially before it goes into a design document or a commit message, where a wrong
+negative outlives the conversation.
