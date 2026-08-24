@@ -51,6 +51,33 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const close = useCallback(() => setIsOpen(false), [])
   const control = useMemo(() => ({ open }), [open])
 
+  // Ctrl/Cmd+K and a bare slash, from anywhere. The guard is the one `DungeonPage`'s own handler
+  // uses, for the same reason: a key pressed in a text field is text, not a command. `/` needs it
+  // because it is printable and the route panel holds two text fields; Ctrl+K gets it because one
+  // rule is easier to keep true than two.
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const typing =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.isContentEditable === true
+      if (typing) return
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setIsOpen(true)
+        return
+      }
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault()
+        setIsOpen(true)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <SearchContext.Provider value={control}>
       {children}
