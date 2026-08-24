@@ -4,7 +4,7 @@ name: "High Channeler Ryvati"   # auto
 count: 30   # auto — forces per unit
 
 threat: lethal
-role:
+role: caster
 rank: miniboss
 
 spells:

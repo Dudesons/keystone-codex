@@ -4,7 +4,7 @@ name: "Loa Speaker Nanea"   # auto
 count: 35   # auto — forces per unit
 
 threat: low
-role:
+role: caster
 rank: miniboss
 
 spells:

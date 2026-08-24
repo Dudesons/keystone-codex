@@ -4,7 +4,7 @@ name: "Orb Watcher"   # auto
 count: 25   # auto — forces per unit
 
 threat: high
-role:
+role: add
 rank: miniboss
 
 spells:

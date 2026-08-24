@@ -4,7 +4,7 @@ name: "Krolusk Matriarch"   # auto
 count: 16   # auto — forces per unit
 
 threat: medium
-role:
+role: melee
 rank: miniboss
 
 spells:

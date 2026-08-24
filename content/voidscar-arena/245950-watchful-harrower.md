@@ -4,7 +4,7 @@ name: "Watchful Harrower"   # auto
 count: 65   # auto — forces per unit
 
 threat: medium
-role:
+role: melee
 rank: miniboss
 
 spells:

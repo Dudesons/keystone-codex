@@ -4,7 +4,7 @@ name: "Defiled Golem"   # auto
 count: 35   # auto — forces per unit
 
 threat: high
-role:
+role: melee
 rank: miniboss
 
 spells:

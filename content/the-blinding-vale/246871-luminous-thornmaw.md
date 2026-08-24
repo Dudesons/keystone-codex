@@ -4,7 +4,7 @@ name: "Luminous Thornmaw"   # auto
 count: 22   # auto — forces per unit
 
 threat: high
-role:
+role: melee
 rank: miniboss
 
 spells:

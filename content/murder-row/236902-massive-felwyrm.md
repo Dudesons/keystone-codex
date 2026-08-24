@@ -4,7 +4,7 @@ name: "Massive Felwyrm"   # auto
 count: 12   # auto — forces per unit
 
 threat: medium
-role:
+role: caster
 rank: miniboss
 
 spells:

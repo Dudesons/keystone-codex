@@ -4,7 +4,7 @@ name: "King Timalji"   # auto
 count: 25   # auto — forces per unit
 
 threat: lethal
-role:
+role: melee
 rank: miniboss
 
 spells:

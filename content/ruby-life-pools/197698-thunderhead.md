@@ -4,7 +4,7 @@ name: "Thunderhead"   # auto
 count: 48   # auto — forces per unit
 
 threat: high
-role:
+role: melee
 rank: miniboss
 
 spells:

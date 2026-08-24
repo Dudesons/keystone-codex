@@ -4,7 +4,7 @@ name: "Shadow of Zul"   # auto
 count: 30   # auto — forces per unit
 
 threat: high
-role:
+role: melee
 rank: miniboss
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
