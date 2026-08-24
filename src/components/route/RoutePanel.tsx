@@ -62,6 +62,11 @@ interface Props {
   onResumeRoom: () => void
   onSetIdentity: (name: string) => void
   pendingRoom: string | null
+  /** The route a share link carries. Null when the address carries none. */
+  pendingRoute?: string | null
+  /** Called only after a successful import, so the page can drop the parameter. */
+  onRouteLoaded?: () => void
+  onDeclineRoute?: () => void
 }
 
 /**
@@ -127,6 +132,9 @@ export default function RoutePanel({
   onResumeRoom,
   onSetIdentity,
   pendingRoom,
+  pendingRoute,
+  onRouteLoaded,
+  onDeclineRoute,
 }: Props) {
   const { t, plural, formatPercent, locale } = useI18n()
   const [importText, setImportText] = useState('')
@@ -180,6 +188,32 @@ export default function RoutePanel({
     }
   }
 
+  /**
+   * The import a share link offers.
+   *
+   * Performed here rather than in the page because this is where the reporting lives: a payload
+   * for another dungeon, or one that will not decode, arrives as the same `MdtUserError` a bad
+   * paste does and is translated by the same `errorText`. The page only decides whether a route
+   * is on offer at all.
+   */
+  const handleAcceptRoute = () => {
+    if (!pendingRoute) return
+    try {
+      const imported = actions.importRoute(pendingRoute)
+      onCurrentPullChange(Math.max(0, imported.pulls.length - 1))
+      setMessage({
+        kind: 'ok',
+        text: plural('route.imported', imported.pulls.length, { name: imported.name }),
+      })
+      onRouteLoaded?.()
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorText(err, t) })
+      // Refused offers are dropped rather than left standing: the message says what happened,
+      // and a button that will fail again the same way is not worth offering twice.
+      onDeclineRoute?.()
+    }
+  }
+
   const handleCopyRouteLink = async () => {
     try {
       const link = routeLink(slug, encodeMdtString(routeToLua(route)))
@@ -208,6 +242,29 @@ export default function RoutePanel({
 
   return (
     <div className="space-y-4">
+      {/* At the top rather than beside the session controls: this is not about collaborating,
+          it is a decision about the route already in front of you, and it has to be read before
+          anything else on the panel is worth looking at. */}
+      {pendingRoute && (
+        <section className="rounded-lg border border-gold-500/40 bg-gold-500/5 p-3">
+          <p className="text-[11px] text-ink-300">{t('route.routeOffer')}</p>
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={handleAcceptRoute}
+              className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
+            >
+              {t('route.acceptRoute')}
+            </button>
+            <button
+              onClick={onDeclineRoute}
+              className="rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-400 hover:border-ink-600 hover:text-ink-200"
+            >
+              {t('route.declineRoute')}
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="rounded-lg border border-ink-700 bg-ink-850 p-3">
         <input
           value={route.name}

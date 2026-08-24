@@ -9,6 +9,8 @@ import { Awareness } from 'y-protocols/awareness'
 import { getLookup } from '../lib/data'
 import { MAP_SCALE } from '../lib/geometry'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
+import { emptyRoute, nextColor, routeToLua } from '../lib/mdt/route'
+import { encodeMdtString } from '../lib/mdt/string'
 import { SearchProvider } from '../components/SearchPalette'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
@@ -1056,5 +1058,84 @@ describe('Remounting per dungeon', () => {
     cleanup()
     const { container: second } = renderEn(at(`/d/${other}/codex`))
     expect(second.querySelector('h1')!.textContent).toBe(getLookup(other)!.dungeon.englishName)
+  })
+})
+
+describe('Arriving with a route link', () => {
+  /**
+   * A real MDT string for this dungeon, built by the repository's own codec from real packs —
+   * three pulls, so it is distinguishable from the single empty pull a fresh document has.
+   */
+  const payload = () => {
+    const packs = [...lookup.packs.values()].slice(0, 3)
+    return encodeMdtString(
+      routeToLua({
+        ...emptyRoute(SLUG, lookup.dungeon.mdtIndex, 'Shared route'),
+        pulls: packs.map((pack, i) => ({ color: nextColor(i), clones: pack.members })),
+      }),
+    )
+  }
+
+  const withRoute = (path: string, route = payload()) =>
+    at(`${path}${path.includes('?') ? '&' : '?'}route=${encodeURIComponent(route)}`)
+
+  it('offers the route rather than loading it', () => {
+    const { container } = renderEn(withRoute(`/d/${SLUG}/route`))
+    expect(container.textContent).toContain('This link carries a route')
+  })
+
+  it('loads nothing until the offer is accepted', () => {
+    renderEn(withRoute(`/d/${SLUG}/route`))
+    // A fresh document has exactly one pull; the payload carries three.
+    expect(screen.getByText('PULLS · 1')).toBeDefined()
+  })
+
+  it('redirects the codex address to the route one, keeping the route', () => {
+    const { container } = renderEn(withRoute(`/d/${SLUG}/codex`))
+    expect(screen.queryByRole('heading', { name: 'BOSSES' })).toBeNull()
+    expect(container.textContent).toContain('This link carries a route')
+  })
+
+  it('loads the route when the offer is accepted', () => {
+    renderEn(withRoute(`/d/${SLUG}/route`))
+    fireEvent.click(screen.getByRole('button', { name: 'Load this route' }))
+    expect(screen.getByText('PULLS · 3')).toBeDefined()
+  })
+
+  it('drops the offer once it has been taken, so a re-render cannot re-apply it', () => {
+    const { container } = renderEn(withRoute(`/d/${SLUG}/route`))
+    fireEvent.click(screen.getByRole('button', { name: 'Load this route' }))
+    expect(container.textContent).not.toContain('This link carries a route')
+  })
+
+  it('drops the offer when it is declined, and loads nothing', () => {
+    const { container } = renderEn(withRoute(`/d/${SLUG}/route`))
+    fireEvent.click(screen.getByRole('button', { name: 'Keep mine' }))
+    expect(container.textContent).not.toContain('This link carries a route')
+    expect(screen.getByText('PULLS · 1')).toBeDefined()
+  })
+
+  it('shows only the room invitation when the link carries both', () => {
+    // Joining replaces the document from the peer, so applying a route first is work thrown
+    // away — and two cards at once is a choice nobody asked for.
+    const { container } = renderEn(withRoute(`/d/${SLUG}/route?room=ABC123`))
+    expect(container.textContent).not.toContain('This link carries a route')
+    expect(container.textContent).toContain('ABC123')
+  })
+
+  it('refuses a route meant for another dungeon, naming it', () => {
+    // Inherited from the guard in `importRoute`, not added here — the offer is accepted and the
+    // import refuses it. Kept because it is the test that would notice that guard being moved.
+    const other = [...getLookup('murder-row')!.packs.values()].slice(0, 2)
+    const foreign = encodeMdtString(
+      routeToLua({
+        ...emptyRoute('murder-row', getLookup('murder-row')!.dungeon.mdtIndex, 'Elsewhere'),
+        pulls: other.map((pack, i) => ({ color: nextColor(i), clones: pack.members })),
+      }),
+    )
+    renderEn(withRoute(`/d/${SLUG}/route`, foreign))
+    fireEvent.click(screen.getByRole('button', { name: 'Load this route' }))
+    expect(screen.getByText(/for another dungeon|Murder Row/)).toBeDefined()
+    expect(screen.getByText('PULLS · 1')).toBeDefined()
   })
 })
