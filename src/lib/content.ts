@@ -21,7 +21,7 @@
  */
 
 import { parse as parseYaml } from 'yaml'
-import { marked } from 'marked'
+import { renderBlock, renderInline } from './markdown'
 import { DEFAULT_LOCALE, isLocale, type Locale } from './i18n/locales'
 import { parseTips, type Tip } from './tips'
 
@@ -129,7 +129,7 @@ export function splitFrontmatter(raw: string): { data: Record<string, unknown>; 
   }
 }
 
-const render = (body: string) => marked.parse(body.trim(), { async: false }) as string
+const render = renderBlock
 
 /**
  * Markdown for the one-line fields — `trap` and a spell's `note`.
@@ -137,9 +137,12 @@ const render = (body: string) => marked.parse(body.trim(), { async: false }) as 
  * Inline rather than block: these are sentences rendered inside a paragraph the component
  * already lays out, so a `<p>` wrapper would fight the surrounding styling. Emphasis and
  * links work; headings and lists do not, which is the right constraint for a single sentence.
+ *
+ * Both helpers render through [markdown.ts](markdown.ts) rather than through `marked`
+ * directly: these fields are contributor-written and go to `dangerouslySetInnerHTML`, and that
+ * module is where raw HTML and an unservable link scheme are refused.
  */
-export const inlineMarkdown = (text?: string) =>
-  text ? (marked.parseInline(text.trim(), { async: false }) as string) : ''
+export const inlineMarkdown = (text?: string) => (text ? renderInline(text) : '')
 
 /** `../../content/<slug>/<file>.md`, with an optional `.<locale>` before the extension. */
 const files = import.meta.glob<string>('../../content/**/*.md', {

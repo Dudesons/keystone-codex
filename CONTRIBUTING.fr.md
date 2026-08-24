@@ -337,10 +337,15 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
   dans ce dépôt est à la fois un problème de licence et un problème de maintenance — leur guide
   sera mis à jour, notre copie non.
 - **Jamais de HTML brut.** `note:`, `trap:` et une astuce de type texte sont rendus comme du
-  markdown en ligne, et le rendu ne filtre pas le HTML — une balise `<script>` dans l’un de ces
-  champs s’exécuterait dans le navigateur de chaque personne qui lit la fiche. Le markdown
-  suffit à ce qu’une fiche demande : emphase et liens. Le HTML brut est refusé en relecture, et
-  le repérer fait partie du travail de relecture.
+  markdown en ligne, et une balise écrite dans l’un de ces champs est **échappée** : `<b>gras</b>`
+  arrive au lecteur sous la forme de ces caractères exacts, visibles sur la fiche. Le markdown
+  suffit à ce qu’une fiche demande — emphase et liens — écrivez donc cela. Cet échappement est
+  une règle de sécurité avant d’être une règle de style : sans lui, une balise `<script>` dans
+  l’un de ces champs s’exécuterait dans le navigateur de chaque personne qui lit la fiche.
+- **Un lien pointe vers `http`, `https` ou `mailto`, ou vers rien.** Un lien portant un autre
+  schéma garde son texte et perd son lien, pour la même raison : `[cliquez](javascript:…)` est du
+  markdown valide qui se lit comme un lien ordinaire dans un diff. Les chemins relatifs et les
+  liens internes en `#/d/…` ne sont pas concernés.
 
 ## Où poser une question
 
