@@ -140,3 +140,20 @@ describe('Who the relay answers', () => {
     expect((await upgrade()).status).toBe(403)
   })
 })
+
+describe('What the relay will accept as a room name', () => {
+  const open = (room: string) =>
+    SELF.fetch(`https://relay.test/${room}`, {
+      headers: { Upgrade: 'websocket', Origin: 'http://localhost:5173' },
+    })
+
+  it('accepts the longest name the app itself builds', async () => {
+    // `midnight-codex:temple-of-sethraliss:ABCDEF` — 42 characters, the season's longest slug.
+    // Here to catch a cap set so tight it refuses a real room rather than an invented one.
+    expect((await open(`midnight-codex:${'a'.repeat(40)}:ABCDEF`)).status).toBe(101)
+  })
+
+  it('refuses a name longer than any the app builds, rather than naming an object after it', async () => {
+    expect((await open('x'.repeat(500))).status).toBe(400)
+  })
+})

@@ -770,6 +770,27 @@ describe('randomRoomCode', () => {
       expect(randomRoomCode()).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/)
     }
   })
+
+  it('does not draw from Math.random, whose stream a page can pin', () => {
+    // Pinning `Math.random` is what a caller of a predictable generator would see: with it held
+    // still, a code built from it never changes. A code drawn from the platform's CSPRNG does.
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0)
+    try {
+      const codes = new Set(Array.from({ length: 50 }, () => randomRoomCode()))
+      expect(codes.size).toBeGreaterThan(1)
+    } finally {
+      random.mockRestore()
+    }
+  })
+
+  it('can still reach every character of the alphabet', () => {
+    // The regex above passes just as happily on a generator that only ever emits A–Z, which is
+    // what folding a byte into the wrong modulus would produce. This is what catches that.
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    const seen = new Set<string>()
+    for (let i = 0; i < 200; i++) randomRoomCode().split('').forEach((c) => seen.add(c))
+    expect([...alphabet].filter((c) => !seen.has(c))).toEqual([])
+  })
 })
 
 /** jsdom reports a visibility, but does not let a page change it. */
