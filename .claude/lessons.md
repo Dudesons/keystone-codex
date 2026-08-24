@@ -22,7 +22,22 @@ not belong here. If two lessons say the same thing, merge them.
 
 <!-- Most recent lessons at the top. -->
 
-## 2026-08-18 — Diff data files by identity, not by line membership
+## 2026-08-24 — Measure a change by driving the real code path, not a replica of it
+
+**What happened:** Asked whether hardening the markdown renderer would break existing cards, a
+script rendered every `content/**.md` field through "the current pipeline" and reported 19
+regressions in HTML comments — including a claim that `_dungeon.md`'s scaffold notes would become
+visible text. All 19 were false. The script fed the raw markdown body to `marked`, while
+`content.ts` strips HTML comments before rendering; the real answer was zero differences. The
+false regression was reported to RwlRwlRwlRwl and a comment special case was nearly built for it.
+
+**The rule:** When measuring whether a change alters behaviour, drive the **production** function,
+not a reimplementation of it. If the real path cannot be called directly, first prove the replica
+agrees with it on today's input — identical output, not merely similar — before trusting a single
+difference it reports. A replica that diverges reports its own bugs as findings.
+
+**Scope:** Everywhere, and especially for "will this break anything" questions, where the whole
+value of the answer is that the harness and the app agree.
 
 **What happened:** A line-by-line read of two `.lua` exports missed six bosses each losing
 thirty forces, because `["count"] = 0,` already occurred for dozens of other mobs — a line whose
