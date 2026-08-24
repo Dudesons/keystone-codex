@@ -34,8 +34,8 @@ changer une ne change rien à l'écran.
 
 **Un nom de sort faux, un temps d'incantation faux ou un sort manquant sont un problème de
 données, pas un problème de fiche.** Aucune modification dans `content/` ne peut les corriger,
-donc n'essayez pas : [ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues) à la
-place.
+donc n'essayez pas :
+[ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) à la place.
 
 ## Deux façons de modifier
 
@@ -164,7 +164,7 @@ apparaîtra.
 
 `threat` ne répond pas à « le chiffre est-il gros », mais à « ce mob change-t-il le pull ».
 L'échelle, les trois règles qui en découlent et deux exemples travaillés vivent dans
-[`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#the-threat-scale)
+[`docs/writing-cards.fr.md`](docs/writing-cards.fr.md#léchelle-de-menace)
 — **lisez-le avant d'évaluer.** Il dit aussi quand laisser le champ vide plutôt que de le
 remplir, et quels mobs ne portent pas de `threat` du tout.
 
@@ -306,9 +306,9 @@ viennent de MDT. Les deux sont réécrits en bloc par `npm run data` : une corre
 survit donc exactement jusqu'à la prochaine extraction — et, entre-temps, elle met la fiche en
 désaccord avec le jeu.
 
-[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues) en nommant le donjon, le
-mob et ce qui est faux. Le correctif est soit une nouvelle extraction, soit une modification des
-scripts, et les deux sont la pull request de quelqu'un d'autre.
+[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose) en nommant le
+donjon, le mob et ce qui est faux. Le correctif est soit une nouvelle extraction, soit une
+modification des scripts, et les deux sont la pull request de quelqu'un d'autre.
 
 ## Avant d'ouvrir une pull request
 
@@ -330,7 +330,7 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
   porter : une infobulle qui ne donne aucun rayon, un chiffre non mis à l'échelle, deux sources
   qui se contredisent, quelque chose que vous ne savez que pour l'avoir joué. Tous ces cas sont
   traités dans
-  [`.claude/skills/codex-content/SKILL.md`](.claude/skills/codex-content/SKILL.md#what-may-be-written-at-all).
+  [`docs/writing-cards.fr.md`](docs/writing-cards.fr.md#ce-qui-peut-être-écrit).
   Lisez-le avant d'écrire une phrase que la fiche ne peut pas sourcer.
 - **Ne recopiez pas le guide de quelqu'un d'autre.** Un écrit de route, un script de vidéo, une
   page de wiki : mettez-le en lien comme astuce, avec son nom dans le label. Recopier du texte
@@ -349,9 +349,13 @@ scripts, et les deux sont la pull request de quelqu'un d'autre.
 
 ## Où poser une question
 
-[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues). Une question sur un mob
-est une aussi bonne raison qu'un bug : si une fiche est assez floue pour qu'on pose la question,
-elle l'est assez pour être corrigée.
+[Ouvrez une issue](https://github.com/Dudesons/keystone-codex/issues/new/choose). Une question sur
+un mob est une aussi bonne raison qu'un bug : si une fiche est assez floue pour qu'on pose la
+question, elle l'est assez pour être corrigée.
+
+Si ce que vous avez trouvé est une fiche qui arrive à faire exécuter du script, et non une fiche
+qui se trompe, lisez d'abord [`.github/SECURITY.md`](.github/SECURITY.md) : il dit quoi mettre
+dans le rapport, et quoi en laisser dehors.
 
 La référence sur l'application elle-même — comment lire la carte, les routes, comment les données
 sont régénérées — est dans [README.md](README.md).

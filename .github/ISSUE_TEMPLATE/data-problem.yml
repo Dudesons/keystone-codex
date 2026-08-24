@@ -1,0 +1,37 @@
+name: A spell, name or number is wrong
+description: Something the cards cannot fix, because it comes from MDT or Wowhead rather than from us.
+title: "Data: "
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Spell names, icons, descriptions and cast times come from Wowhead; mob names, forces and
+        applicable CC come from MDT. Both are rewritten wholesale by `npm run data`, so editing
+        them by hand survives exactly until the next extraction — which is why this is an issue
+        rather than a pull request.
+
+        **Write in whichever language you prefer, French or English.**
+  - type: input
+    id: dungeon
+    attributes:
+      label: Dungeon
+      description: The name, or the slug from the URL (`/d/<slug>`).
+      placeholder: Temple of Sethraliss
+    validations:
+      required: true
+  - type: input
+    id: mob
+    attributes:
+      label: Mob
+      description: Its name, and its `npcId` if you have it — the id is in the URL of the mob's card.
+      placeholder: Earthwhisper Tender (262398)
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong, and what it should be
+      description: What the app shows, and what the game actually does. A screenshot or a Wowhead link helps.
+    validations:
+      required: true
