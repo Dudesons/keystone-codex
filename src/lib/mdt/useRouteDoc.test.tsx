@@ -16,6 +16,7 @@ import { cloneKey, getLookup } from '../data'
 import type { Peer } from '../collab/presence'
 import type { LuaTable, LuaValue } from './cbor'
 import { luaToObjects, type MdtNote } from './objects'
+import { MdtUserError } from './errors'
 import { decodeMdtString, encodeMdtString } from './string'
 import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from './route'
 import { randomRoomCode, roomName, useRouteDoc } from './useRouteDoc'
@@ -129,6 +130,31 @@ const runDrawn = drawn ? it : it.skip
 const plainFixture = path.join(__dirname, '__fixtures__', 'real-export.txt')
 const plain = fs.existsSync(plainFixture) ? fs.readFileSync(plainFixture, 'utf8').trim() : ''
 const runBothFixtures = drawn && plain ? it : it.skip
+
+/**
+ * `drawn`'s objects, carried by a route for **this** document's dungeon.
+ *
+ * `drawn` is a murder-row export while this file's document is altar-of-fangs, and
+ * `importRoute` now refuses that pairing — rightly, since another dungeon's clone references
+ * land on different mobs. The tests below are about objects, not about dungeons, so what they
+ * need is that same real objects table on a route this document will accept.
+ *
+ * Nothing here is hand-written, which is the whole point: `plain`'s real table supplies the
+ * dungeon and the pulls, `drawn`'s real table supplies the objects, and the repository's own
+ * codec re-encodes the result. The property the re-import test rests on survives intact —
+ * `drawn`'s object keys are `1..11` and `plain`'s are `1..5`, so importing this and then `plain`
+ * still collides them, which is the only reason that test can catch anything.
+ */
+const drawnHere = (() => {
+  if (!drawn || !plain) return ''
+  const table = decodeMdtString(plain).table
+  const objects = decodeMdtString(drawn).table.get('objects')
+  // Loud rather than quiet: without this the `set` would store `undefined`, and every test below
+  // would go on passing against a preset carrying no objects at all — proving nothing.
+  if (objects === undefined) throw new Error('real-export-strokes.txt carries no objects table')
+  table.set('objects', objects)
+  return encodeMdtString(table)
+})()
 
 beforeEach(() => {
   localStorage.clear()
@@ -297,6 +323,47 @@ describe('Import and reset', () => {
     expect(result.current.route.pulls).toHaveLength(1)
     expect(result.current.route.pulls[0].clones).toEqual([])
     expect(result.current.route.source).toBeUndefined()
+  })
+})
+
+describe('Importing a route meant for another dungeon', () => {
+  /**
+   * `real-export-strokes.txt` is a **murder-row** export and this document is altar-of-fangs, so
+   * these are the two halves of a real mistake rather than a constructed one.
+   *
+   * What made it worth guarding is that it does not fail loudly. Of the fixture's 114 clone
+   * references, 57 resolve to *some* mob in altar-of-fangs and 57 dangle — so the import produces
+   * a route that looks half-built and points at entirely the wrong mobs.
+   */
+  runDrawn('refuses it rather than filling pulls with references to different mobs', () => {
+    const { result } = mount()
+    expect(() => result.current.actions.importRoute(drawn)).toThrow(MdtUserError)
+  })
+
+  runDrawn('reports it as something the reader can act on, not as a codec diagnostic', () => {
+    const { result } = mount()
+    try {
+      result.current.actions.importRoute(drawn)
+      expect.unreachable('importRoute should have thrown')
+    } catch (err) {
+      // Assert on the code, not the sentence: the sentence is translated in the UI.
+      expect((err as MdtUserError).code).toBe('wrongDungeon')
+    }
+  })
+
+  runDrawn('leaves the route already in the document untouched', () => {
+    const { result } = mount()
+    act(() => result.current.actions.addPull())
+    act(() => result.current.actions.addPull())
+    const before = result.current.route.pulls.length
+
+    expect(() => result.current.actions.importRoute(drawn)).toThrow()
+    expect(result.current.route.pulls).toHaveLength(before)
+  })
+
+  runBothFixtures('accepts a route for this dungeon, which is the same code path', () => {
+    const { result } = mount()
+    expect(() => result.current.actions.importRoute(plain)).not.toThrow()
   })
 })
 
@@ -943,9 +1010,9 @@ describe('An idle session pauses itself', () => {
 })
 
 describe('Objects in the document', () => {
-  runDrawn('does not touch the document until something is edited', () => {
+  runBothFixtures('does not touch the document until something is edited', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
 
     // Eleven objects are visible, and none of them is stored: they are still derived from
     // `source`. There is no `doc` on the hook's return value to inspect directly (deliberately —
@@ -955,9 +1022,9 @@ describe('Objects in the document', () => {
     expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
   })
 
-  runDrawn('adopts the preset’s objects on the first edit, then adds', () => {
+  runBothFixtures('adopts the preset’s objects on the first edit, then adds', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     const before = result.current.route.objects.length
 
     act(() =>
@@ -975,9 +1042,9 @@ describe('Objects in the document', () => {
     expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'mine')).toBe(true)
   })
 
-  runDrawn('keeps provenance through adoption, so an untouched object still exports verbatim', () => {
+  runBothFixtures('keeps provenance through adoption, so an untouched object still exports verbatim', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     act(() =>
       result.current.actions.addObject({ kind: 'note', at: { x: 1, y: 2 }, sublevel: 1, text: 'x' }),
     )
@@ -993,9 +1060,9 @@ describe('Objects in the document', () => {
     }
   })
 
-  runDrawn('removes an object, and the export stops carrying it', () => {
+  runBothFixtures('removes an object, and the export stops carrying it', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     // Adopting is what gives an object its id, so edit once before reaching for one.
     act(() =>
       result.current.actions.addObject({ kind: 'note', at: { x: 9, y: 9 }, sublevel: 1, text: 'seed' }),
@@ -1011,9 +1078,9 @@ describe('Objects in the document', () => {
     expect(exported.some((o) => o.kind === 'note' && o.text === target.text)).toBe(false)
   })
 
-  runDrawn('replicates an object to a peer', async () => {
+  runBothFixtures('replicates an object to a peer', async () => {
     const host = mount()
-    act(() => void host.result.current.actions.importRoute(drawn))
+    act(() => void host.result.current.actions.importRoute(drawnHere))
     act(() => host.result.current.joinRoom('DRAWSYNC', 'host'))
 
     const guest = mount()
@@ -1068,9 +1135,9 @@ describe('Objects in the document', () => {
     expect(after.id).toBe(before.id)
   })
 
-  runDrawn('lets a field the edited object no longer carries disappear', () => {
+  runBothFixtures('lets a field the edited object no longer carries disappear', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     // Adoption is what gives an object both an id to address it by and a `from` to lose.
     act(() =>
       result.current.actions.addObject({ kind: 'note', at: { x: 8, y: 8 }, sublevel: 1, text: 'seed' }),
@@ -1158,7 +1225,7 @@ describe('Objects in the document', () => {
     'forgets a previously adopted objects array on re-import, so the new preset’s own objects are not silently rewritten',
     () => {
       const { result } = mount()
-      act(() => void result.current.actions.importRoute(drawn))
+      act(() => void result.current.actions.importRoute(drawnHere))
       // Adoption is what makes the stale array able to outlive this import: without an edit,
       // `objects` stays derived and there would be nothing left over to survive re-import at all.
       act(() =>
@@ -1187,9 +1254,9 @@ describe('Objects in the document', () => {
     },
   )
 
-  runDrawn('leaves the objects derived from whatever reset leaves as the source — nothing, since reset clears it', () => {
+  runBothFixtures('leaves the objects derived from whatever reset leaves as the source — nothing, since reset clears it', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     act(() =>
       result.current.actions.addObject({ kind: 'note', at: { x: 4, y: 4 }, sublevel: 1, text: 'adopted' }),
     )
@@ -1215,9 +1282,9 @@ describe('Undoing my own object edits', () => {
     expect(result.current.route.objects.some((o) => o.kind === 'note' && o.text === 'oops')).toBe(false)
   })
 
-  runDrawn('undoing the very first edit gives back the derived state', () => {
+  runBothFixtures('undoing the very first edit gives back the derived state', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     const derived = result.current.route.objects.length
 
     act(() =>
@@ -1226,7 +1293,7 @@ describe('Undoing my own object edits', () => {
     act(() => result.current.actions.undo())
 
     // The adoption went with it: every object is derived from `source` again, and a derived
-    // object never carries an id — the same signal `runDrawn('does not touch the document
+    // object never carries an id — the same signal `runBothFixtures('does not touch the document
     // until something is edited', …)` above uses, since the hook exposes no `doc` to inspect
     // the key directly.
     expect(result.current.route.objects.every((o) => o.id == null)).toBe(true)
@@ -1327,7 +1394,7 @@ describe('Undoing my own object edits', () => {
     'forgets what it could redo when a different route is imported, so redo cannot resurrect the previous preset’s objects',
     () => {
       const { result } = mount()
-      act(() => void result.current.actions.importRoute(drawn))
+      act(() => void result.current.actions.importRoute(drawnHere))
       act(() =>
         result.current.actions.addObject({
           kind: 'note',
@@ -1356,9 +1423,9 @@ describe('Undoing my own object edits', () => {
     },
   )
 
-  runDrawn('forgets what it could redo on reset too, for the same reason', () => {
+  runBothFixtures('forgets what it could redo on reset too, for the same reason', () => {
     const { result } = mount()
-    act(() => void result.current.actions.importRoute(drawn))
+    act(() => void result.current.actions.importRoute(drawnHere))
     act(() =>
       result.current.actions.addObject({ kind: 'note', at: { x: 3, y: 3 }, sublevel: 1, text: 'gone' }),
     )

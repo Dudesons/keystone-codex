@@ -15,7 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import type { CloneRef } from '../types'
-import { cloneKey } from '../data'
+import { cloneKey, dungeonList } from '../data'
+import { MdtUserError } from './errors'
 import type { Point } from '../geometry'
 import { decodeMdtString, encodeMdtString } from './string'
 import { DEFAULT_ROUTE_NAME, luaToRoute, nextColor, routeToLua, type Pull, type Route } from './route'
@@ -602,6 +603,27 @@ export function useRouteDoc(slug: string, mdtIndex: number) {
       importRoute: (mdtString) => {
         const decoded = decodeMdtString(mdtString)
         const imported = luaToRoute(decoded.table)
+
+        // `luaToRoute` resolves a slug from the string's own `currentDungeonIdx` and rejects
+        // only a dungeon this app does not carry at all, so the mismatch has to be caught here.
+        //
+        // It is caught *before* the transaction below, which is the whole point. The route panel
+        // used to compare the two after calling this function and show a message — by which time
+        // the document had already been replaced, leaving the reader an error and a route
+        // rebuilt out of references to different mobs. A clone reference is a pair of MDT
+        // indices rather than an id, so another dungeon's route does not bounce off: measured
+        // across the two fixtures, 57 of 114 references land on *some* mob in the wrong dungeon
+        // and the other 57 dangle.
+        //
+        // Every way a route enters the app comes through this function, so refusing here is what
+        // makes the answer the same however it arrived.
+        if (imported.slug !== slug) {
+          throw new MdtUserError('wrongDungeon', {
+            dungeon:
+              dungeonList.find((d) => d.slug === imported.slug)?.englishName ?? imported.slug,
+          })
+        }
+
         const root = doc.getMap('route')
         doc.transact(() => {
           root.set('name', imported.name)

@@ -203,7 +203,6 @@ export const fr: Dictionary = {
   'route.copied': 'String MDT copiée. Colle-la dans MDT en jeu (Import).',
   'route.codeCopied': 'Code de session copié.',
   'route.linkCopied': 'Lien de session copié.',
-  'route.wrongDungeon': 'Cette route est pour {dungeon}, pas pour ce donjon.',
   'route.imported.one': '« {name} » importée : {n} pull.',
   'route.imported.other': '« {name} » importée : {n} pulls.',
   'route.hoverAMob': 'Survole un mob sur la carte pour lire sa fiche. Clic droit pour la garder ici.',
@@ -239,4 +238,6 @@ export const fr: Dictionary = {
   'mdtError.emptyString': 'String vide.',
   'mdtError.unknownFormat':
     'Format non reconnu. Colle une string exportée par MDT (elle commence par « !~MDT2~ » ou « ! »).',
+  'mdtError.wrongDungeon':
+    'Cette route concerne {dungeon}. Ouvre ce donjon pour l’importer — chargée ici, ses pulls pointeraient sur d’autres mobs.',
 }
