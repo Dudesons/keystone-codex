@@ -38,11 +38,11 @@ describe('MobTable', () => {
 
   it("shows the mob's portrait, from its displayId", () => {
     const { container } = mount()
-    // Twinfang Harrower carries displayId 142386 (src/data/generated/altar-of-fangs.json),
-    // and public/portraits/142386.webp exists among the 227 portraits fetched.
+    // Twinfang Harrower carries displayId 147569 (src/data/generated/altar-of-fangs.json), raised from 142386 by MDT 6.2.8,
+    // and public/portraits/147569.webp exists among the portraits fetched.
     const twinfang = container.querySelector('[data-mob="261554"]')!
     const img = twinfang.querySelector('img')
-    expect(img?.getAttribute('src')).toContain('portraits/142386.webp')
+    expect(img?.getAttribute('src')).toContain('portraits/147569.webp')
   })
 
   it("puts every prio-1 spell of the mob on its row, linked into the mob's codex entry", () => {

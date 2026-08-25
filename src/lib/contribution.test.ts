@@ -16,15 +16,24 @@ const byName = (name: string): Enemy => {
 
 describe('contribution — against what MDT prints', () => {
   /**
-   * Murder Row requires 690 forces. MDT's own tooltip for Bribed Captain reads
-   * "Forces: 35 (5.07%)" and "Efficiency score: 4.2". These assertions exist to fail if the
+   * Murder Row requires 655 forces, and MDT's tooltip for Bribed Captain reads
+   * "Forces: 35 (5.34%)" and "Efficiency score: 4.5". These assertions exist to fail if the
    * extraction stops carrying the field the formula divides by, or if MDT changes the formula.
+   *
+   * **These two figures were last read from the game at MDT 6.2.3, where the dungeon required
+   * 690 forces and they were 5.07% and 4.2.** MDT 6.2.8 moved the requirement to 655, and the
+   * numbers here were recomputed from MDT's own published formula — the one transcribed in
+   * `contribution.ts` — applied by hand to the raw `count`, `health` and `totalCount`, never by
+   * running `contribution()`. Copying our own output in would have made this pass by
+   * construction, which is the one thing it exists not to do. They are therefore *derived*
+   * rather than *observed*: if you have the game open, check the tooltip and delete this
+   * paragraph.
    */
   it('reproduces the share and the score MDT shows for Bribed Captain', () => {
     const c = contribution(byName('Bribed Captain'), dungeon)
     expect(c.count).toBe(35)
-    expect(c.share.toFixed(2)).toBe('5.07')
-    expect(c.score!.toFixed(1)).toBe('4.2')
+    expect(c.share.toFixed(2)).toBe('5.34')
+    expect(c.score!.toFixed(1)).toBe('4.5')
   })
 
   it('separates two mobs of equal forces by their health', () => {
@@ -33,7 +42,7 @@ describe('contribution — against what MDT prints', () => {
     expect(golem.count).toBe(captain.count)
     expect(golem.share).toBeCloseTo(captain.share, 9)
     // The golem has more health for the same forces, so it is the worse pull.
-    expect(golem.score!.toFixed(1)).toBe('3.9')
+    expect(golem.score!.toFixed(1)).toBe('4.1')
     expect(golem.score!).toBeLessThan(captain.score!)
   })
 })

@@ -96,8 +96,8 @@
    "clones": [
     {
      "mdtIdx": 1,
-     "x": 130.89323000235,
-     "y": -374.35184176998,
+     "x": 125.6,
+     "y": -366,
      "g": 1,
      "sublevel": 1
     },
@@ -138,8 +138,8 @@
     },
     {
      "mdtIdx": 8,
-     "x": 200.61475916268,
-     "y": -132.62121883682,
+     "x": 190.4,
+     "y": -133.1,
      "g": 33,
      "sublevel": 1
     },
@@ -189,23 +189,9 @@
    "clones": [
     {
      "mdtIdx": 1,
-     "x": 139.44271912845,
-     "y": -365.53792645157,
+     "x": 132.4,
+     "y": -360.7,
      "g": 1,
-     "sublevel": 1
-    },
-    {
-     "mdtIdx": 2,
-     "x": 80.39931527567,
-     "y": -303.05422821141,
-     "g": 3,
-     "sublevel": 1
-    },
-    {
-     "mdtIdx": 3,
-     "x": 71.515154500318,
-     "y": -293.50582363109,
-     "g": 3,
      "sublevel": 1
     },
     {
@@ -230,13 +216,6 @@
      "sublevel": 1
     },
     {
-     "mdtIdx": 7,
-     "x": 117.3129381105,
-     "y": -150.61896646271,
-     "g": 12,
-     "sublevel": 1
-    },
-    {
      "mdtIdx": 8,
      "x": 110.04022186769,
      "y": -477.70766968788,
@@ -245,8 +224,8 @@
     },
     {
      "mdtIdx": 9,
-     "x": 159.51479751329,
-     "y": -122.10158070481,
+     "x": 155.9,
+     "y": -122.2,
      "g": 34,
      "sublevel": 1
     }
@@ -332,16 +311,16 @@
     },
     {
      "mdtIdx": 8,
-     "x": 128.11860789449,
-     "y": -155.35617714507,
+     "x": 118.3,
+     "y": -151.4,
      "g": 12,
      "sublevel": 1
     },
     {
      "mdtIdx": 9,
-     "x": 186.76931599511,
-     "y": -129.08830703889,
-     "g": 33,
+     "x": 159,
+     "y": -129.3,
+     "g": 34,
      "sublevel": 1
     }
    ]
@@ -351,7 +330,7 @@
    "id": 187894,
    "name": "Infused Whelp",
    "count": 0,
-   "health": 3243255,
+   "health": 1297302,
    "level": 90,
    "scale": 1,
    "displayId": 110633,
@@ -759,6 +738,8 @@
    "scale": 1,
    "displayId": 107106,
    "creatureType": "Dragonkin",
+   "isBoss": true,
+   "instanceID": 1202,
    "stealthDetect": true,
    "cc": [
     "Mind Soothe",
@@ -793,7 +774,7 @@
    "id": 188252,
    "name": "Melidrussa Chillworn",
    "count": 0,
-   "health": 20270342,
+   "health": 19459530,
    "level": 92,
    "scale": 1,
    "displayId": 106891,
@@ -901,6 +882,8 @@
    "scale": 1,
    "displayId": 106435,
    "creatureType": "Dragonkin",
+   "isBoss": true,
+   "instanceID": 1202,
    "cc": [
     "Mind Soothe",
     "Taunt"
@@ -1298,6 +1281,8 @@
    "scale": 1,
    "displayId": 106023,
    "creatureType": "Dragonkin",
+   "isBoss": true,
+   "instanceID": 1202,
    "stealthDetect": true,
    "cc": [
     "Mind Soothe",
@@ -1335,7 +1320,7 @@
    "id": 189232,
    "name": "Kokia Blazehoof",
    "count": 0,
-   "health": 21621698,
+   "health": 20756831,
    "level": 92,
    "scale": 1,
    "displayId": 106851,
@@ -1738,6 +1723,8 @@
    "scale": 1,
    "displayId": 110966,
    "creatureType": "Humanoid",
+   "isBoss": true,
+   "instanceID": 1202,
    "cc": [
     "Mind Soothe",
     "Taunt"
@@ -1777,7 +1764,7 @@
    "id": 190485,
    "name": "Erkhart Stormvein",
    "count": 0,
-   "health": 15202757,
+   "health": 14594648,
    "level": 92,
    "scale": 1,
    "displayId": 108318,
@@ -1833,7 +1820,7 @@
    "id": 190484,
    "name": "Kyrakka",
    "count": 0,
-   "health": 13513562,
+   "health": 12973020,
    "level": 92,
    "scale": 1,
    "displayId": 107137,
@@ -1889,7 +1876,7 @@
    "id": 189886,
    "name": "Blazebound Firestorm",
    "count": 0,
-   "health": 2162170,
+   "health": 2594604,
    "level": 91,
    "scale": 1.8,
    "displayId": 102505,
@@ -1936,7 +1923,7 @@
    "id": 189893,
    "name": "Infused Whelp",
    "count": 0,
-   "health": 810814,
+   "health": 972977,
    "level": 90,
    "scale": 1,
    "displayId": 110633,
@@ -1987,5 +1974,13 @@
    ]
   }
  ],
- "pois": []
+ "pois": [
+  {
+   "type": "dungeonEntrance",
+   "x": 119.9,
+   "y": -514.5,
+   "sizeMult": 1.5,
+   "sublevel": 1
+  }
+ ]
 }
