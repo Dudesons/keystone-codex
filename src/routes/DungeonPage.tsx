@@ -50,6 +50,15 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   const room = searchParams.get('room')
   const pendingRoom = room && room !== declined ? room : null
 
+  // The route a share link carries, held the same way `room` is and for the same reason: a
+  // reader who declined must not be offered it again by the next render, while a reload should
+  // offer it. A room outranks it — joining replaces the document from the peer anyway, so
+  // applying a route first would be work immediately thrown away, and two cards at once is a
+  // choice nobody asked for.
+  const [declinedRoute, setDeclinedRoute] = useState<string | null>(null)
+  const routeParam = searchParams.get('route')
+  const pendingRoute = routeParam && routeParam !== declinedRoute && !pendingRoom ? routeParam : null
+
   // `mode` is which address you're on, not state — an invitation must still reach the route
   // panel no matter which tab it arrived on, so a codex address carrying `?room=` redirects to
   // the route one, keeping the room in the query. A join link pasted into a tab already on this
@@ -57,10 +66,31 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   // `pendingRoom` here is what makes the invitation appear without a reload. It only ever pushes
   // you onto the route address: once there, choosing another tab is not undone by this effect.
   useEffect(() => {
-    if (pendingRoom && mode !== 'route') {
+    if (mode === 'route') return
+    if (pendingRoom) {
       navigate(`/d/${slug}/route?room=${pendingRoom}`, { replace: true })
+      return
     }
-  }, [pendingRoom, mode, navigate, slug])
+    // A route link reaches the route panel for the same reason an invitation does: that is
+    // where a route is looked at, whichever tab the address happened to name.
+    if (pendingRoute) {
+      navigate(`/d/${slug}/route?route=${encodeURIComponent(pendingRoute)}`, { replace: true })
+    }
+  }, [pendingRoom, pendingRoute, mode, navigate, slug])
+
+  /**
+   * Called by the panel once an import has actually succeeded.
+   *
+   * The parameter is removed rather than left in place, which is the one thing here that differs
+   * from `?room=`. A room stays in the URL so a reload offers it again, and rejoining is
+   * harmless. A route is not: after loading it you start editing, and a reload offering the same
+   * import again would be offering to destroy those edits.
+   */
+  const routeLoaded = useCallback(() => {
+    navigate(`/d/${slug}/route`, { replace: true })
+  }, [navigate, slug])
+
+  const declineRoute = useCallback(() => setDeclinedRoute(routeParam), [routeParam])
 
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
@@ -584,6 +614,9 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
               onResumeRoom={resumeRoom}
               onSetIdentity={setIdentity}
               pendingRoom={pendingRoom}
+              pendingRoute={pendingRoute}
+              onRouteLoaded={routeLoaded}
+              onDeclineRoute={declineRoute}
             />
           )}
         </aside>

@@ -201,6 +201,13 @@ export const en = {
   'route.copied': 'MDT string copied. Paste it into MDT in game (Import).',
   'route.codeCopied': 'Session code copied.',
   'route.linkCopied': 'Session link copied.',
+  'route.copyRouteLink': 'Copy a link to this route',
+  'route.routeLinkCopied': 'Link copied.',
+  'route.routeLinkLong':
+    'Link copied, but it is {n} characters — too long for a Discord message. To share a route this size, open a session instead.',
+  'route.routeOffer': 'This link carries a route. Loading it replaces the one you have.',
+  'route.acceptRoute': 'Load this route',
+  'route.declineRoute': 'Keep mine',
   'route.imported.one': '“{name}” imported: {n} pull.',
   'route.imported.other': '“{name}” imported: {n} pulls.',
   'route.hoverAMob': 'Hover a mob on the map to read its entry. Right-click to keep it here.',

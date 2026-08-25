@@ -5,13 +5,13 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getLookup, getNpcLabel } from '../../lib/data'
-import { emptyRoute, nextColor, routeToLua, type Route } from '../../lib/mdt/route'
-import { encodeMdtString } from '../../lib/mdt/string'
+import { emptyRoute, luaToRoute, nextColor, routeToLua, type Route } from '../../lib/mdt/route'
+import { decodeMdtString, encodeMdtString } from '../../lib/mdt/string'
 import { MdtUserError } from '../../lib/mdt/errors'
 import type { Peer } from '../../lib/collab/presence'
 import type { CollabState, RouteActions } from '../../lib/mdt/useRouteDoc'
 import { renderEn, renderFr } from '../../test/render'
-import RoutePanel, { sessionLink } from './RoutePanel'
+import RoutePanel, { LINK_LIMIT, routeLink, sessionLink } from './RoutePanel'
 
 afterEach(cleanup)
 
@@ -82,6 +82,25 @@ const fullRoute = (): Route => ({
       }),
     },
   ],
+})
+
+/**
+ * A route carrying freehand strokes, which is the only thing that makes a share link long.
+ * `MdtStroke` as the codec defines it, so this exercises the real serialisation rather than a
+ * shape invented for the test.
+ */
+const drawnRoute = (strokes: number): Route => ({
+  ...routeWith(2),
+  objects: Array.from({ length: strokes }, (_, i) => ({
+    kind: 'stroke' as const,
+    points: Array.from({ length: 20 }, (_, p) => ({ x: i * 3 + p, y: p * 2 })),
+    sublevel: 1,
+    color: 'ff0000',
+    size: 3,
+    smooth: false,
+    layer: 0,
+    isArrow: false,
+  })),
 })
 
 const mount = (
@@ -727,6 +746,78 @@ describe('sessionLink', () => {
     expect(sessionLink('altar-of-fangs', 'ABC123')).toBe(
       `${location.origin}${location.pathname}#/d/altar-of-fangs/route?room=ABC123`,
     )
+  })
+})
+
+describe('routeLink', () => {
+  it('carries the origin, the host’s own path, the dungeon and the payload', () => {
+    const link = routeLink('altar-of-fangs', 'ABC')
+    expect(link.startsWith(`${location.origin}${location.pathname}`)).toBe(true)
+    expect(link).toContain('#/d/altar-of-fangs/route?route=')
+  })
+
+  it('encodes the payload, so an MDT string survives being a query value', () => {
+    // MDT strings are base64-ish: `+`, `/` and `=` all mean something else inside a URL.
+    const payload = 'a+b/c=d&e?f'
+    const link = routeLink('altar-of-fangs', payload)
+    expect(new URLSearchParams(link.split('?')[1]).get('route')).toBe(payload)
+  })
+
+  it('round-trips a real MDT export unchanged', () => {
+    const real = encodeMdtString(routeToLua(routeWith(3)))
+    const link = routeLink('altar-of-fangs', real)
+    expect(new URLSearchParams(link.split('?')[1]).get('route')).toBe(real)
+  })
+})
+
+describe('Copying a link to the route', () => {
+  /** Records what the panel put on the clipboard, which is the only observable of a copy. */
+  const clipboard = () => {
+    const written: string[] = []
+    vi.stubGlobal('navigator', { clipboard: { writeText: async (s: string) => void written.push(s) } })
+    return written
+  }
+
+  it('writes a link carrying this route to the clipboard', async () => {
+    const written = clipboard()
+    mount()
+    fireEvent.click(screen.getByText('Copy a link to this route'))
+    await screen.findByText('Link copied.')
+    expect(written).toHaveLength(1)
+    expect(written[0]).toContain('#/d/altar-of-fangs/route?route=')
+  })
+
+  it('copies a link that imports back to the same pulls', async () => {
+    const written = clipboard()
+    mount({ route: routeWith(3) })
+    fireEvent.click(screen.getByText('Copy a link to this route'))
+    await screen.findByText('Link copied.')
+
+    const payload = new URLSearchParams(written[0].split('?')[1]).get('route')!
+    expect(luaToRoute(decodeMdtString(payload).table).pulls).toHaveLength(3)
+  })
+
+  it('says nothing about length for a route that fits anywhere', async () => {
+    clipboard()
+    mount({ route: routeWith(3) })
+    fireEvent.click(screen.getByText('Copy a link to this route'))
+    expect(await screen.findByText('Link copied.')).toBeDefined()
+    expect(screen.queryByText(/too long/)).toBeNull()
+  })
+
+  it('still copies an over-long link, and says how long it is', async () => {
+    // Drawing is what overflows, not routing. Measured: every clone in the dungeon in one pull
+    // is a 416-character link, while thirty freehand strokes reach about 3860 — which is why a
+    // route of pulls alone cannot exercise this branch, however large it is.
+    const written = clipboard()
+    mount({ route: drawnRoute(30) })
+    fireEvent.click(screen.getByText('Copy a link to this route'))
+
+    const link = written[0]
+    expect(link.length).toBeGreaterThan(LINK_LIMIT)
+    expect(await screen.findByText(/too long for a Discord message/)).toBeDefined()
+    // The length is in the sentence: "too long" without a number is not actionable.
+    expect(screen.getByText(new RegExp(String(link.length)))).toBeDefined()
   })
 })
 

@@ -62,6 +62,11 @@ interface Props {
   onResumeRoom: () => void
   onSetIdentity: (name: string) => void
   pendingRoom: string | null
+  /** The route a share link carries. Null when the address carries none. */
+  pendingRoute?: string | null
+  /** Called only after a successful import, so the page can drop the parameter. */
+  onRouteLoaded?: () => void
+  onDeclineRoute?: () => void
 }
 
 /**
@@ -74,6 +79,30 @@ interface Props {
 export function sessionLink(slug: string, room: string): string {
   return `${location.origin}${location.pathname}#/d/${slug}/route?room=${room}`
 }
+
+/**
+ * A link that carries the route itself.
+ *
+ * Built from `location` for the same reason `sessionLink` is: that is what puts the deployed
+ * sub-path in front of the hash, without anything about the deployment being repeated here. The
+ * payload is encoded in this one place, so no caller can forget — an MDT string is base64-ish,
+ * and `+`, `/` and `=` all mean something else inside a query.
+ */
+export function routeLink(slug: string, mdtString: string): string {
+  return `${location.origin}${location.pathname}#/d/${slug}/route?route=${encodeURIComponent(mdtString)}`
+}
+
+/**
+ * The length past which a link stops being postable.
+ *
+ * Not a browser limit — browsers take far more. Discord caps a message at 2000 characters, and
+ * Discord is where a route gets handed to a group. The ordinary case is nowhere near it: a route
+ * of pulls alone measures 370 to 612 characters, thirty pulls included. What reaches the ceiling
+ * is drawing — a route carrying freehand strokes measures about 2116 — so this is an edge worth
+ * naming rather than designing around. The link is copied either way: the limit belongs to
+ * wherever it is being pasted, and 2116 characters are fine in an email or a wiki.
+ */
+export const LINK_LIMIT = 1900
 
 /**
  * Import and export failures, as a sentence to show.
@@ -103,6 +132,9 @@ export default function RoutePanel({
   onResumeRoom,
   onSetIdentity,
   pendingRoom,
+  pendingRoute,
+  onRouteLoaded,
+  onDeclineRoute,
 }: Props) {
   const { t, plural, formatPercent, locale } = useI18n()
   const [importText, setImportText] = useState('')
@@ -156,6 +188,49 @@ export default function RoutePanel({
     }
   }
 
+  /**
+   * The import a share link offers.
+   *
+   * Performed here rather than in the page because this is where the reporting lives: a payload
+   * for another dungeon, or one that will not decode, arrives as the same `MdtUserError` a bad
+   * paste does and is translated by the same `errorText`. The page only decides whether a route
+   * is on offer at all.
+   */
+  const handleAcceptRoute = () => {
+    if (!pendingRoute) return
+    try {
+      const imported = actions.importRoute(pendingRoute)
+      onCurrentPullChange(Math.max(0, imported.pulls.length - 1))
+      setMessage({
+        kind: 'ok',
+        text: plural('route.imported', imported.pulls.length, { name: imported.name }),
+      })
+      onRouteLoaded?.()
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorText(err, t) })
+      // Refused offers are dropped rather than left standing: the message says what happened,
+      // and a button that will fail again the same way is not worth offering twice.
+      onDeclineRoute?.()
+    }
+  }
+
+  const handleCopyRouteLink = async () => {
+    try {
+      const link = routeLink(slug, encodeMdtString(routeToLua(route)))
+      await navigator.clipboard.writeText(link)
+      // The over-length case is reported as an error, not because copying failed — it did not —
+      // but because this panel has one channel for something the reader must actually read, and
+      // a success tone would let it pass unnoticed.
+      setMessage(
+        link.length > LINK_LIMIT
+          ? { kind: 'error', text: t('route.routeLinkLong', { n: link.length }) }
+          : { kind: 'ok', text: t('route.routeLinkCopied') },
+      )
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorText(err, t) })
+    }
+  }
+
   const handleExport = async () => {
     try {
       await navigator.clipboard.writeText(encodeMdtString(routeToLua(route)))
@@ -167,6 +242,29 @@ export default function RoutePanel({
 
   return (
     <div className="space-y-4">
+      {/* At the top rather than beside the session controls: this is not about collaborating,
+          it is a decision about the route already in front of you, and it has to be read before
+          anything else on the panel is worth looking at. */}
+      {pendingRoute && (
+        <section className="rounded-lg border border-gold-500/40 bg-gold-500/5 p-3">
+          <p className="text-[11px] text-ink-300">{t('route.routeOffer')}</p>
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={handleAcceptRoute}
+              className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
+            >
+              {t('route.acceptRoute')}
+            </button>
+            <button
+              onClick={onDeclineRoute}
+              className="rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-400 hover:border-ink-600 hover:text-ink-200"
+            >
+              {t('route.declineRoute')}
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="rounded-lg border border-ink-700 bg-ink-850 p-3">
         <input
           value={route.name}
@@ -199,6 +297,12 @@ export default function RoutePanel({
             className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
           >
             {t('route.copy')}
+          </button>
+          <button
+            onClick={handleCopyRouteLink}
+            className="flex-1 rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-300 hover:border-gold-500 hover:text-gold-400"
+          >
+            {t('route.copyRouteLink')}
           </button>
           <button
             onClick={() => {
