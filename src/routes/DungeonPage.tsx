@@ -321,11 +321,13 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
   const pullMarks = useMemo(() => {
     const map = new Map<string, PullMark>()
     if (mode !== 'route') return map
-    route.pulls.forEach((pull, i) => {
+    // Colour only: a marked clone is painted in its pull's colour, and the pull's *number* is
+    // drawn once at the outline rather than on every mob it contains.
+    for (const pull of route.pulls) {
       for (const ref of pull.clones) {
-        map.set(cloneKey(ref.enemyIdx, ref.cloneIdx), { pullIdx: i, color: toCssColor(pull.color) })
+        map.set(cloneKey(ref.enemyIdx, ref.cloneIdx), { color: toCssColor(pull.color) })
       }
-    })
+    }
     return map
   }, [mode, route])
 
