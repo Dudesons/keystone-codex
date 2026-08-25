@@ -22,13 +22,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { GENERATED_DIR, PUBLIC_DIR, WOWHEAD_LOCALES } from './config.mjs'
 import { collectSpellIds } from './spell-ids.mjs'
-import {
-  buildNpcText,
-  buildSpellText,
-  parseNpcTooltip,
-  parseTooltip,
-  unfetchedLocales,
-} from './wowhead-tooltip.mjs'
+import { idsToFetch, languageRefusal, mergeLabels, partitionResults } from './label-cache.mjs'
+import { buildNpcText, buildSpellText, parseNpcTooltip, parseTooltip } from './wowhead-tooltip.mjs'
 
 const FORCE = process.env.FORCE === '1'
 const CONCURRENCY = 8
@@ -122,28 +117,40 @@ async function downloadTo(url, dest) {
 }
 
 /**
- * A label cache, and the refusal to run against one that has never seen a configured language.
+ * The label table on disk, and the refusal to run against one that has never seen a configured
+ * language. The rules themselves live in label-cache.mjs, where they are tested.
  *
- * An entry with no `text` block predates localization and has to be redone. A missing
- * *secondary* locale, on the other hand, is not a signal — Wowhead does not translate
- * everything — so the per-entry check below only looks at the base language.
- *
- * That leniency would otherwise let a newly configured language pass unnoticed: every entry
- * still looks current, the run reports "0 to fetch" and succeeds, and the app falls back to
- * the base language for the whole pool without anyone being told. Hence
- * **adding a language to WOWHEAD_LOCALES requires a `FORCE=1`**, and hence this refusal when
- * someone forgets.
+ * **Loaded even under `FORCE`**, which is the whole of the fix for #10: `FORCE` means re-fetch
+ * everything, and used to get that by starting from an empty table — which also threw away the
+ * value a failed fetch should fall back to.
  */
 function loadLabelCache(file, langs) {
-  const cache = !FORCE && fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
-  const never = unfetchedLocales(cache, langs)
-  if (never.length && Object.keys(cache).length) {
-    throw new Error(
-      `${path.basename(file)} holds no ${never.join(', ')} label at all. A language added to ` +
-        'WOWHEAD_LOCALES needs a full pass: FORCE=1 npm run fetch:assets',
-    )
-  }
+  const cache = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
+  const refusal = languageRefusal(cache, langs, { force: FORCE, name: path.basename(file) })
+  if (refusal) throw new Error(refusal)
   return cache
+}
+
+/**
+ * Reports what a label pass could not resolve, and returns whether anything failed.
+ *
+ * `missing` and `failed` read the same to a reader watching the log scroll past, and are not the
+ * same thing at all. A 404 is expected — one spell in the pool has genuinely left the game — and
+ * costs nothing but a raw id on screen. A failure means a label that should have been refreshed
+ * was not, and the entry now holds its **previous** value: correct-looking, possibly stale, and
+ * invisible in a diff of a large generated JSON. Only a re-run with `FORCE=1` retries it, since
+ * the kept entry looks current to a plain pass.
+ */
+function reportUnresolved(kind, rendered, missing, failed) {
+  if (missing.length) {
+    console.log(`\nUnresolved ${kind} (${rendered}): ${missing.join(', ')}`)
+  }
+  if (failed.length) {
+    console.log(`\n${failed.length} ${kind} failed to fetch and KEPT THEIR PREVIOUS LABEL:`)
+    for (const { id, error } of failed) console.log(`    ${id}: ${error}`)
+    console.log('  Re-run `FORCE=1 npm run fetch:assets` to retry them before committing.')
+  }
+  return failed.length > 0
 }
 
 function loadDungeons() {
@@ -170,46 +177,57 @@ async function main() {
     ).values(),
   ]
 
-  const isCurrent = (entry) => Boolean(entry?.text?.[WOWHEAD_LOCALES[0].lang])
+  // Base language first, which is what makes `langs[0]` the one an entry is judged current by.
   const langs = WOWHEAD_LOCALES.map((l) => l.lang)
 
   // --- Spells ------------------------------------------------------------
-  const cache = loadLabelCache(SPELL_CACHE, langs)
-  const todo = spellIds.filter((id) => !isCurrent(cache[String(id)]))
+  const previousSpells = loadLabelCache(SPELL_CACHE, langs)
+  const todo = idsToFetch(spellIds, previousSpells, { force: FORCE, baseLang: langs[0] })
   console.log(`Spells: ${spellIds.length} unique, ${todo.length} to fetch (${langs.join(', ')})`)
 
   let done = 0
   const spellResults = await pool(todo, CONCURRENCY, async (id) => {
     const spell = await fetchSpell(id)
-    if (!spell.missing) cache[String(id)] = { id: spell.id, icon: spell.icon, text: spell.text }
     if (++done % 50 === 0) process.stdout.write(`  ${done}/${todo.length}\r`)
     return spell
   })
-  const missingSpells = spellResults.filter((s) => s.missing || s.error)
+  const spells = partitionResults(spellResults)
   const spellWarnings = spellResults.flatMap((s) => s.warnings ?? [])
+  const cache = mergeLabels(
+    previousSpells,
+    spells.resolved.map((s) => ({ id: s.id, icon: s.icon, text: s.text })),
+  )
   fs.writeFileSync(SPELL_CACHE, JSON.stringify(cache, null, 1), 'utf8')
-  console.log(`  ${Object.keys(cache).length} spells cached${missingSpells.length ? `, ${missingSpells.length} unresolved` : ''}`)
+  const unresolvedSpells = spells.missing.length + spells.failed.length
+  console.log(`  ${Object.keys(cache).length} spells cached${unresolvedSpells ? `, ${unresolvedSpells} unresolved` : ''}`)
   if (spellWarnings.length) {
     console.log(`  ${spellWarnings.length} partial tooltips:`)
     for (const w of spellWarnings) console.log(`    ${w}`)
   }
 
   // --- Creature labels ---------------------------------------------------
-  const npcCache = loadLabelCache(NPC_CACHE, langs)
-  const npcTodo = mobs.filter((m) => !isCurrent(npcCache[String(m.id)]))
+  const previousNpcs = loadLabelCache(NPC_CACHE, langs)
+  // Keyed by id rather than filtered on the mob, because `idsToFetch` speaks ids and `fetchNpc`
+  // needs the MDT name to check Wowhead's English against.
+  const mobById = new Map(mobs.map((m) => [m.id, m]))
+  const npcTodo = idsToFetch([...mobById.keys()], previousNpcs, { force: FORCE, baseLang: langs[0] })
   console.log(`Creatures: ${mobs.length} unique, ${npcTodo.length} to fetch (${langs.join(', ')})`)
 
   done = 0
-  const npcResults = await pool(npcTodo, CONCURRENCY, async (mob) => {
-    const npc = await fetchNpc(mob)
-    if (!npc.missing) npcCache[String(npc.id)] = { id: npc.id, text: npc.text }
+  const npcResults = await pool(npcTodo, CONCURRENCY, async (id) => {
+    const npc = await fetchNpc(mobById.get(id))
     if (++done % 50 === 0) process.stdout.write(`  ${done}/${npcTodo.length}\r`)
     return npc
   })
-  const missingNpcs = npcResults.filter((n) => n.missing || n.error)
+  const npcs = partitionResults(npcResults)
   const npcWarnings = npcResults.flatMap((n) => n.warnings ?? [])
+  const npcCache = mergeLabels(
+    previousNpcs,
+    npcs.resolved.map((n) => ({ id: n.id, text: n.text })),
+  )
   fs.writeFileSync(NPC_CACHE, JSON.stringify(npcCache, null, 1), 'utf8')
-  console.log(`  ${Object.keys(npcCache).length} creatures cached${missingNpcs.length ? `, ${missingNpcs.length} unresolved` : ''}`)
+  const unresolvedNpcs = npcs.missing.length + npcs.failed.length
+  console.log(`  ${Object.keys(npcCache).length} creatures cached${unresolvedNpcs ? `, ${unresolvedNpcs} unresolved` : ''}`)
   if (npcWarnings.length) {
     // A name disagreement is the one worth stopping over: it means a wrong id, not a wording.
     console.log(`  ${npcWarnings.length} to look at:`)
@@ -239,11 +257,23 @@ async function main() {
     fs.readdirSync(dir).reduce((n, f) => n + fs.statSync(path.join(dir, f)).size, 0) / 1024 / 1024
   console.log(`\nWeight: icons ${weight(ICON_DIR).toFixed(1)} MB, portraits ${weight(PORTRAIT_DIR).toFixed(1)} MB`)
 
-  if (missingSpells.length) {
-    console.log(`\nUnresolved spells (rendered with their raw ID): ${missingSpells.map((s) => s.id).join(', ')}`)
-  }
-  if (missingNpcs.length) {
-    console.log(`\nUnresolved creatures (rendered with MDT's English name): ${missingNpcs.map((n) => n.id).join(', ')}`)
+  const spellsFailed = reportUnresolved(
+    'spells',
+    'rendered with their raw ID',
+    spells.missing,
+    spells.failed,
+  )
+  const npcsFailed = reportUnresolved(
+    'creatures',
+    "rendered with MDT's English name",
+    npcs.missing,
+    npcs.failed,
+  )
+
+  // Exits non-zero so a flaky pass cannot be committed as a complete one. A 404 does not get
+  // here: it is expected, and one spell in the pool really has left the game.
+  if (spellsFailed || npcsFailed) {
+    throw new Error('A label failed to fetch. The tables kept their previous values; see above.')
   }
 }
 
