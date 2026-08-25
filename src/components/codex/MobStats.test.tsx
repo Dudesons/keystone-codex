@@ -26,8 +26,8 @@ describe('MobStats', () => {
   it('shows the forces, the share and the score the game shows', () => {
     renderEn(<MobStats enemy={byName('Bribed Captain')} dungeon={dungeon} />)
     expect(screen.getByText('35 forces')).toBeDefined()
-    expect(screen.getByTestId('mob-share').textContent).toBe('5.07% of the dungeon')
-    expect(screen.getByTestId('mob-score').textContent).toBe('4.2')
+    expect(screen.getByTestId('mob-share').textContent).toBe('5.34% of the dungeon')
+    expect(screen.getByTestId('mob-score').textContent).toBe('4.5')
   })
 
   it('paints the score in MDT’s colour for it', () => {

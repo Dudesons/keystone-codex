@@ -1,6 +1,7 @@
 ---
 npcId: 197697
 name: "Flamegullet"   # auto
+isBoss: true   # auto
 count: 40   # auto — forces per unit
 
 threat: high

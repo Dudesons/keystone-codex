@@ -15,10 +15,10 @@
     "englishName": "Murder Row",
     "mdtIndex": 160,
     "mapID": 587,
-    "totalCount": 690,
+    "totalCount": 655,
     "bosses": 5,
     "mobCount": 41,
-    "packCount": 56,
+    "packCount": 57,
     "textureFolder": "MurderRow"
   },
   {
@@ -29,7 +29,7 @@
     "totalCount": 729,
     "bosses": 4,
     "mobCount": 32,
-    "packCount": 74,
+    "packCount": 73,
     "textureFolder": "DenOfNalorakk"
   },
   {
@@ -40,7 +40,7 @@
     "totalCount": 655,
     "bosses": 6,
     "mobCount": 26,
-    "packCount": 82,
+    "packCount": 83,
     "textureFolder": "TheBlindingVale"
   },
   {
@@ -60,7 +60,7 @@
     "mdtIndex": 17,
     "mapID": 249,
     "totalCount": 608,
-    "bosses": 6,
+    "bosses": 7,
     "mobCount": 39,
     "packCount": 25,
     "textureFolder": "KingsRest"
@@ -70,7 +70,7 @@
     "englishName": "Temple of Sethraliss",
     "mdtIndex": 20,
     "mapID": 250,
-    "totalCount": 649,
+    "totalCount": 689,
     "bosses": 5,
     "mobCount": 45,
     "packCount": 42,
@@ -82,9 +82,9 @@
     "mdtIndex": 42,
     "mapID": 399,
     "totalCount": 553,
-    "bosses": 4,
+    "bosses": 8,
     "mobCount": 24,
-    "packCount": 35,
+    "packCount": 34,
     "textureFolder": "RubyLifePools"
   }
 ]

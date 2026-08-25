@@ -43,7 +43,7 @@ describe('MobPanel', () => {
   it('names the mob and shows what it is worth', () => {
     mount()
     expect(screen.getByText('Bribed Captain')).toBeDefined()
-    expect(screen.getByTestId('mob-score').textContent).toBe('4.2')
+    expect(screen.getByTestId('mob-score').textContent).toBe('4.5')
   })
 
   it('does not repeat the forces count `MobCard`’s own header already gives, just below', () => {

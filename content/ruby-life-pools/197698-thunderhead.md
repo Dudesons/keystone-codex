@@ -1,6 +1,7 @@
 ---
 npcId: 197698
 name: "Thunderhead"   # auto
+isBoss: true   # auto
 count: 48   # auto — forces per unit
 
 threat: high
