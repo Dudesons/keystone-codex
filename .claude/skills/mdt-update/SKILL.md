@@ -55,11 +55,13 @@ before you compare, and never conclude a dungeon changed from its size alone.
    is what rewrites descriptions and cast times, and this command is the only way the report
    sees it. Skipping it means severity 3 is empty by construction, not by evidence.
 
-   **A full pass rebuilds the table from nothing, so a fetch that fails drops the label instead
-   of leaving the old one.** The run says how many: `N spells cached, M unresolved`. Read that
-   count, then `git diff --stat src/data/generated/spells.json` — deletions outweighing
-   insertions means labels are gone, not that tooltips got shorter. Re-run the command. A table
-   that shrank must never be committed: the app loses those labels with it.
+   **A fetch that fails no longer costs you the label.** A full pass merges onto the table
+   rather than rebuilding it from nothing, so an id whose fetch fails keeps its previous value
+   and the table cannot shrink. The command also **exits non-zero** and names the ids, because
+   the kept value looks current to a plain pass and only another `FORCE=1` retries it. If it
+   fails, re-run it before doing anything else — a stale label is invisible in the diff of a
+   generated JSON that large. A 404 is not this: it is reported as unresolved, exits 0, and one
+   spell in the pool genuinely has left the game.
 5. `npm run mdt:report`
    → verify: the report's title names both MDT versions, neither as `unknown`. The newer one
    renders `unknown` when `src/data/generated/mdt.json` is missing or the `.toc` carried no
@@ -136,7 +138,8 @@ before you compare, and never conclude a dungeon changed from its size alone.
   no page for, which the site then renders as a bare number. That particular id was pre-existing,
   from a dungeon the update did not touch, but a **newly** unresolved id means a label the site
   is now missing, and nothing else in this procedure surfaces it. Compare the line against what
-  the run before it said.
+  the run before it said. The non-zero exit added for a *failed* fetch does not cover this: a 404
+  is expected and exits 0, precisely because 1300666 is real and would otherwise fail every run.
 - **Do not try to read the `.lua` diff yourself.** Coordinate floats drown the real change, and a
   naive line-by-line diff silently hides a changed scalar whose new value occurs anywhere else in
   the file — `["count"] = 0,` exists for dozens of other mobs, so six bosses losing thirty forces
