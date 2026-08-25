@@ -72,3 +72,23 @@ should have made me ask what the caller did afterwards.
 **Scope:** Every "there is no X" claim — missing validation, missing test coverage, an unhandled
 case — and especially before it goes into a design document or a commit message, where a wrong
 negative outlives the conversation.
+
+## 2026-08-25 — A closing keyword on a branch commit does not survive a squash-merge
+
+**What happened:** Issue #16 was still open long after its work had landed. The commit that filled
+in the thirty `role:` values, `cc688d13`, ends with `Closes #16` — but it was pushed to a branch,
+and PR #17 was squash-merged. The squash commit on `main`, `91f18f6`, carries a body consisting of
+one `Co-authored-by:` trailer and nothing else. The keyword was discarded with the rest of the
+branch's messages.
+
+GitHub closes an issue from a keyword in a commit message **on the default branch**, or in the
+**body of a merged PR**. #17's body only *referenced* the issue — "deliberate, and tracked in #16"
+— which creates a link and closes nothing. So the issue sat open with a linked commit pointing at
+work that was finished, which is exactly the state that makes a done issue look undone.
+
+**The rule:** In a squash-merge repository, put `Closes #N` in the **PR body**, not only in a
+branch commit. A branch commit's message is a draft; the PR body is what merges.
+
+**Scope:** Every PR that finishes an issue. Also worth a glance the other way: an issue whose
+newest activity is a linked commit, with no close, is a candidate for this failure rather than for
+unfinished work — check `git merge-base --is-ancestor <commit> origin/main` before assuming either.
