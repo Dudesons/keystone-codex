@@ -108,6 +108,77 @@ describe('auditDungeon', () => {
     expect(findings[0].detail).toContain(String(enemy.spells[1].id))
   })
 
+  /**
+   * WoW gives one ability several spell ids — the cast, the missile, the debuff, the area
+   * trigger — all sharing a name, and MDT lists every one it saw the mob cast. Annotating the
+   * ability once used to report every other id for it as a gap: on the real 6.2.8 data, 30
+   * reported ids across four cards were 8 real gaps and 22 duplicates, and three of the four
+   * cards were entirely duplicates.
+   */
+  it('does not report an id whose ability is already annotated under another id', () => {
+    const [first, second] = enemy.spells
+    const labels = { [first.id]: 'Ravenous Stomp', [second.id]: 'Ravenous Stomp' }
+    const cards = [cardFor({ spells: [{ id: first.id, note: 'x', tag: 'kick' }] })]
+    const findings = auditDungeon(realDungeon, cards, labels).filter((f) => f.severity === 2)
+    expect(findings.map((f) => f.detail).join(' ')).not.toContain(String(second.id))
+  })
+
+  it('still reports an ability no id of which carries a note', () => {
+    const [first, second] = enemy.spells
+    const labels = { [first.id]: 'Ravenous Stomp', [second.id]: 'Toxic Atrophy' }
+    const cards = [cardFor({ spells: [{ id: first.id, note: 'x', tag: 'kick' }] })]
+    const [finding] = auditDungeon(realDungeon, cards, labels).filter((f) => f.severity === 2)
+    expect(finding.detail).toContain('Toxic Atrophy')
+    expect(finding.detail).toContain(String(second.id))
+  })
+
+  /**
+   * Folding is reported, never silent: two genuinely different abilities can share a name, so a
+   * reader has to be able to see what was folded and disagree with it.
+   */
+  it('names the ids it folded, and what they were folded into', () => {
+    const [first, second] = enemy.spells
+    const labels = { [first.id]: 'Ravenous Stomp', [second.id]: 'Ravenous Stomp' }
+    const cards = [
+      cardFor({
+        spells: [
+          { id: first.id, note: 'x', tag: 'kick' },
+          { id: enemy.spells[2].id, note: null, tag: 'todo' },
+        ],
+      }),
+    ]
+    const findings = auditDungeon(realDungeon, cards, labels).filter((f) => f.severity === 2)
+    expect(findings[0].folded).toContain(String(second.id))
+    expect(findings[0].folded).toContain(String(first.id))
+  })
+
+  /**
+   * Counted in abilities now, so the number matches what the detail line lists. Every one of the
+   * mob's spells is labelled here on purpose: an id with no label is its own group by design, so
+   * labelling only some of them would leave the count depending on how many spells the fixture
+   * mob happens to carry.
+   */
+  it('counts abilities rather than ids', () => {
+    const [first, ...rest] = enemy.spells
+    const labels = Object.fromEntries([
+      [first.id, 'Ravenous Stomp'],
+      ...rest.map((s) => [s.id, 'Toxic Atrophy']),
+    ])
+    const cards = [cardFor({ spells: [{ id: first.id, note: 'x', tag: 'kick' }] })]
+    const [finding] = auditDungeon(realDungeon, cards, labels).filter((f) => f.severity === 2)
+    expect(rest.length).toBeGreaterThan(1)
+    expect(finding.what).toContain('1 ability')
+    expect(finding.detail).toBe(`Toxic Atrophy (${rest.map((s) => s.id).join(', ')})`)
+  })
+
+  /** No label table, no grouping: every id stands alone rather than being folded by accident. */
+  it('falls back to reporting ids when no labels are supplied', () => {
+    const [first, second] = enemy.spells
+    const cards = [cardFor({ spells: [{ id: first.id, note: 'x', tag: 'kick' }] })]
+    const [finding] = auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)
+    expect(finding.detail).toContain(String(second.id))
+  })
+
   it('leaves an unwritten card alone: it is scaffolding, not incomplete writing', () => {
     const cards = [cardFor({ written: false, spells: [] })]
     expect(auditDungeon(realDungeon, cards).filter((f) => f.severity === 2)).toEqual([])

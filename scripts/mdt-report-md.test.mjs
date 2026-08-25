@@ -34,6 +34,34 @@ describe('summariseFindings', () => {
 describe('renderReport', () => {
   const md = renderReport(context)
 
+  /**
+   * Severity 2 groups a mob's spell ids into abilities and reports only the abilities with no
+   * note anywhere. Two abilities can share a name, so what it folded has to reach the page —
+   * a reader who cannot see the choice cannot disagree with it.
+   */
+  it('prints what a finding folded away, so the folding is auditable', () => {
+    const out = renderReport({
+      ...context,
+      findings: [
+        {
+          severity: 2,
+          dungeon: 'altar-of-fangs',
+          subject: '259446 The Writhing Coil',
+          what: 'is written but leaves 1 ability un-annotated',
+          detail: 'Toxic Atrophy (1310547, 1310974)',
+          folded: 'already annotated under another id: Venom Jet (1300044 — annotated as 1299902)',
+        },
+      ],
+    })
+    expect(out).toContain('Toxic Atrophy (1310547, 1310974)')
+    expect(out).toContain('also already annotated under another id: Venom Jet (1300044 — annotated as 1299902)')
+  })
+
+  it('omits the line entirely when a finding folded nothing', () => {
+    const out = renderReport({ ...context, findings: [{ severity: 2, dungeon: 'x', subject: '1 A', what: 'w' }] })
+    expect(out).not.toContain('      also ')
+  })
+
   it('names the base revision and both versions in the header', () => {
     expect(md).toContain('6.2.2')
     expect(md).toContain('6.3.0')

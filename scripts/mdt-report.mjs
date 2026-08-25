@@ -120,6 +120,18 @@ function main() {
   const findings = []
   const allCards = []
 
+  // Ability names, so severity 2 can count abilities rather than spell ids: one ability has
+  // several ids in WoW and MDT lists them all. Read once, before the loop, and passed in —
+  // card-audit.mjs reads no files. Missing table means severity 2 falls back to naming ids.
+  const spellLabels = {}
+  const labelFile = path.join(GENERATED_DIR, 'spells.json')
+  if (fs.existsSync(labelFile)) {
+    for (const [id, entry] of Object.entries(readJson(labelFile))) {
+      const name = entry?.text?.[BASE_LANG]?.name
+      if (name) spellLabels[id] = name
+    }
+  }
+
   for (const summary of index) {
     const slug = summary.slug
     const after = readJson(path.join(GENERATED_DIR, `${slug}.json`))
@@ -128,7 +140,7 @@ function main() {
     allCards.push(...cards)
 
     findings.push(...diffDungeon(before, after))
-    findings.push(...auditDungeon(after, cards))
+    findings.push(...auditDungeon(after, cards, spellLabels))
 
     const byId = new Map(after.enemies.map((e) => [e.id, e]))
     for (const card of cards) {
