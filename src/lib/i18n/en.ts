@@ -229,6 +229,15 @@ export const en = {
   'collab.paused': 'paused — nobody was here',
   'collab.resume': 'Return to the room',
 
+  // Search. Holds no mob or spell name: those come from the pipeline, like everywhere else.
+  'search.open': 'Search',
+  'search.label': 'Search mobs and spells',
+  'search.placeholder': 'A mob, a spell, or an id',
+  'search.viaSpell': 'casts {spell}',
+  'search.empty': 'Nothing matches “{query}”',
+  'search.showing': 'Showing {shown} of {total}',
+  'search.hint': '↑↓ to move · Enter to open · Esc to close',
+
   // MDT import errors addressed to the user. The codec's diagnostic errors stay in English
   // in the code and are surfaced as-is: whoever sees one is opening a ticket anyway.
   'mdtError.noValue': 'Invalid MDT preset: no “value” field.',

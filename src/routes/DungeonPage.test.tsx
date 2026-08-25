@@ -9,6 +9,7 @@ import { Awareness } from 'y-protocols/awareness'
 import { getLookup } from '../lib/data'
 import { MAP_SCALE } from '../lib/geometry'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
+import { SearchProvider } from '../components/SearchPalette'
 import { renderEn, renderFr } from '../test/render'
 import DungeonPage from './DungeonPage'
 
@@ -76,12 +77,17 @@ const lookup = getLookup(SLUG)!
  */
 const at = (path: string) => (
   <MemoryRouter initialEntries={[path]}>
-    <Routes>
-      <Route path="/d/:slug/codex" element={<DungeonPage mode="codex" />} />
-      <Route path="/d/:slug/codex/mob/:npcId" element={<DungeonPage mode="codex" />} />
-      <Route path="/d/:slug/route" element={<DungeonPage mode="route" />} />
-      <Route path="/" element={<p>home</p>} />
-    </Routes>
+    {/* `DungeonHeader` carries the search button, and `useSearch` throws outside a provider —
+        deliberately, so a button that opens nothing cannot pass unnoticed. `App` supplies this
+        in the running app. */}
+    <SearchProvider>
+      <Routes>
+        <Route path="/d/:slug/codex" element={<DungeonPage mode="codex" />} />
+        <Route path="/d/:slug/codex/mob/:npcId" element={<DungeonPage mode="codex" />} />
+        <Route path="/d/:slug/route" element={<DungeonPage mode="route" />} />
+        <Route path="/" element={<p>home</p>} />
+      </Routes>
+    </SearchProvider>
   </MemoryRouter>
 )
 
@@ -188,18 +194,20 @@ describe('A link pasted after arrival', () => {
 
   const withPasteLink = (path: string) => (
     <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route
-          path="/d/:slug/codex"
-          element={
-            <>
-              <PasteLink />
-              <DungeonPage mode="codex" />
-            </>
-          }
-        />
-        <Route path="/d/:slug/route" element={<DungeonPage mode="route" />} />
-      </Routes>
+      <SearchProvider>
+        <Routes>
+          <Route
+            path="/d/:slug/codex"
+            element={
+              <>
+                <PasteLink />
+                <DungeonPage mode="codex" />
+              </>
+            }
+          />
+          <Route path="/d/:slug/route" element={<DungeonPage mode="route" />} />
+        </Routes>
+      </SearchProvider>
     </MemoryRouter>
   )
 
@@ -270,17 +278,19 @@ describe('Leaving a room offered by a link', () => {
     }
     const withNavigation = (
       <MemoryRouter initialEntries={[`/d/${SLUG}/route?room=ABC123`]}>
-        <Routes>
-          <Route
-            path="/d/:slug/route"
-            element={
-              <>
-                <GoToDifferentRoom />
-                <DungeonPage mode="route" />
-              </>
-            }
-          />
-        </Routes>
+        <SearchProvider>
+          <Routes>
+            <Route
+              path="/d/:slug/route"
+              element={
+                <>
+                  <GoToDifferentRoom />
+                  <DungeonPage mode="route" />
+                </>
+              }
+            />
+          </Routes>
+        </SearchProvider>
       </MemoryRouter>
     )
 

@@ -7,9 +7,11 @@ import { contentProgress, getDungeonContent } from '../lib/content'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
 import SiteFooter from '../components/SiteFooter'
+import { useSearch } from '../components/SearchPalette'
 
 export default function Home() {
   const { t, plural, locale } = useI18n()
+  const { open: openSearch } = useSearch()
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -21,7 +23,15 @@ export default function Home() {
             {t('home.intro', { n: dungeonList.length })}
           </p>
         </div>
-        <LocaleSwitcher />
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={openSearch}
+            className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-400 transition hover:border-gold-500 hover:text-gold-400"
+          >
+            {t('search.open')}
+          </button>
+          <LocaleSwitcher />
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

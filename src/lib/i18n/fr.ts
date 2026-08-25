@@ -231,6 +231,15 @@ export const fr: Dictionary = {
   'collab.paused': 'en pause — plus personne ici',
   'collab.resume': 'Revenir dans le salon',
 
+  // Recherche
+  'search.open': 'Rechercher',
+  'search.label': 'Rechercher un mob ou un sort',
+  'search.placeholder': 'Un mob, un sort, ou un identifiant',
+  'search.viaSpell': 'lance {spell}',
+  'search.empty': 'Rien ne correspond à « {query} »',
+  'search.showing': '{shown} sur {total}',
+  'search.hint': '↑↓ pour naviguer · Entrée pour ouvrir · Échap pour fermer',
+
   // MDT import errors addressed to the user
   'mdtError.noValue': 'Preset MDT invalide : champ « value » absent.',
   'mdtError.notInPool':

@@ -8,6 +8,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import HighlightsPage from './HighlightsPage'
 import { getLookup } from '../lib/data'
 import { getHighlights } from '../lib/highlights'
+import { SearchProvider } from '../components/SearchPalette'
 import { renderEn, renderFr } from '../test/render'
 
 afterEach(cleanup)
@@ -17,10 +18,14 @@ const lookup = getLookup(SLUG)!
 
 const at = (path: string) => (
   <MemoryRouter initialEntries={[path]}>
-    <Routes>
-      <Route path="/d/:slug" element={<HighlightsPage />} />
-      <Route path="/" element={<p>home</p>} />
-    </Routes>
+    {/* `DungeonHeader` carries the search button, and `useSearch` throws outside a provider.
+        `App` supplies this in the running app. */}
+    <SearchProvider>
+      <Routes>
+        <Route path="/d/:slug" element={<HighlightsPage />} />
+        <Route path="/" element={<p>home</p>} />
+      </Routes>
+    </SearchProvider>
   </MemoryRouter>
 )
 
