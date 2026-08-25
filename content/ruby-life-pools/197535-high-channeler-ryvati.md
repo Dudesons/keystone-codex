@@ -1,6 +1,7 @@
 ---
 npcId: 197535
 name: "High Channeler Ryvati"   # auto
+isBoss: true   # auto
 count: 30   # auto — forces per unit
 
 threat: lethal

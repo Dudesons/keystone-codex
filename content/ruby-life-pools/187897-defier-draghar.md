@@ -1,6 +1,7 @@
 ---
 npcId: 187897
 name: "Defier Draghar"   # auto
+isBoss: true   # auto
 count: 30   # auto — forces per unit
 
 threat: high
