@@ -61,10 +61,16 @@ export async function openSession(page: Page, slug: string, name: string) {
 /**
  * Arrive by join link and accept. The link already points at the route address, so the invitation
  * is there from the first paint — no tab has to be clicked here.
+ *
+ * Everything is asked of the dialog rather than the page: the panel behind it carries a second
+ * name field bound to the same identity, so an unscoped `getByLabel` matches two elements and
+ * Playwright's strict mode refuses it. Scoping also keeps this helper honest about where an
+ * arriving guest actually types — the panel's copy is out of reach behind the backdrop.
  */
 export async function acceptInvitation(page: Page, slug: string, room: string, name: string) {
   await page.goto(`./#/d/${slug}/route?room=${room}`)
-  await page.getByLabel('Your name').fill(name)
-  await page.getByRole('button', { name: `Join room ${room}` }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('Your name').fill(name)
+  await dialog.getByRole('button', { name: `Join room ${room}` }).click()
   await expect(page.getByText('SHARED SESSION')).toBeVisible()
 }

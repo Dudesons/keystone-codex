@@ -41,7 +41,12 @@ test('a join link carries the sub-path, and opens the invitation in another brow
   const guest = await newParticipant(browser)
   const guestPage = await guest.newPage()
   await guestPage.goto(link)
-  await expect(guestPage.getByRole('button', { name: `Join room ${room}` })).toBeVisible()
+  // `toBeInViewport`, not just `toBeVisible`: the invitation used to sit in the side panel below
+  // the pull list, where it was perfectly visible and still needed scrolling to reach. Only a
+  // real browser can tell those two apart, so this is the assertion that would notice it
+  // drifting back under the fold.
+  const invitation = guestPage.getByRole('dialog').getByRole('button', { name: `Join room ${room}` })
+  await expect(invitation).toBeInViewport()
   await guest.close()
 })
 

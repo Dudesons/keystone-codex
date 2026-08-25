@@ -256,7 +256,7 @@ describe('Leaving a room offered by a link', () => {
     expect(screen.getByRole('button', { name: /join room abc123/i })).toBeDefined()
 
     // A name is required before Join enables.
-    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/your name/i), { target: { value: 'Rwl' } })
     fireEvent.click(screen.getByRole('button', { name: /join room abc123/i }))
 
     // Connected (or still connecting) — the invitation is gone, replaced by the session view.
@@ -297,13 +297,35 @@ describe('Leaving a room offered by a link', () => {
     )
 
     renderEn(withNavigation)
-    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/your name/i), { target: { value: 'Rwl' } })
     fireEvent.click(screen.getByRole('button', { name: /join room abc123/i }))
     fireEvent.click(screen.getByText('Leave'))
     expect(screen.queryByRole('button', { name: /join room abc123/i })).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'paste another link' }))
     expect(screen.getByRole('button', { name: /join room differ/i })).toBeDefined()
+  })
+})
+
+describe('Turning down a room offered by a link', () => {
+  // New with the dialog: the panel card it replaced could only be accepted or ignored, so
+  // somebody who wanted to look at the dungeon first had nothing to click.
+  it('drops the invitation without joining', () => {
+    renderEn(at(`/d/${SLUG}/route?room=NOPE01`))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Not now' }))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByRole('button', { name: /join room nope01/i })).toBeNull()
+    // No session was opened: there is nothing to leave.
+    expect(screen.queryByText('Leave')).toBeNull()
+  })
+
+  it('drops it on Escape too, which the map’s own Escape handler must not swallow', () => {
+    renderEn(at(`/d/${SLUG}/route?room=NOPE02`))
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByText('Leave')).toBeNull()
   })
 })
 
@@ -320,7 +342,7 @@ describe('A session that pauses itself', () => {
       renderEn(at(`/d/${SLUG}/route?room=AWAY01`))
 
       // A name is required before Join enables.
-      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+      fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/your name/i), { target: { value: 'Rwl' } })
       fireEvent.click(screen.getByRole('button', { name: /join room away01/i }))
       expect(screen.getByText('Leave')).toBeDefined()
 
@@ -983,7 +1005,7 @@ describe('Publishing the stroke in progress', () => {
     act(() => peer.result.current.joinRoom('ESCPMD', 'host'))
 
     const { container } = renderEn(at(`/d/${SLUG}/route?room=ESCPMD`))
-    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Rwl' } })
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText(/your name/i), { target: { value: 'Rwl' } })
     fireEvent.click(screen.getByRole('button', { name: /join room escpmd/i }))
     expect(screen.getByText('Leave')).toBeDefined()
 

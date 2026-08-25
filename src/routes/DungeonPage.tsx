@@ -92,6 +92,13 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   const declineRoute = useCallback(() => setDeclinedRoute(routeParam), [routeParam])
 
+  /**
+   * Turning the invitation down, which is the same act as leaving the session it would have
+   * opened: both mean this tab is not to be offered that room again. A reload still offers it,
+   * because `declined` is component state and `?room=` stays in the address.
+   */
+  const declineRoom = useCallback(() => setDeclined(room), [room])
+
   const [selectedPack, setSelectedPack] = useState<number | null>(null)
   const [hoveredNpc, setHoveredNpc] = useState<number | null>(null)
   const [focusNpc, setFocusNpc] = useState<number | null>(null)
@@ -616,6 +623,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
               onResumeRoom={resumeRoom}
               onSetIdentity={setIdentity}
               pendingRoom={pendingRoom}
+              onDeclineRoom={declineRoom}
               pendingRoute={pendingRoute}
               onRouteLoaded={routeLoaded}
               onDeclineRoute={declineRoute}
