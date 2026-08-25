@@ -125,14 +125,14 @@ before you compare, and never conclude a dungeon changed from its size alone.
   `npm run build:maps`; the report names this, but only running the command fixes it.
 - **CI runs no extraction.** The generated files and the rebuilt maps have to be committed, or
   the live site does not move.
-- **`npm run build:maps` re-encodes every map, and the output is not byte-stable.** On one real
-  run, six of the eight committed WebPs came out a few dozen bytes different even though only
-  one dungeon's data had changed and the report named no `textureFolder` finding. That is
-  encoder variance, not new artwork — nothing about the encoder promises the same tiles produce
-  the same bytes twice. The report, not the file size, is what tells you a map genuinely needs
-  rebuilding: a real tile change moves a WebP's size substantially, encoder variance moves it by
-  tens of bytes. `git checkout -- public/maps/` discards the noise before it is mistaken for a
-  change and committed as one.
+- **`npm run build:maps` leaves a map alone unless its tiles moved**, so there is no encoder
+  noise to sort out by hand any more. It says which it did and why — `unchanged`, or
+  `rebuilt: source changed` — and it is the digests in `public/maps/source-digests.json` that
+  decide, not the file sizes. **Commit that file with the maps**; they are one fact, and a
+  digest describing bytes that were never committed sends the next run to sleep on a stale map.
+  `FORCE=1 npm run build:maps` re-encodes everything, which is for a new encoder rather than for
+  an update. The encoder is still not byte-stable — that is why the digest is taken over the
+  tiles and never over the output.
 - **`npm run fetch:assets` prints an "Unresolved spells" line, and it must be read.** On one real
   run it read `Unresolved spells (rendered with their raw ID): 1300666` — one spell Wowhead has
   no page for, which the site then renders as a bare number. That particular id was pre-existing,
