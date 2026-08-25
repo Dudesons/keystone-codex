@@ -283,12 +283,32 @@ describe('Route overlay', () => {
     expect(picked).toEqual([2])
   })
 
-  it('paints a marked clone in its pull colour and numbers it', () => {
-    const marks = new Map<string, PullMark>([[firstKey, { pullIdx: 4, color: '#3eb0ff' }]])
+  it('paints a marked clone in its pull colour', () => {
+    const marks = new Map<string, PullMark>([[firstKey, { color: '#3eb0ff' }]])
     const { container } = mount({ pullMarks: marks })
-    const numbered = [...container.querySelectorAll('svg text')].filter((t) => t.textContent === '5')
-    expect(numbered.length).toBe(1)
     expect(container.innerHTML).toContain('#3eb0ff')
+  })
+
+  /**
+   * The pull's number belongs to the pull, once, where MDT puts it. It used to be stamped on
+   * every clone as well: a pull of eleven mobs drew the same digit eleven times over a blip
+   * already filled *and* stroked in that pull's colour and already wrapped in its outline. Which
+   * pull a mob belongs to is answered three other ways, and hovering the pull lights the whole
+   * group — so the digit was the one telling nobody anything.
+   */
+  it('leaves the number to the outline rather than stamping every clone', () => {
+    const marks = new Map<string, PullMark>([[firstKey, { color: '#3eb0ff' }]])
+    const { container } = mount({ pullMarks: marks })
+    const blip = container.querySelector(`[data-clone="${firstKey}"]`)!
+    expect([...blip.querySelectorAll('text')].map((n) => n.textContent)).not.toContain('5')
+  })
+
+  it('still numbers the pull once, at its outline, when both are on screen', () => {
+    const marks = new Map<string, PullMark>([[firstKey, { color: '#ff3eff' }]])
+    const { container } = mount({ pullMarks: marks, pullShapes: [shape], showPackOutlines: false })
+    const threes = [...container.querySelectorAll('svg text')].filter((n) => n.textContent === '3')
+    expect(threes).toHaveLength(1)
+    expect(threes[0].getAttribute('x')).toBe('233')
   })
 })
 
@@ -550,6 +570,18 @@ describe('Tooltip', () => {
   })
 })
 
+/** The legend panel: the absolutely positioned box that holds the pip key. */
+const legendPanel = (container: HTMLElement) =>
+  [...container.querySelectorAll('div')].find(
+    (d) => d.className.includes('absolute') && /PIPS/.test(d.textContent ?? ''),
+  )!
+
+/** One pip row of the legend, by the label it shows. */
+const pipRow = (container: HTMLElement, label: string) =>
+  [...legendPanel(container).querySelectorAll('button')].find((b) =>
+    (b.textContent ?? '').includes(label),
+  )!
+
 describe('Heads-up display', () => {
   it('shows the zoom level and the controls', () => {
     mount()
@@ -594,6 +626,82 @@ describe('Heads-up display', () => {
     expect(container.textContent).toContain('Mythic Dungeon Tools')
     expect(container.textContent).toContain(mdtRelease.version)
     expect(container.textContent).toContain(en['credits.blizzardShort'])
+  })
+
+  /**
+   * The five pip rows are the legend's filters: they name what is drawn *on top of* a blip, so a
+   * row can hide the thing it names. The ring colours and blip sizes are not — a ring is how
+   * every blip is drawn and size encodes rank, so switching one off would mean hiding mobs,
+   * which is a filter rather than a legend.
+   */
+  it('turns each pip row into a toggle, and leaves the rings and sizes as explanation', () => {
+    const { container } = mount()
+    const legend = legendPanel(container)
+    const toggles = [...legend.querySelectorAll('button')]
+    expect(toggles).toHaveLength(5)
+    expect(toggles.map((b) => b.textContent)).toEqual([
+      `K${en['legend.kick']}`,
+      `F${en['legend.frontal']}`,
+      `T${en['legend.tank']}`,
+      `D${en['legend.dispel']}`,
+      `?${en['legend.tips']}`,
+    ])
+  })
+
+  /**
+   * Named by its label alone. Read from its contents the name comes out as the glyph welded to
+   * the label — "KSpell to interrupt (from MDT)" — and `getByRole` could not find the row by the
+   * thing it says. The glyph stays visible: it is what a reader matches against the map by eye.
+   */
+  it('gives each row an accessible name that is just its label', () => {
+    mount()
+    for (const key of ['legend.kick', 'legend.frontal', 'legend.tank', 'legend.dispel', 'legend.tips'] as const) {
+      const row = screen.getByRole('button', { name: en[key] })
+      expect(row.getAttribute('aria-pressed'), key).toBe('true')
+    }
+  })
+
+  it('hides every pip of a kind when its row is switched off, and brings them back', () => {
+    const { container } = mount()
+    const kicks = () => container.querySelectorAll('[data-badge="kick"]').length
+    const before = kicks()
+    expect(before).toBeGreaterThan(0)
+
+    fireEvent.click(pipRow(container, en['legend.kick']))
+    expect(kicks()).toBe(0)
+
+    fireEvent.click(pipRow(container, en['legend.kick']))
+    expect(kicks()).toBe(before)
+  })
+
+  it('switches off only the kind that was clicked', () => {
+    const { container } = mount()
+    const dispels = container.querySelectorAll('[data-badge="dispel"]').length
+    expect(dispels).toBeGreaterThan(0)
+    fireEvent.click(pipRow(container, en['legend.kick']))
+    expect(container.querySelectorAll('[data-badge="dispel"]')).toHaveLength(dispels)
+  })
+
+  it('says whether a row is on, so the state is not colour alone', () => {
+    const { container } = mount()
+    const row = pipRow(container, en['legend.kick'])
+    expect(row.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(row)
+    expect(pipRow(container, en['legend.kick']).getAttribute('aria-pressed')).toBe('false')
+  })
+
+  /**
+   * The '?' row names one glyph drawn in two places: on a mob whose own card carries a tip, and
+   * on a *pack* a scoped tip is about. Hiding the row has to take both, or it would claim to hide
+   * tip marks while leaving some on screen.
+   */
+  it('takes the pack tip mark with the mob one, since the row names both', () => {
+    const vale = getLookup('the-blinding-vale')!
+    const { container } = renderEn(<DungeonMap slug="the-blinding-vale" lookup={vale} />)
+    expect(container.querySelectorAll('[data-badge="tips"][data-pack]').length).toBeGreaterThan(0)
+
+    fireEvent.click(pipRow(container, en['legend.tips']))
+    expect(container.querySelectorAll('[data-badge="tips"]')).toHaveLength(0)
   })
 
   it('puts no link in the legend, which could not be clicked through it', () => {

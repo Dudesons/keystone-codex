@@ -51,7 +51,6 @@ const PREVIEW_STROKE: MdtStroke = {
 }
 
 export interface PullMark {
-  pullIdx: number
   color: string
 }
 
@@ -142,6 +141,23 @@ export default function DungeonMap({
    * the top-left and centre, and the zoom cluster along the bottom-right.
    */
   const [showLegend, setShowLegend] = useState(true)
+  /**
+   * Pip kinds the reader has switched off from the legend.
+   *
+   * Deliberately not persisted and not shared with a session: it is a view preference, and a
+   * peer hiding your pips mid-pull would be a surprise rather than a feature. A reader who hides
+   * one and forgets gets the whole map back on reload, which is the failure worth having.
+   */
+  const [hiddenPips, setHiddenPips] = useState<ReadonlySet<string>>(() => new Set())
+  const togglePip = useCallback(
+    (name: string) =>
+      setHiddenPips((current) => {
+        const next = new Set(current)
+        if (!next.delete(name)) next.add(name)
+        return next
+      }),
+    [],
+  )
 
   /** The pulls something is written about. Keyed by locale: a translation replaces the tips. */
   const tipPulls = useMemo(
@@ -367,6 +383,7 @@ export default function DungeonMap({
                   x={toPixels(clone.x, clone.y).x}
                   y={toPixels(clone.x, clone.y).y}
                   mark={pullMarks?.get(key)}
+                  hiddenPips={hiddenPips}
                   isHighlighted={highlighted?.has(key) ?? false}
                   isHovered={hoverClone === key}
                   dimmed={dimOthers && !highlighted?.has(key)}
@@ -398,7 +415,7 @@ export default function DungeonMap({
           {/* Over the blips, and drawn whether or not the hulls are: a pull with advice written
               about it is information, not part of the outline's decoration. */}
           {[...lookup.packs.values()]
-            .filter((pack) => tipPulls.has(pack.g))
+            .filter((pack) => tipPulls.has(pack.g) && !hiddenPips.has('tips'))
             .map((pack) => (
               <PackTipsMark key={`tips-${pack.g}`} pack={pack} />
             ))}
@@ -453,7 +470,7 @@ export default function DungeonMap({
         }
       />
 
-      {showLegend && <Legend />}
+      {showLegend && <Legend hidden={hiddenPips} onToggle={togglePip} />}
       {hoverClone && !suppressCloneTooltip && (
         <CloneTooltip slug={slug} lookup={lookup} cloneKeyStr={hoverClone} />
       )}
@@ -527,6 +544,8 @@ interface BlipProps {
   x: number
   y: number
   mark?: PullMark
+  /** Pip kinds the reader has switched off in the legend. */
+  hiddenPips: ReadonlySet<string>
   isHighlighted: boolean
   isHovered: boolean
   dimmed: boolean
@@ -544,6 +563,7 @@ function Blip({
   x,
   y,
   mark,
+  hiddenPips,
   isHighlighted,
   isHovered,
   dimmed,
@@ -572,7 +592,8 @@ function Blip({
   // card's question, which is neither of these.
   if (ind.generalTips)
     badges.push({ name: 'tips', color: '#e0b552', glyph: '?', title: t('map.badgeTips') })
-  const placements = badgeArc(badges.length, { x, y }, r)
+  const shown = badges.filter((b) => !hiddenPips.has(b.name))
+  const placements = badgeArc(shown.length, { x, y }, r)
 
   return (
     <g
@@ -615,23 +636,12 @@ function Blip({
         strokeWidth={enemy.isBoss ? 4 : 3}
       />
 
-      {mark && (
-        <text
-          x={x}
-          y={y}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={r * 1.2}
-          fontWeight={700}
-          fill="#0b0d12"
-          className="pointer-events-none"
-          style={{ paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.6)', strokeWidth: 3 }}
-        >
-          {mark.pullIdx + 1}
-        </text>
-      )}
+      {/* No pull number here: it belongs to the pull, once, at its outline — see the route
+          overlay above. Stamped per clone it drew the same digit eleven times across a big pull,
+          over blips already filled and stroked in that pull's colour and already inside its
+          hull, which hovering lights up as a whole. */}
 
-      {badges.map((badge, i) => {
+      {shown.map((badge, i) => {
         const { x: bx, y: by, r: br } = placements[i]
         return (
           <g key={badge.name} data-badge={badge.name} className="pointer-events-none">
@@ -695,14 +705,21 @@ function MapHud({
   )
 }
 
-function Legend() {
+function Legend({
+  hidden,
+  onToggle,
+}: {
+  hidden: ReadonlySet<string>
+  onToggle: (name: string) => void
+}) {
   const { t } = useI18n()
-  const rows: [string, string, string][] = [
-    ['#d64550', 'K', t('legend.kick')],
-    ['#cf6fa0', 'F', t('legend.frontal')],
-    ['#4a90c2', 'T', t('legend.tank')],
-    ['#7f6fd0', 'D', t('legend.dispel')],
-    ['#e0b552', '?', t('legend.tips')],
+  // `name` is the pip's own key, the same one the blip tags its `data-badge` with.
+  const rows: [name: string, color: string, glyph: string, label: string][] = [
+    ['kick', '#d64550', 'K', t('legend.kick')],
+    ['frontal', '#cf6fa0', 'F', t('legend.frontal')],
+    ['tank', '#4a90c2', 'T', t('legend.tank')],
+    ['dispel', '#7f6fd0', 'D', t('legend.dispel')],
+    ['tips', '#e0b552', '?', t('legend.tips')],
   ]
   const ringRows: [string, string][] = [
     ['#cf3f52', t('legend.ring.lethal')],
@@ -720,22 +737,41 @@ function Legend() {
     [6, t('legend.blip.trash')],
   ]
   return (
-    // `pointer-events-none`: open from the start, this panel covers the top-right of the map for
-    // good, and a mob that a pan or a zoom brings underneath it would otherwise stop answering
-    // the cursor. It holds no button or link of its own, so there is nothing here to click.
+    // `pointer-events-none` on the panel: open from the start, it covers the top-right of the map
+    // for good, and a mob that a pan or a zoom brings underneath it would otherwise stop
+    // answering the cursor. The pip rows opt back in individually with `pointer-events-auto`, so
+    // the map still hears a click through everything here that is only explanation — which is
+    // why the credit below is text and not a link, and why nothing else in here is clickable.
     <div className="pointer-events-none absolute top-3 right-3 w-60 rounded border border-ink-700 bg-ink-900/95 p-3 text-xs shadow-lg">
       <div className="mb-1.5 text-[10px] font-bold tracking-widest text-ink-400">{t('legend.pips')}</div>
-      {rows.map(([color, glyph, label]) => (
-        <div key={glyph} className="mb-1 flex items-center gap-2">
-          <span
-            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-ink-950"
-            style={{ background: color }}
+      {rows.map(([name, color, glyph, label]) => {
+        const off = hidden.has(name)
+        return (
+          <button
+            key={name}
+            type="button"
+            aria-pressed={!off}
+            // Named explicitly: read from its contents the name comes out as the glyph welded to
+            // the label — "KSpell to interrupt (from MDT)" — which is the label with noise in
+            // front of it. The glyph is there to be matched against the map by eye.
+            aria-label={label}
+            onClick={() => onToggle(name)}
+            // Opacity rather than a strikethrough or a swatch change: what a switched-off row
+            // has to look like is the map without it, and the map's own pips are what fade.
+            className={`pointer-events-auto mb-1 flex w-full items-center gap-2 rounded text-left transition hover:bg-ink-800 ${
+              off ? 'opacity-40' : ''
+            }`}
           >
-            {glyph}
-          </span>
-          <span className="text-ink-300">{label}</span>
-        </div>
-      ))}
+            <span
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-ink-950"
+              style={{ background: color }}
+            >
+              {glyph}
+            </span>
+            <span className="text-ink-300">{label}</span>
+          </button>
+        )
+      })}
       <div className="mt-2.5 mb-1.5 text-[10px] font-bold tracking-widest text-ink-400">
         {t('legend.ring')}
       </div>
