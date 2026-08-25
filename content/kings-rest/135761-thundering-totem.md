@@ -1,6 +1,6 @@
 ---
 npcId: 135761
-name: "Disruption Totem"   # auto
+name: "Thundering Totem"   # auto
 count: 0   # auto — forces per unit
 
 # One of Zanazal's three totems, and worth no forces.
