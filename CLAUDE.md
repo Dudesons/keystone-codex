@@ -525,6 +525,12 @@ exports Mythic Dungeon Tools (MDT) strings — collaboratively, over Y.js throug
 - **Deployment is manual** (`Actions → Deploy → Run workflow`), never automatic.
 - **Nothing under `content/` ever reaches an MDT string.** The codec serialises the route
   document only; tips, traps and prose are ours and stay ours. A share string carries a route.
+- **Vitest stays on 4.x, and `@cloudflare/vitest-pool-workers` on 0.13.0 or later.** Vitest 3
+  arms a hardcoded 60-second timeout on every worker-to-main RPC call, with no setting to raise
+  it; once the suite grew past a minute on a CI runner it began failing jobs with every test
+  passing and one `Timeout calling "onTaskUpdate"`. Vitest 4 removed the timer
+  ([vitest#8297](https://github.com/vitest-dev/vitest/pull/8297)). The two versions move
+  together: the pool needs Vitest 4 from 0.13.0 on.
 
 ## Commands
 
