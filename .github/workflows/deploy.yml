@@ -56,8 +56,13 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Tests
-        run: npm test
+      # Split for the reason ci.yml gives at length: the two projects sharing one main
+      # process is what lets a worker's onTaskUpdate call run out its sixty seconds.
+      - name: Test the app
+        run: npm test -- --project app --reporter=dot --reporter=github-actions
+
+      - name: Test the relay
+        run: npm test -- --project relay
 
       # No extraction script runs here: they need a WoW installation. The data and assets
       # are versioned, so the build stands on its own.

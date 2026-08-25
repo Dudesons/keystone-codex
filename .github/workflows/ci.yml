@@ -35,8 +35,26 @@ jobs:
 
       # The MDT codec is the part we must not break unnoticed: a badly encoded string
       # would be rejected by the game.
-      - name: Tests
-        run: npm test
+      #
+      # The two projects run as separate steps rather than as one `npm test`. Run together,
+      # workerd starts in the middle of the jsdom suite and pumps its console through the same
+      # main process that serves every worker's module transforms. Vitest gives a worker's
+      # onTaskUpdate call sixty seconds to be answered — birpc's default, which 3.2.7 offers no
+      # way to raise — and a main process busy on both projects at once has missed it, failing
+      # the job with every test green. Apart, neither project competes with the other.
+      # `relay.yml` already runs the relay on its own for the same reason.
+      #
+      # `dot` rather than the default reporter for the same reason: printing all 1362 test
+      # names is main-thread work done between task updates, and that thread is the one that
+      # has to answer them. A failure still prints in full, and `github-actions` puts it on
+      # the diff as an annotation. The flags live here rather than in vite.config.ts so that
+      # a local `npm test` keeps naming every test it ran.
+      - name: Test the app
+        run: npm test -- --project app --reporter=dot --reporter=github-actions
+
+      # Thirteen tests, so the default reporter costs nothing and reads better.
+      - name: Test the relay
+        run: npm test -- --project relay
 
       # Building on pull requests too, to catch what the typecheck lets through.
       - name: Build
