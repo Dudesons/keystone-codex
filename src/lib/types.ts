@@ -83,6 +83,13 @@ export interface DungeonSummary {
   mdtIndex: number
   mapID?: number
   totalCount: number
+  /**
+   * How many units MDT flags `isBoss`, counted by the extraction — **not** how many bosses the
+   * dungeon has, and never what to show a reader. MDT flags every unit that appears in an
+   * encounter, so this reads 8 for Ruby Life Pools against the four its briefing lists. A card's
+   * `rank` is what settles it, resolved once in `getIndicators`; count `getHighlights().bosses`
+   * instead. Kept because it is MDT's own answer and the tests assert the disagreement.
+   */
   bosses: number
   mobCount: number
   packCount: number

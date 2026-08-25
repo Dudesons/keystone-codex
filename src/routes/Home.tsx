@@ -4,6 +4,7 @@
 import { Link } from 'react-router-dom'
 import { dungeonList, getDungeon, mapUrl } from '../lib/data'
 import { contentProgress, getDungeonContent } from '../lib/content'
+import { getHighlights } from '../lib/highlights'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
 import SiteFooter from '../components/SiteFooter'
@@ -41,6 +42,10 @@ export default function Home() {
           const progress = dungeon
             ? contentProgress(summary.slug, [...new Set(dungeon.enemies.map((e) => e.id))], locale)
             : { written: 0, total: 0 }
+          // Not `summary.bosses`: that is written by the extraction out of MDT's `isBoss`, which
+          // flags every unit appearing in an encounter and cannot see a card demoting one. This
+          // is the same list the briefing shows, so the two pages cannot drift apart.
+          const bosses = getHighlights(summary.slug, locale).bosses.length
 
           return (
             <Link
@@ -63,7 +68,7 @@ export default function Home() {
                   {summary.englishName}
                 </h2>
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-400">
-                  <span>{plural('home.bosses', summary.bosses)}</span>
+                  <span>{plural('home.bosses', bosses)}</span>
                   <span>{plural('common.packs', summary.packCount)}</span>
                   <span>{plural('common.forces', summary.totalCount)}</span>
                   {content?.timer && (

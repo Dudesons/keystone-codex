@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { contentProgress, getDungeonContent } from '../lib/content'
 import { dungeonList, getDungeon } from '../lib/data'
+import { getHighlights } from '../lib/highlights'
 import { renderEn } from '../test/render'
 import Home from './Home'
 import { SearchProvider } from '../components/SearchPalette'
@@ -54,9 +55,40 @@ describe('Dungeon list', () => {
     const first = dungeonList[0]
     const card = container.querySelector(`a[href="/d/${first.slug}"]`) as HTMLElement
     const text = within(card)
-    expect(text.getByText(`${first.bosses} ${first.bosses === 1 ? 'boss' : 'bosses'}`)).toBeDefined()
+    const bosses = getHighlights(first.slug).bosses.length
+    expect(text.getByText(`${bosses} ${bosses === 1 ? 'boss' : 'bosses'}`)).toBeDefined()
     expect(text.getByText(`${first.packCount} packs`)).toBeDefined()
     expect(text.getByText(`${first.totalCount} forces`)).toBeDefined()
+  })
+
+  /**
+   * Counted where `rank` is resolved, not from the `bosses` field the extraction writes out of
+   * MDT's `isBoss`. Asserted for every dungeon rather than the first, because the first one in
+   * the pool is a dungeon where the two happen to agree — which is why the assertion above
+   * could never have caught this on its own.
+   */
+  it('counts a demoted mob as no boss, on every dungeon in the pool', () => {
+    const { container } = mount()
+    for (const d of dungeonList) {
+      const card = container.querySelector(`a[href="/d/${d.slug}"]`) as HTMLElement
+      const n = getHighlights(d.slug).bosses.length
+      expect(within(card).getByText(`${n} ${n === 1 ? 'boss' : 'bosses'}`), d.slug).toBeDefined()
+    }
+  })
+
+  /**
+   * The concrete regression, named so it cannot be silently generalised away. MDT 6.2.8 flags
+   * eight bosses in Ruby Life Pools; four of them carry `rank: miniboss`, and its own briefing
+   * lists four. The home card used to be the one page that said eight.
+   */
+  it('says four bosses for Ruby Life Pools, where MDT flags eight', () => {
+    expect(dungeonList.find((d) => d.slug === 'ruby-life-pools')!.bosses).toBe(8)
+    expect(getHighlights('ruby-life-pools').bosses).toHaveLength(4)
+
+    const { container } = mount()
+    const card = container.querySelector('a[href="/d/ruby-life-pools"]') as HTMLElement
+    expect(within(card).getByText('4 bosses')).toBeDefined()
+    expect(within(card).queryByText('8 bosses')).toBeNull()
   })
 })
 

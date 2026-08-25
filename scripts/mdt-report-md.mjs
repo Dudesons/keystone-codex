@@ -60,6 +60,8 @@ function renderFinding(f) {
   const lines = [`- [ ] **${f.subject}** — ${f.what}`]
   if (f.detail) lines.push(`      ${oneLine(f.detail)}`)
   if (f.action) lines.push(`      → ${f.action}`)
+  // What a finding chose not to report, so the choice is auditable rather than trusted.
+  if (f.folded) lines.push(`      also ${oneLine(f.folded)}`)
   if (f.file) lines.push(`      \`${f.file}\``)
   return lines.join('\n')
 }
