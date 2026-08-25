@@ -205,6 +205,7 @@ export const en = {
   'route.routeLinkCopied': 'Link copied.',
   'route.routeLinkLong':
     'Link copied, but it is {n} characters — too long for a Discord message. To share a route this size, open a session instead.',
+  'route.offerTitle': 'A shared route',
   'route.routeOffer': 'This link carries a route. Loading it replaces the one you have.',
   'route.acceptRoute': 'Load this route',
   'route.declineRoute': 'Keep mine',
@@ -225,8 +226,10 @@ export const en = {
   'collab.openSession': 'Open a session with this route',
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Join',
+  'collab.invitationTitle': 'A shared session',
   'collab.invitation': 'Join room {room} — your local route will be set aside.',
   'collab.acceptInvitation': 'Join room {room}',
+  'collab.declineInvitation': 'Not now',
   'collab.name': 'Your name',
   'collab.namePlaceholder': 'Name',
   'collab.hint':

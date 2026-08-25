@@ -207,6 +207,7 @@ export const fr: Dictionary = {
   'route.routeLinkCopied': 'Lien copié.',
   'route.routeLinkLong':
     'Lien copié, mais il fait {n} caractères — trop long pour un message Discord. Pour partager une route de cette taille, ouvrez plutôt une session.',
+  'route.offerTitle': 'Une route partagée',
   'route.routeOffer': 'Ce lien contient une route. La charger remplacera la vôtre.',
   'route.acceptRoute': 'Charger cette route',
   'route.declineRoute': 'Garder la mienne',
@@ -227,8 +228,10 @@ export const fr: Dictionary = {
   'collab.openSession': 'Ouvrir une session avec cette route',
   'collab.codePlaceholder': 'CODE',
   'collab.join': 'Rejoindre',
+  'collab.invitationTitle': 'Une session partagée',
   'collab.invitation': 'Rejoindre le salon {room} — ta route locale sera mise de côté.',
   'collab.acceptInvitation': 'Rejoindre le salon {room}',
+  'collab.declineInvitation': 'Plus tard',
   'collab.name': 'Ton pseudo',
   'collab.namePlaceholder': 'Pseudo',
   'collab.hint':

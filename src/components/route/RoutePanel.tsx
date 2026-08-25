@@ -1,7 +1,7 @@
 // ABOUTME: The route side panel: forces, pull list and briefings, MDT import/export, sharing.
 // ABOUTME: Owns no route state — every change goes through the actions of useRouteDoc.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { DungeonLookup } from '../../lib/data'
 import { cloneKey, getNpcLabel } from '../../lib/data'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
@@ -21,6 +21,8 @@ import { randomRoomCode } from '../../lib/mdt/useRouteDoc'
 import { useI18n } from '../../lib/i18n/context'
 import type { I18n } from '../../lib/i18n/context'
 import type { Enemy } from '../../lib/types'
+import ArrivalDialog from './ArrivalDialog'
+import NameField from './NameField'
 
 /**
  * The forces readout is three elements deep — the running total, the percentage and the bar —
@@ -62,6 +64,8 @@ interface Props {
   onResumeRoom: () => void
   onSetIdentity: (name: string) => void
   pendingRoom: string | null
+  /** Called when the invitation is turned down, so the same room is not offered again. */
+  onDeclineRoom?: () => void
   /** The route a share link carries. Null when the address carries none. */
   pendingRoute?: string | null
   /** Called only after a successful import, so the page can drop the parameter. */
@@ -132,6 +136,7 @@ export default function RoutePanel({
   onResumeRoom,
   onSetIdentity,
   pendingRoom,
+  onDeclineRoom,
   pendingRoute,
   onRouteLoaded,
   onDeclineRoute,
@@ -242,28 +247,20 @@ export default function RoutePanel({
 
   return (
     <div className="space-y-4">
-      {/* At the top rather than beside the session controls: this is not about collaborating,
-          it is a decision about the route already in front of you, and it has to be read before
-          anything else on the panel is worth looking at. */}
-      {pendingRoute && (
-        <section className="rounded-lg border border-gold-500/40 bg-gold-500/5 p-3">
-          <p className="text-[11px] text-ink-300">{t('route.routeOffer')}</p>
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={handleAcceptRoute}
-              className="flex-1 rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20"
-            >
-              {t('route.acceptRoute')}
-            </button>
-            <button
-              onClick={onDeclineRoute}
-              className="rounded border border-ink-700 px-2 py-1.5 text-xs text-ink-400 hover:border-ink-600 hover:text-ink-200"
-            >
-              {t('route.declineRoute')}
-            </button>
-          </div>
-        </section>
-      )}
+      {/* Not a card in this column: what a shared link asks has to be answered before anything
+          else here is worth looking at, and this panel is a narrow strip on the right that
+          somebody arriving from a link has no reason to scroll. Accepting still reports through
+          this panel's own message line, which is why the handler stays here. */}
+      <ArrivalDialog
+        collab={collab}
+        pendingRoom={pendingRoom}
+        pendingRoute={pendingRoute}
+        onJoinRoom={onJoinRoom}
+        onDeclineRoom={onDeclineRoom}
+        onSetIdentity={onSetIdentity}
+        onAcceptRoute={handleAcceptRoute}
+        onDeclineRoute={onDeclineRoute}
+      />
 
       <section className="rounded-lg border border-ink-700 bg-ink-850 p-3">
         <input
@@ -452,7 +449,6 @@ export default function RoutePanel({
       <CollabSection
         slug={slug}
         collab={collab}
-        pendingRoom={pendingRoom}
         onJoinRoom={onJoinRoom}
         onLeaveRoom={onLeaveRoom}
         onResumeRoom={onResumeRoom}
@@ -558,7 +554,6 @@ function PullMobLine({
 function CollabSection({
   slug,
   collab,
-  pendingRoom,
   onJoinRoom,
   onLeaveRoom,
   onResumeRoom,
@@ -567,7 +562,6 @@ function CollabSection({
 }: {
   slug: string
   collab: CollabState
-  pendingRoom: string | null
   onJoinRoom: (room: string, mode: 'host' | 'guest') => void
   onLeaveRoom: () => void
   onResumeRoom: () => void
@@ -650,18 +644,6 @@ function CollabSection({
         {t('collab.editTogether')}
       </h3>
       <NameField identity={collab.identity} onSetIdentity={onSetIdentity} t={t} />
-      {pendingRoom && (
-        <div className="mb-3 rounded border border-gold-500/40 bg-gold-500/5 p-2">
-          <p className="text-[11px] text-ink-300">{t('collab.invitation', { room: pendingRoom })}</p>
-          <button
-            onClick={() => onJoinRoom(pendingRoom, 'guest')}
-            disabled={!hasName}
-            className="mt-2 w-full rounded border border-gold-500/60 bg-gold-500/10 px-2 py-1.5 text-xs font-semibold text-gold-400 hover:bg-gold-500/20 disabled:opacity-40"
-          >
-            {t('collab.acceptInvitation', { room: pendingRoom })}
-          </button>
-        </div>
-      )}
       <button
         onClick={() => onJoinRoom(randomRoomCode(), 'host')}
         disabled={!hasName}
@@ -687,50 +669,5 @@ function CollabSection({
       </div>
       <p className="mt-2 text-[11px] text-ink-600">{t('collab.hint')}</p>
     </section>
-  )
-}
-
-/**
- * The participant's own name: blank on a first visit, so choosing one is a real step rather
- * than accepting an invented default without reading it. Stays editable once a session is
- * open, since names get picked badly the first time.
- */
-function NameField({
-  identity,
-  onSetIdentity,
-  t,
-}: {
-  identity: string | null
-  onSetIdentity: (name: string) => void
-  t: I18n['t']
-}) {
-  // `identity` comes back trimmed on every call (`setIdentity` normalises what gets persisted
-  // and replicated to peers), so binding the input straight to it would erase a trailing space
-  // the instant it was typed, and the next character would land against the trimmed string.
-  // This field keeps its own buffer holding exactly what was typed, and only accepts a value
-  // from outside when it isn't simply the trimmed echo of what this buffer already holds —
-  // otherwise a change from elsewhere (the stored name loading, a session reset) would never
-  // reach the field.
-  const [value, setValue] = useState(identity ?? '')
-  useEffect(() => {
-    setValue((current) => (current.trim() === (identity ?? '') ? current : identity ?? ''))
-  }, [identity])
-
-  return (
-    <label className="mb-2 block">
-      <span className="mb-1 block text-[10px] font-bold tracking-widest text-ink-400">
-        {t('collab.name')}
-      </span>
-      <input
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value)
-          onSetIdentity(e.target.value)
-        }}
-        placeholder={t('collab.namePlaceholder')}
-        maxLength={20}
-        className="w-full rounded border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-ink-100 focus:border-gold-500 focus:outline-none"
-      />
-    </label>
   )
 }
