@@ -19,7 +19,7 @@ spells:
     # 2.5 sec cast · Unlimited range
     tag: tank
     prio: 1
-    note: "485k plus 58k a second for 10 sec, stacking. A genuine tank buster on an add."
+    note: "485k plus 29k a second for 25 sec, stacking. A genuine tank buster on an add."
   - id: 1303446
     name: "Tainted Strike"   # auto
     # Instant · Unlimited range
@@ -42,7 +42,7 @@ trap: "Unstable Corruption is 485k in twenty yards and it spawns the Lifeforce o
 The [Avatar](#/d/temple-of-sethraliss/codex/mob/133392)'s heavy add, with 1.7 million health and a
 tank buster that would not be out of place on a boss.
 
-**Tainted Strike** is 485k with a stacking ten-second burn. **Unstable Corruption** is 485k in
+**Tainted Strike** is 485k with a stacking twenty-five-second burn. **Unstable Corruption** is 485k in
 a twenty-yard radius — and it is what creates the
 [Corrupted Lifeforce](#/d/temple-of-sethraliss/codex/mob/268364) orbs, so it is simultaneously the
 biggest hit in the encounter and the thing that sets up its central decision.
