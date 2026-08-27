@@ -6,7 +6,7 @@ npcId: 236905
 
 spells:
   - id: 1302007
-    note: "Frappe tous les joueurs toutes les 0,4 s pendant 1,2 s à 48k le coup. Court, inévitable, et Method la note comme l'importante."
+    note: "Frappe tous les joueurs toutes les 0,4 s pendant 1,2 s à 44k le coup. Court, inévitable, et Method la note comme l'importante."
   - id: 1216954
     note: "Un frontal à portée illimitée. La distance ne protège pas — l'arc, si."
   - id: 1217930

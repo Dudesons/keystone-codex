@@ -10,10 +10,10 @@ rank: miniboss
 spells:
   - id: 1302007
     name: "Blade Dance"   # auto
-    # Channeled (1.2 sec cast)
+    # 2 sec cast
     tag: dodge
     prio: 1
-    note: "Strikes all players every 0.4 sec for 1.2 sec at 48k a hit. Short, unavoidable, and Method rates it the important one."
+    note: "Strikes all players every 0.4 sec for 1.2 sec at 44k a hit. Short, unavoidable, and Method rates it the important one."
   - id: 1302010
     name: "Blade Dance"   # auto
     # Instant · 100 yd range
