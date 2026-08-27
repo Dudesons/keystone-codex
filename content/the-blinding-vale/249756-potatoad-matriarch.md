@@ -1,7 +1,7 @@
 ---
 npcId: 249756
 name: "Potatoad Matriarch"   # auto
-count: 30   # auto — forces per unit
+count: 60   # auto — forces per unit
 
 threat: medium
 role: melee
@@ -13,7 +13,7 @@ spells:
     # dispel: poison · 2 sec cast · 60 yd range
     tag: dispel
     prio: 1
-    note: "136k to everyone, then 58k every 1.5 sec for 9 sec. A poison — one of the few things in the Vale a standard dispel actually answers."
+    note: "68k to everyone, then 58k every 1.5 sec for 9 sec. A poison — one of the few things in the Vale a standard dispel actually answers."
   - id: 1250100
     name: "Tongue Toss"   # auto
     # 2 sec cast · 40 yd range
@@ -40,7 +40,7 @@ spells:
 trap: "Kill the eggs, not the tadpoles. Hatch takes ten seconds — that is the whole window, and it is more than enough."
 ---
 
-A single unit worth 30 forces, and the one mob in the Vale that hands the group a timer it can
+A single unit worth 60 forces, and the one mob in the Vale that hands the group a timer it can
 actually beat.
 
 **Toadspawn** lays **Potadpole Eggs**, and each egg spends **ten seconds** casting *Hatch*

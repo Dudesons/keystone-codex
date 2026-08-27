@@ -6,7 +6,7 @@ npcId: 249756
 
 spells:
   - id: 1250937
-    note: "136k à tout le monde, puis 58k toutes les 1,5 s pendant 9 s. Un poison — l'une des rares choses du donjon à laquelle une dissipation standard répond vraiment."
+    note: "68k à tout le monde, puis 58k toutes les 1,5 s pendant 9 s. Un poison — l'une des rares choses du donjon à laquelle une dissipation standard répond vraiment."
   - id: 1250100
     note: "291k et ça envoie la cible en l'air par-dessus. C'est le déplacement qui pose problème, pas le chiffre."
   - id: 1250199
@@ -17,7 +17,7 @@ spells:
 trap: "Tuer les œufs, pas les tertards. **Éclosion** prend dix secondes — c'est toute la fenêtre, et c'est largement assez."
 ---
 
-Une seule unité qui vaut 30 forces, et le seul mob de The Blinding Vale qui donne au groupe un
+Une seule unité qui vaut 60 forces, et le seul mob de The Blinding Vale qui donne au groupe un
 compte à rebours qu'il peut réellement battre.
 
 **Rejeton terratracien** pond des **Oeufs de tertard**, et chaque œuf passe **dix secondes** à
