@@ -14,7 +14,7 @@ spells:
   - id: 268586
     note: "Une chaîne de frappes aux dégâts croissants sur la cible. C'est la montée qui tue les tanks, pas le premier coup."
   - id: 1303105
-    note: "Bondit sur les joueurs pour 175k dans les 8 mètres de l'impact."
+    note: "Bondit sur les joueurs pour 165k dans les 8 mètres de l'impact."
   - id: 1302945
     note: "Des lances venues du plafond : 145k dans les 7 mètres et un saignement de 5 secondes. Elles n'arrêtent pas de tomber — un danger de fond, pas un événement."
   - id: 1303396
