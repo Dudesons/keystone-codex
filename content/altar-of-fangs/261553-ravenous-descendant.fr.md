@@ -9,7 +9,7 @@ spells:
     note: "Dissiper l'enrage, sinon le tank risque réellement d'y passer."
 
   - id: 1306333
-    note: "Chaque coup augmente sa vitesse d'attaque de 20 % pendant 2 s, cumulable. En le kitant, les stacks tombent d'eux-mêmes."
+    note: "Chaque coup augmente sa vitesse d'attaque de 10 % pendant 2 s, cumulable. En le kitant, les stacks tombent d'eux-mêmes."
 
 trap: "Dissiper l'enrage, et kiter pour faire tomber les stacks de **Griffes voraces**. Laissé libre de taper avec l'enrage actif, il tue le tank — pour un mob à 5 forces."
 ---
@@ -18,7 +18,7 @@ Dix-neuf unités réparties sur neuf packs — le mob le plus omniprésent du do
 les dégâts sont les plus faciles à sous-estimer. Individuellement il vaut 5 forces ;
 collectivement, c'est lui qui tue les tanks.
 
-Les deux capacités racontent une seule histoire. **Griffes voraces** ajoute 20 % de vitesse
+Les deux capacités racontent une seule histoire. **Griffes voraces** ajoute 10 % de vitesse
 d'attaque par coup et ne dure que 2 secondes : ça monte tant que le mob est au contact et ça
 retombe dès qu'il ne l'est plus. **Vorace** l'enrage par-dessus. Aucune des deux n'est
 dangereuse seule ; ensemble, sur un pack qui en compte cinq, les dégâts subis par le tank

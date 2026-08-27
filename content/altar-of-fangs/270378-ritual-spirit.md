@@ -13,7 +13,7 @@ spells:
     # 2 sec cast
     tag: kick
     prio: 1
-    note: "87k Physical and absorbs the next 180k of healing — the same cast the Ritual Chieftain uses."
+    note: "87k Physical and absorbs the next 162k of healing — the same cast the Ritual Chieftain uses."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap:

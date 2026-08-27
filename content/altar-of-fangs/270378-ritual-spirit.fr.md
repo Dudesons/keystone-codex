@@ -6,7 +6,7 @@ npcId: 270378
 
 spells:
   - id: 1306657
-    note: "87k physique et absorption des 180k soins suivants — la même incantation que celle du Chef du rituel."
+    note: "87k physique et absorption des 162k soins suivants — la même incantation que celle du Chef du rituel."
 ---
 
 L'esprit que le [Chef du rituel](#/d/altar-of-fangs/codex/mob/270306) invoque. Il ne vaut aucune

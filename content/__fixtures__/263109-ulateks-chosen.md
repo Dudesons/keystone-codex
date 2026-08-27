@@ -15,7 +15,7 @@ role: caster
 spells:
   - id: 1307567
     name: "Mass Envenom"   # auto
-    # 2.5 sec cast · 60 yd range
+    # 3.5 sec cast · 60 yd range
     tag: kick
     prio: 1
     note: "The cast that makes this mob matter. 58k Nature on impact, then 24k every second for 8 sec."
