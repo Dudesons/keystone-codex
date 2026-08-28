@@ -6,7 +6,7 @@
  "mapID": 584,
  "teleportId": 1286801,
  "textureFolder": "TheBlindingVale",
- "totalCount": 655,
+ "totalCount": 686,
  "sublevelCount": 1,
  "enemies": [
   {
@@ -2669,7 +2669,7 @@
    "mdtIdx": 23,
    "id": 249756,
    "name": "Potatoad Matriarch",
-   "count": 30,
+   "count": 60,
    "health": 9729764,
    "level": 91,
    "scale": 2,

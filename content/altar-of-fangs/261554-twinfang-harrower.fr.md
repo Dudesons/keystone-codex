@@ -9,7 +9,7 @@ spells:
     note: "Ses attaques au corps à corps frappent deux fois. C'est le tank buster du pack."
 
   - id: 1294569
-    note: "135k à l'impact, puis 48k par seconde pendant 20 s, et chaque tick retire encore 10 % de vitesse de déplacement. Dissipable en magie."
+    note: "68k à l'impact, puis 48k par seconde pendant 20 s, et chaque tick retire encore 10 % de vitesse de déplacement. Dissipable en magie."
 
   - id: 1306668
     note: "Frontal, 68k Nature toutes les demi-secondes sur qui reste dedans."

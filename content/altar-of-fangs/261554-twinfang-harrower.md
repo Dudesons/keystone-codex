@@ -22,7 +22,7 @@ spells:
     # dispel: magic · Instant · 100 yd range
     tag: dispel
     prio: 1
-    note: "135k on impact, then 48k every second for 20 sec, and each tick takes another 10% movement speed. Dispellable as magic."
+    note: "68k on impact, then 48k every second for 20 sec, and each tick takes another 10% movement speed. Dispellable as magic."
 
   # MDT attaches Toxic Breath to the mob under two ids, and either can be the one that fires.
   # Both carry the note so the frontal is briefed whichever one the group sees.

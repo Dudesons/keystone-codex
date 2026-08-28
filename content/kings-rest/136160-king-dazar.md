@@ -57,7 +57,7 @@ spells:
     # 4 sec cast · 100 yd range
     tag: dodge
     prio: 1
-    note: "Leaps at players for 175k within 8 yd of impact."
+    note: "Leaps at players for 165k within 8 yd of impact."
   - id: 1303115
     name: "Aerial Smash"   # auto
     # Instant · 100 yd range

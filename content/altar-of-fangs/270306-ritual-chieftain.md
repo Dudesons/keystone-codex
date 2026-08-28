@@ -21,7 +21,7 @@ spells:
     # 3 sec cast
     tag: kick
     prio: 1
-    note: "87k physical and absorbs the next 180k of healing. Chained with Dismember, this is what kills the tank."
+    note: "87k physical and absorbs the next 162k of healing. Chained with Dismember, this is what kills the tank."
 
   - id: 1306893
     name: "Unstable Totem"   # auto
@@ -35,11 +35,11 @@ spells:
     note: "Just the totem-planting animation."
 
 
-trap: "**Blood Sacrifice** absorbs the next 180k of healing, and **Dismember** hits for 581k. Letting the absorb land just before the buster is the sequence that kills the tank."
+trap: "**Blood Sacrifice** absorbs the next 162k of healing, and **Dismember** hits for 581k. Letting the absorb land just before the buster is the sequence that kills the tank."
 ---
 
 Two 3-second casts that answer each other: **Dismember** hits the tank for 581k, and **Blood
-Sacrifice** absorbs the next 180k of healing. Letting the second through just before the first
+Sacrifice** absorbs the next 162k of healing. Letting the second through just before the first
 is the sequence that kills.
 
 The three IDs of *Blood Sacrifice* (1306517, 1306550, 1306641) are the same spell in instant
