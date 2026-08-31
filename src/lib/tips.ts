@@ -123,8 +123,8 @@ export const tipFocusParam = (tip: Tip): string => (tip.packs?.length ? tip.pack
  *
  * Anything unrecognised is null, and the map then stays where it is. A pasted URL carrying a typo
  * should neither throw nor aim somewhere arbitrary — the same posture as a mob with no card still
- * rendering. Each part must be a plain decimal digit string (no leading zeroes, signs, or hex/
- * exponential notation that `Number()` would accept). `parts.length` is compared rather than
+ * rendering. Each part must be a plain run of decimal digits — no signs, whitespace, hex or
+ * exponential notation that `Number()` would accept. `parts.length` is compared rather than
  * filtered so that `44,` and `44,x` are rejected whole instead of silently becoming `[44]`.
  */
 export function parseFocus(value: string | null): FocusTarget | null {

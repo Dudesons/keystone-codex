@@ -214,4 +214,9 @@ describe('parseFocus', () => {
   it('accepts duplicate pack numbers as written, without deduplicating', () => {
     expect(parseFocus('44,44')).toEqual({ packs: [44, 44] })
   })
+
+  it('accepts leading zeroes and resolves them correctly', () => {
+    expect(parseFocus('044')).toEqual({ packs: [44] })
+    expect(parseFocus('044,045')).toEqual({ packs: [44, 45] })
+  })
 })
