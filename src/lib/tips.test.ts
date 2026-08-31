@@ -201,4 +201,17 @@ describe('parseFocus', () => {
     expect(parseFocus(tipFocusParam({ kind: 'text', text: 'x', packs: [44] }))).toEqual({ packs: [44] })
     expect(parseFocus(tipFocusParam({ kind: 'text', text: 'x' }))).toEqual({ mob: true })
   })
+
+  it('rejects forms that Number() would accept but are not plain decimal digits', () => {
+    expect(parseFocus(' 44')).toBeNull() // whitespace padding
+    expect(parseFocus('44 ')).toBeNull()
+    expect(parseFocus(' 44 ')).toBeNull()
+    expect(parseFocus('0x2c')).toBeNull() // hex
+    expect(parseFocus('1e2')).toBeNull() // exponential
+    expect(parseFocus('+44')).toBeNull() // explicit sign
+  })
+
+  it('accepts duplicate pack numbers as written, without deduplicating', () => {
+    expect(parseFocus('44,44')).toEqual({ packs: [44, 44] })
+  })
 })
