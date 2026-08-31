@@ -28,7 +28,6 @@ import {
   WHEEL_STEP,
   badgeArc,
   blipRadius,
-  fitTransform,
   focusTransform,
   toMapPoint,
   zoomAt,
@@ -196,11 +195,30 @@ export default function DungeonMap({
     const el = containerRef.current
     if (!el) return
     const size = { width: el.clientWidth, height: el.clientHeight }
-    const wanted = focusRef.current
-    setTransform(wanted?.points.length ? focusTransform(wanted.points, size) : fitTransform(size))
+    setTransform(focusTransform(focusRef.current?.points ?? [], size))
   }, [])
 
-  useLayoutEffect(fit, [fit, slug, focus?.token])
+  /**
+   * Two effects rather than one, because they answer different questions. The first is "does the
+   * map need fitting at all" — mount, and a change of dungeon — and always lands on the plain fit,
+   * since a fresh dungeon has no focus of its own yet. The second is "did the reader just ask to
+   * be shown something", which is the token changing, and only then does `fit` re-read whatever
+   * `focus` currently holds.
+   *
+   * Losing a focus (a click that navigates away from `?focus=`) is not itself a token change to
+   * anything — `focus?.token` merely becomes `undefined`, which the second effect's guard treats
+   * as "nothing asked", so it does not run `fit` again. Without that guard this would be one effect
+   * keyed on `[fit, slug, focus?.token]`, and `focus?.token` going from a key string to `undefined`
+   * is a dependency change like any other: the effect would fire, `fit` would find no focus, and
+   * the map would snap back to the whole-dungeon view the instant a reader clicked away from a
+   * jump — undoing the thing they had just asked to see. Leaving the map exactly where the reader
+   * left it is the right answer here, the same posture as an unparseable `?focus=` leaving the map
+   * alone rather than throwing.
+   */
+  useLayoutEffect(fit, [fit, slug])
+  useLayoutEffect(() => {
+    if (focus?.token) fit()
+  }, [fit, focus?.token])
 
   useEffect(() => {
     const el = containerRef.current

@@ -995,7 +995,7 @@ describe('Tips badge', () => {
 
 describe('Focus', () => {
   it('sits at the plain fit when nothing asks for a focus', () => {
-    const { container } = renderEn(<DungeonMap slug={SLUG} lookup={lookup} />)
+    const { container } = mount()
     const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
     // jsdom lays out at zero, so fitTransform's scale is 0 here. That is the point: it is a
     // value focusTransform cannot produce, so the two are distinguishable without a layout.
@@ -1005,13 +1005,7 @@ describe('Focus', () => {
   })
 
   it('applies a focus instead of fitting the whole map', () => {
-    const { container } = renderEn(
-      <DungeonMap
-        slug={SLUG}
-        lookup={lookup}
-        focus={{ points: [{ x: 400, y: 300 }], token: 'a' }}
-      />,
-    )
+    const { container } = mount({ focus: { points: [{ x: 400, y: 300 }], token: 'a' } })
     const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
     expect(canvas.style.transform).not.toContain('scale(0)')
   })

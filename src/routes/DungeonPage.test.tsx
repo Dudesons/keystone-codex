@@ -423,6 +423,20 @@ describe('Focusing the map from the URL', () => {
     const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
     expect(canvas.style.transform).toContain('scale(0)')
   })
+
+  it('does not refit the whole map when a click drops the focus', () => {
+    // Reproduces the regression: clicking a blip navigates from `?focus=44` to the bare codex
+    // address (`handleCloneClick` in DungeonPage.tsx), and losing `?focus=` must not be read as
+    // a reason to refit — the reader just asked to look at something, and a snap back to the
+    // whole-dungeon fit would undo that in the same gesture that requested it.
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=44`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).not.toContain('scale(0)')
+
+    fireEvent.click(container.querySelector('[data-clone="5:10"]')!)
+
+    expect(canvas.style.transform).not.toContain('scale(0)')
+  })
 })
 
 describe('Points of interest', () => {

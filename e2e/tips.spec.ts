@@ -105,7 +105,7 @@ test('a tip on the index jumps the map to the pull it names', async ({ page }) =
   const before = await blip.boundingBox()
 
   await page.goto('./#/tips')
-  const chip = page.getByRole('link', { name: /Pack 44/ })
+  const chip = page.getByRole('link', { name: 'Pack 44', exact: true })
   await expect(chip).toBeVisible()
   await chip.click()
 

@@ -1,4 +1,4 @@
-// ABOUTME: Tests the season-wide tips page: its groups, its two kinds of link, and its empty line.
+// ABOUTME: Tests the season-wide tips page: its groups, its two kinds of link, and the no-embed guarantee.
 // ABOUTME: Runs against the real content, so it asserts lower bounds rather than exact counts.
 
 // @vitest-environment jsdom

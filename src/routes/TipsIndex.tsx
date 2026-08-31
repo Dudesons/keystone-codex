@@ -6,7 +6,7 @@ import { getSeasonTips } from '../lib/tipIndex'
 import { useI18n } from '../lib/i18n/context'
 import LocaleSwitcher from '../components/LocaleSwitcher'
 import SiteFooter from '../components/SiteFooter'
-import TipCard from '../components/highlights/TipCard'
+import TipList from '../components/highlights/TipList'
 
 export default function TipsIndex() {
   const { t, locale } = useI18n()
@@ -39,11 +39,7 @@ export default function TipsIndex() {
               {group.name}
             </Link>
           </h2>
-          <div className="grid gap-x-6 gap-y-4 md:grid-cols-2">
-            {group.tips.map((entry) => (
-              <TipCard key={entry.npcId} slug={group.slug} entry={entry} />
-            ))}
-          </div>
+          <TipList slug={group.slug} tips={group.tips} />
         </section>
       ))}
 

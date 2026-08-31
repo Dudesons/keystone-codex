@@ -211,29 +211,6 @@ describe('Folding a video away again', () => {
   })
 })
 
-describe('The chip that names the pull', () => {
-  it('names the pull a scoped tip is about', () => {
-    renderEn(
-      <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44] }]} />,
-      inRouter,
-    )
-    expect(screen.getByText('Pack 44')).toBeTruthy()
-  })
-
-  it('joins a combined pull with a plus, so it reads as one pull of two groups', () => {
-    renderEn(
-      <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44, 45] }]} />,
-      inRouter,
-    )
-    expect(screen.getByText('Packs 44 + 45')).toBeTruthy()
-  })
-
-  it('says nothing about a pull for a general tip', () => {
-    renderEn(<MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x' }]} />, inRouter)
-    expect(screen.queryByText(/^Pack/)).toBeNull()
-  })
-})
-
 describe('The jump to the map', () => {
   it('names the pull a scoped tip is about, and links to it', () => {
     renderEn(
@@ -259,6 +236,15 @@ describe('The jump to the map', () => {
     expect(screen.getByRole('link', { name: /Wherever it stands/ }).getAttribute('href')).toBe(
       `/d/${SLUG}/codex/mob/${NPC_ID}?focus=mob`,
     )
+  })
+
+  // Not a duplicate of the case above: that one pins the label's text and href together for an
+  // unscoped tip; this one pins that the label never starts with "Pack" in that case, which
+  // would still pass by accident if the fallback label were ever renamed to something else that
+  // happened to match `/Wherever it stands/` loosely.
+  it('does not label an unscoped tip’s chip as a pack', () => {
+    renderEn(<MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x' }]} />, inRouter)
+    expect(screen.queryByText(/^Pack/)).toBeNull()
   })
 
   it('gives every row a control, whatever its kind', () => {

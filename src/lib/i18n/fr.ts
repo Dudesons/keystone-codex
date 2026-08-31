@@ -42,8 +42,8 @@ export const fr: Dictionary = {
   'nav.tips': 'Astuces',
   'tipsIndex.title': 'Astuces',
   'tipsIndex.intro':
-    'Tout ce qui a été écrit sur un pull ou sur un mob, donjon par donjon. Suivez un donjon vers sa carte, ou une pastille vers le pull qu\'elle nomme.',
-  'tipsIndex.empty': 'Aucune astuce n\'a encore été écrite.',
+    'Tout ce qui a été écrit sur un pull ou sur un mob, donjon par donjon. Suis un donjon vers sa carte, ou une pastille vers le pull qu’elle nomme.',
+  'tipsIndex.empty': 'Aucune astuce n’a encore été écrite.',
 
   'credits.mdt':
     'Données de mobs, packs, forces et cartes issues de Mythic Dungeon Tools {version}.',
@@ -101,7 +101,7 @@ export const fr: Dictionary = {
   'tip.jump': 'Contient des astuces — y aller',
   'tip.pack': 'Pack {g}',
   'tip.packs': 'Packs {list}',
-  'tip.anywhere': 'Où qu\'il soit',
+  'tip.anywhere': 'Où qu’il soit',
   'tip.showOnMap': 'Voir sur la carte',
 
   // Threat levels — the ring on the map, the badge on the card
