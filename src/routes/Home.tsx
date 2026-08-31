@@ -25,6 +25,12 @@ export default function Home() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/tips"
+            className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-400 transition hover:border-gold-500 hover:text-gold-400"
+          >
+            {t('nav.tips')}
+          </Link>
           <button
             onClick={openSearch}
             className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-400 transition hover:border-gold-500 hover:text-gold-400"

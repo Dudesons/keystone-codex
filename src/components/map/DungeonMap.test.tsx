@@ -993,6 +993,24 @@ describe('Tips badge', () => {
   })
 })
 
+describe('Focus', () => {
+  it('sits at the plain fit when nothing asks for a focus', () => {
+    const { container } = mount()
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    // jsdom lays out at zero, so fitTransform's scale is 0 here. That is the point: it is a
+    // value focusTransform cannot produce, so the two are distinguishable without a layout.
+    // This proves the prop reaches the arithmetic and changes the result — it cannot prove the
+    // map ends up *usefully* placed, since jsdom never gives the container a real size.
+    expect(canvas.style.transform).toContain('scale(0)')
+  })
+
+  it('applies a focus instead of fitting the whole map', () => {
+    const { container } = mount({ focus: { points: [{ x: 400, y: 300 }], token: 'a' } })
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).not.toContain('scale(0)')
+  })
+})
+
 describe('Drawing surface stacking', () => {
   it('keeps the HUD above the draw surface, so its buttons are not swallowed by the drawing hit target', () => {
     // No element in DungeonMap, MapHud or Legend sets a z-index, so with a tool active

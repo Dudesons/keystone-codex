@@ -5,6 +5,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Home from './routes/Home'
 import HighlightsPage from './routes/HighlightsPage'
 import DungeonPage from './routes/DungeonPage'
+import TipsIndex from './routes/TipsIndex'
 import { SearchProvider } from './components/SearchPalette'
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
     <SearchProvider>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/tips" element={<TipsIndex />} />
         <Route path="/d/:slug" element={<HighlightsPage />} />
         <Route path="/d/:slug/codex" element={<DungeonPage mode="codex" />} />
         <Route path="/d/:slug/codex/mob/:npcId" element={<DungeonPage mode="codex" />} />

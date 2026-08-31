@@ -1,5 +1,5 @@
-// ABOUTME: The briefing's tips: every mob someone has written a tip for, linking to its card.
-// ABOUTME: It mounts the card's own MobTips, so a video still loads only once the reader asks.
+// ABOUTME: A grid of one dungeon's tip cards — every mob someone has written a tip for.
+// ABOUTME: Shared by the briefing and the season index, so MobTips stays the only tip renderer.
 
 import { Link } from 'react-router-dom'
 import type { HighlightTip } from '../../lib/highlights'
