@@ -1,6 +1,6 @@
 # Temple of Sethraliss — 45/45 written
 
-Timer unknown · 649 forces required · 5 boss entries, 21 trash, 19 encounter units.
+Timer unknown · 687 forces required · 5 boss entries, 21 trash, 19 encounter units.
 
 **This dungeon has partial CC data** (18 of 45 mobs), so its cards say what applies where MDT
 knows.
@@ -11,22 +11,22 @@ knows.
 | --- | --- | --- | --- |
 | Sandfury Stonefist | **100** (15%) | `high` | Sunder Slam stacks +50% Physical damage taken |
 | Sand-Sworn Rider | **100** (15%) | `high` | 4-second disorient on a frontal, plus a summon |
-| Agitated Nimbus | 75 (12%) | `high` | Stacking buff that feeds a party-wide hit — but dispellable |
-| Sandswept Hunter | 63 (10%) | `medium` | ~490k channel, stoppable by any CC in a long list |
-| Storm Adept | 56 (9%) | `medium` | One kickable bolt, full CC list |
-| Orb Watcher | 50 (8%) | `high` | 582k buster that also sprays 291k shrapnel; CC-immune |
-| Shrouded Fang | 49 (8%) | `high` | Stealth opener with a stun |
+| Agitated Nimbus | 75 (11%) | `high` | Stacking buff that feeds a party-wide hit — but dispellable |
+| Sandswept Hunter | 63 (9%) | `medium` | ~490k channel, stoppable by any CC in a long list |
+| Storm Adept | 56 (8%) | `medium` | One kickable bolt, full CC list |
+| Orb Watcher | 50 (7%) | `high` | 582k buster that also sprays 291k shrapnel; CC-immune |
+| Shrouded Fang | 49 (7%) | `high` | Stealth opener with a stun |
 | Poisonous Viper | 42 (6%) | `medium` | A single 10-second poison |
 | Barbed Krolusk | 40 (6%) | `medium` | One charge, one bleed |
-| Lightning Serpent | 30 (5%) | `medium` | Leaves a pool where the buff expires |
-| Static Anomaly | 30 (5%) | `medium` | Teleports to players; cannot be held |
+| Lightning Serpent | 35 (5%) | `medium` | Leaves a pool where the buff expires |
+| Static Anomaly | 30 (4%) | `medium` | Teleports to players; cannot be held |
 | Imbued Stormcaller | 28 (4%) | `high` | Three abilities wanting three globals; +50% damage buff |
 | Twisted Hexxer | 25 (4%) | `high` | **Hex Muck turns players into frogs** |
-| Faithless Subjugator | 21 (3%) | `high` | Embryonic Vigor: +30% damage **until cancelled** |
 | Brood Tender | 21 (3%) | `medium` | One kickable bolt |
 | **Faithless Tormentor** | 20 (3%) | `high` | **Fixates the healer by design**, -5% healing per hit, stacking |
 | **Temple Disruptor** | 20 (3%) | `high` | **MDT has no spells for it.** Judged on Method's "Tough" + Interrupt |
 | Krolusk Matriarch | 16 (2%) | `high` | 727k Head Butt — and **no Taunt applies** |
+| Faithless Subjugator | 14 (2%) | `high` | Embryonic Vigor: +30% damage **until cancelled** |
 | Dutiful Tamer | 7 (1%) | `medium` | Summons Krolusks worth no forces |
 | Spark Channeler (139110) | 5 (1%) | `high` | 291k **and a 6-second stun**, CC-immune |
 | Spark Channeler (265057) | 5 (1%) | `medium` | **No spells in MDT** — placeholder judgement, the weakest call here |
@@ -69,7 +69,9 @@ Every option costs something:
 - **Leave a Lifeforce orb** → **Corruption Burst**: 194k party-wide, **and +100% damage taken
   from that ability for 3 sec**, so consecutive bursts escalate.
 - **Touch it** → cleansed, and the toucher takes **Corruption**: -33% healing done and
-  **+300% Physical damage taken** for 15 sec, stacking.
+  **+250% Physical damage taken** for 15 sec, stacking. Its damage-per-second component
+  **became unscaled in the patch shipped alongside MDT 6.2.10** — the tooltip went from 29095
+  Shadow to a bare `4` — so the cards describe the debuff and quote no figure for it.
 - **Leave it cleansed** → the Avatar **consumes** it, healing 2% plus a stacking regeneration.
 
 Meanwhile four Faithless Tormentors are fixating the healer, and two Essence Defilers are

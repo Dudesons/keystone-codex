@@ -6,7 +6,7 @@ npcId: 268364
 
 spells:
   - id: 1312214
-    note: "29k par seconde, -33 % de soins prodigués et +300 % de dégâts physiques subis pendant 15 s, cumulable. Voilà ce que purifier un orbe coûte à celui qui le fait."
+    note: "-33 % de soins prodigués et +250 % de dégâts physiques subis pendant 15 s, cumulable. Voilà ce que purifier un orbe coûte à celui qui le fait. Son chiffre de dégâts par seconde n'est plus mis à l'échelle depuis le patch et n'est pas cité."
   - id: 1300871
     note: "Le toucher le purifie et prend la Corruption. Laissé seul, il éclate — et un orbe purifié peut être consommé par l'Avatar pour la soigner. Aucune des deux issues n'est gratuite."
   - id: 1302826
@@ -14,7 +14,7 @@ spells:
   - id: 1302897
     note: "L'Avatar qui mange un orbe purifié : 2 % de sa vie récupérés plus une régénération cumulable. La raison pour laquelle les orbes purifiés doivent encore être gérés."
 
-trap: "Les deux options coûtent quelque chose. Ignorer l'orbe et il éclate pour 194k avec une vulnérabilité cumulable ; le purifier et on porte +300 % de dégâts physiques subis pendant quinze secondes."
+trap: "Les deux options coûtent quelque chose. Ignorer l'orbe et il éclate pour 194k avec une vulnérabilité cumulable ; le purifier et on porte +250 % de dégâts physiques subis pendant quinze secondes."
 ---
 
 Les orbes du combat contre l'[Avatar de Sephraliss](#/d/temple-of-sethraliss/codex/mob/133392), et
@@ -25,7 +25,7 @@ dégâts subis de cette même capacité de 100 % pendant trois secondes — donc
 qui arrive dans cette fenêtre est doublée.
 
 **Le toucher** : il est purifié, et celui qui l'a touché prend la **Corruption** — 33 % de soins
-prodigués en moins et **+300 % de dégâts physiques subis** pendant quinze secondes, cumulable. Ce
+prodigués en moins et **+250 % de dégâts physiques subis** pendant quinze secondes, cumulable. Ce
 n'est pas un débuff qu'un tank peut porter.
 
 **Ensuite** : un orbe purifié peut être **consommé** par l'Avatar, la soignant de 2 % et démarrant
