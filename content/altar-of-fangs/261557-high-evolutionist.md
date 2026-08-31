@@ -22,13 +22,13 @@ spells:
 
   - id: 1307567
     name: "Mass Envenom"   # auto
-    # 2.5 sec cast
+    # 3.5 sec cast
     tag: kick
     prio: 2
 
   - id: 1289416
     name: "Envenom"   # auto
-    # 2.5 sec cast · dispel: poison
+    # 3 sec cast · dispel: poison
     tag: kick
     prio: 3
     note: "58k Nature then 24k every second for 8 sec. Dispellable as poison if it lands."

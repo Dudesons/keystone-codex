@@ -19,7 +19,7 @@ spells:
     name: "Ravenous Claws"   # auto
     # Instant
     tag: tank
-    note: "Each melee swing raises its attack speed by 20% for 2 sec, stacking. Kite it and the stacks fall off on their own."
+    note: "Each melee swing raises its attack speed by 10% for 2 sec, stacking. Kite it and the stacks fall off on their own."
 
   - id: 1306338
     name: "Ravenous Claws"   # auto
@@ -34,7 +34,7 @@ Nineteen units spread over nine packs — the most ubiquitous mob in the dungeon
 whose damage is easiest to underestimate. Individually it is worth 5 forces; collectively it
 is what kills tanks.
 
-The two abilities tell one story. **Ravenous Claws** adds 20% attack speed per swing and
+The two abilities tell one story. **Ravenous Claws** adds 10% attack speed per swing and
 lasts only 2 seconds, so it ramps while the mob is in contact and decays the moment it is
 not. **Ravenous** enrages it on top. Neither is dangerous alone; together, on a pack holding
 five of them, the tank's damage taken climbs faster than the healer expects.
