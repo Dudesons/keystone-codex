@@ -48,20 +48,29 @@ tooltip reads *"Inflicts 116379 Shadow damage and curses for an additional 38793
 every 1 sec for 12 sec"* — no radius, no AoE wording. The claim was inferred from the word
 *Volley*. All three places now describe the tooltip, and the mob dropped a level as a result.
 
-## Shadow of Zul — written from play, not from data
+## Shadow of Zul — the gap MDT closed
 
-**MDT extracted an empty spell list for this mob**: 30 forces, 8.4 million health, no abilities.
-RwlRwlRwlRwl supplied what it does, and the card now carries it as prose, in order:
+**MDT extracted an empty spell list for this mob** until 6.2.10: 30 forces, 8.4 million health,
+no abilities. RwlRwlRwlRwl supplied what it does, and the card carried it as prose, in order:
 
 1. Two players are marked, each with a large area around them, and have to split — from the
    group and from each other.
 2. Two soaks follow.
 3. One cast to interrupt.
 
-This is **observed behaviour, not a data source**, and the card says so. Nothing is written into
-`spells:` — the codex only carries IDs that exist in the extracted data, and Method's three
-names (*Shadow Barrage*, *Pool of Darkness*, *Dark Revelation*) are deliberately not mapped onto
-the three parts above, because matching them would be a guess.
+The card named Method's three abilities — *Shadow Barrage*, *Pool of Darkness*, *Dark
+Revelation* — and deliberately refused to map them onto those three parts, because matching them
+would have been a guess.
+
+**MDT 6.2.10 added exactly those three**, `272388`, `1309385` and `1298304`, and the card now
+maps them: Dark Revelation is the marking, Pool of Darkness the soaks, Shadow Barrage the kick.
+RwlRwlRwlRwl confirmed the mapping from play. Dark Revelation's tooltip corroborates the first
+step on its own — 473k within 20 yards, five seconds after it lands, which is what a split
+mechanic looks like written down.
+
+**What is still observed rather than read**: that *two* players are marked and *two* pools
+follow, and that the pools are covered rather than avoided. The tooltips carry none of those, so
+they stay in the prose, marked as observed, exactly as before. The figures are now the game's.
 
 ## Recurring spells worth knowing
 

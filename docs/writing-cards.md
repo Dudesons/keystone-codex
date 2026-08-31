@@ -80,7 +80,7 @@ hold.** Three failures to recognise, all of which happened here:
 
 | Situation | What to do |
 | --- | --- |
-| **No spells at all** for a mob (Shadow of Zul, Temple Disruptor) | Say so in the prose. Write nothing into `spells:`. |
+| **No spells at all** for a mob (Temple Disruptor, Coffin) | Say so in the prose. Write nothing into `spells:`. An MDT update can fill the gap later — Shadow of Zul's arrived in 6.2.10 — so say *the data is empty*, not *the mob does nothing*. |
 | **Something you know from playing** | Write it in the prose and **mark it as observed** — never as a spell entry, never as a badge, because badges are generated from data that does not contain it. |
 | **Nothing known from any source** | Leave `threat:` empty with a comment saying it is deliberate. The grey ring is honest; a guess reads exactly like a judgement. |
 | **An unscaled tooltip** (`10 Physical`, `55`, a damage value in a radius field) | Describe the behaviour and the duration. **Quote no figure.** Record it in the dungeon's note. |

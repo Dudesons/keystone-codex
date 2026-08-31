@@ -87,7 +87,7 @@ pas.** Trois erreurs à reconnaître, toutes commises ici :
 
 | Situation | Quoi faire |
 | --- | --- |
-| **Aucun sort** pour un mob (Shadow of Zul, Temple Disruptor) | Dites-le dans la prose. N'écrivez rien dans `spells:`. |
+| **Aucun sort** pour un mob (Temple Disruptor, Coffin) | Dites-le dans la prose. N'écrivez rien dans `spells:`. Une mise à jour de MDT peut combler le trou plus tard — celui de Shadow of Zul l'a été en 6.2.10 — donc dites *la donnée est vide*, pas *le mob ne fait rien*. |
 | **Quelque chose que vous savez pour l'avoir joué** | Écrivez-le dans la prose et **signalez-le comme observé** — jamais comme entrée de sort, jamais comme badge, parce que les badges sont générés depuis une donnée qui ne le contient pas. |
 | **Rien de connu, d'aucune source** | Laissez `threat:` vide avec un commentaire disant que c'est délibéré. L'anneau gris est honnête ; une supposition se lit exactement comme un jugement. |
 | **Un tooltip non mis à l'échelle** (`10 Physical`, `55`, une valeur de dégâts dans un champ de rayon) | Décrivez le comportement et la durée. **Ne citez aucun chiffre.** Consignez-le dans la note du donjon. |
