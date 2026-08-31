@@ -14,8 +14,8 @@ his calibration rule (see `ruby-life-pools.md`).
 | Territorial Matriarch | 128 (18%) | `medium` ⇩ | Was `high` on the 40-yard stacking enrage; overruled |
 | Thornclaw Gatherer | 115 (16%) | `medium` | The pool (78k/sec for 20 sec) matters, the mob does not |
 | Keen-Eyed Striker (241816) | 112 (15%) | `medium` | Stacking bleed on a target of its choosing |
-| Earthwhisper Tender | 98 (13%) | `high` | The dungeon's healer — 5% max health to the whole pack every 2 sec |
 | Frostfang | 90 (12%) | `low` ⇩ | Was `medium` on a 60% attack-speed buff. See the open question: the card still warns the buff may not be soothable, and `low` implies otherwise |
+| Earthwhisper Tender | 84 (12%) | `high` | The dungeon's healer — 5% max health to the whole pack every 2 sec |
 | Grizzled Warbringer (245146) | 75 (10%) | `high` | Method Tough; stacking armour-ignoring party damage |
 | Frigid Mauler | 72 (10%) | `medium` ⇩* | Was `high` on -50% group haste, but it comes from a free 3.5-second kick — the clearest answer in the dungeon |
 | Terra Rumbler | 70 (10%) | `low` ⇩ | Was `medium` on 24k party-wide every 2 sec |
