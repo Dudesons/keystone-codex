@@ -2,8 +2,9 @@
 // ABOUTME: Nothing reaches YouTube until the reader clicks the button — that click is the consent.
 
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { inlineMarkdown } from '../../lib/content'
-import { embedUrl, tipImageUrl, tipsSectionId, watchUrl, type Tip } from '../../lib/tips'
+import { embedUrl, tipFocusParam, tipImageUrl, tipsSectionId, watchUrl, type Tip } from '../../lib/tips'
 import { useI18n } from '../../lib/i18n/context'
 import { BaseLanguageMark } from './Badges'
 
@@ -67,7 +68,7 @@ export default function MobTips({
         {/* The index is the key: the list is replaced whole by a translation, never reordered. */}
         {tips.map((tip, i) => (
           <li key={i}>
-            {tip.packs?.length ? <PackChip packs={tip.packs} /> : null}
+            <PackChip slug={slug} npcId={npcId} tip={tip} />
             {tip.kind === 'text' && (
               <p
                 className="text-xs leading-snug text-ink-300"
@@ -159,16 +160,30 @@ function VideoTip({ tip }: { tip: Extract<Tip, { kind: 'video' }> }) {
 }
 
 /**
- * Which pull a tip is about.
+ * Which pull a tip is about, and the way to go and look at it.
  *
  * It sits on the row rather than in the section heading because one card's tips can be about
  * different pulls — a mob standing in eleven packs can earn a sentence about two of them.
+ *
+ * The control that names the pull is the control that takes you there; a separate button beside it
+ * would be a second thing naming the same pull. An unscoped tip gets the same chip shaped for the
+ * mob, so no row is left without one.
  */
-function PackChip({ packs }: { packs: number[] }) {
+function PackChip({ slug, npcId, tip }: { slug: string; npcId: number; tip: Tip }) {
   const { t } = useI18n()
+  const label = !tip.packs?.length
+    ? t('tip.anywhere')
+    : tip.packs.length === 1
+      ? t('tip.pack', { g: tip.packs[0] })
+      : t('tip.packs', { list: tip.packs.join(' + ') })
+
   return (
-    <span className="mb-1 inline-block rounded border border-ink-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-400">
-      {packs.length === 1 ? t('tip.pack', { g: packs[0] }) : t('tip.packs', { list: packs.join(' + ') })}
-    </span>
+    <Link
+      to={`/d/${slug}/codex/mob/${npcId}?focus=${tipFocusParam(tip)}`}
+      title={t('tip.showOnMap')}
+      className="mb-1 inline-block rounded border border-ink-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-400 transition hover:border-gold-400 hover:text-gold-400"
+    >
+      {label} <span aria-hidden="true">→</span>
+    </Link>
   )
 }

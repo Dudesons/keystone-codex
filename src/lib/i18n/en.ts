@@ -92,6 +92,8 @@ export const en = {
   'tip.jump': 'Has tips — jump to them',
   'tip.pack': 'Pack {g}',
   'tip.packs': 'Packs {list}',
+  'tip.anywhere': 'Wherever it stands',
+  'tip.showOnMap': 'Show on the map',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Harmless',

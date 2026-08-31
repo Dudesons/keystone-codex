@@ -6,6 +6,8 @@ import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 afterEach(cleanup)
+import type { ReactNode } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import type { Tip } from '../../lib/tips'
 import { tipsSectionId } from '../../lib/tips'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
@@ -18,22 +20,25 @@ const text: Tip = { kind: 'text', text: 'Kick the **second** cast.' }
 const video: Tip = { kind: 'video', videoId: '9D0gCU8Tp5Y', portrait: true, label: 'The pull' }
 const image: Tip = { kind: 'image', file: 'beams.webp', label: 'Where they land' }
 
+/** MobTips links to the map, so every render in this file needs a router around it. */
+const inRouter = { wrapper: ({ children }: { children: ReactNode }) => <MemoryRouter>{children}</MemoryRouter> }
+
 describe('Text tips', () => {
   it('renders its markdown inline', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
     expect(container.querySelector('strong')?.textContent).toBe('second')
   })
 })
 
 describe('Video tips', () => {
   it('loads nothing before the reader clicks', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     expect(container.querySelector('iframe')).toBeNull()
     expect(screen.getByRole('button', { name: 'The pull' })).toBeTruthy()
   })
 
   it('swaps in a no-cookie embed for that video once clicked', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
 
     const frame = container.querySelector('iframe')!
@@ -42,13 +47,13 @@ describe('Video tips', () => {
   })
 
   it('offers a way out to YouTube, for a browser that blocks the frame', () => {
-    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     const link = screen.getByRole('link', { name: 'Open on YouTube' })
     expect(link.getAttribute('href')).toBe('https://www.youtube.com/watch?v=9D0gCU8Tp5Y')
   })
 
   it('falls back to a generic label when the card names none', () => {
-    renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[{ ...video, label: undefined }]} fallback={false} />)
+    renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[{ ...video, label: undefined }]} fallback={false} />, inRouter)
     expect(screen.getByRole('button', { name: 'Lire la vidéo' })).toBeTruthy()
   })
 
@@ -56,7 +61,7 @@ describe('Video tips', () => {
     // A translation replaces the whole `tips:` list (decision 7): the video at index 0 can
     // become a different video entirely. `playing` for the old one must not leak onto the new.
     const other: Tip = { kind: 'video', videoId: 'aaaaaaaaaaa', portrait: false, label: 'Other video' }
-    const { container, rerender } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const { container, rerender } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
     expect(container.querySelector('iframe')).toBeTruthy()
 
@@ -69,7 +74,7 @@ describe('Video tips', () => {
 
 describe('Image tips', () => {
   it('resolves under the deployed base path, and captions itself', () => {
-    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[image]} fallback={false} />)
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[image]} fallback={false} />, inRouter)
     const img = screen.getByRole('img', { name: 'Where they land' })
     expect(img.getAttribute('src')).toBe(`${import.meta.env.BASE_URL}tips/${SLUG}/beams.webp`)
   })
@@ -77,18 +82,19 @@ describe('Image tips', () => {
 
 describe('The section itself', () => {
   it('renders nothing at all for an empty list', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[]} fallback={false} />, inRouter)
     expect(container.innerHTML).toBe('')
   })
 
   it('marks the whole section when it is showing the base language', () => {
-    renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback />)
+    renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback />, inRouter)
     expect(screen.getByText(DEFAULT_LOCALE.toUpperCase())).toBeTruthy()
   })
 
   it('gives its section an id derived from the mob, so a badge can scroll to it', () => {
     const { container } = renderEn(
       <MobTips slug="__fixtures__" npcId={263_109} tips={[{ kind: 'text', text: 'x' }]} fallback={false} />,
+      inRouter,
     )
     expect(container.querySelector(`#${CSS.escape(tipsSectionId(263_109))}`)).not.toBeNull()
   })
@@ -96,18 +102,18 @@ describe('The section itself', () => {
 
 describe('The marker that ties the section to the badge', () => {
   it('shows the same `?` the jump badge carries, in either language', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
     expect(container.querySelector('[data-tips-marker]')?.textContent).toBe('?')
 
     cleanup()
-    const fr = renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    const fr = renderFr(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
     expect(fr.container.querySelector('[data-tips-marker]')?.textContent).toBe('?')
   })
 
   // A screen reader announcing a bare question mark before the section name is noise: the
   // heading already says what this is. The glyph is there for the eye that just clicked one.
   it('hides the glyph from assistive technology', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
     expect(container.querySelector('[data-tips-marker]')?.getAttribute('aria-hidden')).toBe('true')
   })
 })
@@ -117,13 +123,14 @@ describe('The flash that lands the eye on the section', () => {
     container.querySelector(`#${CSS.escape(tipsSectionId(NPC_ID))}`)!
 
   it('does not wash the section until a jump asks it to', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
     expect(section(container).className).not.toContain('tips-flash')
   })
 
   it('washes the section when the card reports a jump', () => {
     const { container } = renderEn(
       <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+      inRouter,
     )
     expect(section(container).className).toContain('tips-flash')
   })
@@ -136,6 +143,7 @@ describe('The flash that lands the eye on the section', () => {
   it('takes the wash off again when the animation reports itself finished', () => {
     const { container } = renderEn(
       <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+      inRouter,
     )
     fireEvent.animationEnd(section(container))
     expect(section(container).className).not.toContain('tips-flash')
@@ -144,6 +152,7 @@ describe('The flash that lands the eye on the section', () => {
   it('washes again on a second jump, which is a new token rather than a new value of true', () => {
     const { container, rerender } = renderEn(
       <MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} flashToken={1} />,
+      inRouter,
     )
     fireEvent.animationEnd(section(container))
     expect(section(container).className).not.toContain('tips-flash')
@@ -155,7 +164,7 @@ describe('The flash that lands the eye on the section', () => {
 
 describe('Folding a video away again', () => {
   it('keeps the row after the embed opens, so there is still something to click', () => {
-    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
     expect(screen.getByRole('button', { name: 'The pull' })).toBeTruthy()
   })
@@ -166,7 +175,7 @@ describe('Folding a video away again', () => {
    * fold was meant to end, and would keep the audio playing with it.
    */
   it('drops the embed entirely on the second click', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     const row = screen.getByRole('button', { name: 'The pull' })
 
     fireEvent.click(row)
@@ -177,7 +186,7 @@ describe('Folding a video away again', () => {
   })
 
   it('says whether it is open, for a reader who cannot see the glyph', () => {
-    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     const row = screen.getByRole('button', { name: 'The pull' })
     expect(row.getAttribute('aria-expanded')).toBe('false')
 
@@ -186,13 +195,13 @@ describe('Folding a video away again', () => {
   })
 
   it('keeps the way out to YouTube reachable while the embed is open', () => {
-    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     fireEvent.click(screen.getByRole('button', { name: 'The pull' }))
     expect(screen.getByRole('link', { name: 'Open on YouTube' })).toBeTruthy()
   })
 
   it('reopens a folded video rather than refusing to play it twice', () => {
-    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />)
+    const { container } = renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[video]} fallback={false} />, inRouter)
     const row = screen.getByRole('button', { name: 'The pull' })
 
     fireEvent.click(row)
@@ -206,6 +215,7 @@ describe('The chip that names the pull', () => {
   it('names the pull a scoped tip is about', () => {
     renderEn(
       <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44] }]} />,
+      inRouter,
     )
     expect(screen.getByText('Pack 44')).toBeTruthy()
   })
@@ -213,12 +223,50 @@ describe('The chip that names the pull', () => {
   it('joins a combined pull with a plus, so it reads as one pull of two groups', () => {
     renderEn(
       <MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x', packs: [44, 45] }]} />,
+      inRouter,
     )
     expect(screen.getByText('Packs 44 + 45')).toBeTruthy()
   })
 
   it('says nothing about a pull for a general tip', () => {
-    renderEn(<MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x' }]} />)
+    renderEn(<MobTips slug="__fixtures__" npcId={1} fallback={false} tips={[{ kind: 'text', text: 'x' }]} />, inRouter)
     expect(screen.queryByText(/^Pack/)).toBeNull()
+  })
+})
+
+describe('The jump to the map', () => {
+  it('names the pull a scoped tip is about, and links to it', () => {
+    renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[{ ...text, packs: [44] }]} fallback={false} />,
+      inRouter,
+    )
+    const link = screen.getByRole('link', { name: /Pack 44/ })
+    expect(link.getAttribute('href')).toBe(`/d/${SLUG}/codex/mob/${NPC_ID}?focus=44`)
+  })
+
+  it('joins a combined pull', () => {
+    renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[{ ...text, packs: [44, 45] }]} fallback={false} />,
+      inRouter,
+    )
+    expect(screen.getByRole('link', { name: /44 \+ 45/ }).getAttribute('href')).toBe(
+      `/d/${SLUG}/codex/mob/${NPC_ID}?focus=44,45`,
+    )
+  })
+
+  it('falls back to the mob when the tip names no pull', () => {
+    renderEn(<MobTips slug={SLUG} npcId={NPC_ID} tips={[text]} fallback={false} />, inRouter)
+    expect(screen.getByRole('link', { name: /Wherever it stands/ }).getAttribute('href')).toBe(
+      `/d/${SLUG}/codex/mob/${NPC_ID}?focus=mob`,
+    )
+  })
+
+  it('gives every row a control, whatever its kind', () => {
+    renderEn(
+      <MobTips slug={SLUG} npcId={NPC_ID} tips={[text, video, image]} fallback={false} />,
+      inRouter,
+    )
+    // Three rows, three chips — plus the video's own "Open on YouTube" link.
+    expect(screen.getAllByRole('link', { name: /Wherever it stands/ })).toHaveLength(3)
   })
 })

@@ -2,20 +2,30 @@
 // ABOUTME: Covers the header, trap, CC, spell ordering, Wowhead links and interactions.
 
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, type RenderOptions } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 // Without `globals: true`, Testing Library does not register its automatic cleanup: renders
 // would pile up in the document and skew the `screen` queries.
 afterEach(cleanup)
+import type { ReactElement } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import type { Enemy } from '../../lib/types'
 import { getMobContent, inlineMarkdown } from '../../lib/content'
 import { dungeonList, getDungeon, getLookup } from '../../lib/data'
 import { en } from '../../lib/i18n/en'
 import { DEFAULT_LOCALE } from '../../lib/i18n/locales'
 import { tipsSectionId } from '../../lib/tips'
-import { renderEn, renderFr } from '../../test/render'
+import { renderEn as renderEnBare, renderFr as renderFrBare } from '../../test/render'
 import MobCard from './MobCard'
+
+// MobCard mounts MobTips, whose pack chip is now a `Link`: every render in this file needs a
+// router around it. Every call site keeps calling `renderEn` / `renderFr` unchanged; only the
+// binding gains the router.
+const renderEn = (ui: ReactElement, options?: RenderOptions) =>
+  renderEnBare(ui, { ...options, wrapper: MemoryRouter })
+const renderFr = (ui: ReactElement, options?: RenderOptions) =>
+  renderFrBare(ui, { ...options, wrapper: MemoryRouter })
 
 const SLUG = 'altar-of-fangs'
 const lookup = getLookup(SLUG)!

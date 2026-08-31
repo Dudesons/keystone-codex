@@ -94,6 +94,8 @@ export const fr: Dictionary = {
   'tip.jump': 'Contient des astuces — y aller',
   'tip.pack': 'Pack {g}',
   'tip.packs': 'Packs {list}',
+  'tip.anywhere': 'Où qu\'il soit',
+  'tip.showOnMap': 'Voir sur la carte',
 
   // Threat levels — the ring on the map, the badge on the card
   'threat.low': 'Sans danger',
