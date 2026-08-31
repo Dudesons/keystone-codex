@@ -2,7 +2,7 @@
 // ABOUTME: Pure input/output: no files, no DOM, so every rejection can be stated as a case.
 
 import { describe, expect, it, vi } from 'vitest'
-import { embedUrl, parseTips, tipImageUrl, tipsSectionId, watchUrl, youtube } from './tips'
+import { embedUrl, parseFocus, parseTips, tipFocusParam, tipImageUrl, tipsSectionId, watchUrl, youtube } from './tips'
 
 describe('youtube', () => {
   it('reads the id out of every form someone actually pastes', () => {
@@ -162,5 +162,43 @@ describe('a tip that names its pull', () => {
   it('leaves an empty list unscoped without complaining', () => {
     const [tip] = parseTips([{ text: 'x', packs: [] }], 'card')!
     expect(tip.packs).toBeUndefined()
+  })
+})
+
+describe('tipFocusParam', () => {
+  it('lists the pulls a tip names', () => {
+    expect(tipFocusParam({ kind: 'text', text: 'x', packs: [44, 45] })).toBe('44,45')
+  })
+
+  it('names the mob when the tip is unscoped', () => {
+    expect(tipFocusParam({ kind: 'text', text: 'x' })).toBe('mob')
+  })
+})
+
+describe('parseFocus', () => {
+  it('reads a single pull', () => {
+    expect(parseFocus('44')).toEqual({ packs: [44] })
+  })
+
+  it('reads a combined pull', () => {
+    expect(parseFocus('44,45')).toEqual({ packs: [44, 45] })
+  })
+
+  it('reads the mob', () => {
+    expect(parseFocus('mob')).toEqual({ mob: true })
+  })
+
+  it('is null for an absent, empty or unrecognised value', () => {
+    expect(parseFocus(null)).toBeNull()
+    expect(parseFocus('')).toBeNull()
+    expect(parseFocus('pack-44')).toBeNull()
+    expect(parseFocus('44,')).toBeNull()
+    expect(parseFocus('0')).toBeNull()
+    expect(parseFocus('-3')).toBeNull()
+  })
+
+  it('round-trips what tipFocusParam writes', () => {
+    expect(parseFocus(tipFocusParam({ kind: 'text', text: 'x', packs: [44] }))).toEqual({ packs: [44] })
+    expect(parseFocus(tipFocusParam({ kind: 'text', text: 'x' }))).toEqual({ mob: true })
   })
 })

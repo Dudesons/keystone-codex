@@ -106,6 +106,34 @@ export const tipImageUrl = (slug: string, file: string) =>
  */
 export const tipsSectionId = (npcId: number) => `tips-${npcId}`
 
+/** What a `?focus=` value names: the pulls a tip is about, or the mob it is written on. */
+export type FocusTarget = { packs: number[] } | { mob: true }
+
+/**
+ * The `?focus=` value for a tip.
+ *
+ * A tip that names no pull falls back to the mob rather than to nothing: the reader asked to be
+ * shown something, and every clone of the mob is the honest answer when the card gave no narrower
+ * one.
+ */
+export const tipFocusParam = (tip: Tip): string => (tip.packs?.length ? tip.packs.join(',') : 'mob')
+
+/**
+ * Reading `?focus=` back off the URL.
+ *
+ * Anything unrecognised is null, and the map then stays where it is. A pasted URL carrying a typo
+ * should neither throw nor aim somewhere arbitrary — the same posture as a mob with no card still
+ * rendering. `parts.length` is compared rather than filtered so that `44,` and `44,x` are rejected
+ * whole instead of silently becoming `[44]`.
+ */
+export function parseFocus(value: string | null): FocusTarget | null {
+  if (!value) return null
+  if (value === 'mob') return { mob: true }
+  const parts = value.split(',')
+  const packs = parts.map(Number).filter((n) => Number.isInteger(n) && n > 0)
+  return packs.length === parts.length ? { packs } : null
+}
+
 const KINDS = ['text', 'video', 'image'] as const
 
 /**
