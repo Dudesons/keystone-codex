@@ -2,14 +2,22 @@
 // ABOUTME: Covers the default list, a selected pack, a selected mob, and following the map.
 
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, type RenderOptions } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import type { ReactElement } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { getLookup } from '../../lib/data'
 import { getIndicators } from '../../lib/indicators'
-import { renderEn } from '../../test/render'
+import { renderEn as renderEnBare } from '../../test/render'
 import CodexPanel, { type PullRef } from './CodexPanel'
 
 afterEach(cleanup)
+
+// CodexPanel mounts MobCard, which mounts MobTips, whose pack chip is now a `Link`: every
+// render in this file needs a router around it. Every call site keeps calling `renderEn`
+// unchanged; only the binding gains the router.
+const renderEn = (ui: ReactElement, options?: RenderOptions) =>
+  renderEnBare(ui, { ...options, wrapper: MemoryRouter })
 
 beforeAll(() => {
   // jsdom does not implement scrollIntoView; the panel calls it to follow the map.

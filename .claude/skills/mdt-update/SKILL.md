@@ -62,6 +62,19 @@ before you compare, and never conclude a dungeon changed from its size alone.
    fails, re-run it before doing anything else — a stale label is invisible in the diff of a
    generated JSON that large. A 404 is not this: it is reported as unresolved, exits 0, and one
    spell in the pool genuinely has left the game.
+
+   **It refreshes creature labels too, and those reach further back than the update.**
+   `src/data/generated/npcs.json` is cached exactly like the spell table, so an incremental pass
+   never revisits a name either. A creature MDT renamed in some *earlier* version therefore keeps
+   its old label there indefinitely, while the dungeon file it was extracted into already carries
+   the new one — and only a forced pass reconciles them. The 6.2.9 run moved 135761 from
+   "Disruption Totem" to "Thundering Totem" and 2938 from "Egg Marker" to "Egg", neither of which
+   the 12.1.0 patch had touched. Expect an `npcs.json` diff the update does not explain, and
+   expect it to be right: the English name in that table is MDT's and never Wowhead's
+   (`buildNpcText`), so a change there means MDT renamed the creature and the cache had not caught
+   up. **If a test breaks on one of these names, read the dungeon file before assuming the update
+   broke it** — on that run the cache had been wrong since before the update and the test was
+   pinning it.
 5. `npm run mdt:report`
    → verify: the report's title names both MDT versions, neither as `unknown`. The newer one
    renders `unknown` when `src/data/generated/mdt.json` is missing or the `.toc` carried no
@@ -91,7 +104,16 @@ before you compare, and never conclude a dungeon changed from its size alone.
   numbers. Reread the note against the new tooltip — a changed description usually means a
   changed sentence, since a note's figures are quoted from it. An **empty** severity 3 means
   nothing unless step 4 ran: without `FORCE=1 npm run fetch:assets` every cached tooltip comes
-  back unchanged by construction.
+  back unchanged by construction. A **`castTime`** finding is the one kind with no card line any
+  tool can reach — no note renders a cast time, so the figure survives only in the scaffolded
+  `# … sec cast` comment, and correcting it is always a hand edit. See the traps.
+  A finding whose two locales disagree is not automatically a retune: Wowhead updates its
+  language pages separately, and where MDT records one ability under several ids they can
+  contradict each other outright. Weigh the siblings before rewriting a number — after 12.1.0
+  three of Paralyzing Shots' five English pages said 67888 and two still said 135775, which
+  settles it, while Living Bomb had one id whose English and French simply disagreed, which
+  settles nothing. Leaving a figure alone and saying why in the commit is an answer; guessing
+  is not.
 - **Severity 4 — to write.** A new mob or a new dungeon, with no card yet. Run
   `npm run scaffold`, then write. [`docs/writing-cards.md`](../../../docs/writing-cards.md) owns
   the threat scale.
@@ -174,6 +196,23 @@ before you compare, and never conclude a dungeon changed from its size alone.
   `npm run data` the label diff sees nothing, and a per-spell `name:` line is then stale in the
   card with nothing anywhere saying so. It never touches a `.fr.md` either. Run `npm run mdt:report` without the flag first and read
   what it would change before adding `-- --apply`.
+- **The scaffolded `# … sec cast · … range · dispel: …` comment rots, and nothing reports it.**
+  Every tool in the chain declines it for a different reason: `npm run scaffold` writes it once
+  and never overwrites, `--apply` is anchored to column 0 so it cannot reach an indented line,
+  and `mdt:report` diffs the data rather than the cards. Six were wrong after 12.1.0 — Envenom,
+  Mass Envenom, Hailburst, Ritual of the Fang and Blade Dance, plus the copy under
+  `content/__fixtures__/`, whose own header claims its figures are the real ones. It is inert
+  YAML no reader ever sees, which is exactly why it goes unnoticed: the only person it misleads
+  is whoever writes the next note from it. Do not sweep for it — `grep -rn '# .*sec cast'
+  content/` matches 347 lines, nearly all of them correct. Work from the finding instead:
+  `grep -rln 'id: <spellId>$' content/` names the cards carrying that spell, and the comment sits
+  two lines under each `- id:`. Anchor the replacement with `$` when you get there — one spell's
+  comment is often a prefix of another's, as `# 2.5 sec cast · 60 yd range` is of
+  `# 2.5 sec cast · 60 yd range · dispel: poison`.
+- **`--apply` fixes `count:`; the prose that spells the same number out is yours.** The
+  Potatoad Matriarch's forces doubled in 6.2.9, and her opening line read "A single unit worth
+  30 forces" in both languages. Same column-0 anchoring, same blind spot: after any `count:`
+  finding, grep the card pair for the old figure before calling it applied.
 
 ## Commit granularity
 

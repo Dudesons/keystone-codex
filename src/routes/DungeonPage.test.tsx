@@ -391,6 +391,54 @@ describe('Deep link to a mob', () => {
   })
 })
 
+describe('Focusing the map from the URL', () => {
+  // jsdom lays everything out at zero, so the map's container is 0×0: `fitTransform` and
+  // `focusTransform` both come out of that same zero-sized box. What these tests can prove is
+  // that `?focus=` reaches the arithmetic at all — `fitTransform` yields `scale(0)` and
+  // `focusTransform` yields something else, which is what distinguishes them here — not that the
+  // map ends up usefully placed. That is proven in a real browser, by task 8's end-to-end suite.
+  const FOCUS_SLUG = 'the-blinding-vale'
+  const FOCUS_NPC = 254850 // Sporeblight Belcher, a member of pack 44 in this dungeon.
+
+  it('moves the map when the URL names a pull', () => {
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=44`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).not.toContain('scale(0)')
+  })
+
+  it('moves the map when the URL names the mob', () => {
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=mob`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).not.toContain('scale(0)')
+  })
+
+  it('leaves the map alone for a value it cannot read', () => {
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=pack-44`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).toContain('scale(0)')
+  })
+
+  it('leaves the map alone for a pull the dungeon does not have', () => {
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=99999`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).toContain('scale(0)')
+  })
+
+  it('does not refit the whole map when a click drops the focus', () => {
+    // Reproduces the regression: clicking a blip navigates from `?focus=44` to the bare codex
+    // address (`handleCloneClick` in DungeonPage.tsx), and losing `?focus=` must not be read as
+    // a reason to refit — the reader just asked to look at something, and a snap back to the
+    // whole-dungeon fit would undo that in the same gesture that requested it.
+    const { container } = renderEn(at(`/d/${FOCUS_SLUG}/codex/mob/${FOCUS_NPC}?focus=44`))
+    const canvas = container.querySelector('[data-map-canvas]') as HTMLElement
+    expect(canvas.style.transform).not.toContain('scale(0)')
+
+    fireEvent.click(container.querySelector('[data-clone="5:10"]')!)
+
+    expect(canvas.style.transform).not.toContain('scale(0)')
+  })
+})
+
 describe('Points of interest', () => {
   /** Murder Row, not the SLUG the rest of the file uses: Altar of Fangs declares no POI. */
   it('shows the dungeon items in both tabs', () => {

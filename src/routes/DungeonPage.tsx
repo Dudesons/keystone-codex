@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DungeonHeader from '../components/DungeonHeader'
 import UnknownDungeon from '../components/UnknownDungeon'
-import DungeonMap, { type PullMark, type PullShape } from '../components/map/DungeonMap'
+import DungeonMap, { type MapFocus, type PullMark, type PullShape } from '../components/map/DungeonMap'
 import RelayNotice from '../components/map/RelayNotice'
 import CodexPanel, { type PullRef } from '../components/codex/CodexPanel'
 import RoutePanel from '../components/route/RoutePanel'
@@ -19,6 +19,7 @@ import { toCssColor } from '../lib/mdt/route'
 import { useRouteDoc } from '../lib/mdt/useRouteDoc'
 import { PULL_OUTLINE_PADDING, convexHull, expandPolygon, toPixels, type Point } from '../lib/geometry'
 import { useI18n } from '../lib/i18n/context'
+import { parseFocus } from '../lib/tips'
 import type { CloneRef, Enemy } from '../lib/types'
 
 type Mode = 'codex' | 'route'
@@ -322,8 +323,36 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
 
   // A briefing chip links to `…/codex/mob/<npc>#spell-<id>`. Reading the fragment here rather
   // than in the panel keeps the panel router-free, the same split as `selectedMob` above.
-  const { hash } = useLocation()
+  const { hash, key } = useLocation()
   const focusSpell = Number(/^#spell-(\d+)$/.exec(hash)?.[1]) || null
+
+  /**
+   * Where a jump wants the map, resolved from `?focus=`.
+   *
+   * A pull is resolved through its hull, which `data.ts` already computed in map pixels; a mob
+   * through its own clones, which are still in MDT coordinates. Resolving to nothing — an unknown
+   * pull, or `mob` with no mob in the path — yields null and the map stays fitted, rather than
+   * aiming at an empty box.
+   *
+   * `key` is the token: it changes on every navigation, including one to the identical URL, so
+   * clicking the same chip twice moves the map twice.
+   */
+  const focusParam = searchParams.get('focus')
+  const focus = useMemo<MapFocus | null>(() => {
+    const target = parseFocus(focusParam)
+    if (!target) return null
+
+    const points =
+      'mob' in target
+        ? selectedMob == null
+          ? []
+          : lookup.dungeon.enemies
+              .filter((e) => e.id === selectedMob)
+              .flatMap((e) => e.clones.map((c) => toPixels(c.x, c.y)))
+        : target.packs.flatMap((g) => lookup.packs.get(g)?.hull ?? [])
+
+    return points.length ? { points, token: key } : null
+  }, [focusParam, selectedMob, lookup, key])
 
   const pullMarks = useMemo(() => {
     const map = new Map<string, PullMark>()
@@ -566,6 +595,7 @@ function DungeonView({ slug, npcId, mode }: { slug: string; npcId?: string; mode
                 : null
             }
             onPullClick={setCurrentPull}
+            focus={focus}
             showPackOutlines
             cursors={collab.status === 'off' ? undefined : collab.peers}
             onCursorMove={collab.status === 'off' ? undefined : setCursor}

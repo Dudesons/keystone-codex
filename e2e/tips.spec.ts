@@ -96,3 +96,32 @@ test('a reader can fold a video away again, and open it once more', async ({ pag
   await row.click()
   await expect(card.locator('iframe')).toHaveCount(1)
 })
+
+test('a tip on the index jumps the map to the pull it names', async ({ page }) => {
+  // Unfocused first, to measure what "not zoomed in" looks like on this blip.
+  await page.goto('./#/d/the-blinding-vale/codex/mob/254850')
+  const blip = page.locator('[data-clone="5:10"]')
+  await expect(blip).toBeVisible()
+  const before = await blip.boundingBox()
+
+  await page.goto('./#/tips')
+  const chip = page.getByRole('link', { name: 'Pack 44', exact: true })
+  await expect(chip).toBeVisible()
+  await chip.click()
+
+  await expect(page).toHaveURL(/#\/d\/the-blinding-vale\/codex\/mob\/254850\?focus=44$/)
+
+  await expect(blip).toBeVisible()
+  const after = await blip.boundingBox()
+  const viewport = await page.locator('[data-map-viewport]').boundingBox()
+
+  // Zoomed in: the same blip is drawn substantially larger than at the whole-map fit.
+  expect(after!.width).toBeGreaterThan(before!.width * 2)
+
+  // And in view: its centre lies inside the map's visible area, not off an edge.
+  const centre = { x: after!.x + after!.width / 2, y: after!.y + after!.height / 2 }
+  expect(centre.x).toBeGreaterThan(viewport!.x)
+  expect(centre.x).toBeLessThan(viewport!.x + viewport!.width)
+  expect(centre.y).toBeGreaterThan(viewport!.y)
+  expect(centre.y).toBeLessThan(viewport!.y + viewport!.height)
+})
