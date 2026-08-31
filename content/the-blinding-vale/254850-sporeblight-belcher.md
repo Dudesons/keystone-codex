@@ -46,7 +46,7 @@ tips:
     packs: [44]
 ---
 
-**The heaviest mob in the dungeon by a distance**: eleven units at 25 forces each, roughly 42%
+**The heaviest mob in the dungeon by a distance**: eleven units at 25 forces each, roughly 40%
 of the count a group needs to clear. No route avoids it.
 
 Two of its abilities are the usual trade — **Belch Spores** is entirely avoidable ground

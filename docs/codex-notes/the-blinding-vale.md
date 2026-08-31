@@ -1,31 +1,34 @@
 # The Blinding Vale — 26/26 written
 
 Timer unknown (`_dungeon.md` left empty — not in `TIMERS`, and guessing it would be inventing
-a technical detail) · 655 forces required · 6 bosses, 13 trash entries, 7 encounter adds.
+a technical detail) · 686 forces required · 6 bosses, 13 trash entries, 7 encounter adds.
 
 ## Verdicts — reviewed with RwlRwlRwlRwl
 
-Weights are `count × placements`, i.e. the share of the 655 forces a group needs. The
+Weights are `count × placements`, i.e. the share of the 686 forces a group needs. The
 **Threat** column is what the card carries after the review.
 
 | Mob | Weight | Threat | Why |
 | --- | --- | --- | --- |
-| Sporeblight Belcher | **275** (42%) | `high` | Unavoidable to route around, 291k spore impacts, 291k on death, eleven bodies |
-| Lightgorged Lasher | 196 (30%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
-| Overgrown Hydra | 175 (27%) | `medium` | Was `high` on the 339k Bullet Seeds; a frontal you sidestep is a clear answer |
-| Virid Grovekeeper | 120 (18%) | `high` | 533k tank buster that paves the ground with slowing pools |
-| Lasher | 115 (18%) | `low` | One force each, 1 damage a tick; only the stacking slow is real |
-| Lightfeather Petalwing | 112 (17%) | `medium` | Deals no damage at all — costs a 3-second group disorient |
-| Radiant Spellsower | 98 (15%) | `medium` | Was `high` for the lasher-waking channel; overruled by RwlRwlRwlRwl — three kickable casts is a choice, not a scramble |
-| Underbrush Stalker | 96 (15%) | `medium` | Bleed on a target of its choosing, not the tank |
+| Sporeblight Belcher | **275** (40%) | `high` | Unavoidable to route around, 291k spore impacts, 291k on death, eleven bodies |
+| Lightgorged Lasher | 196 (29%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
+| Overgrown Hydra | 175 (26%) | `medium` | Was `high` on the 339k Bullet Seeds; a frontal you sidestep is a clear answer |
+| Lightfeather Petalwing | 112 (16%) | `medium` | Deals no damage at all — costs a 3-second group disorient |
+| Radiant Spellsower | 105 (15%) | `medium` | Was `high` for the lasher-waking channel; overruled by RwlRwlRwlRwl — three kickable casts is a choice, not a scramble |
+| Virid Grovekeeper | 100 (15%) | `high` | 533k tank buster that paves the ground with slowing pools |
+| Lasher | 99 (14%) | `low` | One force each, 1 damage a tick; only the stacking slow is real |
+| Underbrush Stalker | 96 (14%) | `medium` | Bleed on a target of its choosing, not the tank |
 | Luminous Thornmaw | 88 (13%) | `high` | Grievous Gash only ends at **full** health, and stacks |
-| Leafy Grovecrawler | 70 (11%) | `medium` | Easy cast; the 291k death explosion is the real cost |
+| Leafy Grovecrawler | 70 (10%) | `medium` | Easy cast; the 291k death explosion is the real cost |
 | Thorny Saptor | 65 (10%) | `medium` | Leaps to a player then cones from there at 145k a swing |
-| Potatoad Matriarch | 30 (5%) | `medium` | Was `high`; the add spawn sits behind a 10-second window a group can simply beat |
-| Spineshield Beetle | 22 (3%) | `low` | One force, but a 500k shield and 291k on death — arguably `medium` on cost alone |
+| Potatoad Matriarch | 60 (9%) | `medium` | Was `high`; the add spawn sits behind a 10-second window a group can simply beat |
+| Spineshield Beetle | 39 (6%) | `low` | One force, but a 500k shield and 291k on death — arguably `medium` on cost alone |
 
-Only one mob in the dungeon now carries `high` on a body that is not either 30%+ of the forces
-or a tank buster: Luminous Thornmaw, on a debuff that will not fall off below full health.
+Only one mob in the dungeon now carries `high` on a body that is not either a quarter or more
+of the forces or a tank buster: Luminous Thornmaw, on a debuff that will not fall off below
+full health. That threshold used to read "30%+", which was the same set of mobs against 655
+forces; MDT 6.2.10 raised the dungeon to 686 and pushed the Lightgorged Lasher from 30% to 29%
+without changing a thing about the mob. A share is a ratio, and this table's denominator moves.
 
 **Bosses** (Meittik, Kezkitt, Lekshi, Lightwarden Ruia, Ziekket, Ikuzz) carry no `threat`,
 per the Altar of Fangs convention. Note MDT prices each boss at **30 forces** here, unlike

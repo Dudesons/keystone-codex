@@ -13,7 +13,7 @@ spells:
 trap: "**Rayons lumegueule** visent plusieurs joueurs à la fois et ne porte qu'à 4 mètres. Groupés, tout le monde prend tous les rayons ; dispersés, chacun n'en prend qu'un."
 ---
 
-Sept unités à 25 forces chacune — 27 % du compte requis, juste derrière le Cracheur sporefléau.
+Sept unités à 25 forces chacune — 26 % du compte requis, juste derrière le Cracheur sporefléau.
 
 **Rafale de graines** fait 339k, le coup évitable le plus dur de tout le trash de The Blinding
 Vale, sur une incantation de trois secondes. Personne ne devrait le prendre deux fois.
