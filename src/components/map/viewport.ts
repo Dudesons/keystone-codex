@@ -40,6 +40,44 @@ export function fitTransform({ width, height }: Size): Transform {
   }
 }
 
+/** Room left around the focused points, in container pixels, so nothing sits against an edge. */
+export const FOCUS_PADDING = 80
+
+/**
+ * The transform that brings `points` into view, centred.
+ *
+ * Given no points it fits the whole map instead of dividing by an empty box: "focus on nothing"
+ * is a URL a reader can paste, not a state worth throwing over.
+ *
+ * A single point makes a zero-wide box, so the division below is `Infinity` rather than `NaN` —
+ * `room` is floored at one pixel to keep it so — and the clamp turns that into `MAX_SCALE`, which
+ * is what "show me this one" means.
+ */
+export function focusTransform(points: Point[], size: Size, padding = FOCUS_PADDING): Transform {
+  if (!points.length) return fitTransform(size)
+
+  const xs = points.map((p) => p.x)
+  const ys = points.map((p) => p.y)
+  const min = { x: Math.min(...xs), y: Math.min(...ys) }
+  const max = { x: Math.max(...xs), y: Math.max(...ys) }
+
+  const room = {
+    width: Math.max(1, size.width - padding * 2),
+    height: Math.max(1, size.height - padding * 2),
+  }
+  const scale = Math.min(
+    MAX_SCALE,
+    Math.max(MIN_SCALE, Math.min(room.width / (max.x - min.x), room.height / (max.y - min.y))),
+  )
+
+  const centre = { x: (min.x + max.x) / 2, y: (min.y + max.y) / 2 }
+  return {
+    scale,
+    tx: size.width / 2 - centre.x * scale,
+    ty: size.height / 2 - centre.y * scale,
+  }
+}
+
 /**
  * Zoom by `factor` around a pivot given in container pixels.
  *

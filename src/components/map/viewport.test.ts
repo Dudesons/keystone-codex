@@ -11,6 +11,7 @@ import {
   badgeArc,
   blipRadius,
   fitTransform,
+  focusTransform,
   toContainerPoint,
   toMapPoint,
   zoomAt,
@@ -208,5 +209,46 @@ describe('toMapPoint and toContainerPoint', () => {
         expect(back.y).toBeCloseTo(p.y, 9)
       }
     }
+  })
+})
+
+describe('focusTransform', () => {
+  const size = { width: 1000, height: 800 }
+  const box = [
+    { x: 400, y: 300 },
+    { x: 600, y: 500 },
+  ]
+
+  it('puts the centre of the points at the centre of the container', () => {
+    const t = focusTransform(box, size)
+    // The centre of the box is (500, 400) in map pixels.
+    expect(500 * t.scale + t.tx).toBeCloseTo(size.width / 2)
+    expect(400 * t.scale + t.ty).toBeCloseTo(size.height / 2)
+  })
+
+  it('leaves the padding clear on the tighter axis', () => {
+    const t = focusTransform(box, size, 100)
+    // 200 map pixels wide, into 800 usable: the height is tighter (200 into 600).
+    expect(200 * t.scale).toBeLessThanOrEqual(600 + 0.001)
+  })
+
+  it('goes as close as the map allows for a single point', () => {
+    const t = focusTransform([{ x: 400, y: 300 }], size)
+    expect(t.scale).toBe(MAX_SCALE)
+  })
+
+  it('does not zoom out past the floor for a box larger than the container', () => {
+    const t = focusTransform(
+      [
+        { x: 0, y: 0 },
+        { x: 100_000, y: 100_000 },
+      ],
+      size,
+    )
+    expect(t.scale).toBe(MIN_SCALE)
+  })
+
+  it('falls back to fitting the whole map when given no points', () => {
+    expect(focusTransform([], size)).toEqual(fitTransform(size))
   })
 })
