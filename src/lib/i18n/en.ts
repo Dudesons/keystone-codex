@@ -37,6 +37,13 @@ export const en = {
   'home.bosses.other': '{n} bosses',
   'home.cards': '{written}/{total} cards',
 
+  // Tips index
+  'nav.tips': 'Tips',
+  'tipsIndex.title': 'Tips',
+  'tipsIndex.intro':
+    'Everything written about a pull or a mob, dungeon by dungeon. Follow a dungeon to its map, or a chip to the pull it names.',
+  'tipsIndex.empty': 'No tips have been written yet.',
+
   // Credits. Sentences and link labels are separate keys on purpose: a translator gets whole
   // sentences to work with, and no anchor has to be interpolated into one.
   'credits.mdt': 'Mob data, packs, forces and maps come from Mythic Dungeon Tools {version}.',

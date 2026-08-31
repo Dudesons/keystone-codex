@@ -38,6 +38,13 @@ export const fr: Dictionary = {
   'home.bosses.other': '{n} boss',
   'home.cards': '{written}/{total} fiches',
 
+  // Tips index
+  'nav.tips': 'Astuces',
+  'tipsIndex.title': 'Astuces',
+  'tipsIndex.intro':
+    'Tout ce qui a été écrit sur un pull ou sur un mob, donjon par donjon. Suivez un donjon vers sa carte, ou une pastille vers le pull qu\'elle nomme.',
+  'tipsIndex.empty': 'Aucune astuce n\'a encore été écrite.',
+
   'credits.mdt':
     'Données de mobs, packs, forces et cartes issues de Mythic Dungeon Tools {version}.',
   'credits.wowhead':
