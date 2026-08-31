@@ -22,7 +22,7 @@ spells:
     # 1.5 sec cast
     tag: dodge
     prio: 1
-    note: "Sacrifices 10% of its health to shield itself for 35% — a net gain of 25%. Not interruptible in MDT, so it simply has to be out-damaged."
+    note: "Sacrifices 10% of its health to shield itself for 30% — a net gain of 20%. Not interruptible in MDT, so it simply has to be out-damaged."
   - id: 1297686
     name: "Dark Pact"   # auto
     # Instant

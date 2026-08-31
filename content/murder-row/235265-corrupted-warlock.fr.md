@@ -8,7 +8,7 @@ spells:
   - id: 1217973
     note: "582k au bout de 10 secondes, répartis entre les joueurs à moins de 4 mètres de la cible. Soit la dissiper comme malédiction, soit se rassembler sur le porteur — seul, ça tue."
   - id: 1297684
-    note: "Sacrifie 10 % de sa vie pour se protéger de 35 % — un gain net de 25 %. Non interruptible dans MDT, donc il faut simplement faire plus de dégâts que lui."
+    note: "Sacrifie 10 % de sa vie pour se protéger de 30 % — un gain net de 20 %. Non interruptible dans MDT, donc il faut simplement faire plus de dégâts que lui."
   - id: 1297682
     note: "Draine un joueur chaque seconde et s'en soigne."
 
