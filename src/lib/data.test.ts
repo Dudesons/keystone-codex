@@ -78,8 +78,8 @@ describe('Spells', () => {
 describe('Creature labels', () => {
   const chieftain = getLookup(SLUG)!.enemyById.get(270_306)!
   /**
-   * Disruption Totem, in King's Rest: MDT gives it a name and a `creatureType` that Wowhead
-   * disagrees with and omits respectively. It is what the two fallbacks are for.
+   * Thundering Totem, in King's Rest: Wowhead files it under no creature type at all, so MDT's
+   * is what a reader sees. It is what the type fallback is for.
    */
   const totem = getLookup('kings-rest')!.enemyById.get(135_761)!
 
@@ -93,10 +93,13 @@ describe('Creature labels', () => {
     expect(getNpcLabel(chieftain, 'fr').type).toBe('Humanoïde')
   })
 
-  it('keeps MDT as the authority on the English name where Wowhead disagrees', () => {
-    // Wowhead calls 135761 "Thundering Totem". MDT's name is what the content is keyed on,
-    // so English shows it — and French still gets a translation.
-    expect(getNpcLabel(totem, 'en').name).toBe('Disruption Totem')
+  it("serves MDT's English name, and a translation beside it", () => {
+    // `buildNpcText` writes MDT's name into the English entry and spends Wowhead's English
+    // only on checking the id, so the label table's English is MDT's by construction and
+    // French is the one translated column. That refusal to rename is covered where it is
+    // decided, against a real capture, in scripts/wowhead-tooltip.test.mjs — no mob in the
+    // pool disagrees today, so it cannot be pinned from the generated data here.
+    expect(getNpcLabel(totem, 'en').name).toBe('Thundering Totem')
     expect(getNpcLabel(totem, 'fr').name).toBe('Totem fulgurant')
   })
 

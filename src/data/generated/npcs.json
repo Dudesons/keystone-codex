@@ -458,7 +458,7 @@
   "id": 135761,
   "text": {
    "en": {
-    "name": "Disruption Totem"
+    "name": "Thundering Totem"
    },
    "fr": {
     "name": "Totem fulgurant"
@@ -2938,7 +2938,7 @@
   "id": 263181,
   "text": {
    "en": {
-    "name": "Egg Marker",
+    "name": "Egg",
     "type": "Humanoid"
    },
    "fr": {

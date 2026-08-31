@@ -91,7 +91,7 @@
    "id": 241814,
    "name": "Earthwhisper Tender",
    "count": 7,
-   "health": 2918930,
+   "health": 3729743,
    "level": 90,
    "scale": 1,
    "displayId": 128080,
@@ -133,13 +133,6 @@
      "sublevel": 1
     },
     {
-     "mdtIdx": 4,
-     "x": 117.1822927011,
-     "y": -360.72051912892,
-     "g": 5,
-     "sublevel": 1
-    },
-    {
      "mdtIdx": 5,
      "x": 205.46594984529,
      "y": -316.11405364603,
@@ -150,13 +143,6 @@
      "mdtIdx": 6,
      "x": 202.67853765858,
      "y": -343.99320670775,
-     "g": 7,
-     "sublevel": 1
-    },
-    {
-     "mdtIdx": 7,
-     "x": 211.50696323925,
-     "y": -343.52849496415,
      "g": 7,
      "sublevel": 1
     },
@@ -339,14 +325,14 @@
      "mdtIdx": 17,
      "x": 372.64307092802,
      "y": -382.43168977505,
-     "g": 29,
+     "g": 76,
      "sublevel": 1
     },
     {
      "mdtIdx": 18,
      "x": 377.75420166815,
      "y": -378.24983285652,
-     "g": 29,
+     "g": 76,
      "sublevel": 1
     },
     {
@@ -711,7 +697,7 @@
    "health": 2918930,
    "level": 90,
    "scale": 1,
-   "displayId": 35201,
+   "displayId": 73034,
    "creatureType": "Elemental",
    "cc": [],
    "spells": [
@@ -838,14 +824,14 @@
      "mdtIdx": 3,
      "x": 497.92456799893,
      "y": -216.95786400173,
-     "g": 47,
+     "g": 77,
      "sublevel": 1
     },
     {
      "mdtIdx": 4,
      "x": 504.71998573176,
      "y": -219.22311907484,
-     "g": 47,
+     "g": 77,
      "sublevel": 1
     },
     {
@@ -1478,7 +1464,7 @@
    "id": 241812,
    "name": "The Hoardmonger",
    "count": 0,
-   "health": 22702784,
+   "health": 23648734,
    "level": 92,
    "scale": 1,
    "displayId": 129344,
@@ -1609,7 +1595,7 @@
      "mdtIdx": 7,
      "x": 101.71141184339,
      "y": -421.64459980508,
-     "g": 16,
+     "g": null,
      "sublevel": 1
     },
     {
@@ -1696,7 +1682,7 @@
    "id": 244100,
    "name": "Sentinel of Winter",
    "count": 0,
-   "health": 20432506,
+   "health": 21283861,
    "level": 92,
    "scale": 1,
    "displayId": 129418,
@@ -1784,7 +1770,7 @@
    "id": 244759,
    "name": "Fractured Shivercore",
    "count": 0,
-   "health": 810814,
+   "health": 675678,
    "level": 90,
    "scale": 1,
    "displayId": 103231,
@@ -1868,7 +1854,7 @@
    "id": 245148,
    "name": "Grizzled Warbringer",
    "count": 0,
-   "health": 698700,
+   "health": 606102,
    "level": 90,
    "scale": 1.5,
    "displayId": 129564,
@@ -1964,7 +1950,7 @@
    "id": 245567,
    "name": "Starvation Effigy",
    "count": 0,
-   "health": 421623,
+   "health": 589867,
    "level": 90,
    "scale": 1,
    "displayId": 129707,
@@ -2035,7 +2021,7 @@
    "id": 246404,
    "name": "Nalorakk",
    "count": 0,
-   "health": 21016293,
+   "health": 21891972,
    "level": 92,
    "scale": 1,
    "displayId": 129989,
@@ -2103,7 +2089,7 @@
    "id": 246409,
    "name": "Zul'jarra",
    "count": 0,
-   "health": 1621628,
+   "health": 21891972,
    "level": 90,
    "scale": 1,
    "displayId": 125149,
@@ -2211,7 +2197,7 @@
    "id": 272074,
    "name": "Volatile Totem",
    "count": 0,
-   "health": 64865,
+   "health": 462070,
    "level": 90,
    "scale": 1,
    "displayId": 30762,
@@ -2237,7 +2223,7 @@
    "id": 245076,
    "name": "The Pale Eye",
    "count": 0,
-   "health": 537461,
+   "health": 457907,
    "level": 90,
    "scale": 1,
    "displayId": 129498,
@@ -2309,7 +2295,7 @@
    "id": 248666,
    "name": "Magma Totem",
    "count": 0,
-   "health": 6487,
+   "health": 589867,
    "level": 90,
    "scale": 1,
    "displayId": 30762,
