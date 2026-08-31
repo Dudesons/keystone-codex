@@ -17,7 +17,7 @@ spells:
     name: "Living Bomb"   # auto
     # Instant · 60 yd range
     tag: dodge
-    note: "58k per second for 6 sec on a player, then 78k to everyone within 6 yd and a knock-up. Spread before it expires."
+    note: "52k per second for 6 sec on a player, then 70k to everyone within 6 yd and a knock-up. Spread before it expires."
 
 # The trap: the sentence that avoids the wipe. Leave empty if the mob is harmless.
 trap: "Living Bomb explodes on whoever is standing next to its carrier, and throws them in the air — walk out before the six seconds are up."

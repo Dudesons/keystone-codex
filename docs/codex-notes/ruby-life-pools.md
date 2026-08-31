@@ -1,6 +1,6 @@
 # Ruby Life Pools — 24/24 written
 
-28 minute timer · 553 total forces · 4 bosses, 20 trash entries.
+28 minute timer · 551 total forces · 4 bosses, 20 trash entries.
 
 ## Verdicts — reviewed with RwlRwlRwlRwl
 
@@ -18,7 +18,7 @@ The **Threat** column is now what the card carries.
 | Earthbound Guardian | 45 (8%) | `medium` | Kickable shield, but takes full CC and its damage is steady |
 | Storm Warrior | 45 (8%) | `low` | Confirmed `low` against my own suggestion to raise it: one instant ability at 53k AoE and a full CC list, whatever Method's tracker implies. See the disagreement below |
 | Flashfrost Chillweaver | 42 (8%) | `medium` | Was proposed `high`; overruled — Ice Shield is still the dungeon's kick priority, but a kick priority is not a threat level |
-| Deepstone Earthshaper | 40 (7%) | `medium` | +35% damage taken on the tank, stacking — dangerous by multiplication, not on its own |
+| Deepstone Earthshaper | 40 (7%) | `medium` | +25% damage taken on the tank, stacking — dangerous by multiplication, not on its own |
 | Ruinous Stormbringer | 40 (7%) | `high` | 10.7M health, knockback at 100 energy, only Taunt works |
 | Flamegullet | 40 (7%) | `high` | Soft enrage below 50%, growing 15% per cast to ten stacks |
 | Defier Draghar | 30 (5%) | `high` | Tank buster and party damage in one cast, plus a line charge |

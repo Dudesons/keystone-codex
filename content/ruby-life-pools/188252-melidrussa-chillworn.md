@@ -57,7 +57,7 @@ spells:
     tag: dodge
   - id: 396044
     name: "Hailburst"   # auto
-    # 2 sec cast · Unlimited range
+    # 3 sec cast · Unlimited range
     tag: dodge
     note: "121k to everyone, and it seeds the floor with Hailbombs."
   - id: 384024

@@ -8,7 +8,7 @@ spells:
   - id: 384194
     note: "116k de Feu sur un joueur. Sa seule incantation — la kicker, ou étourdir le mob et sauter complètement sa rotation."
   - id: 373693
-    note: "58k par seconde pendant 6 s sur un joueur, puis 78k à tout le monde dans les 6 mètres et une projection en l'air. S'écarter avant l'expiration."
+    note: "52k par seconde pendant 6 s sur un joueur, puis 70k à tout le monde dans les 6 mètres et une projection en l'air. S'écarter avant l'expiration."
 
 trap: "**Bombe vivante** explose sur quiconque se tient à côté du porteur et le projette en l'air — s'écarter avant la fin des six secondes."
 ---
