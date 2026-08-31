@@ -29,6 +29,7 @@ import {
   badgeArc,
   blipRadius,
   fitTransform,
+  focusTransform,
   toMapPoint,
   zoomAt,
   type Transform,
@@ -60,6 +61,18 @@ export interface PullShape {
   hull: Point[]
   center: Point
   count: number
+}
+
+/**
+ * Where the map should sit, and a token that changes every time the reader asks again.
+ *
+ * The token is what makes a second click on the same target work: the points would be equal, and
+ * re-applying an effect that has not changed is not something React does. Same reasoning as
+ * `flashToken` in `MobTips`.
+ */
+export interface MapFocus {
+  points: Point[]
+  token: string
 }
 
 interface Props {
@@ -99,6 +112,8 @@ interface Props {
     onProgress?: (points: Point[]) => void
     onCommit: (points: Point[]) => void
   }
+  /** Bring these map-pixel points into view instead of fitting the whole map. */
+  focus?: MapFocus | null
 }
 
 export default function DungeonMap({
@@ -124,6 +139,7 @@ export default function DungeonMap({
   onSelectObject,
   onMoveObject,
   drawing,
+  focus,
 }: Props) {
   const { locale } = useI18n()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -167,13 +183,24 @@ export default function DungeonMap({
 
   const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
 
+  /**
+   * Read through a ref rather than closed over, so `fit` keeps one identity for the life of the
+   * component. The `ResizeObserver` effect below depends on `fit`; a `fit` that changed on every
+   * render of the parent would tear that observer down and rebuild it constantly, and refit the
+   * map out from under a reader mid-pan.
+   */
+  const focusRef = useRef(focus)
+  focusRef.current = focus
+
   const fit = useCallback(() => {
     const el = containerRef.current
     if (!el) return
-    setTransform(fitTransform({ width: el.clientWidth, height: el.clientHeight }))
+    const size = { width: el.clientWidth, height: el.clientHeight }
+    const wanted = focusRef.current
+    setTransform(wanted?.points.length ? focusTransform(wanted.points, size) : fitTransform(size))
   }, [])
 
-  useLayoutEffect(fit, [fit, slug])
+  useLayoutEffect(fit, [fit, slug, focus?.token])
 
   useEffect(() => {
     const el = containerRef.current
@@ -252,6 +279,7 @@ export default function DungeonMap({
       ref={containerRef}
       className="map-surface relative h-full w-full overflow-hidden bg-ink-950"
       data-panning={panning}
+      data-map-viewport
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
@@ -260,6 +288,7 @@ export default function DungeonMap({
     >
       <div
         className="absolute top-0 left-0 origin-top-left"
+        data-map-canvas
         style={{
           width: MAP_WIDTH,
           height: MAP_HEIGHT,
