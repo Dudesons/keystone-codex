@@ -18,7 +18,7 @@ spells:
 trap: "Bound by Shadow kills whatever it is on when it is removed. Dispel it and the minion dies — do not spend damage on these."
 ---
 
-Thirteen of them on the map, worth **no forces**, with 0.3 million health each — and a
+Thirteen of them on the map, worth **no forces**, with 0.4 million health each — and a
 mechanic that most groups will never notice.
 
 **Bound by Shadow** reads like a buff to work around: 123k absorbed, 20% more damage dealt.

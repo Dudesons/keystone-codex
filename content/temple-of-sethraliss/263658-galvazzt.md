@@ -34,7 +34,8 @@ Nothing removes the fields, so the arena fills up as the fight runs and the grou
 gets progressively worse.
 
 Method's tracker names two abilities MDT does not carry — **Lightning Spire** and
-**Consume Charge**. Both are recorded here rather than written into the spell list, and MDT
-does place a [Lightning Spire](#/d/temple-of-sethraliss/codex/mob/135445) unit with 21.6 million
-health in the dungeon, which suggests the mechanic exists and its spell simply was not
-extracted.
+**Consume Charge**. Both are recorded here rather than written into the spell list. MDT does
+place a [Lightning Spire](#/d/temple-of-sethraliss/codex/mob/135445) unit in the dungeon, which
+is some corroboration that the mechanic exists — though less than it used to be. That unit
+carried 21.6 million health until MDT 6.2.10 corrected it to 235,746, and a boss-sized health
+bar was the part of the argument that carried weight.

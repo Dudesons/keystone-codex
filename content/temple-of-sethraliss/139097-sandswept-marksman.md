@@ -17,7 +17,7 @@ spells:
 trap:
 ---
 
-Two placements at 0.4 million health, worth no forces, with a single ground-targeted volley.
+Two placements at 0.2 million health, worth no forces, with a single ground-targeted volley.
 
 The damage value in the data is **unscaled** (54 Physical, next to neighbours dealing six
 figures), so this card describes the shape of the ability and not its size. Either way it is

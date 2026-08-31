@@ -14,7 +14,7 @@ trap: "**Vague maléfique** double leur vitesse d'incantation. Les diablotins so
 ---
 
 Apparaissent à chaque impact de **Doigts de Gul’dan** pendant
-[Lithiel Fureur-de-Cendre](#/d/murder-row/codex/mob/234763), avec 0,4 million de points de vie
+[Lithiel Fureur-de-Cendre](#/d/murder-row/codex/mob/234763), avec 0,5 million de points de vie
 chacun.
 
 Seuls, ils sont à nouveau le [Diablotin déchaîné](#/d/murder-row/codex/mob/234849) : un petit trait

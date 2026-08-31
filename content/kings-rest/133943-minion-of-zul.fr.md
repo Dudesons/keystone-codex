@@ -11,7 +11,7 @@ spells:
 trap: "**Lié par l’ombre** tue son porteur quand on le retire. Le dissiper et le séide meurt — ne pas dépenser de dégâts là-dessus."
 ---
 
-Treize d'entre eux sur la carte, valant **aucune force**, avec 0,3 million de points de vie
+Treize d'entre eux sur la carte, valant **aucune force**, avec 0,4 million de points de vie
 chacun — et une mécanique que la plupart des groupes ne remarqueront jamais.
 
 **Lié par l’ombre** se lit comme un buff à contourner : 123k absorbés, 20 % de dégâts en plus.

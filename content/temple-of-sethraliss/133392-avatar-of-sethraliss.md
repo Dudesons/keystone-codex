@@ -12,7 +12,7 @@ role: melee
 trap: "MDT holds no spells for the Avatar herself — everything in the fight is carried by the adds. The Essence Defiler blocks all external healing; the Lifeforce orbs are what the group manipulates."
 ---
 
-**MDT records no spells for the Avatar of Sethraliss.** 21.6 million health and an empty
+**MDT records no spells for the Avatar of Sethraliss.** 23.8 million health and an empty
 ability list, which makes this the largest data gap in the pool — but unusually, the fight is
 still legible, because MDT *does* carry its adds, and they hold the mechanics.
 

@@ -9,7 +9,7 @@ spells:
     note: "Des flèches sur un emplacement, qui frappent dans les 4 mètres. Le chiffre de l'infobulle n'est pas mis à l'échelle — il indique 54 — donc aucun nombre n'est cité ici."
 ---
 
-Deux placements à 0,4 million de points de vie, ne valant aucune force, avec une seule salve
+Deux placements à 0,2 million de points de vie, ne valant aucune force, avec une seule salve
 ciblée au sol.
 
 La valeur de dégâts dans les données n'est **pas mise à l'échelle** (54 en physique, à côté de

@@ -40,7 +40,7 @@ a guess about a mob with no data at all.
 
 ## Three data gaps that need a look in game
 
-1. **`Avatar of Sethraliss` (133392) — no spells at all.** 21.6M health, the dungeon's final
+1. **`Avatar of Sethraliss` (133392) — no spells at all.** 23.8M health, the dungeon's final
    boss, and an empty ability list. Unusually, the fight is still legible because MDT carries
    its **adds** and they hold the mechanics: Essence Defiler (blocks all external healing on
    her), Corrupted Guardian (485k buster, and its explosion creates the orbs), Lifeforce (the
@@ -51,9 +51,14 @@ a guess about a mob with no data at all.
 2. **`Temple Disruptor` (269227) — no spells.** Method names *Essence Disruption*, an
    interruptible cast to stop. Four units at 5 forces each.
 
-3. **`Lightning Spire` (135445) — no spells, 21.6M health.** A boss-sized health bar with an
-   empty ability list, during Galvazzt. Method lists Lightning Spire among his abilities as
-   avoidable party damage. The mechanic clearly exists.
+3. **`Lightning Spire` (135445) — no spells, 0.2M health.** Method lists Lightning Spire among
+   Galvazzt's abilities as avoidable party damage, and that is now the *only* reason to think
+   the mechanic exists. **This entry used to read "21.6M health" and rested on it**: a
+   boss-sized health bar on a spell-less NPC was the second, independent reason. MDT 6.2.10
+   corrected the figure to 235,746, so that reason was a data error all along. Its cards, and
+   Galvazzt's, were rewritten rather than renumbered — the conclusion changed, not just the
+   number. **A health figure is data like any other, and an argument built on one inherits its
+   errors.**
 
 Also `Spark Channeler` (265057), `Merektha` (134487), `Polarized Spire`, `Swarming Krolusk`,
 `Faithless Conscript`, `Snake` and `Lesser Lifeforce` have empty spell lists — those read as

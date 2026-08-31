@@ -23,7 +23,7 @@ spells:
 trap: "It deals no damage, so it gets left alive — and then the group is silenced through the one cast in the fight that had to be interrupted."
 ---
 
-Zero damage, 0.3 million health, and the totem most likely to be ignored.
+Zero damage, 0.4 million health, and the totem most likely to be ignored.
 
 **Disruption** locks the entire group out of casting for four seconds. Nothing in the combat
 log looks urgent, which is why it survives — and its cost is paid indirectly, when

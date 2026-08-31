@@ -10,7 +10,7 @@ spells:
 ---
 
 L'un des serpents qui sortent des œufs pendant l'**Éclosion** de
-[Merekpha](#/d/temple-of-sethraliss/codex/mob/133384), avec 1,4 million de points de vie.
+[Merekpha](#/d/temple-of-sethraliss/codex/mob/133384), avec 0,3 million de points de vie.
 
 **Crachat de poison** est une incantation de quatre secondes valant environ 350k, et MDT la
 signale à la fois interruptible et dissipable comme poison — généreux, pour un add.

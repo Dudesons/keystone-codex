@@ -33,7 +33,7 @@ spells:
 trap: "Every Shade left alive is another Umbral Rupture opening at the same time. They are a count, not a distraction."
 ---
 
-[Taz'Rah](#/d/voidscar-arena/codex/mob/238887)'s adds, with 0.8 million health each.
+[Taz'Rah](#/d/voidscar-arena/codex/mob/238887)'s adds, with 0.7 million health each.
 
 They matter because they **share the boss's cast**: Umbral Rupture is on Taz'Rah's card and on
 this one, so every Shade standing means another 291k circle opening simultaneously. Killing

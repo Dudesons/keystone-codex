@@ -5,7 +5,7 @@ npcId: 134487
 # des jugements, pas de la langue — ils restent dans la fiche de base et se fusionnent ici.
 ---
 
-Une seconde entrée MDT nommée Merekpha, avec **0,3 million de points de vie et aucun sort** —
+Une seconde entrée MDT nommée Merekpha, avec **0,4 million de points de vie et aucun sort** —
 face aux 15,5 millions et treize capacités
 [du boss](#/d/temple-of-sethraliss/codex/mob/133384).
 

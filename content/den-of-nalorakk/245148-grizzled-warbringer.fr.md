@@ -13,7 +13,7 @@ spells:
 
 La seconde entrée MDT de la Porteguerre aguerrie, ne valant **aucune force** et ne portant ni Écho
 primordial ni les 5,5 millions de points de vie de
-[la version de trash](#/d/den-of-nalorakk/codex/mob/245146) — 0,7 million et une salve de lances.
+[la version de trash](#/d/den-of-nalorakk/codex/mob/245146) — 0,6 million et une salve de lances.
 
 Rien ici ne demande de plan : la salve est un dégât au sol au motif visible, et le mob meurt sous
 le cleave incident.
