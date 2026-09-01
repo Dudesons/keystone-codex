@@ -142,6 +142,24 @@ before you compare, and never conclude a dungeon changed from its size alone.
   mob's health when it links to one. Also note the same npcId can carry different health in
   two dungeons (Magma Totem, `248666`).
 
+  **A changed `clone count` is the third of these, and it is the one that has actually been
+  missed.** Cards open by stating how many of the mob stand on the map — "Ten units at 7 forces
+  each" — and `docs/codex-notes/*.md` weight tables are that same number times the forces, so
+  one clone-count line at severity 6 silently falsifies a sentence and a table row at once. The
+  6.2.3 → 6.2.8 pass left sixteen mobs across five dungeons doing exactly that, and the
+  6.2.9 → 6.2.10 pass added two more in a sixth (Faithless Subjugator, Lightning Serpent) while
+  sweeping health thoroughly. **Sweep it from the data rather than by eye**: for every mob the report
+  names, compare `clones.length` in `src/data/generated/<dungeon>.json` against the number the
+  card spells out and against its row in the dungeon's note. Two traps — the count is spelled
+  as a word, not a digit, in both locales, so grep the mob rather than the number; and a card
+  sometimes quotes **another** mob's population when it links to one, as the Radiant
+  Spellsower's does for the Lasher.
+
+  Correcting a weight **re-sorts the note's table**, which is ordered by weight and means
+  something by it, and a share is a ratio whose denominator moves too. Both are the same trap
+  the health sweep meets: reread any sentence that draws a *conclusion* from the figure, not
+  just the digits.
+
   A mob reported as **moved on the map** needs nothing from
   you: the map is drawn from the data, so wherever the mob now stands is already where it
   renders. It is here only so you know the update repositioned something, not because there is

@@ -18,7 +18,7 @@ spells:
 trap: "Worth zero forces and it buffs the entire pack for a minute. Skipping it does not make it harmless — it has to be soothed or killed anyway."
 ---
 
-Nineteen of them on the map, each worth **nothing**, each carrying the dungeon's most
+Thirty-three of them on the map, each worth **nothing**, each carrying the dungeon's most
 dangerous buff.
 
 **Mother's Wrath** is the identical ability the

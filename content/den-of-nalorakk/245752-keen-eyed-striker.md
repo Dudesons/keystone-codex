@@ -31,7 +31,7 @@ spells:
 trap:
 ---
 
-A single unit, distinguished from the
+Two units, distinguished from the
 [common Keen-Eyed Striker](#/d/den-of-nalorakk/codex/mob/241816) by two abilities the others do not
 have: **Greater Invisibility** and **Scavenge**.
 

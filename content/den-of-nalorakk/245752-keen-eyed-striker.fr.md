@@ -13,7 +13,7 @@ spells:
     note: "34k par seconde pendant 10 s, cumulable. Un saignement."
 ---
 
-Une seule unité, distinguée du
+Deux unités, distinguées du
 [Frappeur oeil-de-lynx commun](#/d/den-of-nalorakk/codex/mob/241816) par deux capacités que les
 autres n'ont pas : **Invisibilité supérieure** et **Pillage**.
 

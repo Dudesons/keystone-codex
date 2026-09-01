@@ -12,7 +12,7 @@ spells:
     # dispel: bleed · Instant · 50 yd range
     tag: dispel
     prio: 1
-    note: "Leaps to a player and bleeds them for 34k a second over 10 sec, stacking. Sixteen of these birds means the stacks are the real damage."
+    note: "Leaps to a player and bleeds them for 34k a second over 10 sec, stacking. Seventeen of these birds means the stacks are the real damage."
   - id: 1238440
     name: "Razor Dive"   # auto
     # Instant · 50 yd range
@@ -22,7 +22,7 @@ spells:
 trap: "Razor Dive stacks and it picks its own target, not the tank. It is a bleed — the healer's magic dispel will not clear it."
 ---
 
-Sixteen units at 7 forces each, with one ability that only becomes a problem in numbers.
+Seventeen units at 7 forces each, with one ability that only becomes a problem in numbers.
 
 **Razor Dive** is 34k a second for 10 seconds, which is manageable once. It **stacks**, and
 the birds pick their own targets rather than the tank's, so a pull holding several of them

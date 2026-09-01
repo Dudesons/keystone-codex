@@ -29,7 +29,7 @@ spells:
 trap: "Rotten Ground sits for twenty seconds at 78k a second. The cast is nothing; standing where it landed is what kills."
 ---
 
-Twenty-three units at 5 forces each, the most numerous real mob in the dungeon.
+Twenty-one units at 5 forces each, the most numerous real mob in the dungeon.
 
 The numbers say where the danger is: **Rotten Supplies** hits for 39k, and the **Rotten
 Ground** it leaves does 78k *every second for twenty seconds*. The cast is a delivery
