@@ -127,7 +127,22 @@ before you compare, and never conclude a dungeon changed from its size alone.
   A changed **`cc`** also lands here rather than at severity 3: the differ compares two data
   snapshots and cannot know which mobs have cards. Read those against the notes yourself — a
   note telling the group to stun something no longer stunnable is stale writing, and severity 6
-  is the only place it is named. A mob reported as **moved on the map** needs nothing from
+  is the only place it is named.
+
+  **A changed `health` is the same trap, and it is by far the most common finding here.** The
+  6.2.8 → 6.2.10 pass moved 70-odd health values and left **fourteen cards across five dungeons
+  stating a figure the data no longer held** — the differ cannot see prose, and "informational"
+  reads like "nothing to do". Two of those were not arithmetic: the Lightning Spire's card
+  argued *from* its 21.6M health that a spell-less NPC could not be scenery, and MDT corrected
+  the figure to 235,746, so the card's conclusion had to go with the number. **Sweep it
+  mechanically rather than by eye** — cards write health as `0.4 million health` /
+  `0,4 million de points de vie` / `8.4M health`, so grep `health|points de vie` in every card
+  whose mob the report names, and compare. Watch for two kinds of false positive: most matches
+  are percentage *mechanics* ("5% of maximum health"), and a card often quotes a **different**
+  mob's health when it links to one. Also note the same npcId can carry different health in
+  two dungeons (Magma Totem, `248666`).
+
+  A mob reported as **moved on the map** needs nothing from
   you: the map is drawn from the data, so wherever the mob now stands is already where it
   renders. It is here only so you know the update repositioned something, not because there is
   a line to change.

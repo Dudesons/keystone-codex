@@ -12,7 +12,7 @@ spells:
     note: "87k physique et absorption des 162k soins suivants. Enchaîné avec Démembrer, c'est ce qui tue le tank."
 
   - id: 1306893
-    note: "Le totem tape 32k Nature toutes les 2 s tant que le chieftain est en combat. Le focus ou s'en écarter."
+    note: "Le totem tape 29k Nature toutes les 2 s tant que le chieftain est en combat. Le focus ou s'en écarter."
 
   - id: 1306844
     note: "Simple animation de pose du totem."

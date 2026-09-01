@@ -6,7 +6,7 @@ npcId: 268364
 
 spells:
   - id: 1312214
-    note: "-33 % de soins prodigués et +250 % de dégâts physiques subis pendant 15 s, cumulable. Voilà ce que purifier un orbe coûte à celui qui le fait."
+    note: "-33 % de soins prodigués et +250 % de dégâts physiques subis pendant 15 s, cumulable. Voilà ce que purifier un orbe coûte à celui qui le fait. Son chiffre de dégâts par seconde n'est plus mis à l'échelle depuis le patch et n'est pas cité."
   - id: 1300871
     note: "Le toucher le purifie et prend la Corruption. Laissé seul, il éclate — et un orbe purifié peut être consommé par l'Avatar pour la soigner. Aucune des deux issues n'est gratuite."
   - id: 1302826

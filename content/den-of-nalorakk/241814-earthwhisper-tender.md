@@ -24,7 +24,7 @@ spells:
 trap: "Two kickable casts and only one of them matters. Healing Breeze first, always — Earth Bolt is a healer's problem, a finished Healing Breeze is everyone's."
 ---
 
-Fourteen units at 7 forces each, and the dungeon's healer.
+Twelve units at 7 forces each, and the dungeon's healer.
 
 **Healing Breeze** restores 5% of maximum health to every nearby ally every 2 seconds for the
 duration of the channel. On a large pull that is more effective health than anything else in

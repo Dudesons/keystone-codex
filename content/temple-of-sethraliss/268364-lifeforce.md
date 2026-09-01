@@ -13,7 +13,7 @@ spells:
     # Instant · Unlimited range
     tag: soak
     prio: 1
-    note: "-33% healing done and +250% Physical damage taken for 15 sec, stacking. This is what cleansing an orb costs the person who does it."
+    note: "-33% healing done and +250% Physical damage taken for 15 sec, stacking. This is what cleansing an orb costs the person who does it. Its damage-per-second figure is unscaled since the patch and is not quoted."
   - id: 1300871
     name: "Corrupted Lifeforce"   # auto
     # Instant

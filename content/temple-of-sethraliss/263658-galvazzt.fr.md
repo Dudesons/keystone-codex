@@ -21,7 +21,8 @@ Rien ne retire les champs, donc l'arène se remplit au fil du combat et l'assise
 dégrade progressivement.
 
 Le tracker de Method nomme deux capacités que MDT ne porte pas — **Flèche de foudre** et
-**Consume Charge**. Les deux sont consignées ici plutôt qu'écrites dans la liste des sorts, et MDT
-place bien une unité [Flèche de foudre](#/d/temple-of-sethraliss/codex/mob/135445) avec 21,6
-millions de points de vie dans le donjon, ce qui suggère que la mécanique existe et que son sort
-n'a simplement pas été extrait.
+**Consume Charge**. Les deux sont consignées ici plutôt qu'écrites dans la liste des sorts. MDT
+place bien une unité [Flèche de foudre](#/d/temple-of-sethraliss/codex/mob/135445) dans le donjon,
+ce qui corrobore un peu l'existence de la mécanique — moins qu'avant, cependant. Cette unité
+portait 21,6 millions de points de vie jusqu'à ce que MDT 6.2.10 corrige le chiffre à 235 746, et
+c'était la barre de vie de taille boss qui donnait du poids à l'argument.

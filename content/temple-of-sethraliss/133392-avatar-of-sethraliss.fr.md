@@ -7,7 +7,7 @@ npcId: 133392
 trap: "MDT ne liste aucun sort pour l'Avatar elle-même — tout le combat repose sur les adds. La Souilleuse d'essence bloque tous les soins extérieurs ; les orbes de Force vitale sont ce que le groupe manipule."
 ---
 
-**MDT ne liste aucun sort pour l'Avatar de Sephraliss.** 21,6 millions de points de vie et une
+**MDT ne liste aucun sort pour l'Avatar de Sephraliss.** 23,8 millions de points de vie et une
 liste de capacités vide, ce qui en fait le plus gros trou de données du lot — mais, chose rare,
 le combat reste lisible, parce que MDT *porte bien* ses adds, et que ce sont eux qui tiennent les
 mécaniques.

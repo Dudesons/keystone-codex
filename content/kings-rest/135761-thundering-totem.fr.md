@@ -13,7 +13,7 @@ spells:
 trap: "Il n'inflige aucun dégât, alors on le laisse en vie — et le groupe se retrouve réduit au silence pendant la seule incantation du combat qu'il fallait interrompre."
 ---
 
-Zéro dégât, 0,3 million de points de vie, et le totem qu'on a le plus de chances d'ignorer.
+Zéro dégât, 0,4 million de points de vie, et le totem qu'on a le plus de chances d'ignorer.
 
 **Perturbation** empêche tout le groupe d'incanter pendant quatre secondes. Rien dans le journal
 de combat n'a l'air urgent, et c'est pourquoi il survit — et son coût se paie indirectement,

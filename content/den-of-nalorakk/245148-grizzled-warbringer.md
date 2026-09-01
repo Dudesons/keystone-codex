@@ -26,7 +26,7 @@ trap:
 
 The second MDT entry for the Grizzled Warbringer, worth **no forces** and carrying neither
 Primal Echo nor the 5.5 million health of
-[the trash version](#/d/den-of-nalorakk/codex/mob/245146) — 0.7 million and a spear volley.
+[the trash version](#/d/den-of-nalorakk/codex/mob/245146) — 0.6 million and a spear volley.
 
 Nothing here needs a plan: the volley is ground damage with a visible pattern, and the mob
 dies to incidental cleave.

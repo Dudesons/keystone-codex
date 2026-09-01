@@ -13,7 +13,7 @@ spells:
 trap: "Deux sorts kickables et un seul compte. **Brise guérisseuse** d'abord, toujours — **Trait de terre** est le problème du heal, une **Brise guérisseuse** qui passe est celui de tout le monde."
 ---
 
-Quatorze unités à 7 forces chacune, et le soigneur du donjon.
+Douze unités à 7 forces chacune, et le soigneur du donjon.
 
 **Brise guérisseuse** rend 5 % de la vie maximale à chaque allié proche toutes les 2 secondes,
 pendant toute la canalisation. Sur un gros pull, c'est plus de vie effective que tout ce que

@@ -27,7 +27,7 @@ spells:
     name: "Unstable Totem"   # auto
     # Instant
     tag: dodge
-    note: "The totem hits for 32k Nature every 2 s for as long as the chieftain is in combat. Focus it or step away."
+    note: "The totem hits for 29k Nature every 2 s for as long as the chieftain is in combat. Focus it or step away."
 
   - id: 1306844
     name: "Totemic Ritual"   # auto

@@ -13,7 +13,7 @@ spells:
 trap: "Chaque Ombre encore en vie, c'est une **Rupture ombreuse** de plus qui s'ouvre en même temps. C'est un compteur, pas une distraction."
 ---
 
-Les adds de [Taz'Rah](#/d/voidscar-arena/codex/mob/238887), avec 0,8 million de points de vie
+Les adds de [Taz'Rah](#/d/voidscar-arena/codex/mob/238887), avec 0,7 million de points de vie
 chacune.
 
 Elles comptent parce qu'elles **partagent l'incantation du boss** : Rupture ombreuse figure sur la

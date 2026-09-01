@@ -20,7 +20,7 @@ tips:
     packs: [44]
 ---
 
-**Le mob le plus lourd du donjon, et de loin** : onze unités à 25 forces chacune, environ 42 % du
+**Le mob le plus lourd du donjon, et de loin** : onze unités à 25 forces chacune, environ 40 % du
 compte qu'un groupe doit atteindre. Aucune route ne l'évite.
 
 Deux de ses capacités sont l'échange habituel — **Éructation sporulée** est un dégât au sol

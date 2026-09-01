@@ -258,9 +258,17 @@ artwork is its `displayId` portrait and does not depend on language.
 **MDT stays the authority on the English name.** It is the identity every `content/` file,
 spell note and test is keyed on, so Wowhead's English is spent *checking* it: a disagreement
 means a wrong id, and renaming the mob on that basis would be invisible — it would simply
-start displaying another creature. Two real disagreements exist today, reported on every run:
-`135761` ("Disruption Totem" / "Thundering Totem") and `263181` ("Egg Marker" / "Egg"). Both
-were confirmed as the right id by the spells they carry.
+start displaying another creature. No disagreement is reported today: the two that used to be
+here — `135761` and `263181` — were MDT's own older names, `Disruption Totem` and `Egg Marker`,
+which MDT has since changed to Wowhead's `Thundering Totem` and `Egg`.
+
+**Those two names outlived MDT by several versions, and that is the lesson.** `npcs.json` is a
+cache, and a plain `npm run fetch:assets` never revisits an entry it already holds — so when MDT
+renamed both mobs, the dungeon files said one thing and the label the site actually printed said
+another. Nothing failed: the app rendered a name MDT had stopped using, `mdt-diff` does not read
+`npcs.json`, and the stale value was pinned by a passing test whose comment had it backwards.
+Only `FORCE=1 npm run fetch:assets` corrected it. **A renamed mob is invisible without that
+run** — one more reason `mdt-update` puts it behind a patch rather than behind an MDT bump alone.
 
 **The classification line is found by index, not by "the line under the name".** A creature's
 header runs to four further rows — a title above, then `[Level n ]Type (Classification)`, then

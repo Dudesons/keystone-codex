@@ -26,7 +26,7 @@ trap: "Malefic Wave doubles their cast speed. The imps are trivial until the wav
 ---
 
 Spawned from every **Fingers of Gul'dan** impact during
-[Lithiel Cinderfury](#/d/murder-row/codex/mob/234763), with 0.4 million health each.
+[Lithiel Cinderfury](#/d/murder-row/codex/mob/234763), with 0.5 million health each.
 
 On their own they are the [Unleashed Imp](#/d/murder-row/codex/mob/234849) again: a small
 interruptible bolt, too numerous to kick. What changes them is **Malefic Empowerment** —

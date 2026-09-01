@@ -1283,6 +1283,24 @@
    }
   }
  },
+ "272388": {
+  "id": 272388,
+  "icon": "spell_priest_mindspike",
+  "text": {
+   "en": {
+    "name": "Shadow Barrage",
+    "range": "40 yd range",
+    "castTime": "1.5 sec cast",
+    "description": "Inflicts 58190 Shadow damage to an enemy.\nInflicts 48491 Shadow damage to an enemy every 2 sec for 4 sec."
+   },
+   "fr": {
+    "name": "Barrage d’ombre",
+    "range": "40 m de portée",
+    "castTime": "1.5 s d'incantation",
+    "description": "Inflicts 58190 Shadow damage to an enemy.\nInflicts 48491 Shadow damage to an enemy every 2 sec for 4 s."
+   }
+  }
+ },
  "272654": {
   "id": 272654,
   "icon": "inv_trilobitemount_black",
@@ -1847,13 +1865,13 @@
     "name": "Living Bomb",
     "range": "60 yd range",
     "castTime": "Instant",
-    "description": "The caster inflicts 58189 Fire damage every 1 sec for 6 sec.\n\nThe affliction explodes upon expiration, inflicting 77586 Fire damage to players within 6 yds and knocking them into the air."
+    "description": "The caster inflicts 52371 Fire damage every 1 sec for 6 sec.\n\nThe affliction explodes upon expiration, inflicting 69827 Fire damage to players within 6 yds and knocking them into the air."
    },
    "fr": {
     "name": "Bombe vivante",
     "range": "60 m de portée",
     "castTime": "Instantanée",
-    "description": "Le lanceur ou la lanceuse inflige 52371 points de dégâts de feu toutes les 1 s pendant 6 s.\n\nL’affliction explose à la fin de l’effet, ce qui inflige 77586 points de dégâts de feu à tous les personnages-joueurs à moins de 6 m et les projette dans les airs."
+    "description": "Le lanceur ou la lanceuse inflige 52371 points de dégâts de feu toutes les 1 s pendant 6 s.\n\nL’affliction explose à la fin de l’effet, ce qui inflige 69827 points de dégâts de feu à tous les personnages-joueurs à moins de 6 m et les projette dans les airs."
    }
   }
  },
@@ -8921,6 +8939,24 @@
    }
   }
  },
+ "1288087": {
+  "id": 1288087,
+  "icon": "warrior_talent_icon_thunderstruck",
+  "text": {
+   "en": {
+    "name": "Thunder and Lightning",
+    "range": "100 yd range",
+    "castTime": "4.5 sec cast",
+    "description": "Adderis dashes forward with his arcing blade, inflicting 581895 Nature damage divided evenly between all players within 8 yards.\n\nHe then winds up a massive peal of thunder, inflicting 387930 Nature damage to all enemies within 20 yards."
+   },
+   "fr": {
+    "name": "Tonnerre et éclairs",
+    "range": "100 m de portée",
+    "castTime": "4.5 s d'incantation",
+    "description": "Viperis se précipite vers l’avant, brandissant sa lame incurvée, ce qui inflige 581895 points de dégâts de nature épartis de manière égale entre tous les personnages-joueurs à moins de 8 m.\n\nIl fait alors retentir un énorme coup de tonnerre, ce qui inflige 387930 points de dégâts de nature à l’ensemble des adversaires à moins de 20 m."
+   }
+  }
+ },
  "1288092": {
   "id": 1288092,
   "icon": "warrior_talent_icon_thunderstruck",
@@ -9719,7 +9755,7 @@
     "name": "Tirs paralysants",
     "range": "100 m de portée",
     "castTime": "3 s d'incantation",
-    "description": "Le croc-double crache un poison ankylosant sur les personnages-joueurs, infligeant 135775 points de dégâts de nature à l’impact et 48491 points de dégâts de nature supplémentaires toutes les 1 s pendant 20 s.\n\nLes personnages-joueurs affectés deviennent paralysés sur la durée, réduisant leur vitesse de déplacement de 10 % à chaque itération."
+    "description": "Le croc-double crache un poison ankylosant sur les personnages-joueurs, infligeant 67888 points de dégâts de nature à l’impact et 48491 points de dégâts de nature supplémentaires toutes les 1 s pendant 20 s.\n\nLes personnages-joueurs affectés deviennent paralysés sur la durée, réduisant leur vitesse de déplacement de 10 % à chaque itération."
    }
   }
  },
@@ -9749,7 +9785,7 @@
     "name": "Paralyzing Shots",
     "range": "100 yd range",
     "castTime": "Instant",
-    "description": "The Twinfang spits numbing venom at players, inflicting 135775 Nature damage on impact and an additional 48491 Nature damage every 1 sec for 20 sec.\n\nAffected players become paralyzed over time, reducing their movement speed by 10% with each tick."
+    "description": "The Twinfang spits numbing venom at players, inflicting 67888 Nature damage on impact and an additional 48491 Nature damage every 1 sec for 20 sec.\n\nAffected players become paralyzed over time, reducing their movement speed by 10% with each tick."
    },
    "fr": {
     "name": "Tirs paralysants",
@@ -10690,12 +10726,12 @@
    "en": {
     "name": "Dark Pact",
     "castTime": "1.5 sec cast",
-    "description": "Caster sacrifices 10% of its max health and shields itself for 35% of its max health"
+    "description": "Caster sacrifices 10% of its max health and shields itself for 30% of its max health"
    },
    "fr": {
     "name": "Sombre pacte",
     "castTime": "1.5 s d'incantation",
-    "description": "Le lanceur sacrifie 10 % de son maximum de points de vie et se protège à l’aide d’un bouclier équivalent à 35 % de son maximum de points de vie."
+    "description": "Le lanceur sacrifie 10 % de son maximum de points de vie et se protège à l’aide d’un bouclier équivalent à 30 % de son maximum de points de vie."
    }
   }
  },
@@ -11054,6 +11090,24 @@
     "name": "Vorasssité charognarde",
     "castTime": "Canalisée (1 min d'incantation)",
     "description": "Rav’i se précipite vers le tas de charognes le plus proche pour s’en repaître et gagner un bouclier qui absorbe tous les dégâts. Jusqu’à la disparition du bouclier, Rav’i applique Explosion putride aux adversaires toutes les 3 s.\n\n[Rav’i est un Mangeur malpropre et jette des morceaux de viande en décomposition dans la fosse tout en lançant Vorasssité charognarde.]\n\nSi le tas de charogne contient de la Viande fraîche, Rav’i entre dans une Frénésie dévorante à la place."
+   }
+  }
+ },
+ "1298304": {
+  "id": 1298304,
+  "icon": "ability_priest_clarityofpower",
+  "text": {
+   "en": {
+    "name": "Dark Revelation",
+    "range": "60 yd range",
+    "castTime": "1.5 sec cast",
+    "description": "Unleashes a Dark Revelation after 5 sec,  inflicting 473120 Shadow damage to enemies within 20 yards."
+   },
+   "fr": {
+    "name": "Sombre révélation",
+    "range": "60 m de portée",
+    "castTime": "1.5 s d'incantation",
+    "description": "Au bout de 5 s, déclenche une révélation sombre qui inflige 473120 points de dégâts d’ombre aux adversaires à moins de 20 m."
    }
   }
  },
@@ -12083,7 +12137,7 @@
    "fr": {
     "name": "Crochet renforsssé",
     "castTime": "Instantanée",
-    "description": "Le crochet d’Ula’tek irradie de puissance, infligeant 116379 points de dégâts de nature à l’ensemble des personnages-joueurs toutes les 1 s. Cet effet est cumulable."
+    "description": "Le crochet d’Ula’tek irradie de puissance, infligeant 93103 points de dégâts de nature à l’ensemble des personnages-joueurs toutes les 1 s. Cet effet est cumulable."
    }
   }
  },
@@ -12885,13 +12939,13 @@
     "name": "Tectonic Strike",
     "range": "Unlimited range",
     "castTime": "Instant",
-    "description": "The caster knocks its current target off balance, inflicting Physical damage and increasing their damage taken by 35% for 8 sec. This effect stacks."
+    "description": "The caster knocks its current target off balance, inflicting Physical damage and increasing their damage taken by 25% for 8 sec. This effect stacks."
    },
    "fr": {
     "name": "Coup tectonique",
     "range": "Portée illimitée",
     "castTime": "Instantanée",
-    "description": "Le lanceur ou la lanceuse déséquilibre sa cible actuelle, lui infligeant des dégâts physiques et augmentant les dégâts qu’elle subit de 35 % pendant 8 s. Cet effet est cumulable."
+    "description": "Le lanceur ou la lanceuse déséquilibre sa cible actuelle, lui infligeant des dégâts physiques et augmentant les dégâts qu’elle subit de 25 % pendant 8 s. Cet effet est cumulable."
    }
   }
  },
@@ -13185,7 +13239,7 @@
     "name": "Ravenous Claws",
     "range": "Unlimited range",
     "castTime": "Instant",
-    "description": "Melee swings increase attack speed by 20% for 2 sec. This effect stacks."
+    "description": "Melee swings increase attack speed by 10% for 2 sec. This effect stacks."
    },
    "fr": {
     "name": "Griffes voraces",
@@ -13307,7 +13361,7 @@
     "name": "Blood Sacrifice",
     "range": "Unlimited range",
     "castTime": "Instant",
-    "description": "The Ritual Chieftain invokes spirits of the altar to gut players, inflicting 87284 Physical damage and causing the next 180032 healing to be absorbed."
+    "description": "The Ritual Chieftain invokes spirits of the altar to gut players, inflicting 87284 Physical damage and causing the next 162029 healing to be absorbed."
    },
    "fr": {
     "name": "Sacrifice de sang",
@@ -13325,7 +13379,7 @@
     "name": "Blood Sacrifice",
     "range": "Unlimited range",
     "castTime": "Instant",
-    "description": "The Ritual Chieftain invokes spirits of the altar to gut players, inflicting 87284 Physical damage and causing the next 180032 healing to be absorbed."
+    "description": "The Ritual Chieftain invokes spirits of the altar to gut players, inflicting 87284 Physical damage and causing the next 162029 healing to be absorbed."
    },
    "fr": {
     "name": "Sacrifice de sang",
@@ -13510,12 +13564,12 @@
    "en": {
     "name": "Unstable Totem",
     "castTime": "Instant",
-    "description": "The totem becomes unstable, inflicting 32295 Nature damage every 2 sec while the chieftain remains in combat."
+    "description": "The totem becomes unstable, inflicting 29095 Nature damage every 2 sec while the chieftain remains in combat."
    },
    "fr": {
     "name": "Totem instable",
     "castTime": "Instantanée",
-    "description": "Le totem devient instable, infligeant 32295 points de dégâts de nature toutes les 2 s tant que son chef reste au combat."
+    "description": "Le totem devient instable, infligeant 29095 points de dégâts de nature toutes les 2 s tant que son chef reste au combat."
    }
   }
  },
@@ -13595,7 +13649,7 @@
     "name": "Paralyzing Shots",
     "range": "100 yd range",
     "castTime": "Instant",
-    "description": "The Twinfang spits numbing venom at players, inflicting 135775 Nature damage on impact and an additional 48491 Nature damage every 1 sec for 20 sec.\n\nAffected players become paralyzed over time, reducing their movement speed by 10% with each tick."
+    "description": "The Twinfang spits numbing venom at players, inflicting 67888 Nature damage on impact and an additional 48491 Nature damage every 1 sec for 20 sec.\n\nAffected players become paralyzed over time, reducing their movement speed by 10% with each tick."
    },
    "fr": {
     "name": "Tirs paralysants",
@@ -14076,6 +14130,24 @@
     "range": "Portée illimitée",
     "castTime": "Instantanée",
     "description": "Le serpent infeste les personnages-joueurs d’œufs, ce qui leur inflige 34914 points de dégâts de nature toutes les 1 s pendant 5 s.\n\nLes infestations explosent à la fin de l’effet, ce qui inflige 69827 points de dégâts de nature à moins de 8 m et donne naissance à de jeunes serpents."
+   }
+  }
+ },
+ "1309385": {
+  "id": 1309385,
+  "icon": "spell_priest_void-blast",
+  "text": {
+   "en": {
+    "name": "Pool of Darkness",
+    "range": "100 yd range",
+    "castTime": "Channeled (4 sec cast)",
+    "description": "Standing within a Pool of Darkness inflicts 58189 Shadow damage every 2 sec."
+   },
+   "fr": {
+    "name": "Nappe de ténèbres",
+    "range": "100 m de portée",
+    "castTime": "Canalisée (4 s d'incantation)",
+    "description": "Ceux qui se tiennent dans une nappe de ténèbres subissent 58189 points de dégâts d’Ombre toutes les 2 s."
    }
   }
  },
@@ -15162,6 +15234,92 @@
     "range": "100 m de portée",
     "castTime": "1 s d'incantation",
     "description": "Mchimba pousse un puissant rugissement, infligeant 77586 points de dégâts physiques aux personnages-joueurs et ordonnant aux assemblages funéraires d’en embaumer certains."
+   }
+  }
+ },
+ "1314051": {
+  "id": 1314051,
+  "icon": "spell_nature_unrelentingstorm",
+  "text": {
+   "en": {
+    "name": "Thunder and Lightning",
+    "range": "100 yd range",
+    "castTime": "Instant",
+    "description": "Adderis dashes forward with his arcing blade, inflicting 581895 Nature damage divided evenly between all players within 8 yards.\n\nHe then winds up a massive peal of thunder, inflicting 387930 Nature damage to all enemies within 20 yards."
+   },
+   "fr": {
+    "name": "Tonnerre et éclairs",
+    "range": "100 m de portée",
+    "castTime": "Instantanée",
+    "description": "Viperis se précipite vers l’avant, brandissant sa lame incurvée, ce qui inflige 581895 points de dégâts de nature épartis de manière égale entre tous les personnages-joueurs à moins de 8 m.\n\nIl fait alors retentir un énorme coup de tonnerre, ce qui inflige 387930 points de dégâts de nature à l’ensemble des adversaires à moins de 20 m."
+   }
+  }
+ },
+ "1314082": {
+  "id": 1314082,
+  "icon": "spell_shadow_mindflay",
+  "text": {
+   "en": {
+    "name": "Addle Mind",
+    "range": "40 yd range",
+    "castTime": "Instant",
+    "description": "Channels mind-altering energy, disorienting the enemy for 5 sec."
+   },
+   "fr": {
+    "name": "Pensées confuses",
+    "range": "40 m de portée",
+    "castTime": "Instantanée",
+    "description": "Canalise une énergie qui affecte l’esprit et désoriente l’adversaire pendant 5 s."
+   }
+  }
+ },
+ "1314883": {
+  "id": 1314883,
+  "icon": "ability_druid_ravage",
+  "text": {
+   "en": {
+    "name": "Hunting Leap",
+    "range": "300 yd range",
+    "castTime": "Instant",
+    "description": "Jumps towards a targeted player and unleashes a series of gutripping attacks, inflicting 145474 Physical to players in a cone with each attack."
+   },
+   "fr": {
+    "name": "Bond chasseur",
+    "range": "300 m de portée",
+    "castTime": "Instantanée",
+    "description": "Saute en direction d’un personnage-joueur ciblé et assène une série d’attaques éviscérantes dont chacune inflige 145474 points de dégâts physiques aux personnages-joueurs dans un cône."
+   }
+  }
+ },
+ "1314884": {
+  "id": 1314884,
+  "icon": "inv_ammo_arrow_06",
+  "text": {
+   "en": {
+    "name": "Hunting Leap",
+    "castTime": "Channeled (5 sec cast)",
+    "description": "Reban jumps towards a targeted player, inflicting 67888 Physical damage and additional 38793 Physical damage every 1 sec for 4 sec. Reban then follows up with a series of gutripping attacks, inflicting 145474 Physical to players in a cone with each attack."
+   },
+   "fr": {
+    "name": "Bond chasseur",
+    "castTime": "Canalisée (5 s d'incantation)",
+    "description": "Reban bondit vers un personnage-joueur ciblé, lui infligeant 67888 points de dégâts physiques, puis 38793 supplémentaires toutes les 1 s pendant 4 s. Reban enchaîne ensuite avec une succession d’attaques dévastatrices, infligeant 145474 points de dégâts physiques aux personnages-joueurs dans un cône à chaque attaque."
+   }
+  }
+ },
+ "1314885": {
+  "id": 1314885,
+  "icon": "ability_druid_ravage",
+  "text": {
+   "en": {
+    "name": "Hunting Leap",
+    "castTime": "Instant",
+    "description": "Reban jumps towards a targeted player, inflicting 67888 Physical damage and additional 38793 Physical damage every 1 sec for 4 sec. Reban then follows up with a series of gutripping attacks, inflicting 145474 Physical to players in a cone with each attack."
+   },
+   "fr": {
+    "name": "Bond chasseur",
+    "castTime": "Instantanée",
+    "description": "Reban bondit vers un personnage-joueur ciblé, lui infligeant 67888 points de dégâts physiques, puis 38793 supplémentaires toutes les 1 s pendant 4 s. Reban enchaîne ensuite avec une succession d’attaques dévastatrices, infligeant 145474 points de dégâts physiques aux personnages-joueurs dans un cône à chaque attaque."
    }
   }
  }

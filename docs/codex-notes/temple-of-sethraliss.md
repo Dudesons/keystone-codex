@@ -1,6 +1,6 @@
 # Temple of Sethraliss — 45/45 written
 
-Timer unknown · 649 forces required · 5 boss entries, 21 trash, 19 encounter units.
+Timer unknown · 687 forces required · 5 boss entries, 21 trash, 19 encounter units.
 
 **This dungeon has partial CC data** (18 of 45 mobs), so its cards say what applies where MDT
 knows.
@@ -11,22 +11,22 @@ knows.
 | --- | --- | --- | --- |
 | Sandfury Stonefist | **100** (15%) | `high` | Sunder Slam stacks +50% Physical damage taken |
 | Sand-Sworn Rider | **100** (15%) | `high` | 4-second disorient on a frontal, plus a summon |
-| Agitated Nimbus | 75 (12%) | `high` | Stacking buff that feeds a party-wide hit — but dispellable |
-| Sandswept Hunter | 63 (10%) | `medium` | ~490k channel, stoppable by any CC in a long list |
-| Storm Adept | 56 (9%) | `medium` | One kickable bolt, full CC list |
-| Orb Watcher | 50 (8%) | `high` | 582k buster that also sprays 291k shrapnel; CC-immune |
-| Shrouded Fang | 49 (8%) | `high` | Stealth opener with a stun |
+| Agitated Nimbus | 75 (11%) | `high` | Stacking buff that feeds a party-wide hit — but dispellable |
+| Sandswept Hunter | 63 (9%) | `medium` | ~490k channel, stoppable by any CC in a long list |
+| Storm Adept | 56 (8%) | `medium` | One kickable bolt, full CC list |
+| Orb Watcher | 50 (7%) | `high` | 582k buster that also sprays 291k shrapnel; CC-immune |
+| Shrouded Fang | 49 (7%) | `high` | Stealth opener with a stun |
 | Poisonous Viper | 42 (6%) | `medium` | A single 10-second poison |
 | Barbed Krolusk | 40 (6%) | `medium` | One charge, one bleed |
-| Lightning Serpent | 30 (5%) | `medium` | Leaves a pool where the buff expires |
-| Static Anomaly | 30 (5%) | `medium` | Teleports to players; cannot be held |
+| Lightning Serpent | 35 (5%) | `medium` | Leaves a pool where the buff expires |
+| Static Anomaly | 30 (4%) | `medium` | Teleports to players; cannot be held |
 | Imbued Stormcaller | 28 (4%) | `high` | Three abilities wanting three globals; +50% damage buff |
 | Twisted Hexxer | 25 (4%) | `high` | **Hex Muck turns players into frogs** |
-| Faithless Subjugator | 21 (3%) | `high` | Embryonic Vigor: +30% damage **until cancelled** |
 | Brood Tender | 21 (3%) | `medium` | One kickable bolt |
 | **Faithless Tormentor** | 20 (3%) | `high` | **Fixates the healer by design**, -5% healing per hit, stacking |
 | **Temple Disruptor** | 20 (3%) | `high` | **MDT has no spells for it.** Judged on Method's "Tough" + Interrupt |
 | Krolusk Matriarch | 16 (2%) | `high` | 727k Head Butt — and **no Taunt applies** |
+| Faithless Subjugator | 14 (2%) | `high` | Embryonic Vigor: +30% damage **until cancelled** |
 | Dutiful Tamer | 7 (1%) | `medium` | Summons Krolusks worth no forces |
 | Spark Channeler (139110) | 5 (1%) | `high` | 291k **and a 6-second stun**, CC-immune |
 | Spark Channeler (265057) | 5 (1%) | `medium` | **No spells in MDT** — placeholder judgement, the weakest call here |
@@ -40,7 +40,7 @@ a guess about a mob with no data at all.
 
 ## Three data gaps that need a look in game
 
-1. **`Avatar of Sethraliss` (133392) — no spells at all.** 21.6M health, the dungeon's final
+1. **`Avatar of Sethraliss` (133392) — no spells at all.** 23.8M health, the dungeon's final
    boss, and an empty ability list. Unusually, the fight is still legible because MDT carries
    its **adds** and they hold the mechanics: Essence Defiler (blocks all external healing on
    her), Corrupted Guardian (485k buster, and its explosion creates the orbs), Lifeforce (the
@@ -51,9 +51,14 @@ a guess about a mob with no data at all.
 2. **`Temple Disruptor` (269227) — no spells.** Method names *Essence Disruption*, an
    interruptible cast to stop. Four units at 5 forces each.
 
-3. **`Lightning Spire` (135445) — no spells, 21.6M health.** A boss-sized health bar with an
-   empty ability list, during Galvazzt. Method lists Lightning Spire among his abilities as
-   avoidable party damage. The mechanic clearly exists.
+3. **`Lightning Spire` (135445) — no spells, 0.2M health.** Method lists Lightning Spire among
+   Galvazzt's abilities as avoidable party damage, and that is now the *only* reason to think
+   the mechanic exists. **This entry used to read "21.6M health" and rested on it**: a
+   boss-sized health bar on a spell-less NPC was the second, independent reason. MDT 6.2.10
+   corrected the figure to 235,746, so that reason was a data error all along. Its cards, and
+   Galvazzt's, were rewritten rather than renumbered — the conclusion changed, not just the
+   number. **A health figure is data like any other, and an argument built on one inherits its
+   errors.**
 
 Also `Spark Channeler` (265057), `Merektha` (134487), `Polarized Spire`, `Swarming Krolusk`,
 `Faithless Conscript`, `Snake` and `Lesser Lifeforce` have empty spell lists — those read as
@@ -69,7 +74,9 @@ Every option costs something:
 - **Leave a Lifeforce orb** → **Corruption Burst**: 194k party-wide, **and +100% damage taken
   from that ability for 3 sec**, so consecutive bursts escalate.
 - **Touch it** → cleansed, and the toucher takes **Corruption**: -33% healing done and
-  **+300% Physical damage taken** for 15 sec, stacking.
+  **+250% Physical damage taken** for 15 sec, stacking. Its damage-per-second component
+  **became unscaled in the patch shipped alongside MDT 6.2.10** — the tooltip went from 29095
+  Shadow to a bare `4` — so the cards describe the debuff and quote no figure for it.
 - **Leave it cleansed** → the Avatar **consumes** it, healing 2% plus a stacking regeneration.
 
 Meanwhile four Faithless Tormentors are fixating the healer, and two Essence Defilers are

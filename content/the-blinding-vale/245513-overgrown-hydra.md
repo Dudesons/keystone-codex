@@ -32,7 +32,7 @@ spells:
 trap: "Lightmaw Beams targets several players at once and only reaches 4 yards. Stacked, the group takes every beam; spread, it takes one each."
 ---
 
-Seven units at 25 forces each — 27% of the required count, second only to the Sporeblight
+Seven units at 25 forces each — 26% of the required count, second only to the Sporeblight
 Belcher.
 
 **Bullet Seeds** is 339k, the hardest avoidable hit anywhere in the Vale's trash, on a
