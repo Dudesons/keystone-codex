@@ -13,7 +13,7 @@ spells:
 trap: "**Bouclier de glace** n'est pas un simple soin qu'on peut laisser passer — il rend aussi sa cible immunisée au contrôle, et c'est ça qui casse le pull."
 ---
 
-Neuf unités à 5 forces chacune. Il prend lui-même les étourdissements et les racines, donc il se
+Six unités à 5 forces chacune. Il prend lui-même les étourdissements et les racines, donc il se
 gère dans les deux sens.
 
 **Bouclier de glace** est la raison de s'en occuper. Cinq pour cent de la vie de l'incantateur

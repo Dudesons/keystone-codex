@@ -22,5 +22,5 @@ vient s'empiler dessus.
 
 MDT la déclare **frénésie**, ce qui veut dire que la réponse est un apaisement et non une
 dissipation de magie. Et la même capacité appartient au
-[Jeune ours curieux](#/d/den-of-nalorakk/codex/mob/241809) — aucune force, dix-neuf exemplaires sur
-la carte, et le même buff à l'incantation.
+[Jeune ours curieux](#/d/den-of-nalorakk/codex/mob/241809) — aucune force, trente-trois
+exemplaires sur la carte, et le même buff à l'incantation.

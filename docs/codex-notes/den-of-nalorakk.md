@@ -12,13 +12,13 @@ his calibration rule (see `ruby-life-pools.md`).
 | --- | --- | --- | --- |
 | Spirit of Hunger | **175** (24%) | `high` | Steals 15% max health per stack; the effigy is a curse most groups do not dispel |
 | Territorial Matriarch | 128 (18%) | `medium` ⇩ | Was `high` on the 40-yard stacking enrage; overruled |
-| Thornclaw Gatherer | 115 (16%) | `medium` | The pool (78k/sec for 20 sec) matters, the mob does not |
-| Keen-Eyed Striker (241816) | 112 (15%) | `medium` | Stacking bleed on a target of its choosing |
+| Keen-Eyed Striker (241816) | 119 (16%) | `medium` | Stacking bleed on a target of its choosing |
+| Thornclaw Gatherer | 105 (14%) | `medium` | The pool (78k/sec for 20 sec) matters, the mob does not |
 | Frostfang | 90 (12%) | `low` ⇩ | Was `medium` on a 60% attack-speed buff. See the open question: the card still warns the buff may not be soothable, and `low` implies otherwise |
 | Earthwhisper Tender | 84 (12%) | `high` | The dungeon's healer — 5% max health to the whole pack every 2 sec |
+| Terra Rumbler | 77 (11%) | `low` ⇩ | Was `medium` on 24k party-wide every 2 sec |
 | Grizzled Warbringer (245146) | 75 (10%) | `high` | Method Tough; stacking armour-ignoring party damage |
 | Frigid Mauler | 72 (10%) | `medium` ⇩* | Was `high` on -50% group haste, but it comes from a free 3.5-second kick — the clearest answer in the dungeon |
-| Terra Rumbler | 70 (10%) | `low` ⇩ | Was `medium` on 24k party-wide every 2 sec |
 | Glacial Revenant | 56 (8%) | `low` ⇩ | Was `medium`; small hit, and a death patch that is arguably useful |
 | Avatar of Determination | 56 (8%) | `high` | Tombs the whole party until broken, and stuns for 4 sec |
 | The Winter Squall | 50 (7%) | `high` | A cloud that blocks targeting both ways. Rests on the mechanic alone — its tooltips are unscaled, so no figure is quotable |
@@ -27,14 +27,14 @@ his calibration rule (see `ruby-life-pools.md`).
 | **Ruthless Totemcaller** | 25 (3%) | `high` | **~120k/sec party-wide while its totem stands.** Lowest weight, highest damage |
 | Bonded Beasttamer | 24 (3%) | `medium` | Enrage shared with its pet, one kickable cast |
 | Loyal Saberfang | 20 (3%) | `medium` | 12-second untauntable fixate |
-| Keen-Eyed Striker (245752) | 7 (1%) | `low` | The variant with Greater Invisibility and Scavenge; a nuisance, not a threat |
-| **Curious Yearling** | **0** | `high` | **Worth no forces and casts the Matriarch's full enrage.** Nineteen on the map |
+| Keen-Eyed Striker (245752) | 14 (2%) | `low` | The variant with Greater Invisibility and Scavenge; a nuisance, not a threat |
+| **Curious Yearling** | **0** | `high` | **Worth no forces and casts the Matriarch's full enrage.** Thirty-three on the map |
 
 Note the two entries where forces and danger disagree completely — **Ruthless Totemcaller**
 (3% of the count, the dungeon's highest sustained damage) and **Curious Yearling** (0% of the
 count, the dungeon's most dangerous buff). Both are `high` on that basis rather than on weight.
 The Yearling now outranks the Matriarch whose enrage it casts, which is deliberate: the
-Matriarch is a body you can kill, the Yearlings are nineteen you cannot.
+Matriarch is a body you can kill, the Yearlings are thirty-three you cannot.
 
 ## Two claims MDT does not carry — pending RwlRwlRwlRwl
 

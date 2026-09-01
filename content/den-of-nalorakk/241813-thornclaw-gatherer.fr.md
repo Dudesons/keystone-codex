@@ -15,7 +15,7 @@ spells:
 trap: "**Sol putride** reste vingt secondes à 78k par seconde. L'incantation n'est rien ; c'est rester là où elle est tombée qui tue."
 ---
 
-Vingt-trois unités à 5 forces chacune, le mob ordinaire le plus nombreux du donjon.
+Vingt et une unités à 5 forces chacune, le mob ordinaire le plus nombreux du donjon.
 
 Les chiffres disent où est le danger : **Fournitures putrides** frappe pour 39k, et le **Sol
 putride** qu'elles laissent fait 78k *par seconde pendant vingt secondes*. L'incantation est un

@@ -11,7 +11,7 @@ spells:
 trap: "**Protection grondante** dure une minute tant que le bouclier n'est pas cassé. Ignorer l'élémentaire pour tuer autre chose, c'est payer ce privilège 24k toutes les deux secondes."
 ---
 
-Dix unités à 7 forces chacune, avec une capacité qui transforme une question de priorité de
+Onze unités à 7 forces chacune, avec une capacité qui transforme une question de priorité de
 cible en une question d'arithmétique.
 
 **Protection grondante** est une absorption sur le lanceur *et* un dégât sur la durée à tout le

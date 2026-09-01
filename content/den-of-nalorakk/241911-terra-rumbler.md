@@ -22,7 +22,7 @@ spells:
 trap: "Rumbling Ward runs for a minute unless the shield is broken. Ignoring the elemental to kill something else means paying 24k every two seconds for the privilege."
 ---
 
-Ten units at 7 forces each, with one ability that turns a target-priority question into an
+Eleven units at 7 forces each, with one ability that turns a target-priority question into an
 arithmetic one.
 
 **Rumbling Ward** is an absorb on the caster *and* a party-wide damage-over-time — 24k every

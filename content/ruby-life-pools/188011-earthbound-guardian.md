@@ -23,7 +23,7 @@ spells:
 trap: "Ice Shield is not a healing cast to shrug off — it also makes its target immune to crowd control, which is what breaks the pull."
 ---
 
-Nine units at 5 forces each. It takes stuns and roots itself, so it can be handled either way.
+Six units at 5 forces each. It takes stuns and roots itself, so it can be handled either way.
 
 **Ice Shield** is the reason to bother. Five percent of the caster's health per application,
 up to five applications, is a real amount of absorb on a pack — but the clause that matters is

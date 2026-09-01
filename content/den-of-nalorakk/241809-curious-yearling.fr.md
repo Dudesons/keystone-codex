@@ -11,8 +11,8 @@ spells:
 trap: "Zéro force, et il buffe tout le pack pendant une minute. Le contourner ne le rend pas inoffensif — il faut l'apaiser ou le tuer de toute façon."
 ---
 
-Dix-neuf sur la carte, chacun ne valant **rien**, chacun portant le buff le plus dangereux du
-donjon.
+Trente-trois sur la carte, chacun ne valant **rien**, chacun portant le buff le plus
+dangereux du donjon.
 
 **Courroux de la mère** est exactement la capacité qu'incante la
 [Matriarche territoriale](#/d/den-of-nalorakk/codex/mob/241808) : +50 % de dégâts à chaque ours dans
