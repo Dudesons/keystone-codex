@@ -24,7 +24,7 @@ spells:
 trap: "Embryonic Vigor has no duration — the +30% damage lasts until something removes it. Killing the Subjugator is the only reliable answer."
 ---
 
-Three units at 7 forces each, with two abilities that both need attention.
+Two units at 7 forces each, with two abilities that both need attention.
 
 **Embryonic Vigor** is the unusual one. It heals the caster for 10% and raises its damage by
 30% *until cancelled* — the tooltip gives no duration, so this is permanent for the length of

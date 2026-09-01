@@ -42,7 +42,7 @@ spells:
 trap: "Curse of Doom is 582k in ten seconds, split among whoever is within 4 yards. Dispel it — or make sure the carrier is not standing alone when it lands."
 ---
 
-Five units at 25 forces each, and the mob whose mechanics have two correct answers each.
+Four units at 25 forces each, and the mob whose mechanics have two correct answers each.
 
 **Curse of Doom** gives the group ten seconds to decide. It is dispellable as a **curse**,
 which most groups will not have; failing that, the 582k is *split among players within 4

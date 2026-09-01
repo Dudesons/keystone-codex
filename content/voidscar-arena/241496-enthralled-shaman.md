@@ -24,7 +24,7 @@ spells:
 trap: "The totem does more damage than the shaman. Kill the object, not the caster."
 ---
 
-Nine units at 7 forces each, and the same **Magma Totem** that appears in Den of Nal'orakk —
+Ten units at 7 forces each, and the same **Magma Totem** that appears in Den of Nal'orakk —
 around 120k a second to the entire party, regardless of range or position, for as long as the
 [totem](#/d/voidscar-arena/codex/mob/248666) stands.
 

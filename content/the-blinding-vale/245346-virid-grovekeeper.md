@@ -30,7 +30,7 @@ spells:
 trap: "Every tank buster leaves a slowing pool where the tank stood. Walk it forward each time, or the tank ends up fighting inside a stack of them."
 ---
 
-Six units at 20 forces each. Its abilities compound rather than spike, which is what catches
+Five units at 20 forces each. Its abilities compound rather than spike, which is what catches
 groups that read the tooltips one at a time.
 
 **Earthrupture Strike** is a 533k tank hit that also paves the ground with **Ruptured Earth** —

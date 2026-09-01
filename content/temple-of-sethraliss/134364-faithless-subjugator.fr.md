@@ -13,7 +13,7 @@ spells:
 trap: "**Vigueur embryonnaire** n'a pas de durée — les +30 % de dégâts tiennent jusqu'à ce que quelque chose les retire. Tuer le Subjugateur est la seule réponse fiable."
 ---
 
-Trois unités à 7 forces chacune, avec deux capacités qui demandent toutes les deux de
+Deux unités à 7 forces chacune, avec deux capacités qui demandent toutes les deux de
 l'attention.
 
 **Vigueur embryonnaire** est la curieuse. Elle soigne l'incantateur de 10 % et augmente ses

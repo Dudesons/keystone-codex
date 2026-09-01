@@ -13,7 +13,7 @@ spells:
 trap: "Le totem fait plus de dégâts que le chaman. Tuer l'objet, pas l'incantateur."
 ---
 
-Neuf unités à 7 forces chacune, et le même **Totem de magma** que dans Den of Nal'orakk — environ
+Dix unités à 7 forces chacune, et le même **Totem de magma** que dans Den of Nal'orakk — environ
 120k par seconde à tout le groupe, sans égard à la distance ni au placement, tant que le
 [totem](#/d/voidscar-arena/codex/mob/248666) est debout.
 

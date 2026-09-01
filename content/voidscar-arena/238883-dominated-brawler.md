@@ -23,7 +23,7 @@ spells:
 trap: "One enrage to soothe and one cast to kick. Neither is optional, and they compete for different people's globals — sort that out before the pull."
 ---
 
-Eight units at 7 forces each, asking two different players for two different answers.
+Seven units at 7 forces each, asking two different players for two different answers.
 
 **Bloodsurge** is a straightforward enrage at +20% damage, and Voidscar Arena hands out
 enrages more freely than any other dungeon in the pool.

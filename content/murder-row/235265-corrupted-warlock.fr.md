@@ -15,7 +15,7 @@ spells:
 trap: "**Malédiction funeste** fait 582k en dix secondes, répartis entre tous ceux qui sont à moins de 4 mètres. La dissiper — ou s'assurer que le porteur n'est pas seul quand elle tombe."
 ---
 
-Cinq unités à 25 forces chacune, et le mob dont chaque mécanique a deux réponses correctes.
+Quatre unités à 25 forces chacune, et le mob dont chaque mécanique a deux réponses correctes.
 
 **Malédiction funeste** donne dix secondes au groupe pour décider. Elle est dissipable comme
 **malédiction**, ce que la plupart des groupes n'auront pas ; à défaut, les 582k sont *répartis

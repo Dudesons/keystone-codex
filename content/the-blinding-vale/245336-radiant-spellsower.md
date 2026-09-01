@@ -35,12 +35,12 @@ spells:
 trap: "Frantic Blooming wakes every dormant Lasher nearby. Kick that one before the damage casts — extra bodies cost more than 175k does."
 ---
 
-Fourteen units at 7 forces each, and the mob whose interrupts need ranking. It has **three
+Fifteen units at 7 forces each, and the mob whose interrupts need ranking. It has **three
 kickable casts**, and spending the interrupt on the wrong one is the mistake.
 
 **Frantic Blooming** comes first, and it is not a damage cast at all: eight seconds of channel
 that wakes every dormant [Lasher](#/d/the-blinding-vale/codex/mob/245410) within 20 yards. The Vale
-is full of them — 115 units — so a channel that finishes turns a measured pull into an
+is full of them — 99 units — so a channel that finishes turns a measured pull into an
 unmeasured one.
 
 **Light Bolt Volley** is 175k to the whole group and comes second. **Light Bolt**, at 116k on
