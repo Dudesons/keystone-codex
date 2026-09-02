@@ -313,6 +313,39 @@ describe('Spells', () => {
     expect(at(1_306_852)).toBeLessThan(at(1_307_571))
   })
 
+  /**
+   * A spell carrying a note but deliberately no tag: the case where every badge in the
+   * vocabulary would misdescribe the ability, so the card explains it and shows none. Found in
+   * the pool rather than named, so this cannot quietly start testing nothing — and filtered to
+   * a spell MDT does not mark interruptible, since that alone puts a KICK pill on an untagged
+   * row.
+   */
+  const untagged = pool.flatMap(({ slug, enemy }) =>
+    (getMobContent(slug, enemy.id, DEFAULT_LOCALE)?.spells ?? [])
+      .filter((s) => s.note && !s.tag)
+      .filter((s) => !enemy.spells.find((e) => e.id === s.id)?.interruptible)
+      .map((spell) => ({ slug, enemy, spell })),
+  )[0]
+
+  it('shows an untagged note, with no badge claiming an answer it does not have', () => {
+    expect(untagged, 'no card annotates a spell without a tag').toBeDefined()
+    const { container } = renderEn(<MobCard slug={untagged.slug} enemy={untagged.enemy} />)
+    const row = container.querySelector(`[data-spell="${untagged.spell.id}"]`)
+    expect(row).not.toBeNull()
+
+    // Derived from the note itself: pinning a sentence here would punish the next rewrite.
+    // Read back through the DOM rather than stripping tags by regex — `inlineMarkdown` escapes
+    // entities, and the card decodes them again on the way in.
+    const rendered = document.createElement('p')
+    rendered.innerHTML = inlineMarkdown(untagged.spell.note!)
+    expect(row!.textContent).toContain(rendered.textContent)
+
+    const labels = Object.entries(en)
+      .filter(([key]) => key.startsWith('tag.'))
+      .map(([, label]) => label)
+    expect(labels.filter((label) => row!.textContent!.includes(label))).toEqual([])
+  })
+
   it('links every spell to Wowhead', () => {
     const { container } = renderEn(<MobCard slug={SLUG} enemy={chieftain} />)
     const link = container.querySelector<HTMLAnchorElement>('a[href*="wowhead.com/spell="]')!
