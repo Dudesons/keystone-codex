@@ -28,7 +28,7 @@ spells:
 trap: "Serpent's Stormcall drops a pool where the serpent is standing when it ends. Drag it off the group before the eight seconds are up."
 ---
 
-Six units at 5 forces each, and a buff whose real cost is where it expires.
+Seven units at 5 forces each, and a buff whose real cost is where it expires.
 
 **Serpent's Stormcall** adds Nature damage to its melee for eight seconds, which is the
 forgettable part. The clause that matters is what happens at the end: a pool of

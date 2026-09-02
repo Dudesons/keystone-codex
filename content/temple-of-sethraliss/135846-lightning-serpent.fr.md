@@ -13,7 +13,7 @@ spells:
 trap: "**Appel de l’orage du serpent** laisse une flaque là où le serpent se tient à la fin. L'éloigner du groupe avant la fin des huit secondes."
 ---
 
-Six unités à 5 forces chacune, et un buff dont le vrai coût est l'endroit où il expire.
+Sept unités à 5 forces chacune, et un buff dont le vrai coût est l'endroit où il expire.
 
 **Appel de l’orage du serpent** ajoute des dégâts de Nature à sa mêlée pendant huit secondes, ce
 qui est la partie oubliable. La clause qui compte est ce qui se passe à la fin : une flaque de

@@ -9,7 +9,7 @@ spells:
     note: "Fonce sur un joueur pour 29k. Sa seule capacité, et le plus petit chiffre du donjon."
 ---
 
-Seize unités à une force chacune, avec une charge à 29k et rien d'autre. Method liste la capacité
+Vingt unités à une force chacune, avec une charge à 29k et rien d'autre. Method liste la capacité
 sans aucune catégorie, ce qui en est un résumé honnête.
 
 Elles existent pour le compte et pour le cleave.

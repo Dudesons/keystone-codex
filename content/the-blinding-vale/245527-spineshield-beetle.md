@@ -31,7 +31,7 @@ spells:
 trap: "One force, a 500k shield, and 291k when it dies. Dispel the shield or leave it alone — killing it the hard way costs far more than it is worth."
 ---
 
-Twenty-two units at **one force each**, carrying a 500k absorb and a 291k death explosion.
+Thirty-nine units at **one force each**, carrying a 500k absorb and a 291k death explosion.
 The arithmetic is absurd, and that is the entry.
 
 **Spiny Shield** carries a magic dispel type, so removing it is a global. Damaging through it

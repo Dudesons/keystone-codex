@@ -28,7 +28,7 @@ spells:
 trap: "Fel Rage makes it take 60% less damage and immune to CC for a minute. Kick it, or soothe it — a minute is longer than the pull was meant to last."
 ---
 
-Thirteen units at 5 forces each, and a cast that is worth far more than the mob is.
+Eleven units at 5 forces each, and a cast that is worth far more than the mob is.
 
 **Fel Rage** is a defensive dressed as an enrage: 60% damage reduction *and* crowd-control
 immunity, for **one minute**. Against a 5-force body that is absurd, and it is why a pull with

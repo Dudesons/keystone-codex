@@ -17,7 +17,7 @@ spells:
 trap:
 ---
 
-Sixteen units at one force each, with a 29k dash and nothing else. Method lists the ability
+Twenty units at one force each, with a 29k dash and nothing else. Method lists the ability
 with no category at all, which is a fair summary.
 
 They exist for the count and for the cleave.

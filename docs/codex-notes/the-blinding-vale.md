@@ -20,7 +20,7 @@ Weights are `count × placements`, i.e. the share of the 686 forces a group need
 | Underbrush Stalker | 96 (14%) | `medium` | Bleed on a target of its choosing, not the tank |
 | Luminous Thornmaw | 88 (13%) | `high` | Grievous Gash only ends at **full** health, and stacks |
 | Leafy Grovecrawler | 70 (10%) | `medium` | Easy cast; the 291k death explosion is the real cost |
-| Thorny Saptor | 65 (10%) | `medium` | Leaps to a player then cones from there at 145k a swing |
+| Thorny Saptor | 65 (9%) | `medium` | Leaps to a player then cones from there at 145k a swing |
 | Potatoad Matriarch | 60 (9%) | `medium` | Was `high`; the add spawn sits behind a 10-second window a group can simply beat |
 | Spineshield Beetle | 39 (6%) | `low` | One force, but a 500k shield and 291k on death — arguably `medium` on cost alone |
 

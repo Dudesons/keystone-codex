@@ -38,7 +38,7 @@ spells:
 trap: "Rip and Slice has two forms — a 679k hit on one target, and a six-second cleave at wherever a player is standing. The second one is the group's problem, not the tank's."
 ---
 
-Eight units at 25 forces each, 27% of the dungeon, and the biggest single hit in the trash.
+Seven units at 25 forces each, 24% of the dungeon, and the biggest single hit in the trash.
 
 **Rip and Slice** is worth reading as two abilities, because MDT stores it as two. One is a
 679k blow on the current target. The other is a **charge to a player's location** followed by

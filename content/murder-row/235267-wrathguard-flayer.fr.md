@@ -13,7 +13,7 @@ spells:
 trap: "**Gangrerage** lui fait subir 60 % de dégâts en moins et le rend immunisé au contrôle pendant une minute. Le kicker, ou l'apaiser — une minute, c'est plus long que ce que le pull était censé durer."
 ---
 
-Treize unités à 5 forces chacune, et une incantation qui vaut bien plus que le mob.
+Onze unités à 5 forces chacune, et une incantation qui vaut bien plus que le mob.
 
 **Gangrerage** est un sort défensif déguisé en enrage : 60 % de réduction de dégâts *et*
 immunité au contrôle, pendant **une minute**. Sur un corps à 5 forces, c'est absurde, et c'est

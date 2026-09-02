@@ -15,7 +15,7 @@ spells:
 trap: "**Déchirure et taillade** a deux formes — un coup à 679k sur une cible, et un cleave de six secondes là où se tient un joueur. La seconde est le problème du groupe, pas celui du tank."
 ---
 
-Huit unités à 25 forces chacune, 27 % du donjon, et le plus gros coup unique du trash.
+Sept unités à 25 forces chacune, 24 % du donjon, et le plus gros coup unique du trash.
 
 **Déchirure et taillade** mérite d'être lue comme deux capacités, parce que MDT la stocke comme
 deux. L'une est un coup de 679k sur la cible en cours. L'autre est une **charge à l'endroit d'un

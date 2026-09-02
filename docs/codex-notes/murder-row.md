@@ -1,28 +1,28 @@
 # Murder Row — 41/41 written
 
-34 minute timer (already in `TIMERS`) · 690 forces required · 5 boss entries, 20 trash,
+34 minute timer (already in `TIMERS`) · 655 forces required · 5 boss entries, 20 trash,
 16 encounter and role-play units.
 
 ## Verdicts to confirm
 
 | Mob | Weight | Proposed | Why |
 | --- | --- | --- | --- |
-| Defiled Golem | **245** (36%) | `high` | A third of the dungeon; slam seeds several 194k detonations |
-| Shivan Punisher | 175 (25%) | `high` | **Punishing Might rewards it for missing** — avoidance makes it stronger |
-| Corrupted Warlock | 125 (18%) | `high` | 582k Curse of Doom; two self-heals, neither interruptible |
-| Unleashed Imp | 116 (17%) | `medium` | 58 bodies at 2 forces; unanswerable by interrupts, just kill them |
-| Fel Invoker | 77 (11%) | `high` | **Health Funnel: 150% of a health bar over 30 sec.** The kick of the dungeon |
+| Defiled Golem | **245** (37%) | `high` | A third of the dungeon; slam seeds several 194k detonations |
+| Shivan Punisher | 175 (27%) | `high` | **Punishing Might rewards it for missing** — avoidance makes it stronger |
+| Unleashed Imp | 116 (18%) | `medium` | 58 bodies at 2 forces; unanswerable by interrupts, just kill them |
+| Corrupted Warlock | 100 (15%) | `high` | 582k Curse of Doom; two self-heals, neither interruptible |
+| Fel Invoker | 77 (12%) | `high` | **Health Funnel: 150% of a health bar over 30 sec.** The kick of the dungeon |
 | Trained Felhunter | 75 (11%) | `medium` | Melee only; Imprison is the handler's leash, not a player CC |
-| Wrathguard Flayer | 65 (9%) | `high` | -60% damage taken and CC immunity for a minute, on a 5-force body |
-| Felonious Mage | 63 (9%) | `medium` | One channel worth kicking; no damage figure in the data |
-| Bribed Guard | 50 (7%) | `high` | +20% Physical taken for 20 sec, stacking with everything else |
+| Felonious Mage | 63 (10%) | `medium` | One channel worth kicking; no damage figure in the data |
+| Wrathguard Flayer | 55 (8%) | `high` | -60% damage taken and CC immunity for a minute, on a 5-force body |
+| Bribed Guard | 50 (8%) | `high` | +20% Physical taken for 20 sec, stacking with everything else |
 | Row Hooligan | 36 (5%) | `medium` | The bleed is four times the hit |
 | Bribed Captain | 35 (5%) | `high` | **Deep Corruption: +25% damage, -25% AoE taken, no dispel type** |
-| Felmaster Lucsei | 30 (4%) | `high` | Unlimited-range frontal |
+| Felmaster Lucsei | 30 (5%) | `high` | Unlimited-range frontal |
 | Seductive Sayaad ×2 | 24 / 6 | `high` | 6-second disorient, zero damage — loses the interrupt race it should win |
+| Demon Fly | 20 (3%) | `low` | A 29k dash and nothing else |
 | Felwyrm | 18 (3%) | `medium` | One force, 194k on death, eighteen of them |
 | Street Sneak | 18 (3%) | `high` | Stealth opener; takes **maximum** health per stack |
-| Demon Fly | 16 (2%) | `low` | A 29k dash and nothing else |
 | Keen Taskmaster | 14 (2%) | `high` | **+200% attack speed** to the whole Worker pack |
 | Massive Felwyrm | 12 (2%) | `high` | 291k death explosion, and it spawns more explosions |
 | Warehouse Worker | 12 (2%) | `medium` | 3-second stun on a 2-force body |

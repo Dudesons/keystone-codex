@@ -13,7 +13,7 @@ spells:
 trap: "Une force, un bouclier de 500k, et 291k à sa mort. Dissiper le bouclier ou le laisser tranquille — le tuer à la dure coûte bien plus qu'il ne rapporte."
 ---
 
-Vingt-deux unités à **une force chacune**, avec une absorption de 500k et une explosion de mort
+Trente-neuf unités à **une force chacune**, avec une absorption de 500k et une explosion de mort
 de 291k. L'arithmétique est absurde, et c'est toute la fiche.
 
 **Bouclier épineux** porte un type de dissipation magie : le retirer coûte un global. Le percer

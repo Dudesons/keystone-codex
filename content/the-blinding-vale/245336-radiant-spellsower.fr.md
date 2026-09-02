@@ -17,13 +17,13 @@ spells:
 trap: "**Floraison effrénée** réveille tous les Flagellants dormants autour. Kicker celui-là avant les sorts de dégâts — des corps en plus coûtent plus cher que 175k."
 ---
 
-Quatorze unités à 7 forces chacune, et le mob dont les interruptions demandent un ordre. Il a
+Quinze unités à 7 forces chacune, et le mob dont les interruptions demandent un ordre. Il a
 **trois incantations kickables**, et dépenser l'interruption sur la mauvaise est l'erreur.
 
 **Floraison effrénée** vient en premier, et ce n'est pas du tout un sort de dégâts : huit
 secondes de canalisation qui réveillent tous les
 [Flagellants](#/d/the-blinding-vale/codex/mob/245410) dormants dans les 20 mètres. The Blinding
-Vale en est plein — 115 unités — donc une canalisation qui aboutit transforme un pull calibré en
+Vale en est plein — 99 unités — donc une canalisation qui aboutit transforme un pull calibré en
 pull non calibré.
 
 **Salve de traits de Lumière** fait 175k à tout le groupe et vient en deuxième. **Trait de

@@ -13,7 +13,7 @@ spells:
 trap: "Un enrage à apaiser et un sort à kicker. Aucun des deux n'est optionnel, et ils mobilisent les globals de joueurs différents — à régler avant le pull."
 ---
 
-Huit unités à 7 forces chacune, qui demandent deux réponses différentes à deux joueurs
+Sept unités à 7 forces chacune, qui demandent deux réponses différentes à deux joueurs
 différents.
 
 **Afflux sanguin** est un enrage sans détour à +20 % de dégâts, et Voidscar Arena distribue les

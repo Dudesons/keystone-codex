@@ -12,16 +12,16 @@ up — this is the dungeon where his scale became legible (see below).
 | --- | --- | --- | --- |
 | Watchful Harrower | **260** (35%) | `medium` ⇩ | Was `high` on 65 forces a body and an 873k shared hit. Stacking for it is a known answer |
 | Brutal Overseer | 200 (27%) | `high` | 30-second ramp, +10% per slam, ended only by breaking the shield |
-| Agitated Voidscythe | 200 (27%) | `high` | 679k single hit — the largest in the trash |
+| Agitated Voidscythe | 175 (24%) | `high` | 679k single hit — the largest in the trash |
 | Kilivore Screamer | 105 (14%) | `high` | 6-second group fear, fifteen units of it |
 | Savage Shredclaw | 95 (13%) | `medium` | +20% damage taken; an amplifier, not a threat |
 | Devouring Brutalizer | 90 (12%) | `high` | ~2.7M on the tank per Brutalize, two self-heals, unskippable |
 | Voidtouched Magi | 75 (10%) | `low` ⇩ | Was `high`, then `medium`; two 4-second casts, one kicked and one dodged, and nothing else |
-| Enthralled Shaman | 63 (9%) | `medium` ⇩ | Was `high` on Magma Totem's ~120k/sec. The totem is a body you kill |
+| Enthralled Shaman | 70 (9%) | `medium` ⇩ | Was `high` on Magma Totem's ~120k/sec. The totem is a body you kill |
 | Scavenging Siphoid | 60 (8%) | `low` | One force each; **but see the open question** |
 | Lost Sethrak | 56 (8%) | `medium` | 20-second pools that overlap |
-| Dominated Brawler | 56 (8%) | `medium` | An enrage and a kick, neither optional |
 | Feral Saberon | 52 (7%) | `medium` | The shared enrage's most common carrier |
+| Dominated Brawler | 49 (7%) | `medium` | An enrage and a kick, neither optional |
 | Voidminder | 42 (6%) | `low` ⇩ | Was `high` on "30% of a health bar healed". Mending Void is **single-target**, 3% per tick, and kickable — see the healer comparison below |
 | Aegyra the Unyielding | 40 (5%) | `high` | Champion's Spear chains the group into Earthsplitter |
 | Raj'kess the Spellstorm | 40 (5%) | `low` ⇩ | Was `high` on Method's Tough marker; entirely positional, and every one of its tooltips is unscaled |
