@@ -17,7 +17,7 @@ knows.
 | Orb Watcher | 50 (7%) | `high` | 582k buster that also sprays 291k shrapnel; CC-immune |
 | Shrouded Fang | 49 (7%) | `high` | Stealth opener with a stun |
 | Poisonous Viper | 42 (6%) | `medium` | A single 10-second poison |
-| Barbed Krolusk | 40 (6%) | `medium` | One charge, one bleed |
+| Barbed Krolusk | 35 (5%) | `medium` | One charge, one bleed |
 | Lightning Serpent | 35 (5%) | `medium` | Leaves a pool where the buff expires |
 | Static Anomaly | 30 (4%) | `medium` | Teleports to players; cannot be held |
 | Imbued Stormcaller | 28 (4%) | `high` | Three abilities wanting three globals; +50% damage buff |
