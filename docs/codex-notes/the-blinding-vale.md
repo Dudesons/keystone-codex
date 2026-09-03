@@ -31,8 +31,18 @@ forces; MDT 6.2.10 raised the dungeon to 686 and pushed the Lightgorged Lasher f
 without changing a thing about the mob. A share is a ratio, and this table's denominator moves.
 
 **Bosses** (Meittik, Kezkitt, Lekshi, Lightwarden Ruia, Ziekket, Ikuzz) carry no `threat`,
-per the Altar of Fangs convention. Note MDT prices each boss at **30 forces** here, unlike
-Altar and Ruby Life Pools where bosses are worth 0.
+per the Altar of Fangs convention. Each is worth **0 forces**, as in Altar of Fangs and Ruby
+Life Pools: boss kills contribute nothing to the count, and the 686 above is trash alone.
+
+That was not true when this note was written. MDT 6.2.2 priced all six at 30 forces; **6.2.3
+dropped every one of them to 0**, which is visible in `TheBlindingVale-6.2.2.lua` against
+`TheBlindingVale-6.2.3.lua` under `scripts/__fixtures__/` and was reported at the time as six
+`count changed 30 -> 0` findings in
+[2026-08-18-6.2.2-to-6.2.3.md](../mdt-updates/2026-08-18-6.2.2-to-6.2.3.md). The boss cards
+took the new figure in that same commit; this note did not, and went on claiming 30 through
+the four re-extractions after it — 6.2.8, 6.2.9, 6.2.10 and 6.2.12 — none of which touched the
+figure, and none of which re-read the sentence. A finding applied to the cards is not applied
+to the notes.
 
 Least confident calls: **Spineshield Beetle** (`low` by forces, `medium` by what it costs to
 kill) and **Lightfeather Petalwing** (a cast that does zero damage but takes the group out of
@@ -51,16 +61,12 @@ belongs in the `_dungeon.md` route plan once one exists.
 
 ## Open questions
 
-1. **Bosses worth 30 forces.** MDT gives all six bosses `count: 30` here, where Altar of Fangs
-   and Ruby Life Pools give theirs 0. If that is right, boss kills contribute to the count and
-   the route maths differs from the other dungeons. Worth a glance in game.
-
-2. **The Trinity as one entry or three.** Meittik, Kezkitt and Lekshi share all damage taken
+1. **The Trinity as one entry or three.** Meittik, Kezkitt and Lekshi share all damage taken
    (`Thicket's Trinity`) and Method lists them as a single boss, "Lightblossom Trinity". They
    are three cards here because MDT holds three NPCs. Each card cross-links the other two, but
    if the codex ever wants a combined view this is the case that asks for it.
 
-3. **`role: add` and the grey ring**, again — seven entries here.
+2. **`role: add` and the grey ring**, again — seven entries here.
 
 ## Where the sources disagree
 
