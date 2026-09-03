@@ -13,7 +13,7 @@ spells:
 trap: "**Coup tectonique** cumule +25 % de dégâts subis sur le tank. Pull avec n'importe quoi qui frappe fort, c'est ce multiplicateur qui tue, pas ce mob."
 ---
 
-Huit unités à 5 forces chacune. Ses propres dégâts sont quelconques ; ce qu'il fait, c'est
+Neuf unités à 5 forces chacune. Ses propres dégâts sont quelconques ; ce qu'il fait, c'est
 rendre plus douloureux tout ce qui est pull avec lui.
 
 **Coup tectonique** est instantané, il n'y a donc rien à interrompre. Il prend toute la liste de
