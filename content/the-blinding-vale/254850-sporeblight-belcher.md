@@ -32,7 +32,7 @@ spells:
     # Instant · 100 yd range
     tag: dodge
     prio: 1
-    note: "291k to everyone nearby when it dies, and it leaves Blight Resin on the floor. Eleven of these bodies is eleven explosions."
+    note: "291k to everyone nearby when it dies, and it leaves Blight Resin on the floor. Ten of these bodies is ten explosions."
   - id: 1242180
     name: "Lightwarden's Blight"   # auto
     tag: dodge
@@ -46,7 +46,7 @@ tips:
     packs: [44]
 ---
 
-**The heaviest mob in the dungeon by a distance**: eleven units at 25 forces each, roughly 40%
+**The heaviest mob in the dungeon by a distance**: ten units at 25 forces each, roughly 36%
 of the count a group needs to clear. No route avoids it.
 
 Two of its abilities are the usual trade — **Belch Spores** is entirely avoidable ground

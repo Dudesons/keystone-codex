@@ -10,7 +10,7 @@ spells:
   - id: 1263628
     note: "87k à tout le monde dans les 60 mètres toutes les 2 s pendant 6 s. La distance n'est pas une échappatoire — celle-là se soigne, elle ne s'esquive pas."
   - id: 1242200
-    note: "291k à tous les proches à sa mort, et ça laisse du Blight Resin au sol. Onze corps comme celui-là, c'est onze explosions."
+    note: "291k à tous les proches à sa mort, et ça laisse du Blight Resin au sol. Dix corps comme celui-là, c'est dix explosions."
 
 trap: "Vingt-cinq forces par corps et 291k à chaque mort. Ne pas en laisser plusieurs mourir sur le groupe en même temps — étaler les kills ou les disperser."
 
@@ -20,7 +20,7 @@ tips:
     packs: [44]
 ---
 
-**Le mob le plus lourd du donjon, et de loin** : onze unités à 25 forces chacune, environ 40 % du
+**Le mob le plus lourd du donjon, et de loin** : dix unités à 25 forces chacune, environ 36 % du
 compte qu'un groupe doit atteindre. Aucune route ne l'évite.
 
 Deux de ses capacités sont l'échange habituel — **Éructation sporulée** est un dégât au sol
