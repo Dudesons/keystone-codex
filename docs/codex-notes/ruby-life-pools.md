@@ -16,10 +16,10 @@ The **Threat** column is now what the card carries.
 | Tempest Channeler | 50 (9%) | `high` | Three abilities needing three different answers, only one kickable |
 | Thunderhead | 48 (9%) | `high` | Largest one-body share, tank buster with knockback, dispel that detonates |
 | Storm Warrior | 45 (8%) | `low` | Confirmed `low` against my own suggestion to raise it: one instant ability at 53k AoE and a full CC list, whatever Method's tracker implies. See the disagreement below |
-| Flashfrost Chillweaver | 42 (8%) | `medium` | Was proposed `high`; overruled — Ice Shield is still the dungeon's kick priority, but a kick priority is not a threat level |
-| Deepstone Earthshaper | 40 (7%) | `medium` | +25% damage taken on the tank, stacking — dangerous by multiplication, not on its own |
+| Deepstone Earthshaper | 45 (8%) | `medium` | +25% damage taken on the tank, stacking — dangerous by multiplication, not on its own |
 | Ruinous Stormbringer | 40 (7%) | `high` | 10.7M health, knockback at 100 energy, only Taunt works |
 | Flamegullet | 40 (7%) | `high` | Soft enrage below 50%, growing 15% per cast to ten stacks |
+| Flashfrost Chillweaver | 35 (6%) | `medium` | Was proposed `high`; overruled — Ice Shield is still the dungeon's kick priority, but a kick priority is not a threat level |
 | Defier Draghar | 30 (5%) | `high` | Tank buster and party damage in one cast, plus a line charge |
 | High Channeler Ryvati | 30 (5%) | `high` | Party-wide 4-second stun if the shield is allowed to expire |
 | Earthbound Guardian | 30 (5%) | `medium` | Kickable shield, but takes full CC and its damage is steady |

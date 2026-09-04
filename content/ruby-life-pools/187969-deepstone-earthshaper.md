@@ -23,7 +23,7 @@ spells:
 trap: "Tectonic Strike stacks +25% damage taken on the tank. Pulled with anything that hits hard, that multiplier is what kills, not this mob."
 ---
 
-Eight units at 5 forces each. Its own damage is unremarkable; what it does is make everything
+Nine units at 5 forces each. Its own damage is unremarkable; what it does is make everything
 pulled with it hurt more.
 
 **Tectonic Strike** is an instant, so there is nothing to interrupt. It takes the full CC

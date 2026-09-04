@@ -10,7 +10,7 @@ Weights are `count × placements`, i.e. the share of the 686 forces a group need
 
 | Mob | Weight | Threat | Why |
 | --- | --- | --- | --- |
-| Sporeblight Belcher | **275** (40%) | `high` | Unavoidable to route around, 291k spore impacts, 291k on death, eleven bodies |
+| Sporeblight Belcher | **250** (36%) | `high` | Unavoidable to route around, 291k spore impacts, 291k on death, ten bodies |
 | Lightgorged Lasher | 196 (29%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
 | Overgrown Hydra | 175 (26%) | `medium` | Was `high` on the 339k Bullet Seeds; a frontal you sidestep is a clear answer |
 | Lightfeather Petalwing | 112 (16%) | `medium` | Deals no damage at all — costs a 3-second group disorient |

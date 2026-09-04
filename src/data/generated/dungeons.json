@@ -40,7 +40,7 @@
     "totalCount": 686,
     "bosses": 6,
     "mobCount": 26,
-    "packCount": 83,
+    "packCount": 82,
     "textureFolder": "TheBlindingVale"
   },
   {
@@ -62,7 +62,7 @@
     "totalCount": 608,
     "bosses": 7,
     "mobCount": 39,
-    "packCount": 25,
+    "packCount": 24,
     "textureFolder": "KingsRest"
   },
   {
@@ -84,7 +84,7 @@
     "totalCount": 551,
     "bosses": 8,
     "mobCount": 24,
-    "packCount": 34,
+    "packCount": 35,
     "textureFolder": "RubyLifePools"
   }
 ]

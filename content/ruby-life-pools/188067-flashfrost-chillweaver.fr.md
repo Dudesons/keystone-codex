@@ -15,7 +15,7 @@ spells:
 trap: "Deux sorts kickables, et ils ne se valent pas : **Bouclier de glace** d'abord, **Éclair de givre** seulement quand rien d'autre n'incante."
 ---
 
-Six unités à 7 forces chacune. Toute son importance tient à une décision : **sur lequel de ses
+Cinq unités à 7 forces chacune. Toute son importance tient à une décision : **sur lequel de ses
 deux sorts kickables dépenser l'interruption.**
 
 **Bouclier de glace** gagne à chaque fois. Cinq applications à 5 % de la vie maximale de

@@ -18,7 +18,7 @@ spells:
 trap:
 ---
 
-Eight units at 5 forces each, with one charge and nothing else.
+Seven units at 5 forces each, with one charge and nothing else.
 
 **Serrated Charge** is the dungeon's shared bleed — the
 [Sand-Sworn Rider](#/d/temple-of-sethraliss/codex/mob/134629) and the

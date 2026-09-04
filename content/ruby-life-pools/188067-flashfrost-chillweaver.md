@@ -38,7 +38,7 @@ spells:
 trap: "Two kickable casts, and they are not equal: Ice Shield first, Frostbolt only when nothing else is casting."
 ---
 
-Six units at 7 forces each. Its whole importance sits in one decision: **which of its two
+Five units at 7 forces each. Its whole importance sits in one decision: **which of its two
 kickable casts you spend the interrupt on.**
 
 **Ice Shield** wins every time. Five applications at 5% of the caster's maximum health is a
