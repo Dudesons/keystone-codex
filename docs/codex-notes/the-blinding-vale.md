@@ -14,9 +14,9 @@ Weights are `count × placements`, i.e. the share of the 686 forces a group need
 | Lightgorged Lasher | 196 (29%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
 | Overgrown Hydra | 175 (26%) | `medium` | Was `high` on the 339k Bullet Seeds; a frontal you sidestep is a clear answer |
 | Lightfeather Petalwing | 112 (16%) | `medium` | Deals no damage at all — costs a 3-second group disorient |
-| Radiant Spellsower | 105 (15%) | `medium` | Was `high` for the lasher-waking channel; overruled by RwlRwlRwlRwl — three kickable casts is a choice, not a scramble |
 | Virid Grovekeeper | 100 (15%) | `high` | 533k tank buster that paves the ground with slowing pools |
 | Lasher | 99 (14%) | `low` | One force each, 1 damage a tick; only the stacking slow is real |
+| Radiant Spellsower | 98 (14%) | `medium` | Was `high` for the lasher-waking channel; overruled by RwlRwlRwlRwl — three kickable casts is a choice, not a scramble |
 | Underbrush Stalker | 96 (14%) | `medium` | Bleed on a target of its choosing, not the tank |
 | Luminous Thornmaw | 88 (13%) | `high` | Grievous Gash only ends at **full** health, and stacks |
 | Leafy Grovecrawler | 70 (10%) | `medium` | Easy cast; the 291k death explosion is the real cost |

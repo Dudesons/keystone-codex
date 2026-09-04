@@ -35,7 +35,7 @@ spells:
 trap: "Frantic Blooming wakes every dormant Lasher nearby. Kick that one before the damage casts — extra bodies cost more than 175k does."
 ---
 
-Fifteen units at 7 forces each, and the mob whose interrupts need ranking. It has **three
+Fourteen units at 7 forces each, and the mob whose interrupts need ranking. It has **three
 kickable casts**, and spending the interrupt on the wrong one is the mistake.
 
 **Frantic Blooming** comes first, and it is not a damage cast at all: eight seconds of channel

@@ -17,7 +17,7 @@ spells:
 trap: "**Floraison effrénée** réveille tous les Flagellants dormants autour. Kicker celui-là avant les sorts de dégâts — des corps en plus coûtent plus cher que 175k."
 ---
 
-Quinze unités à 7 forces chacune, et le mob dont les interruptions demandent un ordre. Il a
+Quatorze unités à 7 forces chacune, et le mob dont les interruptions demandent un ordre. Il a
 **trois incantations kickables**, et dépenser l'interruption sur la mauvaise est l'erreur.
 
 **Floraison effrénée** vient en premier, et ce n'est pas du tout un sort de dégâts : huit
