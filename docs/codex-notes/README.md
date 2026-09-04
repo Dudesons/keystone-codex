@@ -25,8 +25,10 @@ these are the scaffolding around writing them.
   A spell's Wowhead description is deliberately **not** rendered as markdown: it is their data,
   not our writing.
 - **Bosses carry no `threat`.** The ring is gold regardless, so the field would only add a
-  badge. Exception worth noting: The Blinding Vale prices its bosses at 30 forces each, where
-  every other dungeon gives them 0.
+  badge. A real boss is worth 0 forces in every dungeon, so a boss kill never moves the count.
+  The Blinding Vale was the one exception, at 30 forces each, until MDT 6.2.3 dropped its six
+  to 0. Mind that MDT's `isBoss` flag is over-set in places — the entries a note demotes to
+  trash, such as four of Ruby Life Pools' eight, do carry forces.
 - **Never write a spell ID that is not in `src/data/generated/<slug>.json` for that exact
   mob.** Five invented IDs made it into Altar of Fangs before this was caught. When Method
   names an ability MDT does not carry, say so in the prose and leave the spell list alone.
