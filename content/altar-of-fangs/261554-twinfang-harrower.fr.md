@@ -20,7 +20,7 @@ spells:
 trap: "**Bifrappe** est un vrai tank buster sur un mob qui a l'air d'être du trash. À traiter comme un miniboss : il faut un cooldown au tank, pas un haussement d'épaules."
 ---
 
-Vingt-cinq forces par unité pour quatre unités — il est tarifé comme un miniboss et il frappe
+Vingt-cinq forces par unité pour six unités — il est tarifé comme un miniboss et il frappe
 comme un miniboss, d'où son classement.
 
 **Tirs paralysants** durent vingt secondes et retire 10 % de vitesse de déplacement à chaque

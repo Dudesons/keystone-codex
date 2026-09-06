@@ -47,7 +47,7 @@ spells:
 trap: "Duostrike is a genuine tank buster on a mob that reads as trash. Treat it as a miniboss: the tank needs a cooldown, not a shrug."
 ---
 
-Twenty-five forces per unit for four units — it is priced like a miniboss and it hits like
+Twenty-five forces per unit for six units — it is priced like a miniboss and it hits like
 one, which is why it is filed as one rather than as trash.
 
 **Paralyzing Shots** runs for twenty seconds and takes 10% movement speed with every tick, so
