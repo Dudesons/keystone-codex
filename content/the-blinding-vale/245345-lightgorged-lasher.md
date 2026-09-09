@@ -23,7 +23,7 @@ spells:
 trap: "One Lightbloom Pollination buffs the entire pack for a minute. If it goes through, the pull is twice the length it should have been — kick it or strip the shield."
 ---
 
-Twenty-eight units at 7 forces each, and a single ability that matters more than anything else
+Twenty-nine units at 7 forces each, and a single ability that matters more than anything else
 in the Vale's trash.
 
 **Lightbloom Pollination** does four things at once: absorbs 600k on the caster, makes it
