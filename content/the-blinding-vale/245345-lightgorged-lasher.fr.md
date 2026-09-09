@@ -13,7 +13,7 @@ spells:
 trap: "Une seule **Pollinisation du luméclat** buffe tout le pack pendant une minute. Si elle passe, le pull dure deux fois plus longtemps que prévu — la kicker ou retirer le bouclier."
 ---
 
-Vingt-huit unités à 7 forces chacune, et une seule capacité qui compte plus que tout le reste
+Vingt-neuf unités à 7 forces chacune, et une seule capacité qui compte plus que tout le reste
 dans le trash de The Blinding Vale.
 
 **Pollinisation du luméclat** fait quatre choses à la fois : elle absorbe 600k sur l'incantateur,

@@ -11,7 +11,7 @@ Weights are `count × placements`, i.e. the share of the 686 forces a group need
 | Mob | Weight | Threat | Why |
 | --- | --- | --- | --- |
 | Sporeblight Belcher | **250** (36%) | `high` | Unavoidable to route around, 291k spore impacts, 291k on death, ten bodies |
-| Lightgorged Lasher | 196 (29%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
+| Lightgorged Lasher | 203 (30%) | `high` | Pollination buffs the whole pack for a **minute** unless the shield is broken |
 | Overgrown Hydra | 175 (26%) | `medium` | Was `high` on the 339k Bullet Seeds; a frontal you sidestep is a clear answer |
 | Lightfeather Petalwing | 112 (16%) | `medium` | Deals no damage at all — costs a 3-second group disorient |
 | Virid Grovekeeper | 100 (15%) | `high` | 533k tank buster that paves the ground with slowing pools |
@@ -28,7 +28,9 @@ Only one mob in the dungeon now carries `high` on a body that is not either a qu
 of the forces or a tank buster: Luminous Thornmaw, on a debuff that will not fall off below
 full health. That threshold used to read "30%+", which was the same set of mobs against 655
 forces; MDT 6.2.10 raised the dungeon to 686 and pushed the Lightgorged Lasher from 30% to 29%
-without changing a thing about the mob. A share is a ratio, and this table's denominator moves.
+without changing a thing about the mob. MDT 6.2.16 then put it back at 30% from the other end,
+giving the mob a twenty-ninth placement against an unchanged 686. A share is a ratio, and both
+halves of it move.
 
 **Bosses** (Meittik, Kezkitt, Lekshi, Lightwarden Ruia, Ziekket, Ikuzz) carry no `threat`,
 per the Altar of Fangs convention. Each is worth **0 forces**, as in Altar of Fangs and Ruby
